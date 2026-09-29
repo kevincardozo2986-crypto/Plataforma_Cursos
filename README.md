@@ -1,59 +1,59 @@
-# Frontend
+# Plataforma de cursos
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
+Base de una plataforma de cursos con una API en NestJS y una interfaz en Angular con renderizado del lado del servidor (SSR).
 
-## Development server
+El proyecto está en su etapa inicial: conserva las pantallas y endpoints de ejemplo. Los módulos de usuarios, autenticación y cursos aún no están implementados.
 
-To start a local development server, run:
+## Estructura
 
-```bash
-ng serve
-```
+- `backend/`: API NestJS, pruebas unitarias y pruebas de integración.
+- `frontend/`: aplicación Angular, estilos SCSS y servidor SSR.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Ambas aplicaciones se versionan en un único repositorio y mantienen sus propios archivos `package.json` y `package-lock.json`.
 
-## Code scaffolding
+## Requisitos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Node.js 24.15 o superior de la rama 24 (entorno verificado: 24.21.0).
+- npm 11 (entorno verificado: 11.19.0).
 
-```bash
-ng generate component component-name
-```
+## Instalación
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Desde la raíz:
 
 ```bash
-ng generate --help
+npm --prefix backend ci
+npm --prefix frontend ci
 ```
 
-## Building
+## Desarrollo
 
-To build the project run:
+Ejecutar cada comando en una terminal diferente:
 
 ```bash
-ng build
+npm --prefix backend run start:dev
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
 
 ```bash
-ng test
+npm --prefix frontend start
 ```
 
-## Running end-to-end tests
+La API escucha en `http://localhost:3000` y Angular en `http://localhost:4200`. La interfaz todavía no consume la API.
 
-For end-to-end (e2e) testing, run:
+Consultar [la configuración del backend](backend/README.md) y [los comandos del frontend](frontend/README.md).
+
+## Verificación
 
 ```bash
-ng e2e
+npm --prefix backend run build
+npm --prefix backend run lint
+npm --prefix backend test
+npm --prefix backend run test:e2e
+npm --prefix frontend run build
+npm --prefix frontend test -- --watch=false
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Organización al crecer
 
-## Additional Resources
+Agregar módulos de dominio en `backend/src/` (por ejemplo, `auth`, `users` y `courses`) y funcionalidades en `frontend/src/app/` conforme se implementen. Mantener junto a cada funcionalidad sus componentes y pruebas.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+No subir credenciales ni archivos `.env`; documentar las variables con valores de ejemplo en `.env.example`.
