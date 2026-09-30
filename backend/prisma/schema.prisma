@@ -46,6 +46,9 @@ model User {
   // Cursos creados por este profesor
   courses Course[]
 
+  enrollments        Enrollment[]
+  evaluationAttempts EvaluationAttempt[]
+
   @@map("users")
 }
 
@@ -62,10 +65,197 @@ model Course {
   teacherId Int
   teacher   User @relation(fields: [teacherId], references: [id])
 
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  modules     CourseModule[]
+  enrollments Enrollment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([teacherId])
   @@index([status])
+  @@index([categoryId])
   @@map("courses")
+}
+
+enum ResourceType {
+  PDF
+  VIDEO
+  LINK
+  DOCUMENT
+  OTHER
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses Course[]
+
+  @@map("categories")
+}
+
+model CourseModule {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  position    Int     @default(1)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons     Lesson[]
+  evaluations Evaluation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, position])
+  @@map("modules")
+}
+
+model Lesson {
+  id              Int     @id @default(autoincrement())
+  title           String
+  content         String?
+  videoUrl        String?
+  durationMinutes Int?
+  position        Int     @default(1)
+
+  moduleId Int
+  module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  resources Resource[]
+  progress  LessonProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId, position])
+  @@map("lessons")
+}
+
+model Resource {
+  id    Int          @id @default(autoincrement())
+  title String
+  type  ResourceType @default(LINK)
+  url   String
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lessonId])
+  @@map("resources")
+}
+
+model Evaluation {
+  id           Int     @id @default(autoincrement())
+  title        String
+  description  String?
+  passingScore Int     @default(60)
+
+  moduleId Int
+  module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  attempts  EvaluationAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@map("evaluations")
+}
+
+model Question {
+  id       Int    @id @default(autoincrement())
+  text     String
+  points   Int    @default(1)
+  position Int    @default(1)
+
+  evaluationId Int
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  options Option[]
+
+  @@index([evaluationId, position])
+  @@map("questions")
+}
+
+model Option {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean @default(false)
+
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("options")
+}
+
+model EvaluationAttempt {
+  id     Int     @id @default(autoincrement())
+  score  Int
+  passed Boolean
+  answers Json
+
+  evaluationId Int
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([evaluationId, userId])
+  @@map("evaluation_attempts")
+}
+
+model Enrollment {
+  id          Int              @id @default(autoincrement())
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessonProgress LessonProgress[]
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          Int       @id @default(autoincrement())
+  completedAt DateTime  @default(now())
+
+  enrollmentId Int
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
 }
