@@ -1,227 +1,253 @@
-<div
-  class="accessibility"
-  [class.dark]="darkMode()"
-  (keydown.escape)="open.set(false)"
+﻿<button
+  #trigger
+  class="trigger"
+  type="button"
+  [class.open]="open()"
+  [attr.aria-label]="'Opciones de accesibilidad' | t"
+  [title]="'Accesibilidad' | t"
+  aria-controls="access-options"
+  [attr.aria-expanded]="open()"
+  (click)="open.set(!open())"
 >
-  <!-- BOTÓN PRINCIPAL -->
-  <button
-    type="button"
-    class="trigger"
-    (click)="open.set(!open())"
-    [attr.aria-expanded]="open()"
-    aria-controls="access-options"
+  <span class="trigger-ring" aria-hidden="true"></span>
+
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="4" r="2" />
+    <path d="M4 8h16M12 8v6m0 0-5 7m5-7 5 7" />
+  </svg>
+</button>
+
+@if (open()) {
+  <section
+    id="access-options"
+    class="options"
+    aria-labelledby="access-title"
   >
-    <span class="trigger-icon">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="4" r="2" />
-        <path d="M4 8h16M12 8v6m0 0-5 7m5-7 5 7" />
-      </svg>
-    </span>
-
-    <span class="label">
-      {{ language() === 'es' ? 'Accesibilidad' : 'Accessibility' }}
-    </span>
-
-    <svg
-      class="chevron"
-      [class.rotated]="open()"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path d="m7 10 5 5 5-5" />
-    </svg>
-  </button>
-
-  <!-- PANEL -->
-  @if (open()) {
-    <div
-      id="access-options"
-      class="options"
-    >
-      <!-- HEADER -->
-      <header class="menu-header">
-        <div class="header-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+    <!-- HEADER -->
+    <header class="panel-header">
+      <div class="header-content">
+        <span class="header-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
             <circle cx="12" cy="4" r="2" />
             <path d="M4 8h16M12 8v6m0 0-5 7m5-7 5 7" />
           </svg>
+        </span>
+
+        <div class="header-copy">
+          <h2 id="access-title">
+            {{ 'Accesibilidad' | t }}
+          </h2>
+
+          <p>
+            {{
+              'Personaliza tu experiencia'
+                | t
+            }}
+          </p>
         </div>
+      </div>
 
-        <div>
-          <strong>
-            {{
-              language() === 'es'
-                ? 'Accesibilidad'
-                : 'Accessibility'
-            }}
-          </strong>
-
-          <span>
-            {{
-              language() === 'es'
-                ? 'Personaliza tu experiencia'
-                : 'Customize your experience'
-            }}
-          </span>
-        </div>
-      </header>
-
-      <div class="divider"></div>
-
-      <!-- MODO OSCURO -->
       <button
+        class="close-button"
         type="button"
-        class="option-row"
-        (click)="toggleDarkMode()"
-        [attr.aria-pressed]="darkMode()"
+        [attr.aria-label]="
+          'Cerrar opciones de accesibilidad' | t
+        "
+        (click)="close()"
       >
-        <span class="option-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5
-                 8.5 8.5 0 1 0 20.5 14.5Z"
-            />
-          </svg>
-        </span>
-
-        <span class="option-copy">
-          <strong>
-            {{
-              language() === 'es'
-                ? 'Modo oscuro'
-                : 'Dark mode'
-            }}
-          </strong>
-
-          <small>
-            {{
-              language() === 'es'
-                ? 'Reduce el brillo de la interfaz'
-                : 'Reduce interface brightness'
-            }}
-          </small>
-        </span>
-
-        <span
-          class="switch"
-          [class.active]="darkMode()"
-          aria-hidden="true"
-        >
-          <span></span>
-        </span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
       </button>
+    </header>
 
-      <!-- TEXTO GRANDE -->
-      <button
-        type="button"
-        class="option-row"
-        (click)="largeText.set(!largeText())"
-        [attr.aria-pressed]="largeText()"
-      >
-        <span class="option-icon text-icon">
-          Aa
-        </span>
+    <div class="divider"></div>
 
-        <span class="option-copy">
-          <strong>
-            {{
-              language() === 'es'
-                ? 'Texto grande'
-                : 'Large text'
-            }}
-          </strong>
+    <!-- MODO OSCURO -->
+    <button
+      class="option"
+      type="button"
+      [attr.aria-pressed]="settings.darkMode()"
+      (click)="
+        settings.darkMode.set(
+          !settings.darkMode()
+        )
+      "
+    >
+      <span class="option-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M20.5 14.5A8.5 8.5 0 0 1
+               9.5 3.5
+               8.5 8.5 0 1 0
+               20.5 14.5Z"
+          />
+        </svg>
+      </span>
 
-          <small>
-            {{
-              language() === 'es'
-                ? 'Aumenta el tamaño del contenido'
-                : 'Increase content size'
-            }}
-          </small>
-        </span>
+      <span class="option-copy">
+        <strong>
+          {{ 'Modo oscuro' | t }}
+        </strong>
 
-        <span
-          class="switch"
-          [class.active]="largeText()"
-          aria-hidden="true"
-        >
-          <span></span>
-        </span>
-      </button>
-
-      <!-- ALTO CONTRASTE -->
-      <button
-        type="button"
-        class="option-row"
-        (click)="contrast.set(!contrast())"
-        [attr.aria-pressed]="contrast()"
-      >
-        <span class="option-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8" />
-            <path d="M12 4v16" />
-          </svg>
-        </span>
-
-        <span class="option-copy">
-          <strong>
-            {{
-              language() === 'es'
-                ? 'Alto contraste'
-                : 'High contrast'
-            }}
-          </strong>
-
-          <small>
-            {{
-              language() === 'es'
-                ? 'Mejora la visibilidad'
-                : 'Improve visibility'
-            }}
-          </small>
-        </span>
-
-        <span
-          class="switch"
-          [class.active]="contrast()"
-          aria-hidden="true"
-        >
-          <span></span>
-        </span>
-      </button>
-
-      <div class="divider"></div>
-
-      <!-- IDIOMA -->
-      <section class="language-section">
-        <span class="section-title">
+        <small>
           {{
-            language() === 'es'
-              ? 'Idioma'
-              : 'Language'
+            'Reduce el brillo de la interfaz'
+              | t
           }}
-        </span>
+        </small>
+      </span>
 
-        <div class="language-selector">
-          <button
-            type="button"
-            [class.active]="language() === 'es'"
-            (click)="changeLanguage('es')"
-          >
-            <span>ES</span>
-            Español
-          </button>
+      <span
+        class="switch"
+        [class.active]="settings.darkMode()"
+        aria-hidden="true"
+      >
+        <span></span>
+      </span>
+    </button>
 
-          <button
-            type="button"
-            [class.active]="language() === 'en'"
-            (click)="changeLanguage('en')"
-          >
-            <span>EN</span>
-            English
-          </button>
-        </div>
-      </section>
-    </div>
-  }
-</div>
+    <!-- TEXTO GRANDE -->
+    <button
+      class="option"
+      type="button"
+      [attr.aria-pressed]="settings.largeText()"
+      (click)="
+        settings.largeText.set(
+          !settings.largeText()
+        )
+      "
+    >
+      <span
+        class="option-icon text-icon"
+        aria-hidden="true"
+      >
+        Aa
+      </span>
+
+      <span class="option-copy">
+        <strong>
+          {{ 'Texto grande' | t }}
+        </strong>
+
+        <small>
+          {{
+            'Aumenta el tamaño del contenido'
+              | t
+          }}
+        </small>
+      </span>
+
+      <span
+        class="switch"
+        [class.active]="settings.largeText()"
+        aria-hidden="true"
+      >
+        <span></span>
+      </span>
+    </button>
+
+    <!-- ALTO CONTRASTE -->
+    <button
+      class="option"
+      type="button"
+      [attr.aria-pressed]="settings.contrast()"
+      (click)="
+        settings.contrast.set(
+          !settings.contrast()
+        )
+      "
+    >
+      <span class="option-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 4v16" />
+        </svg>
+      </span>
+
+      <span class="option-copy">
+        <strong>
+          {{ 'Alto contraste' | t }}
+        </strong>
+
+        <small>
+          {{ 'Mejora la visibilidad' | t }}
+        </small>
+      </span>
+
+      <span
+        class="switch"
+        [class.active]="settings.contrast()"
+        aria-hidden="true"
+      >
+        <span></span>
+      </span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- IDIOMA -->
+    <fieldset class="language-selector">
+      <legend>
+        {{ 'Idioma' | t }}
+      </legend>
+
+      <p class="language-description">
+        {{
+          'Selecciona tu idioma de preferencia'
+            | t
+        }}
+      </p>
+
+      <div class="language-buttons">
+        <button
+          type="button"
+          lang="es"
+          [attr.aria-pressed]="
+            language.language() === 'es'
+          "
+          (click)="language.setLanguage('es')"
+        >
+          <span class="language-code">
+            ES
+          </span>
+
+          <span>Español</span>
+        </button>
+
+        <button
+          type="button"
+          lang="en"
+          [attr.aria-pressed]="
+            language.language() === 'en'
+          "
+          (click)="language.setLanguage('en')"
+        >
+          <span class="language-code">
+            EN
+          </span>
+
+          <span>English</span>
+        </button>
+      </div>
+    </fieldset>
+
+    <!-- RESET -->
+    <button
+      class="reset"
+      type="button"
+      (click)="settings.reset()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M4 4v6h6M5.5 15a7 7 0 1 0
+             1.2-7.8L4 10"
+        />
+      </svg>
+
+      <span>
+        {{ 'Restablecer ajustes' | t }}
+      </span>
+    </button>
+  </section>
+}

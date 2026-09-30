@@ -1,5 +1,7 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component } from '@angular/core';
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-campus-brand',
   templateUrl: './campus-brand.html',
   styleUrl: './campus-brand.scss',

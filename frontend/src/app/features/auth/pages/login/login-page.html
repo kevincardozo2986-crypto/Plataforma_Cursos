@@ -1,45 +1,23 @@
-<main
-  class="login-page"
-  [class.high-contrast]="contrast()"
-  [class.large-text]="largeText()"
->
+<main class="login-page">
   <div class="campus-background" aria-hidden="true"></div>
   <div class="campus-overlay" aria-hidden="true"></div>
 
   <header class="topbar">
     <app-campus-brand />
-
-    <app-accessibility-menu
-      [(contrast)]="contrast"
-      [(largeText)]="largeText"
-    />
   </header>
 
   <section class="login-card" aria-labelledby="welcome-title">
-    <header class="welcome">
-      <span class="gold-line" aria-hidden="true"></span>
-
-      <p class="eyebrow">CAMPUS VIRTUAL</p>
-
-      <h1 id="welcome-title">Bienvenido</h1>
-
-      <p class="intro">
-        Ingresa a tu cuenta para continuar<br />
-        con tu formación en la USTA Tunja.
-      </p>
-    </header>
+    <app-login-header />
 
     @if (auth.user(); as user) {
       <section class="success" aria-live="polite">
         <span class="check" aria-hidden="true">✓</span>
 
-        <h2>Hola, {{ user.firstName }}</h2>
-        <p>Has iniciado sesión correctamente.</p>
+        <h2>{{ 'Hola,' | t }} {{ user.firstName }}</h2>
+        <p>{{ 'Has iniciado sesión correctamente.' | t }}</p>
         <p>{{ user.email }}</p>
 
-        <button type="button" (click)="auth.logout()">
-          Cerrar sesión
-        </button>
+        <button type="button" (click)="auth.logout()">{{ 'Cerrar sesión' | t }}</button>
       </section>
     } @else {
       <app-login-form
@@ -49,14 +27,12 @@
         (recoveryRequested)="unavailable('La recuperación de contraseña')"
       />
 
-      <app-login-links
-        (requested)="unavailable($event)"
-      />
+      <app-login-links (requested)="unavailable($event)" />
     }
 
     @if (notice() || auth.storageNotice()) {
       <p class="notice" role="status">
-        {{ notice() || auth.storageNotice() }}
+        {{ notice() || auth.storageNotice() | t }}
       </p>
     }
   </section>

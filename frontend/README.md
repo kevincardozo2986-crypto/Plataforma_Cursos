@@ -48,3 +48,9 @@ npm run serve:ssr:frontend
 - `src/server.ts`: entrada del servidor SSR.
 
 Agregar las funcionalidades de cursos, usuarios y autenticación conforme se implementen. Las variables o credenciales privadas no deben incluirse en código que se envía al navegador.
+
+## Idioma global
+
+El menú de accesibilidad permite elegir Español o English. `core/i18n/language.service.ts` mantiene la preferencia durante la navegación, la guarda en `campus.language` y actualiza `html.lang` y el título del documento. La restauración se realiza después del renderizado para ser compatible con SSR.
+
+Los textos del login, sus validaciones, mensajes y etiquetas accesibles usan `TranslatePipe` (`t`). Las traducciones se mantienen en `core/i18n/translations.ts`. Para nuevas páginas, importar el pipe en el componente y añadir sus textos al diccionario. Los logos y nombres institucionales se conservan como recursos de marca.

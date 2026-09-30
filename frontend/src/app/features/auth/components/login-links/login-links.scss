@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
 }
 
@@ -35,103 +35,7 @@
    INVITADO
    ========================================= */
 
-.guest {
-  display: flex;
-  align-items: center;
-
-  width: 100%;
-
-  gap: 13px;
-
-  padding: 13px 15px;
-
-  box-sizing: border-box;
-
-  border: 1px solid rgba(113, 137, 169, 0.25);
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.68);
-
-  color: var(--ink);
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    background 150ms ease,
-    border-color 150ms ease,
-    transform 150ms ease;
-}
-
-.guest:hover {
-  transform: translateY(-1px);
-
-  border-color: rgba(67, 104, 148, 0.3);
-
-  background: rgba(255, 255, 255, 0.88);
-}
-
-.guest-icon {
-  display: grid;
-  place-items: center;
-
-  width: 34px;
-  height: 34px;
-
-  flex: 0 0 auto;
-
-  border-radius: 9px;
-
-  background: rgba(11, 52, 92, 0.055);
-}
-
-.guest-icon svg {
-  width: 21px;
-  height: 21px;
-
-  fill: none;
-
-  stroke: #123c69;
-  stroke-width: 1.7;
-}
-
-.guest-copy {
-  min-width: 0;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
-  gap: 2px;
-}
-
-.guest-copy strong {
-  color: #102f54;
-
-  font-size: 0.82rem;
-  font-weight: 650;
-}
-
-.guest-copy small {
-  color: #74849e;
-
-  font-size: 0.71rem;
-}
-
-.arrow {
-  margin-left: auto;
-
-  color: #123b67;
-
-  font-size: 1.25rem;
-  font-weight: 300;
-}
-
-/* =========================================
-   CREAR CUENTA
-   ========================================= */
-
+.guest,
 .signup {
   display: flex;
   align-items: center;
@@ -141,17 +45,15 @@
 
   gap: 7px;
 
-  margin:
-    19px
-    0
-    0;
+  margin: 19px 0 0;
 
   color: #72829b;
 
   font-size: 0.76rem;
 }
 
-.signup button {
+.action-link {
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
 
@@ -171,11 +73,11 @@
   cursor: pointer;
 }
 
-.signup button span {
+.action-link span {
   font-size: 1rem;
 }
 
-.signup button:hover {
+.action-link:hover {
   text-decoration: underline;
 }
 
@@ -185,16 +87,10 @@
 
 @media (max-width: 480px) {
   .divider {
-    margin:
-      17px
-      0
-      15px;
+    margin: 17px 0 15px;
   }
 
-  .guest {
-    padding: 12px;
-  }
-
+  .guest,
   .signup {
     margin-top: 17px;
   }

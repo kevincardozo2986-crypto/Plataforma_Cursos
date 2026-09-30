@@ -29,23 +29,13 @@ describe('LoginPage', () => {
       'Revisa tus datos',
     );
   });
-  it('compone las partes y permite ajustar el contraste', () => {
+  it('compone el login sin duplicar el menú global', () => {
     const fixture = TestBed.createComponent(LoginPage);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-campus-brand')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-login-form')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-login-links')).toBeTruthy();
-    fixture.nativeElement.querySelector('app-accessibility-menu .trigger').click();
-    fixture.detectChanges();
-    const contrastButton = Array.from(
-      fixture.nativeElement.querySelectorAll('#access-options button') as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('Alto contraste'));
-    expect(contrastButton).toBeTruthy();
-    contrastButton!.click();
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('main').classList.contains('high-contrast')).toBe(
-      true,
-    );
+    expect(fixture.nativeElement.querySelector('app-accessibility-menu')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-campus-brand img').getAttribute('src')).toBe(
       '/images/1-Logo-Oficial-Santoto-Tunja.png',
     );

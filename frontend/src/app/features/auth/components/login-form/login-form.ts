@@ -1,9 +1,10 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoginSubmission } from '../../../../core/auth/auth.models';
 @Component({
   selector: 'app-login-form',
-  imports: [ReactiveFormsModule],
+  imports: [TranslatePipe, ReactiveFormsModule],
   templateUrl: './login-form.html',
   styleUrl: './login-form.scss',
 })

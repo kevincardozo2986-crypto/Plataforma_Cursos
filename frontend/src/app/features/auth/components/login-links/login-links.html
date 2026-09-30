@@ -1,43 +1,26 @@
-<div class="divider">
+﻿<div class="divider">
   <span></span>
 
-  <small>o continúa explorando</small>
+  <small>{{ 'o continúa explorando' | t }}</small>
 
   <span></span>
 </div>
 
-<button
-  class="guest"
-  type="button"
-  (click)="requested.emit('El acceso como invitado')"
->
-  <span class="guest-icon">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="7" r="4" />
-      <path d="M4 21v-3a8 8 0 0 1 16 0v3Z" />
-    </svg>
-  </span>
-
-  <span class="guest-copy">
-    <strong>Acceder como invitado</strong>
-    <small>Conoce nuestra oferta de cursos</small>
-  </span>
-
-  <span class="arrow" aria-hidden="true">→</span>
-</button>
-
-<p class="signup">
-  <span>¿Aún no tienes una cuenta?</span>
-
-  <button
-    type="button"
-    (click)="
-      requested.emit(
-        'La creación de cuentas desde esta página'
-      )
-    "
-  >
-    Crear cuenta
+<p class="guest">
+  <button class="action-link" type="button" (click)="requested.emit('El acceso como invitado')">
+    {{ 'Acceder como invitado' | t }}
     <span aria-hidden="true">→</span>
   </button>
+</p>
+
+<p class="signup">
+  <span>{{ '¿Aún no tienes una cuenta?' | t }}</span>
+
+  <a
+    class="action-link"
+    routerLink="/register"
+  >
+    {{ 'Crear cuenta' | t }}
+    <span aria-hidden="true">→</span>
+  </a>
 </p>

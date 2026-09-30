@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
   min-height: 100dvh;
 }
@@ -40,10 +40,7 @@
   inset: 0;
   z-index: -3;
 
-  background:
-    url('/images/prueba1.png')
-    center center / cover
-    no-repeat;
+  background: url('/images/prueba1.png') center center / cover no-repeat;
 
   transform: scale(1.015);
 }
@@ -67,12 +64,7 @@
       rgba(4, 29, 55, 0.12) 75%,
       rgba(3, 23, 44, 0.27) 100%
     ),
-    linear-gradient(
-      180deg,
-      rgba(4, 28, 53, 0.04) 0%,
-      transparent 55%,
-      rgba(2, 19, 37, 0.37) 100%
-    );
+    linear-gradient(180deg, rgba(4, 28, 53, 0.04) 0%, transparent 55%, rgba(2, 19, 37, 0.37) 100%);
 
   pointer-events: none;
 }
@@ -114,12 +106,7 @@
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: 25px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.88),
-      rgba(247, 249, 253, 0.76)
-    );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(247, 249, 253, 0.76));
 
   backdrop-filter: blur(17px) saturate(125%);
   -webkit-backdrop-filter: blur(17px) saturate(125%);
@@ -142,13 +129,12 @@
 
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.2),
-      transparent 35%,
-      rgba(255, 255, 255, 0.08)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    transparent 35%,
+    rgba(255, 255, 255, 0.08)
+  );
 
   pointer-events: none;
 }
@@ -156,68 +142,6 @@
 /* =========================================
    TITULO
    ========================================= */
-
-.welcome {
-  position: relative;
-  z-index: 1;
-
-  margin-bottom: 26px;
-}
-
-.gold-line {
-  display: block;
-
-  width: 44px;
-  height: 3px;
-
-  margin-bottom: 18px;
-
-  border-radius: 999px;
-
-  background: var(--gold);
-}
-
-.eyebrow {
-  margin: 0 0 9px;
-
-  color: #627493;
-
-  font-size: 0.65rem;
-  font-weight: 700;
-
-  line-height: 1;
-
-  letter-spacing: 0.3em;
-}
-
-.welcome h1 {
-  margin: 0 0 11px;
-
-  color: #08284b;
-
-  font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
-
-  font-size: clamp(2.9rem, 4vw, 3.6rem);
-  font-weight: 500;
-
-  line-height: 0.98;
-
-  letter-spacing: -0.045em;
-}
-
-.intro {
-  margin: 0;
-
-  color: #667894;
-
-  font-size: 0.94rem;
-  font-weight: 400;
-
-  line-height: 1.5;
-}
 
 /* =========================================
    COMPONENTES INTERNOS
@@ -287,12 +211,7 @@ app-login-links {
   border: 0;
   border-radius: 11px;
 
-  background:
-    linear-gradient(
-      105deg,
-      #073762,
-      #05274b
-    );
+  background: linear-gradient(105deg, #073762, #05274b);
 
   color: white;
 
@@ -338,8 +257,7 @@ app-login-links {
 
   color: rgba(255, 255, 255, 0.94);
 
-  text-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
 .academic-values {
@@ -421,10 +339,6 @@ app-login-links {
   --control-size: 1rem;
 }
 
-.login-page.large-text .intro {
-  font-size: 1.05rem;
-}
-
 /* =========================================
    ANIMACIÓN
    ========================================= */
@@ -460,26 +374,7 @@ app-login-links {
   .login-card {
     width: min(100%, 470px);
 
-    padding:
-      28px
-      36px
-      25px;
-  }
-
-  .welcome {
-    margin-bottom: 19px;
-  }
-
-  .gold-line {
-    margin-bottom: 14px;
-  }
-
-  .welcome h1 {
-    font-size: 2.85rem;
-  }
-
-  .intro {
-    font-size: 0.85rem;
+    padding: 28px 36px 25px;
   }
 
   .academic-values,
@@ -513,10 +408,7 @@ app-login-links {
 
     align-items: flex-start;
 
-    padding:
-      108px
-      16px
-      30px;
+    padding: 108px 16px 30px;
 
     overflow-y: auto;
   }
@@ -532,26 +424,11 @@ app-login-links {
   .login-card {
     width: 100%;
 
-    padding:
-      31px
-      24px
-      27px;
+    padding: 31px 24px 27px;
 
     border-radius: 21px;
 
     background: rgba(250, 252, 255, 0.86);
-  }
-
-  .welcome {
-    margin-bottom: 24px;
-  }
-
-  .welcome h1 {
-    font-size: 2.65rem;
-  }
-
-  .intro br {
-    display: none;
   }
 
   .campus-background {
@@ -559,12 +436,7 @@ app-login-links {
   }
 
   .campus-overlay {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(3, 25, 49, 0.26),
-        rgba(3, 25, 49, 0.18)
-      );
+    background: linear-gradient(180deg, rgba(3, 25, 49, 0.26), rgba(3, 25, 49, 0.18));
   }
 }
 
@@ -574,24 +446,10 @@ app-login-links {
 
 @media (max-width: 480px) {
   .login-page {
-    padding:
-      94px
-      12px
-      24px;
+    padding: 94px 12px 24px;
   }
 
   .login-card {
-    padding:
-      27px
-      18px
-      24px;
-  }
-
-  .welcome h1 {
-    font-size: 2.45rem;
-  }
-
-  .eyebrow {
-    font-size: 0.58rem;
+    padding: 27px 18px 24px;
   }
 }
