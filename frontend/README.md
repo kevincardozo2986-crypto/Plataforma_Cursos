@@ -1,6 +1,6 @@
 ﻿# Frontend — Plataforma de cursos
 
-Aplicación Angular con SCSS y renderizado del lado del servidor (SSR). Actualmente conserva la interfaz inicial y no tiene rutas de negocio ni conexión con la API.
+Aplicación Angular con SCSS y renderizado del lado del servidor (SSR). Actualmente no tiene pantallas, rutas de negocio ni conexión con la API.
 
 ## Comandos
 
