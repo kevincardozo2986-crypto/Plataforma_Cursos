@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+﻿* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+button,
+input {
+  font-family: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+a:focus-visible,
+input[type='checkbox']:focus-visible {
+  outline: 3px solid #b8860b;
+  outline-offset: 4px;
+}
+body {
+  background: #fcfdff;
+}

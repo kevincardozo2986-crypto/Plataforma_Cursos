@@ -1,0 +1,107 @@
+{
+  "date": "2026-09-30T14:29:51.488Z",
+  "results": [
+    {
+      "name": "01 - Registro correcto",
+      "expected": 201,
+      "actual": 201,
+      "passed": true
+    },
+    {
+      "name": "02 - Correo duplicado",
+      "expected": 409,
+      "actual": 409,
+      "passed": true
+    },
+    {
+      "name": "03 - Correo duplicado en mayúsculas",
+      "expected": 409,
+      "actual": 409,
+      "passed": true
+    },
+    {
+      "name": "04 - Email inválido",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "05 - Contraseña corta",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "06 - Nombre demasiado corto",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "07 - Campo obligatorio ausente",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "08 - No permitir rol ADMIN",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "09 - No permitir campos desconocidos",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "10 - Nombre con tipo incorrecto",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "11 - Documento duplicado",
+      "expected": 409,
+      "actual": 409,
+      "passed": true
+    },
+    {
+      "name": "12 - Nombre compuesto solo por espacios",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "13 - Documento ausente",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "14 - Documento vacío",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "15 - Documento solo espacios",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "16 - Documento null",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "name": "17 - Documento duplicado con espacios",
+      "expected": 409,
+      "actual": 409,
+      "passed": true
+    }
+  ]
+}

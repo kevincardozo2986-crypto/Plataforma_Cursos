@@ -12,6 +12,11 @@ coverage/
 .env.*
 !.env.example
 .local-backups/
+/backend/.agents/
+/backend/.claude/
+/backend/.windsurf/
+/backend/skills-lock.json
+/frontend/src/app.zip
 
 # Operating systems
 .DS_Store
