@@ -1,0 +1,174 @@
+<section class="learning-journey">
+
+  <div class="journey-decoration decoration-one"></div>
+  <div class="journey-decoration decoration-two"></div>
+
+  <div class="journey-container">
+
+    <div class="journey-copy">
+
+      <span class="eyebrow">
+        @if (isAuthenticated()) {
+          Tu aprendizaje continúa
+        } @else {
+          Tu camino comienza aquí
+        }
+      </span>
+
+      <h2>
+        @if (isAuthenticated()) {
+          Cada paso
+          <span>construye algo</span>
+          más grande.
+        } @else {
+          Aprende hoy.
+          <span>Transforma</span>
+          tu mañana.
+        }
+      </h2>
+
+      <p>
+        @if (isAuthenticated()) {
+          Sigue desarrollando nuevas habilidades,
+          descubre nuevos conocimientos y continúa
+          construyendo tu camino profesional.
+        } @else {
+          Descubre experiencias de aprendizaje diseñadas
+          para ayudarte a avanzar a tu propio ritmo.
+        }
+      </p>
+
+      <a
+        class="journey-link"
+        [routerLink]="isAuthenticated() ? '/my-courses' : '/courses'"
+      >
+        @if (isAuthenticated()) {
+          Ver mis cursos
+        } @else {
+          Explorar cursos
+        }
+
+        <span aria-hidden="true">→</span>
+      </a>
+
+    </div>
+
+
+    <div class="journey-stage">
+
+      <div class="orbit orbit-one"></div>
+      <div class="orbit orbit-two"></div>
+
+      <span class="floating-dot dot-one"></span>
+      <span class="floating-dot dot-two"></span>
+      <span class="floating-dot dot-three"></span>
+
+      <div class="experience-card">
+
+        <div class="card-glow"></div>
+
+        <div class="card-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 3L2 8l10 5 8-4v6h2V8L12 3zm-6 9v4.5C6 18.43 8.69 20 12 20s6-1.57 6-3.5V12l-6 3-6-3z"
+            />
+          </svg>
+        </div>
+
+        <div class="card-content">
+
+          @if (isAuthenticated()) {
+
+            <span class="card-label">
+              Bienvenido de nuevo
+            </span>
+
+            <h3>
+              {{ firstName() }}, tu aprendizaje sigue creciendo.
+            </h3>
+
+            <p>
+              Tus cursos, avances y próximas lecciones
+              estarán disponibles desde este espacio.
+            </p>
+
+            <div class="progress-preview">
+
+              <div class="progress-heading">
+                <span>Tu recorrido</span>
+                <strong>En progreso</strong>
+              </div>
+
+              <div class="progress-track">
+                <div class="progress-value"></div>
+              </div>
+
+            </div>
+
+          } @else {
+
+            <span class="card-label">
+              Campus Virtual
+            </span>
+
+            <h3>
+              Tu próxima habilidad puede comenzar hoy.
+            </h3>
+
+            <p>
+              Explora nuestra oferta académica y encuentra
+              una experiencia que se adapte a tus objetivos.
+            </p>
+
+          }
+
+        </div>
+
+      </div>
+
+
+      <div class="floating-card floating-card-top">
+
+        <div class="floating-icon">
+          ✦
+        </div>
+
+        <div>
+          <strong>
+            Aprende a tu ritmo
+          </strong>
+
+          <span>
+            Tú eliges cuándo avanzar
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="floating-card floating-card-bottom">
+
+        <div class="floating-icon">
+          ✓
+        </div>
+
+        <div>
+          <strong>
+            Formación de calidad
+          </strong>
+
+          <span>
+            Respaldo Santo Tomás
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>

@@ -1,183 +1,58 @@
-<section class="hero">
-  <div class="hero-background" aria-hidden="true"></div>
-  <div class="hero-overlay" aria-hidden="true"></div>
-
-  <div class="hero-container">
-
-    <div class="hero-content">
-
-      <span class="hero-badge">
-        <span class="badge-dot"></span>
-        Universidad Santo Tomás
-      </span>
-
-      @if (auth.user(); as user) {
-
-        <h1>
-          Bienvenido de nuevo,
-          <span>{{ user.firstName }}</span>
-        </h1>
-
-        <p class="hero-description">
-          Continúa tu proceso de aprendizaje, consulta tus
-          cursos y descubre nuevas oportunidades para seguir
-          creciendo.
-        </p>
-
-        <div class="hero-actions">
-          <a
-            class="primary-action"
-            href="#my-courses"
-          >
-            Ir a mis cursos
-
-            <span aria-hidden="true">
-              →
-            </span>
-          </a>
-
-          <a
-            class="secondary-action"
-            href="#courses"
-          >
-            Explorar cursos
-          </a>
-        </div>
-
-      } @else {
-
-        <h1>
-          Aprende a tu ritmo.
-          <span>Crece sin límites.</span>
-        </h1>
-
-        <p class="hero-description">
-          Explora nuestra oferta académica y encuentra cursos
-          diseñados para fortalecer tus conocimientos y
-          acompañarte en tu crecimiento profesional.
-        </p>
-
-        <div class="hero-actions">
-          <a
-            class="primary-action"
-            href="#courses"
-          >
-            Explorar cursos
-
-            <span aria-hidden="true">
-              →
-            </span>
-          </a>
-
-          <a
-            class="secondary-action"
-            routerLink="/register"
-          >
-            Crear una cuenta
-          </a>
-        </div>
-
+﻿<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-intro">
+    @if (auth.user(); as user) {
+    <h1 id="hero-title">
+      {{ user.firstName }}, tu próximo<br /><span>gran paso empieza aquí.</span>
+    </h1>
+    } @else {
+    <h1 id="hero-title">Aprende algo nuevo.<br /><span>Haz algo extraordinario.</span></h1>
+    }
+    <div class="hero-actions">
+      <a class="primary-action" href="#courses">Explorar cursos</a>
+      @if (!auth.user()) {
+      <a class="secondary-action" routerLink="/register">Crear mi cuenta</a>
       }
-
-      <div class="hero-features">
-
-        <div class="feature">
-          <span class="feature-icon">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M12 3 2 8l10 5 10-5-10-5Z" />
-              <path d="m6 10v5c0 2 3 4 6 4s6-2 6-4v-5" />
-            </svg>
-          </span>
-
-          <span>
-            Formación de calidad
-          </span>
-        </div>
-
-        <div class="feature">
-          <span class="feature-icon">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </svg>
-          </span>
-
-          <span>
-            Aprende a tu ritmo
-          </span>
-        </div>
-
-        <div class="feature">
-          <span class="feature-icon">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M5 3h14v18H5z" />
-              <path d="m8 13 2 2 5-5" />
-            </svg>
-          </span>
-
-          <span>
-            Certifica tu aprendizaje
-          </span>
-        </div>
-
-      </div>
-
     </div>
+  </div>
 
-    <div
-      class="hero-decoration"
-      aria-hidden="true"
-    >
-      <div class="glass-card card-main">
-        <span class="card-label">
-          Campus Virtual
-        </span>
-
-        <strong>
-          Aprende donde quieras
-        </strong>
-
-        <div class="progress">
-          <span></span>
+  <div class="showcase" aria-label="Aprende, conecta y transforma con la Santoto">
+    <div class="showcase-grid" aria-hidden="true"></div>
+    <div class="showcase-track">
+      <article class="story-card technology-card">
+        <img src="/images/chicopc.png" alt="Estudiante trabajando en su computador" width="1672" height="941" />
+        <div class="story-content">
+          <h2>Imagina.<br />Crea.<br />Transforma.</h2>
         </div>
+      </article>
 
-        <div class="card-meta">
-          <span>Tu conocimiento</span>
-          <span>siempre contigo</span>
+      <article class="campus-window">
+        <div class="window-content">
+          <div class="window-brand">
+            <span>SANTOTO<span class="brand-dot">.</span></span>
+          </div>
+          <div class="window-feature">
+            <img src="/images/hero-learning.png" alt="Estudiante aprendiendo en línea y tomando notas" width="2006"
+              height="784" fetchpriority="high" />
+            <div class="window-copy">
+              <span class="card-eyebrow">Aprender lo cambia todo</span>
+              <h2>El siguiente<br />capítulo es tuyo.</h2>
+              <a href="#courses">Descubre por dónde empezar <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+          <div class="window-bottom">
+          </div>
         </div>
-      </div>
+      </article>
 
-      <div class="floating-card card-top">
-        <span class="floating-icon">
-          ✓
-        </span>
-
-        <div>
-          <strong>100% virtual</strong>
-          <small>Aprende desde cualquier lugar</small>
+      <article class="story-card community-card">
+        <img src="/images/chica1.png" alt="Estudiante en el campus universitario" width="1983" height="793" />
+        <div class="community-top">
+          <span>SOMOS<br /><strong>SANTOTO.</strong></span>
         </div>
-      </div>
-
-      <div class="floating-card card-bottom">
-        <span class="floating-icon play">
-          ▶
-        </span>
-
-        <div>
-          <strong>Contenido flexible</strong>
-          <small>Avanza a tu propio ritmo</small>
+        <div class="story-content">
+          <h2>Tu mundo.<br />Más grande.</h2>
         </div>
-      </div>
+      </article>
     </div>
-
   </div>
 </section>
