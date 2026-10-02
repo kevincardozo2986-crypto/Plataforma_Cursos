@@ -7,6 +7,11 @@ export interface Course {
   thumbnail?: string | null;
   price?: number | string | null;
 
+  /** BEGINNER | INTERMEDIATE | ADVANCED */
+  level?: string;
+  imageUrl?: string | null;
+  _count?: { modules: number };
+
   category?: {
     id?: string;
     name?: string;

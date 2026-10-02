@@ -10,6 +10,8 @@ const teacherSelect = { id: true, firstName: true, lastName: true } as const;
 const listInclude = {
   category: true,
   teacher: { select: teacherSelect },
+  // Para mostrar "N módulos" en las tarjetas del catálogo.
+  _count: { select: { modules: true } },
 } as const;
 
 export interface PublishedFilter {

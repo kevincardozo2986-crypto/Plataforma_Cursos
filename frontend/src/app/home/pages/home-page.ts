@@ -22,6 +22,10 @@ import {
 } from '../components/categories-explorer/categories-explorer';
 
 import {
+  CoursesSection,
+} from '../components/courses-section/courses-section';
+
+import {
   CoursesService,
 } from '../../core/courses/courses.service';
 
@@ -35,6 +39,7 @@ import {
   imports: [
     Hero,
     LearningJourney,
+    CoursesSection,
     CategoriesExplorer,
   ],
 

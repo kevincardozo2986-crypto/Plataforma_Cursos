@@ -1,6 +1,7 @@
 import {
   Component,
   input,
+  output,
 } from '@angular/core';
 
 export interface Course {
@@ -34,6 +35,9 @@ export class CourseCard {
     price: 120000,
     rating: 4.8,
   });
+
+  /** Se emite al pulsar "Ver curso"; quien usa la tarjeta decide qué hacer. */
+  readonly selected = output<string>();
 
   formatPrice(price: number): string {
     return new Intl.NumberFormat(

@@ -1,0 +1,53 @@
+<section class="courses" aria-labelledby="courses-title">
+  <div class="courses-container">
+    <header class="heading">
+      <span class="eyebrow">Catálogo</span>
+      <h2 id="courses-title">Cursos <span>disponibles</span></h2>
+      <p>Explora lo que puedes aprender hoy. Crea tu cuenta para inscribirte.</p>
+    </header>
+
+    @if (categories().length > 1) {
+      <div class="chips" role="group" aria-label="Filtrar por categoría">
+        <button
+          type="button"
+          class="chip"
+          [class.active]="category() === null"
+          [attr.aria-pressed]="category() === null"
+          (click)="choose(null)"
+        >
+          Todos
+        </button>
+
+        @for (name of categories(); track name) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="category() === name"
+            [attr.aria-pressed]="category() === name"
+            (click)="choose(name)"
+          >
+            {{ name }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (notice()) {
+      <p class="notice" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="state" role="status">Cargando cursos…</p>
+    } @else if (error()) {
+      <p class="state error" role="alert">{{ error() }}</p>
+    } @else if (visible().length === 0) {
+      <p class="state">Aún no hay cursos publicados en esta categoría.</p>
+    } @else {
+      <div class="grid">
+        @for (card of visible(); track card.id) {
+          <app-course-card [course]="card" (selected)="view()" />
+        }
+      </div>
+    }
+  </div>
+</section>
