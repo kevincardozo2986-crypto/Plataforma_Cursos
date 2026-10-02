@@ -1,6 +1,6 @@
 :host {
   display: block;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 92px);
 }
 
 /* =========================================
@@ -23,7 +23,7 @@
   justify-content: center;
 
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 92px);
 
   box-sizing: border-box;
 
@@ -75,29 +75,6 @@
     );
 
   pointer-events: none;
-}
-
-/* =========================================
-   MARCA SUPERIOR
-   ========================================= */
-
-.topbar {
-  position: absolute;
-
-  top: 34px;
-  left: clamp(34px, 4.5vw, 74px);
-  right: clamp(34px, 4.5vw, 74px);
-
-  z-index: 10;
-
-  display: flex;
-  align-items: center;
-
-  pointer-events: none;
-}
-
-.topbar app-campus-brand {
-  pointer-events: auto;
 }
 
 /* =========================================
@@ -444,10 +421,6 @@ app-register-form,
     overflow-y: auto;
   }
 
-  .topbar {
-    top: 24px;
-  }
-
   .register-card {
     width: min(100%, 700px);
 
@@ -492,7 +465,7 @@ app-register-form,
   .register-page {
     align-items: flex-start;
 
-    min-height: 100dvh;
+    min-height: calc(100dvh - 92px);
 
     padding:
       100px
@@ -500,12 +473,6 @@ app-register-form,
       28px;
 
     overflow-y: auto;
-  }
-
-  .topbar {
-    top: 18px;
-    left: 18px;
-    right: 18px;
   }
 
   .register-card {

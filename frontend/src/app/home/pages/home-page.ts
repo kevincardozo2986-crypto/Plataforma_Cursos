@@ -10,10 +10,6 @@ import {
 } from '@angular/core/rxjs-interop';
 
 import {
-  Navbar,
-} from '../components/navbar/navbar';
-
-import {
   Hero,
 } from '../components/hero/hero';
 
@@ -37,7 +33,6 @@ import {
   selector: 'app-home-page',
 
   imports: [
-    Navbar,
     Hero,
     LearningJourney,
     CategoriesExplorer,

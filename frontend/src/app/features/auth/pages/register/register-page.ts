@@ -23,10 +23,6 @@ import {
 } from '../../components/register-form/register-form';
 
 import {
-  CampusBrand,
-} from '../../components/campus-brand/campus-brand';
-
-import {
   TranslatePipe,
 } from '../../../../core/i18n/translate.pipe';
 
@@ -39,7 +35,6 @@ import {
 
   imports: [
     RegisterForm,
-    CampusBrand,
     RouterLink,
     TranslatePipe,
   ],

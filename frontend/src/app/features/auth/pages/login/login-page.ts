@@ -34,10 +34,6 @@ import {
 } from '../../../../core/auth/auth.models';
 
 import {
-  CampusBrand,
-} from '../../components/campus-brand/campus-brand';
-
-import {
   LoginForm,
 } from '../../components/login-form/login-form';
 
@@ -54,7 +50,6 @@ import {
 
   imports: [
     TranslatePipe,
-    CampusBrand,
     LoginHeader,
     LoginForm,
     LoginLinks,

@@ -32,12 +32,9 @@ describe('LoginPage', () => {
   it('compone el login sin duplicar el menú global', () => {
     const fixture = TestBed.createComponent(LoginPage);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('app-campus-brand')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-login-form')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-login-links')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-accessibility-menu')).toBeNull();
-    expect(fixture.nativeElement.querySelector('app-campus-brand img').getAttribute('src')).toBe(
-      '/images/1-Logo-Oficial-Santoto-Tunja.png',
-    );
+    expect(fixture.nativeElement.querySelector('app-site-header')).toBeNull();
   });
 });
