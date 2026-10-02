@@ -162,4 +162,61 @@
   >
     + Añadir lección
   </a>
+
+  <section class="evaluations" aria-label="Evaluaciones del módulo">
+    <h3>Evaluaciones</h3>
+
+    <ul class="eval-list">
+      @for (evaluation of evaluations(); track evaluation.id) {
+        <li class="eval">
+          <span class="eval-tag">Quiz</span>
+
+          <a class="eval-title" [routerLink]="['/teacher/courses', courseId(), 'evaluations', evaluation.id, 'edit']">
+            {{ evaluation.title }}
+          </a>
+
+          <span class="panel-muted eval-meta">
+            {{ evaluation._count.questions }} {{ evaluation._count.questions === 1 ? 'pregunta' : 'preguntas' }}
+            · aprueba con {{ evaluation.passingScore }}%
+          </span>
+
+          <span class="lesson-actions">
+            @if (confirmEvaluationId() === evaluation.id) {
+              <span class="confirm-text">¿Eliminar?</span>
+              <button
+                type="button"
+                class="panel-btn panel-btn--danger panel-btn--sm"
+                [disabled]="busy()"
+                (click)="removeEvaluation(evaluation)"
+              >
+                Sí
+              </button>
+              <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="confirmEvaluationId.set(null)">
+                No
+              </button>
+            } @else {
+              <a
+                class="panel-btn panel-btn--ghost panel-btn--sm"
+                [routerLink]="['/teacher/courses', courseId(), 'evaluations', evaluation.id, 'edit']"
+              >
+                Editar
+              </a>
+              <button type="button" class="panel-btn panel-btn--danger panel-btn--sm" (click)="confirmEvaluationId.set(evaluation.id)">
+                Eliminar
+              </button>
+            }
+          </span>
+        </li>
+      } @empty {
+        <li class="no-lessons panel-muted">Este módulo aún no tiene evaluaciones.</li>
+      }
+    </ul>
+
+    <a
+      class="panel-btn panel-btn--ghost add-lesson"
+      [routerLink]="['/teacher/courses', courseId(), 'modules', courseModule().id, 'evaluations', 'new']"
+    >
+      + Añadir evaluación
+    </a>
+  </section>
 </article>

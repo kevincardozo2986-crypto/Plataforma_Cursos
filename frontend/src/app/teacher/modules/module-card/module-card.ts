@@ -1,10 +1,12 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { moveItem } from '../../../core/utils/reorder';
+import { EvaluationSummary } from '../../evaluations/evaluations.models';
+import { TeacherEvaluationsService } from '../../evaluations/evaluations.service';
 import { Lesson } from '../../lessons/lessons.models';
 import { TeacherLessonsService } from '../../lessons/lessons.service';
 import { CourseModule } from '../modules.models';
@@ -23,6 +25,7 @@ import { TeacherModulesService } from '../modules.service';
 export class ModuleCard {
   private readonly modulesApi = inject(TeacherModulesService);
   private readonly lessonsApi = inject(TeacherLessonsService);
+  private readonly evaluationsApi = inject(TeacherEvaluationsService);
 
   readonly courseModule = input.required<CourseModule>();
   readonly courseId = input.required<number>();
@@ -36,6 +39,8 @@ export class ModuleCard {
   readonly editing = signal(false);
   readonly confirmDelete = signal(false);
   readonly confirmLessonId = signal<number | null>(null);
+  readonly evaluations = signal<EvaluationSummary[]>([]);
+  readonly confirmEvaluationId = signal<number | null>(null);
   readonly busy = signal(false);
   readonly error = signal('');
 
@@ -49,6 +54,41 @@ export class ModuleCard {
       validators: [Validators.maxLength(1000)],
     }),
   });
+
+  constructor() {
+    // Las evaluaciones no vienen con el curso: se piden al montar la tarjeta.
+    effect(() => {
+      const moduleId = this.courseModule().id;
+
+      untracked(() => this.loadEvaluations(moduleId));
+    });
+  }
+
+  private loadEvaluations(moduleId: number): void {
+    this.evaluationsApi.listByModule(moduleId).subscribe({
+      next: (list) => this.evaluations.set(list),
+      error: (error: unknown) =>
+        this.error.set(apiErrorMessage(error, 'No pudimos cargar las evaluaciones.')),
+    });
+  }
+
+  removeEvaluation(evaluation: EvaluationSummary): void {
+    this.error.set('');
+    this.busy.set(true);
+
+    this.evaluationsApi.remove(evaluation.id).subscribe({
+      next: () => {
+        this.evaluations.update((list) => list.filter((item) => item.id !== evaluation.id));
+        this.confirmEvaluationId.set(null);
+        this.busy.set(false);
+      },
+      error: (error: unknown) => {
+        this.confirmEvaluationId.set(null);
+        this.busy.set(false);
+        this.error.set(apiErrorMessage(error, 'No pudimos eliminar la evaluación.'));
+      },
+    });
+  }
 
   startEdit(): void {
     const current = this.courseModule();

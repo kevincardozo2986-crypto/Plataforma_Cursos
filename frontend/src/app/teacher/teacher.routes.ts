@@ -52,4 +52,18 @@ export const TEACHER_ROUTES: Routes = [
     loadComponent: () =>
       import('./lessons/lesson-form/lesson-form').then((m) => m.LessonForm),
   },
+
+  {
+    path: 'courses/:id/modules/:moduleId/evaluations/new',
+    title: 'Nueva evaluación',
+    loadComponent: () =>
+      import('./evaluations/evaluation-form/evaluation-form').then((m) => m.EvaluationForm),
+  },
+
+  {
+    path: 'courses/:id/evaluations/:evaluationId/edit',
+    title: 'Editar evaluación',
+    loadComponent: () =>
+      import('./evaluations/evaluation-form/evaluation-form').then((m) => m.EvaluationForm),
+  },
 ];

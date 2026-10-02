@@ -170,3 +170,61 @@ h2 {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.evaluations {
+  margin-top: 22px;
+  padding-top: 16px;
+
+  border-top: 1px dashed var(--p-border);
+}
+
+h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.eval-list {
+  margin: 0 0 12px;
+  padding: 0;
+
+  list-style: none;
+}
+
+.eval {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 4px;
+
+  border-top: 1px solid var(--p-border);
+}
+
+.eval-tag {
+  padding: 3px 10px;
+
+  color: var(--p-warn);
+  font-size: 0.74rem;
+  font-weight: 700;
+
+  background: var(--p-warn-soft);
+  border-radius: 999px;
+}
+
+.eval-title {
+  flex: 1 1 200px;
+  min-width: 0;
+
+  color: var(--p-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.eval-title:hover {
+  color: var(--p-accent);
+}
+
+.eval-meta {
+  font-size: 0.82rem;
+}
