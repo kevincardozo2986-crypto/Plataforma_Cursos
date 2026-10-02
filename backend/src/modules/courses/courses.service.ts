@@ -5,126 +5,87 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import { CourseStatus, Role } from '../../generated/prisma/enums.js';
 import { slugify } from '../../common/utils/slugify.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
-import { CourseAccessService } from './course-access.service.js';
+import { CategoriesService } from '../categories/categories.service.js';
+import { CourseAccessService } from '../course-access/course-access.service.js';
+import { CourseModulesService } from '../course-modules/course-modules.service.js';
+import { ProgressService } from '../progress/progress.service.js';
+import { CoursesRepository } from './courses.repository.js';
 import {
   CreateCourseDto,
   ListCoursesQueryDto,
   UpdateCourseDto,
 } from './dto/course.dto.js';
 
-const teacherSelect = { id: true, firstName: true, lastName: true } as const;
-
 @Injectable()
 export class CoursesService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: CoursesRepository,
     private readonly access: CourseAccessService,
+    private readonly categories: CategoriesService,
+    private readonly modules: CourseModulesService,
+    private readonly progress: ProgressService,
   ) {}
 
   async listPublished(query: ListCoursesQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 12;
 
-    const where = {
-      status: CourseStatus.PUBLISHED,
-      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
-      ...(query.level ? { level: query.level } : {}),
-      ...(query.search
-        ? {
-            OR: [
-              { title: { contains: query.search, mode: 'insensitive' as const } },
-              {
-                description: {
-                  contains: query.search,
-                  mode: 'insensitive' as const,
-                },
-              },
-            ],
-          }
-        : {}),
-    };
-
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.course.findMany({
-        where,
-        include: { category: true, teacher: { select: teacherSelect } },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.course.count({ where }),
-    ]);
+    const { data, total } = await this.repository.listPublished(
+      {
+        categoryId: query.categoryId,
+        level: query.level,
+        search: query.search,
+      },
+      (page - 1) * limit,
+      limit,
+    );
 
     return { data, total, page, limit };
   }
 
   async findPublished(id: number) {
-    const course = await this.prisma.course.findFirst({
-      where: { id, status: CourseStatus.PUBLISHED },
-      include: {
-        category: true,
-        teacher: { select: teacherSelect },
-        modules: {
-          orderBy: { position: 'asc' },
-          include: {
-            lessons: {
-              orderBy: { position: 'asc' },
-              select: { id: true, title: true, position: true },
-            },
-          },
-        },
-      },
-    });
+    const course = await this.repository.findPublishedById(id);
 
     if (!course) {
       throw new NotFoundException('El curso no existe');
     }
 
-    return course;
+    return { ...course, modules: await this.modules.outline(id) };
   }
 
   listManaged(user: AuthenticatedUser) {
-    return this.prisma.course.findMany({
-      where: user.role === Role.ADMIN ? {} : { teacherId: user.id },
-      include: { category: true, teacher: { select: teacherSelect } },
-      orderBy: { updatedAt: 'desc' },
-    });
+    return this.repository.listManaged(
+      user.role === Role.ADMIN ? undefined : user.id,
+    );
   }
 
   async findManaged(user: AuthenticatedUser, id: number) {
     await this.access.assertCanManage(user, id);
 
-    return this.prisma.course.findUniqueOrThrow({
-      where: { id },
-      include: {
-        category: true,
-        teacher: { select: teacherSelect },
-        modules: {
-          orderBy: { position: 'asc' },
-          include: { lessons: { orderBy: { position: 'asc' } } },
-        },
-      },
-    });
+    const course = await this.repository.findById(id);
+
+    if (!course) {
+      throw new NotFoundException('El curso no existe');
+    }
+
+    return { ...course, modules: await this.modules.outline(id, true) };
   }
 
   async create(user: AuthenticatedUser, dto: CreateCourseDto) {
     await this.assertCategoryExists(dto.categoryId);
 
-    return this.prisma.course.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        imageUrl: dto.imageUrl,
-        price: dto.price,
-        level: dto.level,
-        categoryId: dto.categoryId,
-        slug: await this.uniqueSlug(dto.title),
-        teacherId: user.id,
-      },
+    return this.repository.create({
+      title: dto.title,
+      description: dto.description,
+      imageUrl: dto.imageUrl,
+      price: dto.price,
+      level: dto.level,
+      categoryId: dto.categoryId,
+      slug: await this.uniqueSlug(dto.title),
+      teacherId: user.id,
     });
   }
 
@@ -132,16 +93,13 @@ export class CoursesService {
     await this.access.assertCanManage(user, id);
     await this.assertCategoryExists(dto.categoryId);
 
-    return this.prisma.course.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        imageUrl: dto.imageUrl,
-        price: dto.price,
-        level: dto.level,
-        categoryId: dto.categoryId,
-      },
+    return this.repository.update(id, {
+      title: dto.title,
+      description: dto.description,
+      imageUrl: dto.imageUrl,
+      price: dto.price,
+      level: dto.level,
+      categoryId: dto.categoryId,
     });
   }
 
@@ -152,35 +110,28 @@ export class CoursesService {
   ) {
     await this.access.assertCanManage(user, id);
 
-    if (status === CourseStatus.PUBLISHED) {
-      const modules = await this.prisma.courseModule.count({
-        where: { courseId: id },
-      });
-
-      if (modules === 0) {
-        throw new BadRequestException(
-          'El curso necesita al menos un módulo para publicarse',
-        );
-      }
+    if (
+      status === CourseStatus.PUBLISHED &&
+      (await this.modules.countByCourse(id)) === 0
+    ) {
+      throw new BadRequestException(
+        'El curso necesita al menos un módulo para publicarse',
+      );
     }
 
-    return this.prisma.course.update({ where: { id }, data: { status } });
+    return this.repository.updateStatus(id, status);
   }
 
   async remove(user: AuthenticatedUser, id: number) {
     await this.access.assertCanManage(user, id);
 
-    const enrollments = await this.prisma.enrollment.count({
-      where: { courseId: id },
-    });
-
-    if (enrollments > 0) {
+    if ((await this.progress.countEnrollments(id)) > 0) {
       throw new ConflictException(
         'El curso tiene estudiantes inscritos; archívalo en lugar de eliminarlo',
       );
     }
 
-    await this.prisma.course.delete({ where: { id } });
+    await this.repository.delete(id);
 
     return { deleted: true };
   }
@@ -190,12 +141,7 @@ export class CoursesService {
       return;
     }
 
-    const category = await this.prisma.category.findUnique({
-      where: { id: categoryId },
-      select: { id: true },
-    });
-
-    if (!category) {
+    if (!(await this.categories.exists(categoryId))) {
       throw new BadRequestException('La categoría no existe');
     }
   }
@@ -205,12 +151,7 @@ export class CoursesService {
     let slug = base;
     let suffix = 1;
 
-    while (
-      await this.prisma.course.findUnique({
-        where: { slug },
-        select: { id: true },
-      })
-    ) {
+    while (await this.repository.slugExists(slug)) {
       suffix += 1;
       slug = `${base}-${suffix}`;
     }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
-import { CourseAccessService } from '../courses/course-access.service.js';
+import { CourseAccessService } from '../course-access/course-access.service.js';
+import { CourseModulesRepository } from './course-modules.repository.js';
 import {
   CreateCourseModuleDto,
   UpdateCourseModuleDto,
@@ -11,23 +11,24 @@ import {
 @Injectable()
 export class CourseModulesService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: CourseModulesRepository,
     private readonly access: CourseAccessService,
   ) {}
 
   async listByCourse(user: AuthenticatedUser, courseId: number) {
     await this.access.assertCanView(user, courseId);
 
-    return this.prisma.courseModule.findMany({
-      where: { courseId },
-      orderBy: { position: 'asc' },
-      include: {
-        lessons: {
-          orderBy: { position: 'asc' },
-          select: { id: true, title: true, position: true, durationMinutes: true },
-        },
-      },
-    });
+    return this.repository.findByCourse(courseId);
+  }
+
+  /** Para otros módulos (courses): árbol de módulos y lecciones sin permisos. */
+  outline(courseId: number, fullLessons = false) {
+    return this.repository.findByCourse(courseId, fullLessons);
+  }
+
+  /** Para otros módulos (courses): ¿tiene contenido para publicarse? */
+  countByCourse(courseId: number) {
+    return this.repository.countByCourse(courseId);
   }
 
   async create(
@@ -37,15 +38,14 @@ export class CourseModulesService {
   ) {
     await this.access.assertCanManage(user, courseId);
 
-    const position = dto.position ?? (await this.nextPosition(courseId));
+    const position =
+      dto.position ?? (await this.repository.maxPosition(courseId)) + 1;
 
-    return this.prisma.courseModule.create({
-      data: {
-        courseId,
-        title: dto.title,
-        description: dto.description,
-        position,
-      },
+    return this.repository.create({
+      courseId,
+      title: dto.title,
+      description: dto.description,
+      position,
     });
   }
 
@@ -53,13 +53,10 @@ export class CourseModulesService {
     const courseId = await this.access.courseIdOfModule(id);
     await this.access.assertCanManage(user, courseId);
 
-    return this.prisma.courseModule.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        position: dto.position,
-      },
+    return this.repository.update(id, {
+      title: dto.title,
+      description: dto.description,
+      position: dto.position,
     });
   }
 
@@ -67,17 +64,8 @@ export class CourseModulesService {
     const courseId = await this.access.courseIdOfModule(id);
     await this.access.assertCanManage(user, courseId);
 
-    await this.prisma.courseModule.delete({ where: { id } });
+    await this.repository.delete(id);
 
     return { deleted: true };
-  }
-
-  private async nextPosition(courseId: number): Promise<number> {
-    const last = await this.prisma.courseModule.aggregate({
-      where: { courseId },
-      _max: { position: true },
-    });
-
-    return (last._max.position ?? 0) + 1;
   }
 }

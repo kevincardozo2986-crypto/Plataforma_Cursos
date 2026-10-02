@@ -5,19 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import {
   CourseStatus,
   EnrollmentStatus,
 } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
-import { CourseAccessService } from '../courses/course-access.service.js';
+import { CourseAccessService } from '../course-access/course-access.service.js';
+import { LessonsService } from '../lessons/lessons.service.js';
+import { ProgressRepository } from './progress.repository.js';
 
 @Injectable()
 export class ProgressService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: ProgressRepository,
     private readonly access: CourseAccessService,
+    private readonly lessons: LessonsService,
   ) {}
 
   // --- Inscripciones ---
@@ -29,51 +31,32 @@ export class ProgressService {
       throw new NotFoundException('El curso no existe');
     }
 
-    const existing = await this.prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId: user.id, courseId } },
-    });
+    const existing = await this.repository.findEnrollment(user.id, courseId);
 
     if (existing && existing.status !== EnrollmentStatus.CANCELLED) {
       throw new ConflictException('Ya estás inscrito en este curso');
     }
 
     if (existing) {
-      return this.prisma.enrollment.update({
-        where: { id: existing.id },
-        data: { status: EnrollmentStatus.ACTIVE, completedAt: null },
+      return this.repository.updateEnrollment(existing.id, {
+        status: EnrollmentStatus.ACTIVE,
+        completedAt: null,
       });
     }
 
-    return this.prisma.enrollment.create({
-      data: { userId: user.id, courseId },
-    });
+    return this.repository.createEnrollment(user.id, courseId);
   }
 
   async cancel(user: AuthenticatedUser, courseId: number) {
     const enrollment = await this.getEnrollmentOrThrow(user.id, courseId);
 
-    return this.prisma.enrollment.update({
-      where: { id: enrollment.id },
-      data: { status: EnrollmentStatus.CANCELLED },
+    return this.repository.updateEnrollment(enrollment.id, {
+      status: EnrollmentStatus.CANCELLED,
     });
   }
 
   async myEnrollments(user: AuthenticatedUser) {
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { userId: user.id, status: { not: EnrollmentStatus.CANCELLED } },
-      orderBy: { enrolledAt: 'desc' },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            imageUrl: true,
-            level: true,
-          },
-        },
-      },
-    });
+    const enrollments = await this.repository.findActiveByUser(user.id);
 
     return Promise.all(
       enrollments.map(async (enrollment) => ({
@@ -87,21 +70,27 @@ export class ProgressService {
   async courseEnrollments(user: AuthenticatedUser, courseId: number) {
     await this.access.assertCanManage(user, courseId);
 
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { courseId },
-      orderBy: { enrolledAt: 'desc' },
-      include: {
-        user: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-      },
-    });
+    const enrollments = await this.repository.findByCourse(courseId);
 
     return Promise.all(
       enrollments.map(async (enrollment) => ({
         ...enrollment,
         progress: await this.computeProgress(enrollment.id, courseId),
       })),
+    );
+  }
+
+  /** Para otros módulos: ¿hay estudiantes inscritos en este curso? */
+  async countEnrollments(courseId: number): Promise<number> {
+    return this.repository.countEnrollments(courseId);
+  }
+
+  /** Para otros módulos (evaluations): ¿el usuario está inscrito y activo? */
+  async isEnrolled(userId: number, courseId: number): Promise<boolean> {
+    const enrollment = await this.repository.findEnrollment(userId, courseId);
+
+    return (
+      enrollment !== null && enrollment.status !== EnrollmentStatus.CANCELLED
     );
   }
 
@@ -120,13 +109,7 @@ export class ProgressService {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     const enrollment = await this.getActiveEnrollment(user.id, courseId);
 
-    await this.prisma.lessonProgress.upsert({
-      where: {
-        enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId },
-      },
-      create: { enrollmentId: enrollment.id, lessonId },
-      update: {},
-    });
+    await this.repository.markLessonDone(enrollment.id, lessonId);
 
     const progress = await this.computeProgress(enrollment.id, courseId);
 
@@ -135,9 +118,9 @@ export class ProgressService {
       progress.completedLessons === progress.totalLessons &&
       enrollment.status !== EnrollmentStatus.COMPLETED
     ) {
-      await this.prisma.enrollment.update({
-        where: { id: enrollment.id },
-        data: { status: EnrollmentStatus.COMPLETED, completedAt: new Date() },
+      await this.repository.updateEnrollment(enrollment.id, {
+        status: EnrollmentStatus.COMPLETED,
+        completedAt: new Date(),
       });
     }
 
@@ -148,14 +131,12 @@ export class ProgressService {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     const enrollment = await this.getActiveEnrollment(user.id, courseId);
 
-    await this.prisma.lessonProgress.deleteMany({
-      where: { enrollmentId: enrollment.id, lessonId },
-    });
+    await this.repository.unmarkLesson(enrollment.id, lessonId);
 
     if (enrollment.status === EnrollmentStatus.COMPLETED) {
-      await this.prisma.enrollment.update({
-        where: { id: enrollment.id },
-        data: { status: EnrollmentStatus.ACTIVE, completedAt: null },
+      await this.repository.updateEnrollment(enrollment.id, {
+        status: EnrollmentStatus.ACTIVE,
+        completedAt: null,
       });
     }
 
@@ -165,15 +146,14 @@ export class ProgressService {
   // --- Internos ---
 
   private async computeProgress(enrollmentId: number, courseId: number) {
-    const [totalLessons, done] = await Promise.all([
-      this.prisma.lesson.count({ where: { module: { courseId } } }),
-      this.prisma.lessonProgress.findMany({
-        where: { enrollmentId, lesson: { module: { courseId } } },
-        select: { lessonId: true },
-      }),
-    ]);
+    const lessonIds = await this.lessons.idsByCourse(courseId);
+    const completedLessonIds = await this.repository.completedLessonIds(
+      enrollmentId,
+      lessonIds,
+    );
 
-    const completedLessons = done.length;
+    const totalLessons = lessonIds.length;
+    const completedLessons = completedLessonIds.length;
 
     return {
       totalLessons,
@@ -182,14 +162,12 @@ export class ProgressService {
         totalLessons === 0
           ? 0
           : Math.round((completedLessons / totalLessons) * 100),
-      completedLessonIds: done.map((d) => d.lessonId),
+      completedLessonIds,
     };
   }
 
   private async getEnrollmentOrThrow(userId: number, courseId: number) {
-    const enrollment = await this.prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId, courseId } },
-    });
+    const enrollment = await this.repository.findEnrollment(userId, courseId);
 
     if (!enrollment || enrollment.status === EnrollmentStatus.CANCELLED) {
       throw new NotFoundException('No estás inscrito en este curso');
@@ -199,9 +177,7 @@ export class ProgressService {
   }
 
   private async getActiveEnrollment(userId: number, courseId: number) {
-    const enrollment = await this.prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId, courseId } },
-    });
+    const enrollment = await this.repository.findEnrollment(userId, courseId);
 
     if (!enrollment || enrollment.status === EnrollmentStatus.CANCELLED) {
       throw new ForbiddenException(

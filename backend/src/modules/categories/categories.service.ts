@@ -4,25 +4,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import { slugify } from '../../common/utils/slugify.js';
+import { CategoriesRepository } from './categories.repository.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: CategoriesRepository) {}
 
   list() {
-    return this.prisma.category.findMany({
-      orderBy: { name: 'asc' },
-      include: {
-        _count: { select: { courses: { where: { status: 'PUBLISHED' } } } },
-      },
-    });
+    return this.repository.list();
   }
 
   async findOne(id: number) {
-    const category = await this.prisma.category.findUnique({ where: { id } });
+    const category = await this.repository.findById(id);
 
     if (!category) {
       throw new NotFoundException('La categoría no existe');
@@ -31,15 +26,18 @@ export class CategoriesService {
     return category;
   }
 
+  /** Para otros módulos (p. ej. courses) sin exponer la tabla. */
+  exists(id: number): Promise<boolean> {
+    return this.repository.exists(id);
+  }
+
   async create(dto: CreateCategoryDto) {
     await this.assertNameFree(dto.name);
 
-    return this.prisma.category.create({
-      data: {
-        name: dto.name,
-        description: dto.description,
-        slug: slugify(dto.name),
-      },
+    return this.repository.create({
+      name: dto.name,
+      description: dto.description,
+      slug: slugify(dto.name),
     });
   }
 
@@ -50,13 +48,10 @@ export class CategoriesService {
       await this.assertNameFree(dto.name, id);
     }
 
-    return this.prisma.category.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        description: dto.description,
-        ...(dto.name ? { slug: slugify(dto.name) } : {}),
-      },
+    return this.repository.update(id, {
+      name: dto.name,
+      description: dto.description,
+      ...(dto.name ? { slug: slugify(dto.name) } : {}),
     });
   }
 
@@ -64,21 +59,17 @@ export class CategoriesService {
     await this.findOne(id);
 
     // Los cursos de la categoría quedan sin categoría (onDelete: SetNull).
-    await this.prisma.category.delete({ where: { id } });
+    await this.repository.delete(id);
 
     return { deleted: true };
   }
 
   private async assertNameFree(name: string, exceptId?: number) {
-    const slug = slugify(name);
-
-    const clash = await this.prisma.category.findFirst({
-      where: {
-        OR: [{ name }, { slug }],
-        ...(exceptId ? { NOT: { id: exceptId } } : {}),
-      },
-      select: { id: true },
-    });
+    const clash = await this.repository.findClash(
+      name,
+      slugify(name),
+      exceptId,
+    );
 
     if (clash) {
       throw new ConflictException('Ya existe una categoría con ese nombre');

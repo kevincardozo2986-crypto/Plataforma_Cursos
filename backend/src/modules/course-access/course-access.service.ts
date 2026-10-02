@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import { CourseStatus, Role } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
+import { CourseAccessRepository } from './course-access.repository.js';
 
 /**
  * Reglas de acceso compartidas por courses, modules, lessons, resources,
@@ -14,13 +14,10 @@ import type { AuthenticatedUser } from '../../common/interfaces/authenticated-re
  */
 @Injectable()
 export class CourseAccessService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: CourseAccessRepository) {}
 
   async getCourseOrThrow(courseId: number) {
-    const course = await this.prisma.course.findUnique({
-      where: { id: courseId },
-      select: { id: true, teacherId: true, status: true },
-    });
+    const course = await this.repository.findCourseBasics(courseId);
 
     if (!course) {
       throw new NotFoundException('El curso no existe');
@@ -29,10 +26,7 @@ export class CourseAccessService {
     return course;
   }
 
-  canManage(
-    user: AuthenticatedUser,
-    course: { teacherId: number },
-  ): boolean {
+  canManage(user: AuthenticatedUser, course: { teacherId: number }): boolean {
     return (
       user.role === Role.ADMIN ||
       (user.role === Role.TEACHER && course.teacherId === user.id)
@@ -66,54 +60,38 @@ export class CourseAccessService {
   }
 
   async courseIdOfModule(moduleId: number): Promise<number> {
-    const found = await this.prisma.courseModule.findUnique({
-      where: { id: moduleId },
-      select: { courseId: true },
-    });
-
-    if (!found) {
-      throw new NotFoundException('El módulo no existe');
-    }
-
-    return found.courseId;
+    return this.orNotFound(
+      await this.repository.courseIdOfModule(moduleId),
+      'El módulo no existe',
+    );
   }
 
   async courseIdOfLesson(lessonId: number): Promise<number> {
-    const found = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      select: { module: { select: { courseId: true } } },
-    });
-
-    if (!found) {
-      throw new NotFoundException('La lección no existe');
-    }
-
-    return found.module.courseId;
+    return this.orNotFound(
+      await this.repository.courseIdOfLesson(lessonId),
+      'La lección no existe',
+    );
   }
 
   async courseIdOfResource(resourceId: number): Promise<number> {
-    const found = await this.prisma.resource.findUnique({
-      where: { id: resourceId },
-      select: { lesson: { select: { module: { select: { courseId: true } } } } },
-    });
-
-    if (!found) {
-      throw new NotFoundException('El recurso no existe');
-    }
-
-    return found.lesson.module.courseId;
+    return this.orNotFound(
+      await this.repository.courseIdOfResource(resourceId),
+      'El recurso no existe',
+    );
   }
 
   async courseIdOfEvaluation(evaluationId: number): Promise<number> {
-    const found = await this.prisma.evaluation.findUnique({
-      where: { id: evaluationId },
-      select: { module: { select: { courseId: true } } },
-    });
+    return this.orNotFound(
+      await this.repository.courseIdOfEvaluation(evaluationId),
+      'La evaluación no existe',
+    );
+  }
 
-    if (!found) {
-      throw new NotFoundException('La evaluación no existe');
+  private orNotFound(courseId: number | null, message: string): number {
+    if (courseId === null) {
+      throw new NotFoundException(message);
     }
 
-    return found.module.courseId;
+    return courseId;
   }
 }

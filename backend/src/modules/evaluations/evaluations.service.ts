@@ -5,33 +5,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
-import { EnrollmentStatus } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
-import { CourseAccessService } from '../courses/course-access.service.js';
+import { CourseAccessService } from '../course-access/course-access.service.js';
+import { ProgressService } from '../progress/progress.service.js';
 import {
   CreateEvaluationDto,
   QuestionDto,
   SubmitAttemptDto,
   UpdateEvaluationDto,
 } from './dto/evaluation.dto.js';
+import { EvaluationsRepository } from './evaluations.repository.js';
+import { scoreAttempt } from './scoring.js';
 
 @Injectable()
 export class EvaluationsService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: EvaluationsRepository,
     private readonly access: CourseAccessService,
+    private readonly progress: ProgressService,
   ) {}
 
   async listByModule(user: AuthenticatedUser, moduleId: number) {
     const courseId = await this.access.courseIdOfModule(moduleId);
     await this.access.assertCanView(user, courseId);
 
-    return this.prisma.evaluation.findMany({
-      where: { moduleId },
-      orderBy: { id: 'asc' },
-      include: { _count: { select: { questions: true } } },
-    });
+    return this.repository.findByModule(moduleId);
   }
 
   /** Los estudiantes no ven cuáles opciones son correctas. */
@@ -40,20 +38,7 @@ export class EvaluationsService {
     const course = await this.access.assertCanView(user, courseId);
     const reveal = this.access.canManage(user, course);
 
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
-      include: {
-        questions: {
-          orderBy: { position: 'asc' },
-          include: {
-            options: {
-              orderBy: { id: 'asc' },
-              select: { id: true, text: true, isCorrect: reveal },
-            },
-          },
-        },
-      },
-    });
+    const evaluation = await this.repository.findForView(id, reveal);
 
     if (!evaluation) {
       throw new NotFoundException('La evaluación no existe');
@@ -71,16 +56,15 @@ export class EvaluationsService {
     await this.access.assertCanManage(user, courseId);
     this.assertValidQuestions(dto.questions);
 
-    return this.prisma.evaluation.create({
-      data: {
+    return this.repository.create(
+      {
         moduleId,
         title: dto.title,
         description: dto.description,
         passingScore: dto.passingScore,
-        questions: { create: this.toQuestionCreate(dto.questions) },
       },
-      include: { questions: { include: { options: true } } },
-    });
+      this.toQuestionCreate(dto.questions),
+    );
   }
 
   async update(user: AuthenticatedUser, id: number, dto: UpdateEvaluationDto) {
@@ -91,31 +75,22 @@ export class EvaluationsService {
       this.assertValidQuestions(dto.questions);
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      if (dto.questions) {
-        await tx.question.deleteMany({ where: { evaluationId: id } });
-      }
-
-      return tx.evaluation.update({
-        where: { id },
-        data: {
-          title: dto.title,
-          description: dto.description,
-          passingScore: dto.passingScore,
-          ...(dto.questions
-            ? { questions: { create: this.toQuestionCreate(dto.questions) } }
-            : {}),
-        },
-        include: { questions: { include: { options: true } } },
-      });
-    });
+    return this.repository.update(
+      id,
+      {
+        title: dto.title,
+        description: dto.description,
+        passingScore: dto.passingScore,
+      },
+      dto.questions ? this.toQuestionCreate(dto.questions) : undefined,
+    );
   }
 
   async remove(user: AuthenticatedUser, id: number) {
     const courseId = await this.access.courseIdOfEvaluation(id);
     await this.access.assertCanManage(user, courseId);
 
-    await this.prisma.evaluation.delete({ where: { id } });
+    await this.repository.delete(id);
 
     return { deleted: true };
   }
@@ -128,21 +103,17 @@ export class EvaluationsService {
     const courseId = await this.access.courseIdOfEvaluation(evaluationId);
     await this.access.assertCanView(user, courseId);
 
-    const enrollment = await this.prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId: user.id, courseId } },
-      select: { status: true },
-    });
-
-    if (!enrollment || enrollment.status === EnrollmentStatus.CANCELLED) {
+    if (!(await this.progress.isEnrolled(user.id, courseId))) {
       throw new ForbiddenException(
         'Debes estar inscrito en el curso para presentar la evaluación',
       );
     }
 
-    const evaluation = await this.prisma.evaluation.findUniqueOrThrow({
-      where: { id: evaluationId },
-      include: { questions: { include: { options: true } } },
-    });
+    const evaluation = await this.repository.findWithAnswers(evaluationId);
+
+    if (!evaluation) {
+      throw new NotFoundException('La evaluación no existe');
+    }
 
     const chosen = new Map<number, number>();
 
@@ -172,43 +143,36 @@ export class EvaluationsService {
       chosen.set(answer.questionId, answer.optionId);
     }
 
-    const totalPoints = evaluation.questions.reduce((sum, q) => sum + q.points, 0);
-    const earnedPoints = evaluation.questions.reduce((sum, q) => {
-      const optionId = chosen.get(q.id);
-      const correct = q.options.find((o) => o.isCorrect);
-
-      return optionId !== undefined && correct?.id === optionId
-        ? sum + q.points
-        : sum;
-    }, 0);
-
-    const score = totalPoints === 0 ? 0 : Math.round((earnedPoints / totalPoints) * 100);
+    const { score, earnedPoints, totalPoints } = scoreAttempt(
+      evaluation.questions,
+      chosen,
+    );
     const passed = score >= evaluation.passingScore;
 
-    const attempt = await this.prisma.evaluationAttempt.create({
-      data: {
-        evaluationId,
-        userId: user.id,
-        score,
-        passed,
-        answers: dto.answers.map((a) => ({
-          questionId: a.questionId,
-          optionId: a.optionId,
-        })),
-      },
+    const attempt = await this.repository.createAttempt({
+      evaluationId,
+      userId: user.id,
+      score,
+      passed,
+      answers: dto.answers.map((a) => ({
+        questionId: a.questionId,
+        optionId: a.optionId,
+      })),
     });
 
-    return { ...attempt, earnedPoints, totalPoints, passingScore: evaluation.passingScore };
+    return {
+      ...attempt,
+      earnedPoints,
+      totalPoints,
+      passingScore: evaluation.passingScore,
+    };
   }
 
   async myAttempts(user: AuthenticatedUser, evaluationId: number) {
     const courseId = await this.access.courseIdOfEvaluation(evaluationId);
     await this.access.assertCanView(user, courseId);
 
-    return this.prisma.evaluationAttempt.findMany({
-      where: { evaluationId, userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.repository.findAttempts(evaluationId, user.id);
   }
 
   private assertValidQuestions(questions: QuestionDto[]) {
