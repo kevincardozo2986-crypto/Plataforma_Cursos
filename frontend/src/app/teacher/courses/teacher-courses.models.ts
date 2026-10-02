@@ -1,4 +1,5 @@
 import { CourseStatus } from '../../shared/ui/status-badge/status-badge';
+import { CourseModule } from '../modules/modules.models';
 
 export type { CourseStatus };
 export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
@@ -27,6 +28,11 @@ export interface TeacherCourse {
   teacher?: { id: number; firstName: string; lastName: string };
   createdAt: string;
   updatedAt: string;
+}
+
+/** Curso con su árbol de contenido (GET /courses/manage/:id). */
+export interface CourseWithContent extends TeacherCourse {
+  modules: CourseModule[];
 }
 
 export interface CategoryOption {

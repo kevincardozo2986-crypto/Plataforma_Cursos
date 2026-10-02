@@ -1,0 +1,103 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <app-page-header
+      [title]="isEdit ? 'Editar lección' : 'Nueva lección'"
+      [subtitle]="isEdit ? 'Actualiza el contenido de la lección.' : 'Escribe el contenido de la lección.'"
+    >
+      <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'content']">
+        Volver al contenido
+      </a>
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando lección…</p></div>
+    } @else if (isEdit && !lesson()) {
+      <div class="panel-card"><p class="panel-muted">No se encontró la lección.</p></div>
+    } @else {
+      <div class="stack">
+        <form class="panel-card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="panel-field">
+            <label for="title">Título</label>
+            <input
+              id="title"
+              class="panel-input"
+              type="text"
+              formControlName="title"
+              placeholder="Ej. ¿Qué es una variable?"
+              [attr.aria-invalid]="errorOf('title') ? 'true' : null"
+            />
+            @if (errorOf('title')) {
+              <p class="panel-field-error">{{ errorOf('title') }}</p>
+            }
+          </div>
+
+          <div class="panel-field">
+            <label for="content">Contenido</label>
+            <textarea
+              id="content"
+              class="panel-textarea tall"
+              formControlName="content"
+              placeholder="Explica el tema de la lección."
+            ></textarea>
+          </div>
+
+          <div class="row">
+            <div class="panel-field">
+              <label for="videoUrl">Video (URL, opcional)</label>
+              <input
+                id="videoUrl"
+                class="panel-input"
+                type="url"
+                formControlName="videoUrl"
+                placeholder="https://…"
+                [attr.aria-invalid]="errorOf('videoUrl') ? 'true' : null"
+              />
+              @if (errorOf('videoUrl')) {
+                <p class="panel-field-error">{{ errorOf('videoUrl') }}</p>
+              }
+            </div>
+
+            <div class="panel-field">
+              <label for="durationMinutes">Duración en minutos (opcional)</label>
+              <input
+                id="durationMinutes"
+                class="panel-input"
+                type="number"
+                min="1"
+                formControlName="durationMinutes"
+                [attr.aria-invalid]="errorOf('durationMinutes') ? 'true' : null"
+              />
+              @if (errorOf('durationMinutes')) {
+                <p class="panel-field-error">{{ errorOf('durationMinutes') }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="footer">
+            <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'content']">
+              Cancelar
+            </a>
+            <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear lección' }}
+            </button>
+          </div>
+        </form>
+
+        @if (lesson(); as current) {
+          <app-resource-panel [lessonId]="current.id" [initial]="current.resources" />
+        } @else {
+          <p class="panel-muted hint">
+            Guarda la lección para poder añadirle recursos (PDF, enlaces, videos…).
+          </p>
+        }
+      </div>
+    }
+  </div>
+</section>

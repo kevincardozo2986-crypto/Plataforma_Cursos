@@ -31,4 +31,25 @@ export const TEACHER_ROUTES: Routes = [
     loadComponent: () =>
       import('./courses/course-form/course-form').then((m) => m.CourseForm),
   },
+
+  {
+    path: 'courses/:id/content',
+    title: 'Contenido del curso',
+    loadComponent: () =>
+      import('./courses/course-content/course-content').then((m) => m.CourseContent),
+  },
+
+  {
+    path: 'courses/:id/modules/:moduleId/lessons/new',
+    title: 'Nueva lección',
+    loadComponent: () =>
+      import('./lessons/lesson-form/lesson-form').then((m) => m.LessonForm),
+  },
+
+  {
+    path: 'courses/:id/lessons/:lessonId/edit',
+    title: 'Editar lección',
+    loadComponent: () =>
+      import('./lessons/lesson-form/lesson-form').then((m) => m.LessonForm),
+  },
 ];

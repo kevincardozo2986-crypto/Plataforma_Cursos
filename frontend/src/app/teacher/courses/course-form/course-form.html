@@ -142,9 +142,11 @@
               </div>
             </dl>
 
+            <a class="panel-btn panel-btn--primary" [routerLink]="['/teacher/courses', current.id, 'content']">
+              Gestionar contenido
+            </a>
             <p class="panel-hint">
-              Para publicar el curso necesita al menos un módulo. Cámbialo de estado desde
-              <a routerLink="/teacher/courses">Mis cursos</a>.
+              Añade módulos y lecciones. Para publicar el curso necesita al menos un módulo.
             </p>
           } @else {
             <p class="panel-hint">El curso se crea en borrador; podrás publicarlo cuando esté listo.</p>

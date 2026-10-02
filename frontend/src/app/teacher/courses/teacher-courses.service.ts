@@ -6,6 +6,7 @@ import {
   CategoryOption,
   CourseInput,
   CourseStatus,
+  CourseWithContent,
   TeacherCourse,
 } from './teacher-courses.models';
 
@@ -18,8 +19,9 @@ export class TeacherCoursesService {
     return this.http.get<TeacherCourse[]>('/api/courses/manage');
   }
 
-  get(id: number): Observable<TeacherCourse> {
-    return this.http.get<TeacherCourse>(`/api/courses/manage/${id}`);
+  /** El mismo endpoint trae también módulos y lecciones. */
+  get(id: number): Observable<CourseWithContent> {
+    return this.http.get<CourseWithContent>(`/api/courses/manage/${id}`);
   }
 
   create(input: CourseInput): Observable<TeacherCourse> {
