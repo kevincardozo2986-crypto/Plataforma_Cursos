@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { roleGuard } from './core/auth/role.guard';
+
 export const routes: Routes = [
   {
     // Todas las páginas comparten el mismo encabezado (MainLayout).
@@ -28,6 +30,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/auth/pages/register/register-page')
             .then((m) => m.RegisterPage),
+      },
+
+      {
+        path: 'teacher',
+        canActivate: [roleGuard('TEACHER', 'ADMIN')],
+        loadChildren: () =>
+          import('./teacher/teacher.routes').then((m) => m.TEACHER_ROUTES),
+      },
+
+      {
+        path: 'admin',
+        canActivate: [roleGuard('ADMIN')],
+        loadChildren: () =>
+          import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },
     ],
   },

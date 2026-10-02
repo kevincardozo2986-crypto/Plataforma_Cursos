@@ -34,6 +34,10 @@ import {
 } from '../../../../core/auth/auth.models';
 
 import {
+  homeFor,
+} from '../../../../core/auth/role-home';
+
+import {
   LoginForm,
 } from '../../components/login-form/login-form';
 
@@ -108,7 +112,7 @@ export class LoginPage {
            ============================= */
 
         next: () => {
-          this.router.navigate(['/']);
+          this.router.navigate(homeFor(this.auth.user()?.role));
         },
 
         /* =============================

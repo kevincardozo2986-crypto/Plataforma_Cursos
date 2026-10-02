@@ -2,11 +2,18 @@
   <div class="bar">
     <a class="brand" routerLink="/" (click)="closeMenu()" aria-label="Ir al inicio">
       <img
-        class="campus-logo"
+        class="campus-logo campus-logo--light"
         src="/images/campus-virtual-logo.png"
         alt="Campus Virtual Universidad Santo Tomás"
         width="2560"
         height="743"
+      />
+      <img
+        class="campus-logo campus-logo--dark"
+        src="/images/campus-virtual-logo-white.png"
+        alt="Campus Virtual Universidad Santo Tomás"
+        width="1285"
+        height="352"
       />
     </a>
 
@@ -18,7 +25,7 @@
             [routerLink]="link.route"
             [fragment]="link.fragment"
             routerLinkActive="is-active"
-            [routerLinkActiveOptions]="matchOptions"
+            [routerLinkActiveOptions]="link.prefix ? prefixMatchOptions : matchOptions"
             ariaCurrentWhenActive="page"
           >
             {{ link.label }}

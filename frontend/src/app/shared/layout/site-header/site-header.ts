@@ -26,6 +26,14 @@ export class SiteHeader {
     fragment: 'exact',
   } as const;
 
+  /** Para enlaces con subrutas: activo también en /teacher/courses/new, etc. */
+  readonly prefixMatchOptions = {
+    paths: 'subset',
+    queryParams: 'ignored',
+    matrixParams: 'ignored',
+    fragment: 'ignored',
+  } as const;
+
   readonly links = computed(() => headerLinksFor(this.auth.user()?.role ?? null));
 
   readonly roleLabel = computed(() => {

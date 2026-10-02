@@ -7,6 +7,8 @@ export interface HeaderLink {
   fragment?: string;
   /** Página todavía no implementada: se muestra deshabilitada. */
   soon?: boolean;
+  /** Se marca activo también en sus subrutas (p. ej. /teacher/courses/new). */
+  prefix?: boolean;
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -29,9 +31,17 @@ export function headerLinksFor(role: UserRole | null): HeaderLink[] {
     case 'STUDENT':
       return [...common, { label: 'Mis cursos', soon: true }];
     case 'TEACHER':
-      return [...common, { label: 'Mis cursos creados', soon: true }];
+      return [
+        ...common,
+        { label: 'Panel', route: '/teacher/dashboard', prefix: true },
+        { label: 'Mis cursos', route: '/teacher/courses', prefix: true },
+      ];
     case 'ADMIN':
-      return [...common, { label: 'Usuarios', soon: true }];
+      return [
+        ...common,
+        { label: 'Gestionar cursos', route: '/teacher/courses', prefix: true },
+        { label: 'Usuarios', soon: true },
+      ];
     default:
       return common;
   }
