@@ -1,0 +1,60 @@
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  margin-bottom: 18px;
+  padding: 16px 20px;
+}
+
+.status-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-info span {
+  font-size: 0.9rem;
+}
+
+.modules {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.short {
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

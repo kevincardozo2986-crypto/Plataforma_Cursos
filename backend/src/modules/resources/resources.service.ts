@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma.service.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
-import { CourseAccessService } from '../courses/course-access.service.js';
+import { CourseAccessService } from '../course-access/course-access.service.js';
 import { CreateResourceDto, UpdateResourceDto } from './dto/resource.dto.js';
+import { ResourcesRepository } from './resources.repository.js';
 
 @Injectable()
 export class ResourcesService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: ResourcesRepository,
     private readonly access: CourseAccessService,
   ) {}
 
@@ -16,10 +16,7 @@ export class ResourcesService {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     await this.access.assertCanView(user, courseId);
 
-    return this.prisma.resource.findMany({
-      where: { lessonId },
-      orderBy: { id: 'asc' },
-    });
+    return this.repository.findByLesson(lessonId);
   }
 
   async create(
@@ -30,8 +27,11 @@ export class ResourcesService {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     await this.access.assertCanManage(user, courseId);
 
-    return this.prisma.resource.create({
-      data: { lessonId, title: dto.title, type: dto.type, url: dto.url },
+    return this.repository.create({
+      lessonId,
+      title: dto.title,
+      type: dto.type,
+      url: dto.url,
     });
   }
 
@@ -39,9 +39,10 @@ export class ResourcesService {
     const courseId = await this.access.courseIdOfResource(id);
     await this.access.assertCanManage(user, courseId);
 
-    return this.prisma.resource.update({
-      where: { id },
-      data: { title: dto.title, type: dto.type, url: dto.url },
+    return this.repository.update(id, {
+      title: dto.title,
+      type: dto.type,
+      url: dto.url,
     });
   }
 
@@ -49,7 +50,7 @@ export class ResourcesService {
     const courseId = await this.access.courseIdOfResource(id);
     await this.access.assertCanManage(user, courseId);
 
-    await this.prisma.resource.delete({ where: { id } });
+    await this.repository.delete(id);
 
     return { deleted: true };
   }

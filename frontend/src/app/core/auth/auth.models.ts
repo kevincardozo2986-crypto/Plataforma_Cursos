@@ -7,9 +7,13 @@ export interface LoginSubmission extends LoginCredentials {
   remember: boolean;
 }
 
+export type UserRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
+
 export interface AuthUser {
   firstName: string;
+  lastName?: string;
   email: string;
+  role?: UserRole;
 }
 
 export interface LoginResponse {

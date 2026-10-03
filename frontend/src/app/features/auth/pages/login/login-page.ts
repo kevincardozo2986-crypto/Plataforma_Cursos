@@ -34,8 +34,8 @@ import {
 } from '../../../../core/auth/auth.models';
 
 import {
-  CampusBrand,
-} from '../../components/campus-brand/campus-brand';
+  homeFor,
+} from '../../../../core/auth/role-home';
 
 import {
   LoginForm,
@@ -54,7 +54,6 @@ import {
 
   imports: [
     TranslatePipe,
-    CampusBrand,
     LoginHeader,
     LoginForm,
     LoginLinks,
@@ -113,7 +112,7 @@ export class LoginPage {
            ============================= */
 
         next: () => {
-          this.router.navigate(['/']);
+          this.router.navigate(homeFor(this.auth.user()?.role));
         },
 
         /* =============================

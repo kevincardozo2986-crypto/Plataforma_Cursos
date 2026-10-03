@@ -1,0 +1,158 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <app-page-header
+      [title]="isEdit ? 'Editar curso' : 'Nuevo curso'"
+      [subtitle]="isEdit ? 'Actualiza la información del curso.' : 'Completa los datos para crear un curso en borrador.'"
+    >
+      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando curso…</p></div>
+    } @else if (isEdit && !course()) {
+      <div class="panel-card"><p class="panel-muted">No se encontró el curso.</p></div>
+    } @else {
+      <div class="layout">
+        <form class="panel-card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="panel-field">
+            <label for="title">Título</label>
+            <input
+              id="title"
+              class="panel-input"
+              type="text"
+              formControlName="title"
+              placeholder="Ej. Introducción a la programación"
+              [attr.aria-invalid]="errorOf('title') ? 'true' : null"
+              aria-describedby="title-error"
+            />
+            @if (errorOf('title')) {
+              <p id="title-error" class="panel-field-error">{{ errorOf('title') }}</p>
+            }
+          </div>
+
+          <div class="panel-field">
+            <label for="description">Descripción</label>
+            <textarea
+              id="description"
+              class="panel-textarea"
+              formControlName="description"
+              placeholder="¿Qué aprenderán los estudiantes?"
+              [attr.aria-invalid]="errorOf('description') ? 'true' : null"
+              aria-describedby="description-error"
+            ></textarea>
+            @if (errorOf('description')) {
+              <p id="description-error" class="panel-field-error">{{ errorOf('description') }}</p>
+            }
+          </div>
+
+          <div class="row">
+            <div class="panel-field">
+              <label for="price">Precio</label>
+              <input
+                id="price"
+                class="panel-input"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                formControlName="price"
+                placeholder="0.00"
+                [attr.aria-invalid]="errorOf('price') ? 'true' : null"
+                aria-describedby="price-error"
+              />
+              @if (errorOf('price')) {
+                <p id="price-error" class="panel-field-error">{{ errorOf('price') }}</p>
+              } @else {
+                <p class="panel-hint">Usa 0 para un curso gratuito.</p>
+              }
+            </div>
+
+            <div class="panel-field">
+              <label for="level">Nivel</label>
+              <select id="level" class="panel-select" formControlName="level">
+                @for (level of levels; track level) {
+                  <option [value]="level">{{ levelLabels[level] }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="panel-field">
+              <label for="category">Categoría</label>
+              <select id="category" class="panel-select" formControlName="categoryId">
+                @if (canClearCategory()) {
+                  <option [ngValue]="null">Sin categoría</option>
+                }
+                @for (category of categories(); track category.id) {
+                  <option [ngValue]="category.id">{{ category.name }}</option>
+                }
+              </select>
+              @if (categories().length === 0) {
+                <p class="panel-hint">Aún no hay categorías creadas.</p>
+              }
+            </div>
+          </div>
+
+          <div class="panel-field">
+            <label for="imageUrl">Imagen de portada (URL, opcional)</label>
+            <input
+              id="imageUrl"
+              class="panel-input"
+              type="url"
+              formControlName="imageUrl"
+              placeholder="https://…"
+              [attr.aria-invalid]="errorOf('imageUrl') ? 'true' : null"
+              aria-describedby="imageUrl-error"
+            />
+            @if (errorOf('imageUrl')) {
+              <p id="imageUrl-error" class="panel-field-error">{{ errorOf('imageUrl') }}</p>
+            }
+          </div>
+
+          <div class="footer">
+            <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Cancelar</a>
+            <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear curso' }}
+            </button>
+          </div>
+        </form>
+
+        <aside class="panel-card side">
+          @if (imagePreview()) {
+            <img class="cover" [src]="imagePreview()" alt="Vista previa de la portada" />
+          } @else {
+            <div class="cover placeholder" aria-hidden="true">Sin portada</div>
+          }
+
+          @if (course(); as current) {
+            <dl class="facts">
+              <div>
+                <dt>Estado</dt>
+                <dd><app-status-badge [status]="current.status" /></dd>
+              </div>
+              <div>
+                <dt>Dirección</dt>
+                <dd class="slug">{{ current.slug }}</dd>
+              </div>
+            </dl>
+
+            <a class="panel-btn panel-btn--primary" [routerLink]="['/teacher/courses', current.id, 'content']">
+              Gestionar contenido
+            </a>
+            <p class="panel-hint">
+              Añade módulos y lecciones. Para publicar el curso necesita al menos un módulo.
+            </p>
+          } @else {
+            <p class="panel-hint">El curso se crea en borrador; podrás publicarlo cuando esté listo.</p>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>

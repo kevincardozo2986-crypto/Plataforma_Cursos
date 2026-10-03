@@ -4,16 +4,13 @@
 
     <div class="campus-overlay" aria-hidden="true"></div>
 
-    <!-- Marca USTA -->
-    <header class="topbar">
-        <app-campus-brand />
-    </header>
-
     <!-- Card -->
     <section class="register-card" aria-labelledby="register-title">
         <!-- Header del formulario -->
         <header class="register-header">
-            <img class="campus-logo" src="/images/campus-virtual-logo.png"
+            <img class="campus-logo campus-logo--light" src="/images/campus-virtual-logo.png"
+                [alt]="'Campus Virtual · Universidad Santo Tomás' | t" />
+            <img class="campus-logo campus-logo--dark" src="/images/campus-virtual-logo-white.png"
                 [alt]="'Campus Virtual · Universidad Santo Tomás' | t" />
 
             <div class="header-copy">

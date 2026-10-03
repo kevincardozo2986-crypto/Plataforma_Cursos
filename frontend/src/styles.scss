@@ -1,4 +1,7 @@
-﻿* {
+﻿@use './panel';
+@use './app/home/home-dark';
+
+* {
   box-sizing: border-box;
 }
 html,
@@ -75,10 +78,10 @@ html:is(.a11y-dark, .a11y-contrast)
 html.a11y-dark .login-card :is(.text-link, .action-link) {
   color: #99ceff;
 }
-html.a11y-dark .campus-logo {
-  background: #fff;
-  border-radius: 8px;
-  padding: 8px;
+/* Logo: se muestra solo la variante del tema activo (clara u oscura). */
+html:not(.a11y-dark) img.campus-logo--dark,
+html.a11y-dark img.campus-logo--light {
+  display: none !important;
 }
 html:is(.a11y-dark, .a11y-contrast) .login-card .error-message {
   color: #8d1722;

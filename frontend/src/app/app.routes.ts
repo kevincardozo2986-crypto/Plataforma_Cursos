@@ -1,25 +1,51 @@
 import { Routes } from '@angular/router';
 
+import { roleGuard } from './core/auth/role.guard';
+
 export const routes: Routes = [
   {
+    // Todas las páginas comparten el mismo encabezado (MainLayout).
     path: '',
     loadComponent: () =>
-      import('./home/pages/home-page')
-        .then((m) => m.HomePage),
-  },
+      import('./shared/layout/main-layout/main-layout')
+        .then((m) => m.MainLayout),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./home/pages/home-page')
+            .then((m) => m.HomePage),
+      },
 
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./features/auth/pages/login/login-page')
-        .then((m) => m.LoginPage),
-  },
+      {
+        path: 'login',
+        loadComponent: () =>
+          import('./features/auth/pages/login/login-page')
+            .then((m) => m.LoginPage),
+      },
 
-  {
-    path: 'register',
-    loadComponent: () =>
-      import('./features/auth/pages/register/register-page')
-        .then((m) => m.RegisterPage),
+      {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/auth/pages/register/register-page')
+            .then((m) => m.RegisterPage),
+      },
+
+      {
+        path: 'teacher',
+        canActivate: [roleGuard('TEACHER', 'ADMIN')],
+        loadChildren: () =>
+          import('./teacher/teacher.routes').then((m) => m.TEACHER_ROUTES),
+      },
+
+      {
+        path: 'admin',
+        canActivate: [roleGuard('ADMIN')],
+        loadChildren: () =>
+          import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+      },
+    ],
   },
 
   {

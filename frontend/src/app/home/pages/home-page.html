@@ -1,11 +1,16 @@
 <main class="home-page">
 
-  <app-navbar />
-
   <app-hero />
 
   <app-learning-journey />
 
-  <app-categories-explorer id="courses" />
+  <app-courses-section
+    id="courses"
+    [courses]="courses()"
+    [loading]="coursesLoading()"
+    [error]="coursesError()"
+  />
+
+  <app-categories-explorer id="categories" />
 
 </main>

@@ -1,0 +1,127 @@
+<section class="panel-page">
+  <div class="panel-container">
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando contenido…</p></div>
+    } @else if (!course()) {
+      @if (error()) {
+        <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+      }
+      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
+    } @else {
+      @if (course(); as current) {
+        <app-page-header
+          [title]="current.title"
+          [subtitle]="modules().length + ' módulos · ' + lessonCount() + ' lecciones'"
+        >
+          <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Mis cursos</a>
+          <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', current.id, 'edit']">
+            Datos del curso
+          </a>
+        </app-page-header>
+
+        <div class="status-bar panel-card">
+          <div class="status-info">
+            <app-status-badge [status]="current.status" />
+            @if (current.status === 'PUBLISHED') {
+              <span class="panel-muted">Los estudiantes ya pueden ver y cursar este curso.</span>
+            } @else if (modules().length === 0) {
+              <span class="panel-muted">Crea al menos un módulo para poder publicarlo.</span>
+            } @else {
+              <span class="panel-muted">Cuando el contenido esté listo, publícalo.</span>
+            }
+          </div>
+
+          @if (current.status === 'PUBLISHED') {
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost"
+              [disabled]="busy()"
+              (click)="setStatus('DRAFT')"
+            >
+              Pasar a borrador
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="panel-btn panel-btn--primary"
+              [disabled]="busy() || modules().length === 0"
+              (click)="setStatus('PUBLISHED')"
+            >
+              Publicar curso
+            </button>
+          }
+        </div>
+
+        @if (error()) {
+          <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+        }
+        @if (notice()) {
+          <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+        }
+
+        <div class="modules">
+          @for (module of modules(); track module.id; let i = $index) {
+            <app-module-card
+              [courseModule]="module"
+              [courseId]="current.id"
+              [index]="i"
+              [total]="modules().length"
+              (changed)="load()"
+              (move)="moveModule(i, $event)"
+            />
+          } @empty {
+            <div class="panel-card empty">
+              <p>Este curso todavía no tiene módulos.</p>
+              <p class="panel-muted">
+                Un módulo agrupa varias lecciones, por ejemplo «Introducción» o «Primeros pasos».
+              </p>
+            </div>
+          }
+        </div>
+
+        @if (adding()) {
+          <form class="panel-card add-form" [formGroup]="form" (ngSubmit)="addModule()" novalidate>
+            <h2>Nuevo módulo</h2>
+
+            <div class="panel-field">
+              <label for="new-module-title">Título</label>
+              <input
+                id="new-module-title"
+                class="panel-input"
+                type="text"
+                formControlName="title"
+                placeholder="Ej. Introducción"
+                [attr.aria-invalid]="titleError() ? 'true' : null"
+              />
+              @if (titleError()) {
+                <p class="panel-field-error">{{ titleError() }}</p>
+              }
+            </div>
+
+            <div class="panel-field">
+              <label for="new-module-description">Descripción (opcional)</label>
+              <textarea
+                id="new-module-description"
+                class="panel-textarea short"
+                formControlName="description"
+              ></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="panel-btn panel-btn--ghost" (click)="adding.set(false)">
+                Cancelar
+              </button>
+              <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
+                Crear módulo
+              </button>
+            </div>
+          </form>
+        } @else {
+          <button type="button" class="panel-btn panel-btn--primary add-module" (click)="startAdding()">
+            + Añadir módulo
+          </button>
+        }
+      }
+    }
+  </div>
+</section>
