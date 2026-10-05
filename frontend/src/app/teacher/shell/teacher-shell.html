@@ -1,0 +1,73 @@
+<div class="shell">
+  <button
+    type="button"
+    class="mobile-toggle"
+    [attr.aria-expanded]="open()"
+    aria-controls="teacher-sidebar"
+    (click)="toggle()"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      @if (open()) {
+        <path d="M6 6l12 12M18 6 6 18" />
+      } @else {
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      }
+    </svg>
+    Menú del docente
+  </button>
+
+  <aside id="teacher-sidebar" class="sidebar" [class.open]="open()">
+    <p class="sidebar-title">Panel del docente</p>
+
+    <nav aria-label="Panel del docente">
+      <ul class="menu">
+        @for (item of nav; track item.path) {
+          <li>
+            <a
+              class="menu-link"
+              [routerLink]="'/teacher/' + item.path"
+              routerLinkActive="active"
+              #parent="routerLinkActive"
+              ariaCurrentWhenActive="page"
+              (click)="close()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                @for (d of item.icon; track d) {
+                  <path [attr.d]="d" />
+                }
+              </svg>
+
+              <span class="label">{{ item.label }}</span>
+
+              @if (!item.ready) {
+                <span class="soon">Pronto</span>
+              }
+            </a>
+
+            @if (item.children && parent.isActive) {
+              <ul class="submenu">
+                @for (child of item.children; track child.path) {
+                  <li>
+                    <a
+                      class="sub-link"
+                      [routerLink]="'/teacher/' + child.path"
+                      routerLinkActive="active"
+                      ariaCurrentWhenActive="page"
+                      (click)="close()"
+                    >
+                      {{ child.label }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="content">
+    <router-outlet />
+  </div>
+</div>
