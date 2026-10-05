@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Controller,
   Get,
   NotFoundException,
@@ -19,24 +20,27 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import type { MediaKind } from './media-signature.js';
+import { ensureUploadDirs, newStoredName } from './upload-paths.js';
 import {
   acceptsExtension,
-  ensureUploadsDir,
   MAX_UPLOAD_BYTES,
-  newStoredName,
   type StoredFile,
   UploadsService,
 } from './uploads.service.js';
+import { VideoOptimizerService } from './video-optimizer.service.js';
 
 type Callback<T> = (error: Error | null, value: T) => void;
 
-/** Opciones de multer para un tipo de archivo: disco, nombre aleatorio, tamaño y extensión. */
+/**
+ * Opciones de multer para un tipo de archivo. Lo recién subido cae en una
+ * carpeta interna (no pública) hasta que se verifica y se optimiza.
+ */
 function uploadOptions(kind: MediaKind) {
   return {
     storage: diskStorage({
       destination: (_req: unknown, _file: unknown, done: Callback<string>) => {
         try {
-          done(null, ensureUploadsDir());
+          done(null, ensureUploadDirs());
         } catch (error) {
           done(error as Error, '');
         }
@@ -65,7 +69,10 @@ function uploadOptions(kind: MediaKind) {
 
 @Controller('uploads')
 export class UploadsController {
-  constructor(private readonly uploads: UploadsService) {}
+  constructor(
+    private readonly uploads: UploadsService,
+    private readonly videos: VideoOptimizerService,
+  ) {}
 
   @Post('images')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -83,6 +90,20 @@ export class UploadsController {
     return this.uploads.finish(file, 'video');
   }
 
+  /** Estado de un archivo subido: listo, optimizándose (con porcentaje) o fallido. */
+  @Get(':name/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  async status(@Param('name') name: string) {
+    const status = await this.videos.statusOf(name);
+
+    if (!status) {
+      throw new NotFoundException('El archivo no existe');
+    }
+
+    return status;
+  }
+
   /**
    * Sirve un archivo subido. Es público (las etiquetas <img> y <video> no envían
    * el token) y se identifica por un nombre aleatorio. Admite rangos, para poder
@@ -93,6 +114,11 @@ export class UploadsController {
     const path = await this.uploads.resolve(name);
 
     if (!path) {
+      // Un video que se está optimizando todavía no existe con su nombre final.
+      if ((await this.videos.statusOf(name))?.status === 'processing') {
+        throw new ConflictException('El video se está optimizando; vuelve a intentarlo en un momento');
+      }
+
       throw new NotFoundException('El archivo no existe');
     }
 
