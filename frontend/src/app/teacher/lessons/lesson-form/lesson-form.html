@@ -4,7 +4,7 @@
       [title]="isEdit ? 'Editar lección' : 'Nueva lección'"
       [subtitle]="isEdit ? 'Actualiza el contenido de la lección.' : 'Escribe el contenido de la lección.'"
     >
-      <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'content']">
+      <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']">
         Volver al contenido
       </a>
     </app-page-header>
@@ -48,40 +48,33 @@
             ></textarea>
           </div>
 
-          <div class="row">
-            <div class="panel-field">
-              <label for="videoUrl">Video (URL, opcional)</label>
-              <input
-                id="videoUrl"
-                class="panel-input"
-                type="url"
-                formControlName="videoUrl"
-                placeholder="https://…"
-                [attr.aria-invalid]="errorOf('videoUrl') ? 'true' : null"
-              />
-              @if (errorOf('videoUrl')) {
-                <p class="panel-field-error">{{ errorOf('videoUrl') }}</p>
-              }
-            </div>
+          <app-media-field
+            kind="video"
+            inputId="videoUrl"
+            label="Video de la lección (opcional)"
+            placeholder="Pega un enlace o sube un archivo"
+            hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace."
+            [control]="form.controls.videoUrl"
+            [error]="errorOf('videoUrl')"
+          />
 
-            <div class="panel-field">
-              <label for="durationMinutes">Duración en minutos (opcional)</label>
-              <input
-                id="durationMinutes"
-                class="panel-input"
-                type="number"
-                min="1"
-                formControlName="durationMinutes"
-                [attr.aria-invalid]="errorOf('durationMinutes') ? 'true' : null"
-              />
-              @if (errorOf('durationMinutes')) {
-                <p class="panel-field-error">{{ errorOf('durationMinutes') }}</p>
-              }
-            </div>
+          <div class="panel-field duration">
+            <label for="durationMinutes">Duración en minutos (opcional)</label>
+            <input
+              id="durationMinutes"
+              class="panel-input"
+              type="number"
+              min="1"
+              formControlName="durationMinutes"
+              [attr.aria-invalid]="errorOf('durationMinutes') ? 'true' : null"
+            />
+            @if (errorOf('durationMinutes')) {
+              <p class="panel-field-error">{{ errorOf('durationMinutes') }}</p>
+            }
           </div>
 
           <div class="footer">
-            <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'content']">
+            <a class="panel-btn panel-btn--ghost" [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']">
               Cancelar
             </a>
             <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">

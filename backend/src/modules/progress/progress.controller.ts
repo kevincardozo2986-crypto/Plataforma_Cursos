@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -14,6 +15,7 @@ import { Role } from '../../generated/prisma/enums.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { EnrollDto } from './dto/enroll.dto.js';
 import { ProgressService } from './progress.service.js';
 
 @Controller()
@@ -26,8 +28,9 @@ export class ProgressController {
   enroll(
     @CurrentUser() user: AuthenticatedUser,
     @Param('courseId', ParseIntPipe) courseId: number,
+    @Body() dto: EnrollDto,
   ) {
-    return this.progress.enroll(user, courseId);
+    return this.progress.enroll(user, courseId, dto.password);
   }
 
   @Delete('courses/:courseId/enroll')

@@ -53,24 +53,46 @@ export const TEACHER_ROUTES: Routes = [
       },
 
       {
+        // Al abrirse crea un borrador y pasa al paso 1 del asistente.
         path: 'courses/new',
         title: 'Nuevo curso',
         loadComponent: () =>
-          import('./courses/course-form/course-form').then((m) => m.CourseForm),
+          import('./courses/course-wizard/course-draft-entry').then((m) => m.CourseDraftEntry),
       },
 
       {
+        // Asistente de tres pasos: Básicos → Currículo → Adicional.
         path: 'courses/:id/edit',
-        title: 'Editar curso',
         loadComponent: () =>
-          import('./courses/course-form/course-form').then((m) => m.CourseForm),
+          import('./courses/course-wizard/course-wizard').then((m) => m.CourseWizard),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'basics' },
+          {
+            path: 'basics',
+            title: 'Curso: básicos',
+            loadComponent: () =>
+              import('./courses/course-wizard/steps/basics-step').then((m) => m.BasicsStep),
+          },
+          {
+            path: 'curriculum',
+            title: 'Curso: currículo',
+            loadComponent: () =>
+              import('./courses/course-wizard/steps/curriculum-step').then((m) => m.CurriculumStep),
+          },
+          {
+            path: 'additional',
+            title: 'Curso: adicional',
+            loadComponent: () =>
+              import('./courses/course-wizard/steps/additional-step').then((m) => m.AdditionalStep),
+          },
+        ],
       },
 
+      // La pantalla de contenido ahora es el paso 2 del asistente.
       {
         path: 'courses/:id/content',
-        title: 'Contenido del curso',
-        loadComponent: () =>
-          import('./courses/course-content/course-content').then((m) => m.CourseContent),
+        pathMatch: 'full',
+        redirectTo: ({ params }) => `/teacher/courses/${params['id']}/edit/curriculum`,
       },
 
       {

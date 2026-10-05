@@ -3,12 +3,12 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
 
+import { IsMediaUrl } from '../../../common/dto/is-media-url.js';
 import { Trim } from '../../../common/dto/trim.js';
 
 export class CreateLessonDto {
@@ -23,7 +23,7 @@ export class CreateLessonDto {
   content?: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'El video debe ser una URL válida' })
+  @IsMediaUrl('El video debe ser una URL válida o un archivo subido')
   videoUrl?: string;
 
   @IsOptional()
@@ -52,7 +52,7 @@ export class UpdateLessonDto {
   content?: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'El video debe ser una URL válida' })
+  @IsMediaUrl('El video debe ser una URL válida o un archivo subido')
   videoUrl?: string;
 
   @IsOptional()

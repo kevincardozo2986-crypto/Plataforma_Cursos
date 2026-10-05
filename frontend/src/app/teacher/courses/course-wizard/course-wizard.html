@@ -1,0 +1,118 @@
+<section class="panel-page">
+  <div class="panel-container">
+    @if (wizard.loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando curso…</p></div>
+    } @else if (!wizard.course()) {
+      @if (wizard.loadError()) {
+        <p class="panel-alert panel-alert--error" role="alert">{{ wizard.loadError() }}</p>
+      }
+      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
+    } @else {
+      @if (wizard.course(); as course) {
+        <!-- Barra con los botones permanentes -->
+        <header class="bar">
+          <div class="bar-title">
+            <a class="back" routerLink="/teacher/courses">← Mis cursos</a>
+            <div class="title-row">
+              <h1>{{ title() }}</h1>
+              <app-status-badge [status]="course.status" />
+            </div>
+          </div>
+
+          <div class="bar-actions">
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost"
+              [disabled]="wizard.saving()"
+              (click)="wizard.saveDraft()"
+            >
+              {{ wizard.isPublished() ? 'Guardar cambios' : 'Guardar borrador' }}
+            </button>
+
+            @if (wizard.isPublished()) {
+              <button
+                type="button"
+                class="panel-btn panel-btn--ghost"
+                [disabled]="wizard.saving()"
+                (click)="wizard.unpublish()"
+              >
+                Pasar a borrador
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="panel-btn panel-btn--primary"
+                [disabled]="wizard.saving()"
+                (click)="wizard.publish()"
+              >
+                Enviar
+              </button>
+            }
+          </div>
+        </header>
+
+        <!-- Los tres pasos -->
+        <nav class="stepper" aria-label="Pasos del curso">
+          <ol>
+            @for (step of steps; track step.path; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="step"
+                  [class.active]="i === currentIndex()"
+                  [attr.aria-current]="i === currentIndex() ? 'step' : null"
+                  (click)="goTo(i)"
+                >
+                  <span class="step-number" aria-hidden="true">{{ i + 1 }}</span>
+                  <span class="step-text">
+                    <strong>{{ step.label }}</strong>
+                    <small>{{ step.hint }}</small>
+                  </span>
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
+
+        @if (!wizard.isPublished()) {
+          <p class="checklist" aria-label="Lo que falta para enviar">
+            <span class="checklist-title">Para enviar:</span>
+            @for (item of wizard.checklist(); track item.label) {
+              <span class="check" [class.done]="item.done">
+                <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span>
+                {{ item.label }}
+                <span class="visually-hidden">{{ item.done ? '(listo)' : '(falta)' }}</span>
+              </span>
+            }
+          </p>
+        }
+
+        @if (wizard.error()) {
+          <p class="panel-alert panel-alert--error" role="alert">{{ wizard.error() }}</p>
+        }
+        @if (wizard.notice()) {
+          <p class="panel-alert panel-alert--ok" role="status">{{ wizard.notice() }}</p>
+        }
+
+        <router-outlet />
+
+        <!-- Anterior / Siguiente -->
+        <footer class="pager">
+          @if (currentIndex() > 0) {
+            <button type="button" class="panel-btn panel-btn--ghost" [disabled]="wizard.saving()" (click)="previous()">
+              ← {{ steps[currentIndex() - 1].label }}
+            </button>
+          } @else {
+            <span></span>
+          }
+
+          @if (currentIndex() < steps.length - 1) {
+            <button type="button" class="panel-btn panel-btn--primary" [disabled]="wizard.saving()" (click)="next()">
+              {{ steps[currentIndex() + 1].label }} →
+            </button>
+          }
+        </footer>
+      }
+    }
+  </div>
+</section>

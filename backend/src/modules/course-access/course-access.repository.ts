@@ -18,6 +18,22 @@ export class CourseAccessRepository {
     });
   }
 
+  /** Condiciones para inscribirse en un curso (solo lectura). */
+  findEnrollmentRules(courseId: number) {
+    return this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        status: true,
+        visibility: true,
+        accessPassword: true,
+        maxStudents: true,
+        requires: {
+          select: { prerequisite: { select: { id: true, title: true } } },
+        },
+      },
+    });
+  }
+
   async courseIdOfModule(moduleId: number): Promise<number | null> {
     const found = await this.prisma.courseModule.findUnique({
       where: { id: moduleId },

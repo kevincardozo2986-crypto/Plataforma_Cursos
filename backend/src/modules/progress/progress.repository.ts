@@ -17,6 +17,27 @@ export class ProgressRepository {
     return this.prisma.enrollment.count({ where: { courseId } });
   }
 
+  /** Inscripciones que ocupan un cupo (las canceladas no). */
+  countActiveEnrollments(courseId: number) {
+    return this.prisma.enrollment.count({
+      where: { courseId, status: { not: EnrollmentStatus.CANCELLED } },
+    });
+  }
+
+  /** De esos cursos, ids de los que el usuario ya completó. */
+  async completedCourseIds(userId: number, courseIds: number[]): Promise<number[]> {
+    const completed = await this.prisma.enrollment.findMany({
+      where: {
+        userId,
+        courseId: { in: courseIds },
+        status: EnrollmentStatus.COMPLETED,
+      },
+      select: { courseId: true },
+    });
+
+    return completed.map((item) => item.courseId);
+  }
+
   createEnrollment(userId: number, courseId: number) {
     return this.prisma.enrollment.create({ data: { userId, courseId } });
   }

@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.tall {
+  min-height: 170px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.slug-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.slug-prefix {
+  display: grid;
+  place-items: center;
+
+  padding: 0 12px;
+
+  color: var(--p-muted);
+  font-size: 0.9rem;
+
+  background: var(--p-surface-2);
+  border: 1px solid var(--p-border);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+}
+
+.slug-row .panel-input {
+  border-radius: 0 12px 12px 0;
+}
+
+.link-btn {
+  padding: 0;
+
+  color: var(--p-accent);
+  font: inherit;
+  text-decoration: underline;
+
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Casillas y opciones */
+.check,
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  cursor: pointer;
+}
+
+.check input,
+.choice input {
+  flex: 0 0 auto;
+
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+
+  accent-color: var(--p-accent);
+}
+
+.check span,
+.choice span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.check small,
+.choice small {
+  color: var(--p-muted);
+  font-size: 0.82rem;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+}
+
+.choices.vertical {
+  flex-direction: column;
+  gap: 14px;
+}
+
+.price,
+.password,
+.capacity {
+  max-width: 340px;
+}
+
+.visually-hidden {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 800px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,104 @@
+:host {
+  display: block;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.intro {
+  margin: -8px 0 0;
+  font-size: 0.9rem;
+}
+
+.short {
+  min-height: 90px;
+}
+
+.duration {
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+}
+
+.duration legend {
+  margin-bottom: 6px;
+  padding: 0;
+
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.duration-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 160px));
+  gap: 16px;
+}
+
+.candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 8px 4px;
+
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+
+  accent-color: var(--p-accent);
+}
+
+.upcoming ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.upcoming li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+
+  font-size: 0.9rem;
+}
+
+.upcoming {
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+}

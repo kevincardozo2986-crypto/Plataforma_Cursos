@@ -62,6 +62,25 @@ model Course {
   level       CourseLevel  @default(BEGINNER)
   status      CourseStatus @default(DRAFT)
 
+  // Acceso y cupo
+  visibility     CourseVisibility @default(PUBLIC)
+  /// Hash bcrypt; solo se usa cuando visibility = PASSWORD. Nunca se devuelve.
+  accessPassword String?
+  maxStudents    Int?
+  /// Contenido visible sin inscripción.
+  publicContent  Boolean          @default(false)
+  qaEnabled      Boolean          @default(true)
+
+  // Presentación
+  introVideoUrl String?
+
+  // Resumen del curso (paso "Adicional")
+  whatYouWillLearn String?
+  audience         String?
+  durationMinutes  Int?
+  materials        String?
+  requirements     String?
+
   teacherId Int
   teacher   User @relation(fields: [teacherId], references: [id])
 
@@ -71,6 +90,10 @@ model Course {
   modules     CourseModule[]
   enrollments Enrollment[]
 
+  /// Cursos que hay que completar antes de inscribirse en este.
+  requires   CoursePrerequisite[] @relation("CourseRequires")
+  requiredBy CoursePrerequisite[] @relation("CourseRequiredBy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -78,6 +101,22 @@ model Course {
   @@index([status])
   @@index([categoryId])
   @@map("courses")
+}
+
+enum CourseVisibility {
+  PUBLIC
+  PRIVATE
+  PASSWORD
+}
+
+model CoursePrerequisite {
+  courseId       Int
+  course         Course @relation("CourseRequires", fields: [courseId], references: [id], onDelete: Cascade)
+  prerequisiteId Int
+  prerequisite   Course @relation("CourseRequiredBy", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, prerequisiteId])
+  @@map("course_prerequisites")
 }
 
 enum ResourceType {

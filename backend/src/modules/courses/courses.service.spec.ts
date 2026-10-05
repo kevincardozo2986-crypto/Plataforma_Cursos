@@ -1,27 +1,53 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
-import { CourseStatus, Role } from '../../generated/prisma/enums.js';
+import {
+  CourseStatus,
+  CourseVisibility,
+  Role,
+} from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import type { CategoriesService } from '../categories/categories.service.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
 import type { CourseModulesService } from '../course-modules/course-modules.service.js';
 import type { ProgressService } from '../progress/progress.service.js';
 import type { CoursesRepository } from './courses.repository.js';
-import { CoursesService } from './courses.service.js';
+import { CoursesService, DRAFT_TITLE } from './courses.service.js';
 
 const teacher = { id: 7, role: Role.TEACHER } as AuthenticatedUser;
+
+/** Un curso tal como lo devuelve el repositorio. */
+const course = (overrides: Record<string, unknown> = {}) => ({
+  id: 1,
+  title: 'Intro a Node',
+  description: 'Aprende Node',
+  visibility: CourseVisibility.PUBLIC,
+  accessPassword: null,
+  requires: [],
+  ...overrides,
+});
 
 function build() {
   const repository = {
     create: vi.fn((data: unknown) => Promise.resolve(data)),
-    slugExists: vi.fn(),
+    slugExists: vi.fn().mockResolvedValue(false),
+    slugOwner: vi.fn().mockResolvedValue(null),
+    countByIds: vi.fn(),
+    findById: vi.fn().mockResolvedValue(course()),
+    update: vi.fn(
+      (_id: number, data: Record<string, unknown>, _prerequisiteIds?: number[]) =>
+        Promise.resolve({ ...course(), ...data }),
+    ),
     updateStatus: vi.fn(),
     delete: vi.fn(),
     listManaged: vi.fn(),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
   const categories = { exists: vi.fn().mockResolvedValue(true) };
-  const modules = { countByCourse: vi.fn(), outline: vi.fn() };
+  const modules = { countByCourse: vi.fn().mockResolvedValue(1), outline: vi.fn() };
   const progress = { countEnrollments: vi.fn() };
 
   const service = new CoursesService(
@@ -39,7 +65,6 @@ describe('CoursesService', () => {
   describe('create', () => {
     it('genera el slug desde el título y asigna al profesor como dueño', async () => {
       const { service, repository } = build();
-      repository.slugExists.mockResolvedValue(false);
 
       await service.create(teacher, {
         title: 'Introducción a Node.js',
@@ -84,30 +109,170 @@ describe('CoursesService', () => {
     });
   });
 
+  describe('createDraft', () => {
+    it('crea un borrador vacío a nombre del profesor', async () => {
+      const { service, repository } = build();
+
+      await service.createDraft(teacher);
+
+      expect(repository.create).toHaveBeenCalledWith({
+        title: DRAFT_TITLE,
+        description: '',
+        price: 0,
+        slug: 'curso-sin-titulo',
+        teacherId: 7,
+      });
+    });
+
+    it('evita repetir la dirección cuando ya hay otro borrador', async () => {
+      const { service, repository } = build();
+      repository.slugExists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+      await service.createDraft(teacher);
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: 'curso-sin-titulo-2' }),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('no deja usar una dirección que ya tiene otro curso', async () => {
+      const { service, repository } = build();
+      repository.slugOwner.mockResolvedValue(99);
+
+      await expect(
+        service.update(teacher, 1, { slug: 'curso-ajeno' }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    it('permite conservar la propia dirección', async () => {
+      const { service, repository } = build();
+      repository.slugOwner.mockResolvedValue(1);
+
+      await service.update(teacher, 1, { slug: 'mi-curso' });
+
+      expect(repository.update).toHaveBeenCalled();
+    });
+
+    it('guarda la contraseña cifrada y nunca la devuelve', async () => {
+      const { service, repository } = build();
+
+      const result = await service.update(teacher, 1, {
+        visibility: CourseVisibility.PASSWORD,
+        accessPassword: 'secreto123',
+      });
+
+      const saved = repository.update.mock.calls[0][1] as { accessPassword: string };
+
+      expect(saved.accessPassword).not.toBe('secreto123');
+      expect(await bcrypt.compare('secreto123', saved.accessPassword)).toBe(true);
+      expect(result).not.toHaveProperty('accessPassword');
+      expect(result.hasPassword).toBe(true);
+    });
+
+    it('exige contraseña si el curso pasa a tener contraseña y no hay ninguna', async () => {
+      const { service } = build();
+
+      await expect(
+        service.update(teacher, 1, { visibility: CourseVisibility.PASSWORD }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('conserva la contraseña existente si no se envía otra', async () => {
+      const { service, repository } = build();
+      repository.findById.mockResolvedValue(
+        course({ visibility: CourseVisibility.PASSWORD, accessPassword: 'hash-previo' }),
+      );
+
+      await service.update(teacher, 1, { title: 'Nuevo título' });
+
+      expect(repository.update.mock.calls[0][1]).toHaveProperty('accessPassword', undefined);
+    });
+
+    it('borra la contraseña al dejar de ser un curso con contraseña', async () => {
+      const { service, repository } = build();
+      repository.findById.mockResolvedValue(
+        course({ visibility: CourseVisibility.PASSWORD, accessPassword: 'hash-previo' }),
+      );
+
+      await service.update(teacher, 1, { visibility: CourseVisibility.PUBLIC });
+
+      expect(repository.update.mock.calls[0][1]).toHaveProperty('accessPassword', null);
+    });
+
+    it('un curso no puede ser prerrequisito de sí mismo', async () => {
+      const { service } = build();
+
+      await expect(
+        service.update(teacher, 1, { prerequisiteIds: [1] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rechaza prerrequisitos que no existen', async () => {
+      const { service, repository } = build();
+      repository.countByIds.mockResolvedValue(1);
+
+      await expect(
+        service.update(teacher, 1, { prerequisiteIds: [2, 3] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('reemplaza los prerrequisitos y quita los repetidos', async () => {
+      const { service, repository } = build();
+      repository.countByIds.mockResolvedValue(2);
+
+      await service.update(teacher, 1, { prerequisiteIds: [2, 3, 2] });
+
+      expect(repository.update.mock.calls[0][2]).toEqual([2, 3]);
+    });
+
+    it('no toca los campos obligatorios si llegan nulos, pero sí borra los opcionales', async () => {
+      const { service, repository } = build();
+
+      await service.update(teacher, 1, {
+        title: null as unknown as string,
+        introVideoUrl: null as unknown as string,
+      });
+
+      const saved = repository.update.mock.calls[0][1] as Record<string, unknown>;
+
+      expect(saved.title).toBeUndefined();
+      expect(saved.introVideoUrl).toBeNull();
+    });
+  });
+
   describe('updateStatus', () => {
-    it('no deja publicar un curso sin módulos', async () => {
-      const { service, modules, repository } = build();
+    it('dice exactamente qué falta para publicar un borrador vacío', async () => {
+      const { service, repository, modules } = build();
+      repository.findById.mockResolvedValue(course({ title: DRAFT_TITLE, description: '  ' }));
       modules.countByCourse.mockResolvedValue(0);
 
       await expect(
         service.updateStatus(teacher, 1, CourseStatus.PUBLISHED),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toThrow('Para publicar falta: un título, una descripción, al menos un módulo');
       expect(repository.updateStatus).not.toHaveBeenCalled();
     });
 
-    it('publica un curso que ya tiene módulos', async () => {
-      const { service, modules, repository } = build();
-      modules.countByCourse.mockResolvedValue(2);
+    it('avisa solo de lo que falta', async () => {
+      const { service, modules } = build();
+      modules.countByCourse.mockResolvedValue(0);
+
+      await expect(
+        service.updateStatus(teacher, 1, CourseStatus.PUBLISHED),
+      ).rejects.toThrow('Para publicar falta: al menos un módulo');
+    });
+
+    it('publica un curso completo', async () => {
+      const { service, repository } = build();
 
       await service.updateStatus(teacher, 1, CourseStatus.PUBLISHED);
 
-      expect(repository.updateStatus).toHaveBeenCalledWith(
-        1,
-        CourseStatus.PUBLISHED,
-      );
+      expect(repository.updateStatus).toHaveBeenCalledWith(1, CourseStatus.PUBLISHED);
     });
 
-    it('permite archivar sin comprobar módulos', async () => {
+    it('permite archivar sin comprobar nada', async () => {
       const { service, modules, repository } = build();
 
       await service.updateStatus(teacher, 1, CourseStatus.ARCHIVED);

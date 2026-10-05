@@ -5,8 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import * as bcrypt from 'bcrypt';
+
 import {
   CourseStatus,
+  CourseVisibility,
   EnrollmentStatus,
 } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
@@ -24,10 +27,10 @@ export class ProgressService {
 
   // --- Inscripciones ---
 
-  async enroll(user: AuthenticatedUser, courseId: number) {
-    const course = await this.access.getCourseOrThrow(courseId);
+  async enroll(user: AuthenticatedUser, courseId: number, password?: string) {
+    const rules = await this.access.getEnrollmentRules(courseId);
 
-    if (course.status !== CourseStatus.PUBLISHED) {
+    if (rules.status !== CourseStatus.PUBLISHED) {
       throw new NotFoundException('El curso no existe');
     }
 
@@ -36,6 +39,8 @@ export class ProgressService {
     if (existing && existing.status !== EnrollmentStatus.CANCELLED) {
       throw new ConflictException('Ya estás inscrito en este curso');
     }
+
+    await this.assertCanJoin(user.id, courseId, rules, password);
 
     if (existing) {
       return this.repository.updateEnrollment(existing.id, {
@@ -144,6 +149,57 @@ export class ProgressService {
   }
 
   // --- Internos ---
+
+  /**
+   * Reglas de acceso del curso, en este orden: privado, contraseña,
+   * prerrequisitos y cupo. Cada una explica por qué no se puede entrar.
+   */
+  private async assertCanJoin(
+    userId: number,
+    courseId: number,
+    rules: Awaited<ReturnType<CourseAccessService['getEnrollmentRules']>>,
+    password: string | undefined,
+  ) {
+    if (rules.visibility === CourseVisibility.PRIVATE) {
+      throw new ForbiddenException('Este curso es privado');
+    }
+
+    if (rules.visibility === CourseVisibility.PASSWORD) {
+      const valid =
+        Boolean(password) &&
+        Boolean(rules.accessPasswordHash) &&
+        (await bcrypt.compare(password as string, rules.accessPasswordHash as string));
+
+      if (!valid) {
+        throw new ForbiddenException(
+          password ? 'La contraseña del curso es incorrecta' : 'Este curso requiere una contraseña',
+        );
+      }
+    }
+
+    if (rules.prerequisites.length > 0) {
+      const done = new Set(
+        await this.repository.completedCourseIds(
+          userId,
+          rules.prerequisites.map((item) => item.id),
+        ),
+      );
+      const pending = rules.prerequisites.filter((item) => !done.has(item.id));
+
+      if (pending.length > 0) {
+        throw new ForbiddenException(
+          `Antes debes completar: ${pending.map((item) => item.title).join(', ')}`,
+        );
+      }
+    }
+
+    if (
+      rules.maxStudents !== null &&
+      (await this.repository.countActiveEnrollments(courseId)) >= rules.maxStudents
+    ) {
+      throw new ConflictException('El curso no tiene cupos disponibles');
+    }
+  }
 
   private async computeProgress(enrollmentId: number, courseId: number) {
     const lessonIds = await this.lessons.idsByCourse(courseId);
