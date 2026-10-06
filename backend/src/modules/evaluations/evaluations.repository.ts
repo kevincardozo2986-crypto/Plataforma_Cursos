@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service.js';
+import type { Prisma } from '../../generated/prisma/client.js';
+import type { AttemptStatus } from '../../generated/prisma/enums.js';
+import type { AttemptItem } from './attempt-snapshot.js';
 
 interface EvaluationData {
   title?: string;
@@ -10,6 +13,7 @@ interface EvaluationData {
 
 interface QuestionCreate {
   text: string;
+  type: 'TRUE_FALSE' | 'SINGLE' | 'MULTIPLE' | 'FILL_BLANK' | 'ESSAY';
   points?: number;
   position: number;
   options: { create: { text: string; isCorrect: boolean }[] };
@@ -91,15 +95,115 @@ export class EvaluationsRepository {
     userId: number;
     score: number;
     passed: boolean;
-    answers: { questionId: number; optionId: number }[];
+    status: AttemptStatus;
+    answers: { questionId: number; optionIds?: number[]; text?: string }[];
+    results: AttemptItem[];
   }) {
-    return this.prisma.evaluationAttempt.create({ data });
+    return this.prisma.evaluationAttempt.create({
+      data: { ...data, results: data.results as unknown as Prisma.InputJsonValue },
+    });
   }
 
   findAttempts(evaluationId: number, userId: number) {
     return this.prisma.evaluationAttempt.findMany({
       where: { evaluationId, userId },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Intentos para revisar. Un docente ve los de sus cursos (`teacherId`); un admin, todos.
+   * `courseId` ya debe haberse comprobado que el usuario puede gestionarlo.
+   */
+  async findAttemptsForReview(filter: {
+    teacherId?: number;
+    courseId?: number;
+    evaluationId?: number;
+    status?: AttemptStatus;
+    take: number;
+    skip: number;
+  }) {
+    const where: Prisma.EvaluationAttemptWhereInput = {
+      status: filter.status,
+      evaluationId: filter.evaluationId,
+      evaluation: {
+        module: {
+          courseId: filter.courseId,
+          course: filter.teacherId ? { teacherId: filter.teacherId } : undefined,
+        },
+      },
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.evaluationAttempt.findMany({
+        where,
+        // Primero lo pendiente; dentro de cada grupo, lo más reciente.
+        orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
+        take: filter.take,
+        skip: filter.skip,
+        select: {
+          id: true,
+          score: true,
+          passed: true,
+          status: true,
+          createdAt: true,
+          gradedAt: true,
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+          evaluation: {
+            select: {
+              id: true,
+              title: true,
+              module: {
+                select: { course: { select: { id: true, title: true } } },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.evaluationAttempt.count({ where }),
+    ]);
+
+    return { items, total };
+  }
+
+  findAttemptDetail(id: number) {
+    return this.prisma.evaluationAttempt.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+        evaluation: {
+          select: {
+            id: true,
+            title: true,
+            passingScore: true,
+            module: {
+              select: { courseId: true, course: { select: { title: true } } },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  saveGrading(
+    id: number,
+    data: {
+      results: AttemptItem[];
+      score: number;
+      passed: boolean;
+      status: AttemptStatus;
+      feedback?: string;
+      gradedAt: Date | null;
+      gradedById: number;
+    },
+  ) {
+    return this.prisma.evaluationAttempt.update({
+      where: { id },
+      data: { ...data, results: data.results as unknown as Prisma.InputJsonValue },
     });
   }
 }

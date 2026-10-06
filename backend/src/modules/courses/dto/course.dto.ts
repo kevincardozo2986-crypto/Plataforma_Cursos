@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 
 import { IsMediaUrl } from '../../../common/dto/is-media-url.js';
+import { SanitizeHtml } from '../../../common/dto/sanitize-html.js';
 import { Trim } from '../../../common/dto/trim.js';
 import {
   CourseLevel,
@@ -34,9 +35,10 @@ export class CreateCourseDto {
   @MaxLength(150)
   title: string;
 
-  @Trim()
+  @SanitizeHtml()
   @IsString()
   @IsNotEmpty({ message: 'La descripción es obligatoria' })
+  @MaxLength(20000)
   description: string;
 
   @IsOptional()
@@ -83,7 +85,7 @@ export class UpdateCourseDto {
 
   /** Puede quedar vacía mientras el curso es un borrador; para publicar es obligatoria. */
   @IsOptional()
-  @Trim()
+  @SanitizeHtml()
   @IsString()
   @MaxLength(20000)
   description?: string;
@@ -142,11 +144,13 @@ export class UpdateCourseDto {
   // --- Resumen del curso ---
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
   @MaxLength(5000)
   whatYouWillLearn?: string;
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
   @MaxLength(5000)
   audience?: string;
@@ -159,11 +163,13 @@ export class UpdateCourseDto {
   durationMinutes?: number;
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
   @MaxLength(5000)
   materials?: string;
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
   @MaxLength(5000)
   requirements?: string;

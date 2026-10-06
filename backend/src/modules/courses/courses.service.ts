@@ -11,6 +11,7 @@ import {
   CourseVisibility,
   Role,
 } from '../../generated/prisma/enums.js';
+import { hasVisibleText } from '../../common/dto/sanitize-html.js';
 import { slugify } from '../../common/utils/slugify.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { CategoriesService } from '../categories/categories.service.js';
@@ -199,7 +200,7 @@ export class CoursesService {
     if (!course?.title.trim() || course.title === DRAFT_TITLE) {
       missing.push('un título');
     }
-    if (!course?.description.trim()) {
+    if (!course || !hasVisibleText(course.description)) {
       missing.push('una descripción');
     }
     if ((await this.modules.countByCourse(id)) === 0) {

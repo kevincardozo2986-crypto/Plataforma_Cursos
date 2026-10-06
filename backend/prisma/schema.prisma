@@ -221,11 +221,29 @@ model Evaluation {
   @@map("evaluations")
 }
 
+/// TRUE_FALSE y SINGLE: una opción correcta. MULTIPLE: varias correctas.
+/// FILL_BLANK: cada opción es una respuesta aceptada (todas `isCorrect`).
+/// ESSAY: respuesta abierta, sin opciones; la califica el docente a mano.
+enum QuestionType {
+  TRUE_FALSE
+  SINGLE
+  MULTIPLE
+  FILL_BLANK
+  ESSAY
+}
+
+/// PENDING_REVIEW: tiene preguntas abiertas sin calificar; la nota es provisional.
+enum AttemptStatus {
+  GRADED
+  PENDING_REVIEW
+}
+
 model Question {
-  id       Int    @id @default(autoincrement())
+  id       Int          @id @default(autoincrement())
   text     String
-  points   Int    @default(1)
-  position Int    @default(1)
+  type     QuestionType @default(SINGLE)
+  points   Int          @default(1)
+  position Int          @default(1)
 
   evaluationId Int
   evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
@@ -254,6 +272,16 @@ model EvaluationAttempt {
   passed Boolean
   answers Json
 
+  status AttemptStatus @default(GRADED)
+  /// Foto de la calificación al presentar: por pregunta, texto, tipo, puntos, acierto
+  /// (null si es abierta) y puntos obtenidos. Así la revisión no depende de que el
+  /// docente edite el quiz después.
+  results Json?
+  feedback String?
+  gradedAt DateTime?
+  /// Docente que calificó (sin relación, para no acoplar con el módulo de usuarios).
+  gradedById Int?
+
   evaluationId Int
   evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
 
@@ -263,6 +291,7 @@ model EvaluationAttempt {
   createdAt DateTime @default(now())
 
   @@index([evaluationId, userId])
+  @@index([status])
   @@map("evaluation_attempts")
 }
 

@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -18,6 +19,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import {
   CreateEvaluationDto,
+  GradeAttemptDto,
+  ListAttemptsQueryDto,
   SubmitAttemptDto,
   UpdateEvaluationDto,
 } from './dto/evaluation.dto.js';
@@ -89,5 +92,34 @@ export class EvaluationsController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.evaluations.myAttempts(user, id);
+  }
+
+  /** Bandeja del docente. Filtros: courseId, evaluationId, status, limit, offset. */
+  @Get('evaluation-attempts')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  listAttempts(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListAttemptsQueryDto,
+  ) {
+    return this.evaluations.listAttempts(user, query);
+  }
+
+  @Get('evaluation-attempts/:id')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  getAttempt(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.evaluations.getAttempt(user, id);
+  }
+
+  @Patch('evaluation-attempts/:id/grade')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  gradeAttempt(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: GradeAttemptDto,
+  ) {
+    return this.evaluations.gradeAttempt(user, id, dto);
   }
 }

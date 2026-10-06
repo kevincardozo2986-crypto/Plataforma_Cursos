@@ -15,6 +15,7 @@ import { ResourcesModule } from './modules/resources/resources.module.js';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module.js';
 import { ProgressModule } from './modules/progress/progress.module.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
+import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -51,6 +52,7 @@ export const observeEnabled = Boolean(
     EvaluationsModule,
     ProgressModule,
     UploadsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

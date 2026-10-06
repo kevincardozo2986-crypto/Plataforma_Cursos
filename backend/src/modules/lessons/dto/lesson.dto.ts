@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 
 import { IsMediaUrl } from '../../../common/dto/is-media-url.js';
+import { SanitizeHtml } from '../../../common/dto/sanitize-html.js';
 import { Trim } from '../../../common/dto/trim.js';
 
 export class CreateLessonDto {
@@ -19,7 +20,9 @@ export class CreateLessonDto {
   title: string;
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
+  @MaxLength(100000)
   content?: string;
 
   @IsOptional()
@@ -48,7 +51,9 @@ export class UpdateLessonDto {
   title?: string;
 
   @IsOptional()
+  @SanitizeHtml()
   @IsString()
+  @MaxLength(100000)
   content?: string;
 
   @IsOptional()
