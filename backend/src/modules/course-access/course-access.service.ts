@@ -26,6 +26,23 @@ export class CourseAccessService {
     return course;
   }
 
+  /** Estado, acceso, cupo y prerrequisitos de un curso, para decidir si alguien puede inscribirse. */
+  async getEnrollmentRules(courseId: number) {
+    const rules = await this.repository.findEnrollmentRules(courseId);
+
+    if (!rules) {
+      throw new NotFoundException('El curso no existe');
+    }
+
+    return {
+      status: rules.status,
+      visibility: rules.visibility,
+      accessPasswordHash: rules.accessPassword,
+      maxStudents: rules.maxStudents,
+      prerequisites: rules.requires.map((item) => item.prerequisite),
+    };
+  }
+
   canManage(user: AuthenticatedUser, course: { teacherId: number }): boolean {
     return (
       user.role === Role.ADMIN ||

@@ -16,10 +16,8 @@
   min-height: 220px;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 16px;
+.duration {
+  max-width: 260px;
 }
 
 .footer {
@@ -31,10 +29,4 @@
 .hint {
   margin: 0;
   font-size: 0.9rem;
-}
-
-@media (max-width: 700px) {
-  .row {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

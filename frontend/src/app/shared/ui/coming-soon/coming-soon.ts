@@ -3,7 +3,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { PageHeader } from '../page-header/page-header';
 
-/** Página provisional para rutas cuya pantalla aún no existe. Toma el título de `data.title`. */
+/**
+ * Página provisional para rutas cuya pantalla aún no existe.
+ * Lee de `data` de la ruta: title, description y, opcional, backTo / backLabel.
+ */
 @Component({
   selector: 'app-coming-soon',
   imports: [PageHeader, RouterLink],
@@ -13,8 +16,11 @@ import { PageHeader } from '../page-header/page-header';
         <app-page-header [title]="title" subtitle="Esta sección está en construcción." />
 
         <div class="panel-card empty">
-          <p class="panel-muted">Pronto podrás gestionar esto desde aquí.</p>
-          <a class="panel-btn panel-btn--ghost" routerLink="/">Volver al inicio</a>
+          @if (description) {
+            <p>{{ description }}</p>
+          }
+          <p class="panel-muted">Pronto podrás usarla desde aquí.</p>
+          <a class="panel-btn panel-btn--ghost" [routerLink]="backTo">{{ backLabel }}</a>
         </div>
       </div>
     </section>
@@ -28,10 +34,16 @@ import { PageHeader } from '../page-header/page-header';
     }
 
     p {
+      max-width: 640px;
       margin: 0;
     }
   `,
 })
 export class ComingSoon {
-  readonly title = (inject(ActivatedRoute).snapshot.data['title'] as string | undefined) ?? 'Próximamente';
+  private readonly data = inject(ActivatedRoute).snapshot.data as Record<string, string | undefined>;
+
+  readonly title = this.data['title'] ?? 'Próximamente';
+  readonly description = this.data['description'] ?? '';
+  readonly backTo = this.data['backTo'] ?? '/';
+  readonly backLabel = this.data['backLabel'] ?? 'Volver al inicio';
 }

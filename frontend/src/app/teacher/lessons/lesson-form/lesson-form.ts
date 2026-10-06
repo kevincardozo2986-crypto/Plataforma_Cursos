@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
+import { MediaField } from '../../../shared/ui/media-field/media-field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { ResourcePanel } from '../../resources/resource-panel/resource-panel';
 import { LessonInput, LessonWithResources } from '../lessons.models';
@@ -11,7 +12,7 @@ import { TeacherLessonsService } from '../lessons.service';
 /** Crear (desde un módulo) o editar una lección, con sus recursos. */
 @Component({
   selector: 'app-lesson-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, ResourcePanel],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, ResourcePanel, MediaField],
   templateUrl: './lesson-form.html',
   styleUrl: './lesson-form.scss',
 })
@@ -47,7 +48,8 @@ export class LessonForm {
     content: new FormControl('', { nonNullable: true }),
     videoUrl: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.pattern(/^$|^https?:\/\/\S+$/i)],
+      // Vacío, un enlace http(s) o un archivo ya subido a la plataforma.
+      validators: [Validators.pattern(/^$|^(?:https?:\/\/\S+|\/api\/uploads\/[a-f0-9]{32}\.[a-z0-9]+)$/i)],
     }),
     durationMinutes: new FormControl<number | null>(null, {
       validators: [Validators.min(1), Validators.max(100000)],
@@ -89,7 +91,7 @@ export class LessonForm {
       return 'El título debe tener entre 2 y 150 caracteres.';
     }
     if (control.hasError('pattern')) {
-      return 'Escribe una URL válida que empiece por http:// o https://';
+      return 'Escribe un enlace que empiece por http:// o https://, o sube un archivo.';
     }
 
     return 'Ingresa una duración válida en minutos (1 o más).';

@@ -1,0 +1,127 @@
+<form class="stack" [formGroup]="form" novalidate (ngSubmit)="$event.preventDefault()">
+  <!-- Resumen -->
+  <section class="panel-card block">
+    <h2>Resumen del curso</h2>
+
+    <div class="panel-field">
+      <label for="whatYouWillLearn">Qué aprenderá el estudiante</label>
+      <textarea
+        id="whatYouWillLearn"
+        class="panel-textarea"
+        formControlName="whatYouWillLearn"
+        placeholder="Un resultado por línea&#10;Ej. Crear una página web desde cero"
+      ></textarea>
+      <p class="panel-hint">Escribe un resultado por línea.</p>
+    </div>
+
+    <div class="panel-field">
+      <label for="audience">A quién va dirigido</label>
+      <textarea
+        id="audience"
+        class="panel-textarea short"
+        formControlName="audience"
+        placeholder="Ej. Personas sin experiencia previa que quieren empezar en programación"
+      ></textarea>
+    </div>
+
+    <fieldset class="duration">
+      <legend>Duración total</legend>
+
+      <div class="duration-row">
+        <div class="panel-field">
+          <label for="hours">Horas</label>
+          <input
+            id="hours"
+            class="panel-input"
+            type="number"
+            min="0"
+            formControlName="hours"
+            placeholder="0"
+            [attr.aria-invalid]="durationError() ? 'true' : null"
+          />
+        </div>
+
+        <div class="panel-field">
+          <label for="minutes">Minutos</label>
+          <input
+            id="minutes"
+            class="panel-input"
+            type="number"
+            min="0"
+            max="59"
+            formControlName="minutes"
+            placeholder="0"
+            [attr.aria-invalid]="durationError() ? 'true' : null"
+          />
+        </div>
+      </div>
+
+      @if (durationError()) {
+        <p class="panel-field-error">{{ durationError() }}</p>
+      }
+    </fieldset>
+
+    <div class="panel-field">
+      <label for="materials">Materiales incluidos</label>
+      <textarea
+        id="materials"
+        class="panel-textarea short"
+        formControlName="materials"
+        placeholder="Ej. Guías en PDF, plantillas y código de ejemplo"
+      ></textarea>
+    </div>
+
+    <div class="panel-field">
+      <label for="requirements">Requisitos</label>
+      <textarea
+        id="requirements"
+        class="panel-textarea short"
+        formControlName="requirements"
+        placeholder="Ej. Un computador con conexión a internet"
+      ></textarea>
+    </div>
+  </section>
+
+  <!-- Prerrequisitos -->
+  <section class="panel-card block">
+    <h2>Prerrequisitos</h2>
+    <p class="panel-muted intro">
+      Cursos que el estudiante debe completar antes de inscribirse en este.
+    </p>
+
+    @if (loadingCandidates()) {
+      <p class="panel-muted">Cargando tus cursos…</p>
+    } @else if (candidates().length === 0) {
+      <p class="panel-muted">Aún no tienes otros cursos que puedan ser prerrequisito.</p>
+    } @else {
+      <ul class="candidates">
+        @for (candidate of candidates(); track candidate.id) {
+          <li>
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="isSelected(candidate.id)"
+                (change)="toggle(candidate.id, $any($event.target).checked)"
+              />
+              <span>{{ candidate.title }}</span>
+            </label>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- Lo que todavía no está -->
+  <section class="panel-card block upcoming">
+    <h2>Próximamente en el asistente</h2>
+
+    <ul>
+      @for (item of upcoming; track item.label) {
+        <li>
+          <strong>{{ item.label }}</strong>
+          <span class="panel-muted">{{ item.hint }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+</form>

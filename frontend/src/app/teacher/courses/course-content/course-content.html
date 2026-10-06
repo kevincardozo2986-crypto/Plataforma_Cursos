@@ -1,5 +1,5 @@
-<section class="panel-page">
-  <div class="panel-container">
+<section [class.panel-page]="!embedded()">
+  <div [class.panel-container]="!embedded()">
     @if (loading()) {
       <div class="panel-card"><p class="panel-muted">Cargando contenido…</p></div>
     } @else if (!course()) {
@@ -9,6 +9,8 @@
       <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
     } @else {
       @if (course(); as current) {
+        <!-- Dentro del asistente, la cabecera y el estado los pone el asistente. -->
+        @if (!embedded()) {
         <app-page-header
           [title]="current.title"
           [subtitle]="modules().length + ' módulos · ' + lessonCount() + ' lecciones'"
@@ -51,6 +53,7 @@
             </button>
           }
         </div>
+        }
 
         @if (error()) {
           <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>

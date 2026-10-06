@@ -201,7 +201,7 @@ export class EvaluationForm {
           this.form.markAsPristine();
           this.notice.set('Cambios guardados.');
         } else {
-          void this.router.navigate(['/teacher/courses', this.courseId, 'content']);
+          void this.router.navigate(['/teacher/courses', this.courseId, 'edit', 'curriculum']);
         }
       },
       error: (error: unknown) => {

@@ -6,6 +6,7 @@ import {
   CategoryOption,
   CourseInput,
   CourseStatus,
+  CourseUpdate,
   CourseWithContent,
   TeacherCourse,
 } from './teacher-courses.models';
@@ -28,7 +29,12 @@ export class TeacherCoursesService {
     return this.http.post<TeacherCourse>('/api/courses', input);
   }
 
-  update(id: number, input: Partial<CourseInput>): Observable<TeacherCourse> {
+  /** Borrador vacío: lo pide el asistente de creación al abrirse. */
+  createDraft(): Observable<TeacherCourse> {
+    return this.http.post<TeacherCourse>('/api/courses/draft', {});
+  }
+
+  update(id: number, input: CourseUpdate): Observable<TeacherCourse> {
     return this.http.patch<TeacherCourse>(`/api/courses/${id}`, input);
   }
 

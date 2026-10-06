@@ -1,0 +1,349 @@
+:host {
+  display: block;
+}
+
+.shell {
+  --sb-width: 248px;
+
+  display: grid;
+  grid-template-columns: var(--sb-width) minmax(0, 1fr);
+
+  min-height: calc(100dvh - 92px);
+
+  background: var(--p-bg);
+
+  transition: grid-template-columns 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell {
+    transition: none;
+  }
+}
+
+/* Botón para contraer / expandir (solo escritorio). */
+.sidebar-head {
+  display: flex;
+  justify-content: flex-end;
+
+  margin: -8px 0 10px;
+  padding-right: 4px;
+}
+
+.collapse {
+  display: grid;
+  place-items: center;
+
+  width: 32px;
+  height: 32px;
+  padding: 0;
+
+  color: var(--p-muted);
+
+  background: transparent;
+  border: 0;
+  border-radius: var(--sb-radius, 6px);
+  cursor: pointer;
+
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.collapse:hover {
+  color: var(--p-ink);
+  background: var(--p-surface-2);
+}
+
+.collapse svg {
+  width: 18px;
+  height: 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/*
+ * Contraído: barra de solo íconos. Los textos se ocultan (cada enlace conserva
+ * su nombre con aria-label y title) y el submenú no se muestra.
+ */
+@media (min-width: 901px) {
+  .shell.collapsed {
+    --sb-width: 64px;
+  }
+
+  .collapsed .sidebar {
+    padding-right: 0;
+    overflow-x: hidden;
+  }
+
+  .collapsed .sidebar-head {
+    justify-content: center;
+
+    padding-right: 0;
+  }
+
+  .collapsed .link {
+    justify-content: center;
+
+    padding: 0;
+
+    border-radius: var(--sb-radius);
+  }
+
+  .collapsed .link span,
+  .collapsed .submenu {
+    display: none;
+  }
+
+  .collapsed .group-title {
+    height: 1px;
+    margin: 14px 12px 12px;
+    padding: 0;
+    overflow: hidden;
+
+    color: transparent;
+    font-size: 0;
+  }
+}
+
+/*
+ * Menú lateral minimalista: una tira plana con una sola línea divisoria.
+ * --sb-radius es la única esquina redondeada (el fondo al pasar el mouse);
+ * ponla en 0 para un menú totalmente cuadrado.
+ */
+.sidebar {
+  --sb-radius: 6px;
+
+  position: sticky;
+  top: 92px;
+  align-self: start;
+
+  height: calc(100dvh - 92px);
+  padding: 28px 16px 32px 0;
+  overflow-y: auto;
+
+  border-right: 1px solid var(--p-border);
+}
+
+.menu,
+.submenu {
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Cada ítem: sin relleno; el estado activo es una raya de 2 px a la izquierda. */
+.link {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 40px;
+  padding: 0 12px 0 20px;
+
+  color: var(--p-ink);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  border-radius: 0 var(--sb-radius) var(--sb-radius) 0;
+
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.link::before {
+  content: '';
+
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+
+  width: 2px;
+
+  background: transparent;
+  border-radius: 2px;
+
+  transition: background-color 140ms ease;
+}
+
+.link:hover {
+  background: var(--p-surface-2);
+}
+
+.link.active {
+  color: var(--p-accent);
+  font-weight: 600;
+}
+
+.link.active::before {
+  background: var(--p-accent);
+}
+
+.link svg {
+  flex: 0 0 auto;
+
+  width: 18px;
+  height: 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  opacity: 0.75;
+}
+
+.link.active svg {
+  opacity: 1;
+}
+
+/* Grupo "Próximamente": mismo menú, pero atenuado. */
+.group-title {
+  margin: 22px 0 8px;
+  padding: 18px 0 0 20px;
+
+  color: var(--p-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  border-top: 1px solid var(--p-border);
+}
+
+.muted .link {
+  color: var(--p-muted);
+}
+
+.muted .link.active {
+  color: var(--p-accent);
+}
+
+/* Submenú (Zoom): sangrado, sin íconos. */
+.submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  margin: 2px 0 6px 31px;
+  padding-left: 14px;
+
+  border-left: 1px solid var(--p-border);
+}
+
+.sub-link {
+  display: block;
+
+  padding: 7px 10px;
+
+  color: var(--p-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  border-radius: var(--sb-radius);
+}
+
+.sub-link:hover {
+  color: var(--p-ink);
+  background: var(--p-surface-2);
+}
+
+.sub-link.active {
+  color: var(--p-accent);
+  font-weight: 600;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: -2px;
+}
+
+.content {
+  min-width: 0;
+}
+
+/* En pantallas pequeñas el menú pasa arriba y se despliega con un botón. */
+.mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    display: block;
+  }
+
+  .mobile-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    padding: 14px 20px;
+
+    color: var(--p-ink);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: left;
+
+    background: var(--p-surface);
+    border: 0;
+    border-bottom: 1px solid var(--p-border);
+    cursor: pointer;
+  }
+
+  .mobile-toggle svg {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .sidebar {
+    position: static;
+
+    display: none;
+    height: auto;
+    padding: 12px 16px 20px 0;
+
+    background: var(--p-surface);
+    border-right: 0;
+    border-bottom: 1px solid var(--p-border);
+  }
+
+  .sidebar.open {
+    display: block;
+  }
+
+  .group-title {
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+
+  /* En móvil el menú ya se abre con su propio botón. */
+  .sidebar-head {
+    display: none;
+  }
+}

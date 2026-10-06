@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -11,8 +11,12 @@ import { ModuleCard } from '../../modules/module-card/module-card';
 import { TeacherModulesService } from '../../modules/modules.service';
 import { CourseStatus, CourseWithContent } from '../teacher-courses.models';
 import { TeacherCoursesService } from '../teacher-courses.service';
+import { CourseWizardService } from '../course-wizard/course-wizard.service';
 
-/** Constructor del curso: módulos y lecciones, con opción de publicar. */
+/**
+ * Constructor del curso: módulos, lecciones y evaluaciones.
+ * Es el paso 2 del asistente (modo `embedded`) y también funciona suelto.
+ */
 @Component({
   selector: 'app-course-content',
   imports: [ReactiveFormsModule, RouterLink, PageHeader, StatusBadge, ModuleCard],
@@ -23,7 +27,13 @@ export class CourseContent {
   private readonly coursesApi = inject(TeacherCoursesService);
   private readonly modulesApi = inject(TeacherModulesService);
 
-  readonly courseId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
+  /** true cuando lo muestra el asistente: sin cabecera ni barra de estado propias. */
+  readonly embedded = input(false);
+
+  /** Si está dentro del asistente, le pasa el curso cargado para que actualice su lista de pendientes. */
+  private readonly wizard = inject(CourseWizardService, { optional: true });
+
+  readonly courseId = this.findCourseId(inject(ActivatedRoute));
 
   readonly course = signal<CourseWithContent | null>(null);
   readonly loading = signal(true);
@@ -62,6 +72,7 @@ export class CourseContent {
     this.coursesApi.get(this.courseId).subscribe({
       next: (course) => {
         this.course.set(course);
+        this.wizard?.course.set(course);
         this.loading.set(false);
       },
       error: (error: unknown) => {
@@ -69,6 +80,19 @@ export class CourseContent {
         this.loading.set(false);
       },
     });
+  }
+
+  /** El id del curso está en la ruta; dentro del asistente, en la ruta padre. */
+  private findCourseId(route: ActivatedRoute): number {
+    for (let current: ActivatedRoute | null = route; current; current = current.parent) {
+      const id = current.snapshot.paramMap.get('id');
+
+      if (id) {
+        return Number(id);
+      }
+    }
+
+    return 0;
   }
 
   titleError(): string {

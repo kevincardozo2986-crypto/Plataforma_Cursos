@@ -70,6 +70,14 @@ export class CoursesController {
     return this.courses.create(user, dto);
   }
 
+  /** Crea un borrador vacío: es lo que hace el asistente de creación al abrirse. */
+  @Post('draft')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  createDraft(@CurrentUser() user: AuthenticatedUser) {
+    return this.courses.createDraft(user);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.ADMIN)
