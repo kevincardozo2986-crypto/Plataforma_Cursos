@@ -46,8 +46,9 @@ model User {
   // Cursos creados por este profesor
   courses Course[]
 
-  enrollments        Enrollment[]
-  evaluationAttempts EvaluationAttempt[]
+  enrollments           Enrollment[]
+  evaluationAttempts    EvaluationAttempt[]
+  assignmentSubmissions AssignmentSubmission[]
 
   @@map("users")
 }
@@ -157,6 +158,7 @@ model CourseModule {
 
   lessons     Lesson[]
   evaluations Evaluation[]
+  assignments Assignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -293,6 +295,65 @@ model EvaluationAttempt {
   @@index([evaluationId, userId])
   @@index([status])
   @@map("evaluation_attempts")
+}
+
+/// SUBMITTED: entregada, esperando nota. GRADED: calificada por el docente.
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+}
+
+/// Tarea calificable de un módulo (tercer tipo de ítem junto a lecciones y evaluaciones).
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  title       String
+  /// HTML ya sanitizado.
+  description String?
+  dueAt       DateTime?
+  /// false: pasada la fecha límite ya no se aceptan entregas.
+  allowLate   Boolean   @default(true)
+  maxScore    Int       @default(100)
+
+  moduleId Int
+  module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  submissions AssignmentSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@map("assignments")
+}
+
+/// Una entrega por estudiante y tarea; se puede reenviar mientras no esté calificada.
+model AssignmentSubmission {
+  id    Int     @id @default(autoincrement())
+  text  String?
+  /// [{ name, originalName, size }]: archivos privados (ver módulo uploads).
+  files Json    @default("[]")
+  /// Entregada después de la fecha límite.
+  late  Boolean @default(false)
+
+  status   SubmissionStatus @default(SUBMITTED)
+  score    Int?
+  feedback String?
+  gradedAt DateTime?
+  /// Docente que calificó (sin relación, para no acoplar con el módulo de usuarios).
+  gradedById Int?
+
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+  @@index([status])
+  @@map("assignment_submissions")
 }
 
 model Enrollment {

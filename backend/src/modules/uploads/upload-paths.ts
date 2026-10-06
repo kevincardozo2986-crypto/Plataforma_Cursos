@@ -7,6 +7,8 @@ import { extname, join } from 'node:path';
  * nombres válidos (ver STORED_NAME). Las subcarpetas con punto son internas:
  * - .incoming: originales recién subidos, esperando a optimizarse. No son públicos.
  * - .state: avance o error de la optimización de cada video.
+ * - .private: documentos de las entregas de los estudiantes. Nunca se sirven por la ruta
+ *   pública: solo los descarga quien tiene permiso (ver el módulo assignments).
  */
 export function uploadsDir(): string {
   return process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
@@ -19,6 +21,20 @@ export function incomingDir(): string {
 export function stateDir(): string {
   return join(uploadsDir(), '.state');
 }
+
+export function privateDir(): string {
+  return join(uploadsDir(), '.private');
+}
+
+/** Crea la carpeta privada si no existe y la devuelve (donde multer deja los documentos). */
+export function ensurePrivateDir(): string {
+  mkdirSync(privateDir(), { recursive: true });
+
+  return privateDir();
+}
+
+/** Nombre de un documento privado: 32 caracteres hexadecimales + extensión permitida. */
+export const PRIVATE_NAME = /^[a-f0-9]{32}\.(?:pdf|docx?|xlsx?|pptx?|zip|txt)$/;
 
 /** Crea las carpetas si no existen y devuelve la de entrada (donde multer deja lo recién subido). */
 export function ensureUploadDirs(): string {

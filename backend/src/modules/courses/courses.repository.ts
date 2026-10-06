@@ -154,6 +154,39 @@ export class CoursesRepository {
     return this.prisma.course.create({ data, omit: withoutSecrets });
   }
 
+  /**
+   * Un borrador del docente al que nadie ha tocado: con el título de borrador, sin
+   * descripción, módulos, medios, inscripciones ni ajustes cambiados. Sirve para no
+   * acumular borradores vacíos cada vez que se abre el asistente.
+   */
+  findUntouchedDraft(teacherId: number, draftTitle: string) {
+    return this.prisma.course.findFirst({
+      where: {
+        teacherId,
+        status: 'DRAFT',
+        title: draftTitle,
+        description: '',
+        price: 0,
+        visibility: 'PUBLIC',
+        accessPassword: null,
+        maxStudents: null,
+        imageUrl: null,
+        introVideoUrl: null,
+        categoryId: null,
+        whatYouWillLearn: null,
+        audience: null,
+        materials: null,
+        requirements: null,
+        durationMinutes: null,
+        modules: { none: {} },
+        enrollments: { none: {} },
+        requires: { none: {} },
+      },
+      orderBy: { id: 'desc' },
+      omit: withoutSecrets,
+    });
+  }
+
   /** Si `prerequisiteIds` viene, reemplaza la lista completa de prerrequisitos. */
   update(id: number, data: CourseData, prerequisiteIds?: number[]) {
     return this.prisma.$transaction(async (tx) => {

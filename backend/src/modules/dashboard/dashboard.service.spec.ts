@@ -34,6 +34,7 @@ function build() {
     quizStats: vi.fn().mockResolvedValue({ attempts: 10, average: 72, passed: 7 }),
     averageScoreByCourse: vi.fn().mockResolvedValue([{ courseId: 1, average: 80 }]),
     countPendingReviews: vi.fn().mockResolvedValue(3),
+    countPendingSubmissions: vi.fn().mockResolvedValue(4),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
   const service = new DashboardService(
@@ -68,6 +69,7 @@ describe('DashboardService.teacher', () => {
 
     expect(result.courses).toEqual({ total: 3, published: 2, draft: 1, archived: 0 });
     expect(result.quizzes).toEqual({ attempts: 10, averageScore: 72, passRate: 70, pendingReview: 3 });
+    expect(result.assignments).toEqual({ pendingGrading: 4 });
   });
 
   it('desglosa por curso, con su tasa y nota promedio (null si no hay intentos)', async () => {

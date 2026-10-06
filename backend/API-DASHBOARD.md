@@ -24,6 +24,7 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
     "rate": 32, "inactiveAfterDays": 30
   },
   "quizzes": { "attempts": 120, "averageScore": 74, "passRate": 81, "pendingReview": 5 },
+  "assignments": { "pendingGrading": 7 },
   "bucket": "day",
   "series": [ { "date": "2026-09-06", "enrollments": 2, "completions": 0 } ],
   "courseBreakdown": [
@@ -47,6 +48,8 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
 - **`quizzes`:** solo intentos **ya calificados** del periodo. `averageScore` es 0–100 y `passRate` el % de aprobados.
   `pendingReview` cuenta los intentos esperando calificación manual de preguntas abiertas, sin límite de fecha
   (es el número que va en un aviso "Tienes 5 por revisar", que lleva a la bandeja `GET /evaluation-attempts?status=PENDING_REVIEW`).
+- **`assignments.pendingGrading`:** entregas de tareas esperando nota, sin límite de fecha. Junto con `quizzes.pendingReview`
+  forma el aviso unificado "Tienes N por revisar" (ver `API-TAREAS.md` y `API-EVALUACIONES.md`).
 - **`series` (para la gráfica):** inscripciones y finalizaciones por fecha.
   - `bucket` es `day` (`date: "2026-10-06"`) en `7d`, `30d` y `90d`, y `month` (`date: "2026-10"`) en `1y` y `all`.
   - Los días o meses sin movimiento vienen con ceros, así que se puede graficar directo sin rellenar huecos.

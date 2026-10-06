@@ -15,14 +15,18 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { diskStorage } from 'multer';
 
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import type { MediaKind } from './media-signature.js';
-import { ensureUploadDirs, newStoredName } from './upload-paths.js';
+import { ensurePrivateDir, ensureUploadDirs, newStoredName } from './upload-paths.js';
 import {
+  acceptsDocument,
   acceptsExtension,
+  MAX_DOCUMENT_BYTES,
   MAX_UPLOAD_BYTES,
   type StoredFile,
   UploadsService,
@@ -67,12 +71,55 @@ function uploadOptions(kind: MediaKind) {
   };
 }
 
+/** Documentos de las entregas: caen directo en la carpeta privada, con nombre aleatorio. */
+const documentOptions = {
+  storage: diskStorage({
+    destination: (_req: unknown, _file: unknown, done: Callback<string>) => {
+      try {
+        done(null, ensurePrivateDir());
+      } catch (error) {
+        done(error as Error, '');
+      }
+    },
+    filename: (_req: unknown, file: { originalname: string }, done: Callback<string>) =>
+      done(null, newStoredName(file.originalname)),
+  }),
+  limits: { fileSize: MAX_DOCUMENT_BYTES, files: 1 },
+  fileFilter: (_req: unknown, file: { originalname: string }, done: Callback<boolean>) => {
+    if (acceptsDocument(file.originalname)) {
+      done(null, true);
+      return;
+    }
+
+    done(
+      new BadRequestException(
+        'Formato no permitido: usa PDF, Word, Excel, PowerPoint, ZIP o TXT',
+      ),
+      false,
+    );
+  },
+};
+
 @Controller('uploads')
 export class UploadsController {
   constructor(
     private readonly uploads: UploadsService,
     private readonly videos: VideoOptimizerService,
   ) {}
+
+  /**
+   * Documento para una entrega de tarea (hasta 20 MB). Lo puede subir cualquier usuario con
+   * sesión; queda privado: solo lo descargan quien lo subió y el docente del curso.
+   */
+  @Post('documents')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file', documentOptions))
+  uploadDocument(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file?: StoredFile,
+  ) {
+    return this.uploads.finishDocument(file, user.id);
+  }
 
   @Post('images')
   @UseGuards(JwtAuthGuard, RolesGuard)

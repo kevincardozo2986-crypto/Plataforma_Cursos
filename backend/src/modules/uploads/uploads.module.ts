@@ -10,5 +10,7 @@ import { VideoOptimizerService } from './video-optimizer.service.js';
   imports: [AuthModule],
   controllers: [UploadsController],
   providers: [UploadsService, VideoOptimizerService, FfmpegRunner],
+  // Otros módulos (tareas) usan los documentos privados a través de este servicio.
+  exports: [UploadsService],
 })
 export class UploadsModule {}

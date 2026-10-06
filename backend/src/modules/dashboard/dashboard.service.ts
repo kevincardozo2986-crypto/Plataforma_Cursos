@@ -58,6 +58,7 @@ export class DashboardService {
       quizzes,
       scores,
       pendingReview,
+      pendingSubmissions,
     ] = await Promise.all([
       this.repository.courseCountsByStatus(scope),
       this.repository.findCourses(scope),
@@ -70,6 +71,7 @@ export class DashboardService {
       this.repository.quizStats(scope, since),
       this.repository.averageScoreByCourse(scope, since),
       this.repository.countPendingReviews(scope),
+      this.repository.countPendingSubmissions(scope),
     ]);
 
     const count = (status: string) => enrollmentCounts.get(status) ?? 0;
@@ -106,6 +108,10 @@ export class DashboardService {
         averageScore: quizzes.average,
         passRate: percent(quizzes.passed, quizzes.attempts),
         pendingReview,
+      },
+      assignments: {
+        // Entregas esperando nota, sin límite de fecha.
+        pendingGrading: pendingSubmissions,
       },
       bucket,
       series: fillSeries(

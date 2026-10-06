@@ -103,8 +103,21 @@ export class CoursesService {
     });
   }
 
-  /** Borrador vacío: lo crea el asistente al abrirse; el profesor lo va completando. */
+  /**
+   * Borrador vacío: lo pide el asistente al abrirse; el profesor lo va completando.
+   * Si ya tiene uno sin tocar, lo reutiliza: abrir el asistente varias veces sin escribir
+   * nada no deja borradores huérfanos.
+   */
   async createDraft(user: AuthenticatedUser) {
+    const untouched = await this.repository.findUntouchedDraft(
+      user.id,
+      DRAFT_TITLE,
+    );
+
+    if (untouched) {
+      return untouched;
+    }
+
     return this.repository.create({
       title: DRAFT_TITLE,
       description: '',

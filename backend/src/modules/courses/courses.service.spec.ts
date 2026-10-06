@@ -35,6 +35,7 @@ function build() {
     create: vi.fn((data: unknown) => Promise.resolve(data)),
     slugExists: vi.fn().mockResolvedValue(false),
     slugOwner: vi.fn().mockResolvedValue(null),
+    findUntouchedDraft: vi.fn().mockResolvedValue(null),
     countByIds: vi.fn(),
     findById: vi.fn().mockResolvedValue(course()),
     update: vi.fn(
@@ -122,6 +123,18 @@ describe('CoursesService', () => {
         slug: 'curso-sin-titulo',
         teacherId: 7,
       });
+    });
+
+    it('si ya tiene un borrador sin tocar, lo reutiliza en vez de crear otro', async () => {
+      const { service, repository } = build();
+      const untouched = course({ id: 42, title: DRAFT_TITLE });
+      repository.findUntouchedDraft.mockResolvedValue(untouched);
+
+      const result = await service.createDraft(teacher);
+
+      expect(result).toBe(untouched);
+      expect(repository.findUntouchedDraft).toHaveBeenCalledWith(7, DRAFT_TITLE);
+      expect(repository.create).not.toHaveBeenCalled();
     });
 
     it('evita repetir la dirección cuando ya hay otro borrador', async () => {

@@ -69,4 +69,13 @@ export class CourseAccessRepository {
 
     return found?.module.courseId ?? null;
   }
+
+  async courseIdOfAssignment(assignmentId: number): Promise<number | null> {
+    const found = await this.prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      select: { module: { select: { courseId: true } } },
+    });
+
+    return found?.module.courseId ?? null;
+  }
 }

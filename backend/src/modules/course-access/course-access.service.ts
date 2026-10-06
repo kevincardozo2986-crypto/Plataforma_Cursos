@@ -104,6 +104,13 @@ export class CourseAccessService {
     );
   }
 
+  async courseIdOfAssignment(assignmentId: number): Promise<number> {
+    return this.orNotFound(
+      await this.repository.courseIdOfAssignment(assignmentId),
+      'La tarea no existe',
+    );
+  }
+
   private orNotFound(courseId: number | null, message: string): number {
     if (courseId === null) {
       throw new NotFoundException(message);

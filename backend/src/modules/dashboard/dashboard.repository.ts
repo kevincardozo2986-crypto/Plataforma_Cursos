@@ -160,6 +160,16 @@ export class DashboardRepository {
       GROUP BY m."courseId"`;
   }
 
+  /** Entregas de tareas esperando nota (sin límite de fecha). */
+  countPendingSubmissions(scope: Scope) {
+    return this.prisma.assignmentSubmission.count({
+      where: {
+        status: 'SUBMITTED',
+        assignment: { module: { course: courseFilter(scope) } },
+      },
+    });
+  }
+
   /** Intentos esperando que el docente califique preguntas abiertas (sin límite de fecha). */
   countPendingReviews(scope: Scope) {
     return this.prisma.evaluationAttempt.count({

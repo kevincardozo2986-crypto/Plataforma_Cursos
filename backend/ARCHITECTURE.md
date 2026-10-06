@@ -23,7 +23,7 @@ La lógica pura que se puede aislar vive en funciones sin dependencias (por ejem
 2. **Si un módulo necesita algo de otro, lo pide al service exportado de ese módulo**, nunca a su repositorio ni a sus tablas.
    Ejemplos: `courses` pregunta `CategoriesService.exists()`, `CourseModulesService.countByCourse()` y `ProgressService.countEnrollments()`.
 3. Las lecturas pueden seguir relaciones declaradas hacia abajo en el árbol de contenido (módulo → lecciones, lección → recursos, evaluación → preguntas → opciones).
-4. **Excepción única:** `course-access` resuelve a qué curso pertenece cualquier entidad (módulo, lección, recurso, evaluación) para decidir permisos. Es de solo lectura.
+4. **Excepción única:** `course-access` resuelve a qué curso pertenece cualquier entidad (módulo, lección, recurso, evaluación, tarea) para decidir permisos. Es de solo lectura.
 5. No se permiten dependencias circulares entre módulos.
 6. **Lectura agregada (`dashboard`):** los módulos de reportes y métricas pueden leer, solo para consultar, las tablas de varios módulos (cursos, inscripciones, evaluaciones) con agregados que no tiene sentido pedir uno por uno a cada service. Nunca escriben, y sus consultas viven en su propio repositorio. Cualquier módulo nuevo de este tipo (analíticas, exportaciones) sigue la misma regla.
 
@@ -36,6 +36,7 @@ courses ──► categories
 evaluations ──► progress    │
 lessons, resources,         ▼
 course-modules, progress, evaluations, courses ──► course-access
+assignments ──► progress, uploads   (inscripción; documentos privados de las entregas)
 dashboard ──► course-access   (lee cursos, inscripciones y evaluaciones; solo lectura)
 todos ──► auth (guards)
 ```

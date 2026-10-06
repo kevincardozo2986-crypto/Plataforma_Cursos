@@ -1,12 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
-import { existsSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
 import type { FfmpegRunner } from './ffmpeg-runner.js';
-import { ensureUploadDirs, incomingDir, uploadsDir } from './upload-paths.js';
-import { type StoredFile, UploadsService } from './uploads.service.js';
+import { ensureUploadDirs, incomingDir, privateDir, uploadsDir } from './upload-paths.js';
+import { cleanFileName, type StoredFile, UploadsService } from './uploads.service.js';
 import type { VideoOptimizerService } from './video-optimizer.service.js';
 
 const ID = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
@@ -136,6 +136,73 @@ describe('UploadsService', () => {
       await expect(service.finish(fake, 'video')).rejects.toBeInstanceOf(BadRequestException);
       expect(videos.enqueue).not.toHaveBeenCalled();
       expect(readdirSync(incomingDir())).toEqual([]);
+    });
+  });
+
+  describe('documentos privados', () => {
+    const pdf = Buffer.from('%PDF-1.7\n' + 'contenido '.repeat(20));
+
+    /** Lo que multer dejaría directamente en la carpeta privada. */
+    function privateUpload(extension: string, original: string, content: Buffer): StoredFile {
+      mkdirSync(privateDir(), { recursive: true });
+      const filename = `${ID}.${extension}`;
+      const path = join(privateDir(), filename);
+      writeFileSync(path, content);
+
+      return { filename, path, size: content.length, originalname: original };
+    }
+
+    it('guarda un PDF válido en la carpeta privada, con su ficha, y NO en la pública', async () => {
+      const { service } = build(true);
+
+      const result = await service.finishDocument(privateUpload('pdf', 'tarea.pdf', pdf), 5);
+
+      expect(result).toEqual({ name: `${ID}.pdf`, originalName: 'tarea.pdf', size: pdf.length, uploadedBy: 5 });
+      expect(existsSync(join(privateDir(), `${ID}.pdf`))).toBe(true);
+      expect(existsSync(join(uploadsDir(), `${ID}.pdf`))).toBe(false);
+      await expect(service.privateInfo(`${ID}.pdf`)).resolves.toMatchObject({ uploadedBy: 5 });
+      await expect(service.resolve(`${ID}.pdf`)).resolves.toBeNull(); // la ruta pública no lo entrega
+    });
+
+    it('rechaza y borra un archivo que no es lo que dice su extensión', async () => {
+      const { service } = build(true);
+      const fake = privateUpload('pdf', 'virus.pdf', Buffer.from('MZ esto es un programa disfrazado de pdf'));
+
+      await expect(service.finishDocument(fake, 5)).rejects.toBeInstanceOf(BadRequestException);
+      expect(existsSync(join(privateDir(), `${ID}.pdf`))).toBe(false);
+      await expect(service.privateInfo(`${ID}.pdf`)).resolves.toBeNull();
+    });
+
+    it('exige que venga un archivo', async () => {
+      await expect(build(true).service.finishDocument(undefined, 5)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('solo resuelve nombres válidos y borra archivo y ficha juntos', async () => {
+      const { service } = build(true);
+      await service.finishDocument(privateUpload('pdf', 'tarea.pdf', pdf), 5);
+
+      await expect(service.resolvePrivate(`${ID}.pdf`)).resolves.toBe(join(privateDir(), `${ID}.pdf`));
+      await expect(service.resolvePrivate('../../.env')).resolves.toBeNull();
+      await expect(service.resolvePrivate(`${ID}.json`)).resolves.toBeNull(); // la ficha no se descarga
+
+      await service.removePrivate([`${ID}.pdf`, '../../.env']);
+
+      expect(existsSync(join(privateDir(), `${ID}.pdf`))).toBe(false);
+      expect(existsSync(join(privateDir(), `${ID}.json`))).toBe(false);
+    });
+  });
+
+  describe('cleanFileName', () => {
+    it('recupera las tildes que multer entrega mal codificadas', () => {
+      expect(cleanFileName(Buffer.from('Tarea Ñandú.pdf', 'utf8').toString('latin1'))).toBe('Tarea Ñandú.pdf');
+    });
+
+    it('quita rutas y caracteres de control', () => {
+      expect(cleanFileName('..\\..\\etc/passwd\u0000.txt')).toBe('.._.._etc_passwd.txt');
+    });
+
+    it('un nombre vacío queda como "documento"', () => {
+      expect(cleanFileName('   ')).toBe('documento');
     });
   });
 
