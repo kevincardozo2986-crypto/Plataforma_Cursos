@@ -1,4 +1,4 @@
-﻿Generated with the built-in image_gen tool.
+﻿                                                            Generated with the built-in image_gen tool.
 
 Prompt:
 Use case: photorealistic-natural. Asset type: wide website hero background, aspect ratio 2.56:1. Create a bright university online-learning promotional photograph. Right half: young adult woman with long dark brown hair, white over-ear headphones and navy sweatshirt with small golden sun emblem, seated at light wooden desk studying with a silver laptop and writing in a notebook. Navy travel mug and stacked books at far right. Warm sunlit home study with plants and shelving, navy blue panel with subtle gold sun outline on far right, subtle yellow circle and pale blue arc behind woman. Left 48% is almost white softly blurred room, completely empty negative space for HTML text. Woman's face at x=76%, laptop at x=64%. Realistic premium editorial photography, natural skin and hands. No headline, no letters, no buttons, no UI, no watermark. Match the light airy navy-and-gold visual mood of the user's reference.
