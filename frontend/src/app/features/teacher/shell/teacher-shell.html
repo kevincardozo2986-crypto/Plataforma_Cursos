@@ -1,0 +1,101 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <button
+    type="button"
+    class="mobile-toggle"
+    [attr.aria-expanded]="open()"
+    aria-controls="teacher-sidebar"
+    (click)="toggle()"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      @if (open()) {
+        <path d="M6 6l12 12M18 6 6 18" />
+      } @else {
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      }
+    </svg>
+    Menú del docente
+  </button>
+
+  <aside id="teacher-sidebar" class="sidebar" [class.open]="open()">
+    <div class="sidebar-head">
+      <button
+        type="button"
+        class="collapse"
+        [attr.aria-expanded]="!collapsed()"
+        [attr.aria-label]="collapsed() ? 'Expandir el menú' : 'Contraer el menú'"
+        [attr.title]="collapsed() ? 'Expandir el menú' : 'Contraer el menú'"
+        aria-controls="teacher-sidebar"
+        (click)="toggleCollapsed()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          @if (collapsed()) {
+            <path d="m13 6 6 6-6 6M5 6l6 6-6 6" />
+          } @else {
+            <path d="m11 6-6 6 6 6M19 6l-6 6 6 6" />
+          }
+        </svg>
+      </button>
+    </div>
+
+    <nav aria-label="Panel del docente">
+      <ul class="menu">
+        @for (item of available; track item.path) {
+          <ng-container *ngTemplateOutlet="entry; context: { $implicit: item }" />
+        }
+      </ul>
+
+      <p id="upcoming-title" class="group-title">Próximamente</p>
+
+      <ul class="menu muted" aria-labelledby="upcoming-title">
+        @for (item of upcoming; track item.path) {
+          <ng-container *ngTemplateOutlet="entry; context: { $implicit: item }" />
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="content">
+    <router-outlet />
+  </div>
+</div>
+
+<!-- Un ítem del menú; los grupos con submenú (Zoom) lo despliegan al estar activos. -->
+<ng-template #entry let-item>
+  <li>
+    <a
+      class="link"
+      [routerLink]="'/teacher/' + item.path"
+      routerLinkActive="active"
+      #parent="routerLinkActive"
+      ariaCurrentWhenActive="page"
+      [attr.aria-label]="collapsed() ? item.label : null"
+      [attr.title]="collapsed() ? item.label : null"
+      (click)="close()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        @for (d of item.icon; track d) {
+          <path [attr.d]="d" />
+        }
+      </svg>
+      <span>{{ item.label }}</span>
+    </a>
+
+    @if (item.children && parent.isActive) {
+      <ul class="submenu">
+        @for (child of item.children; track child.path) {
+          <li>
+            <a
+              class="sub-link"
+              [routerLink]="'/teacher/' + child.path"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              (click)="close()"
+            >
+              {{ child.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </li>
+</ng-template>

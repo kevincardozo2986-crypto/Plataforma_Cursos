@@ -1,0 +1,590 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif}:host {
+  display: block;
+}
+
+.hero {
+  background: #fff;
+  color: #14171c;
+  overflow: hidden;
+}
+
+.hero-intro {
+  position: relative;
+  z-index: 2;
+  padding: 70px 24px 48px;
+  text-align: center;
+}
+
+.hero-announcement {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px solid #e6e8ed;
+  border-radius: 7px;
+  color: #424751;
+  text-decoration: none;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(19, 30, 48, 0.0196078431);
+}
+
+.announcement-mark {
+  color: #0757ed;
+  font-size: 1.1rem;
+}
+
+.hero h1 {
+  max-width: 1150px;
+  margin: 25px auto 22px;
+  font-size: clamp(2.8rem, 5.7vw, 5.4rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.065em;
+  overflow-wrap: anywhere;
+}
+
+.hero h1 > span {
+  color: #787e89;
+}
+
+.hero-description {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.6;
+  color: #656c78;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 46px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: transform 160ms, box-shadow 160ms;
+}
+
+.primary-action {
+  background: #0757ed;
+  color: white;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2509803922), 0 3px 6px rgba(7, 87, 237, 0.1333333333);
+}
+
+.secondary-action {
+  color: #272c34;
+  background: #f3f4f6;
+  border: 1px solid #e9eaed;
+}
+
+.hero-actions a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(20, 45, 86, 0.1333333333);
+}
+
+.hero a:focus-visible {
+  outline: 3px solid #0757ed;
+  outline-offset: 5px;
+}
+
+.hero-note {
+  color: #777e89;
+  font-size: 0.7rem;
+  margin: 16px 0 0;
+}
+
+.showcase {
+  position: relative;
+  isolation: isolate;
+  padding: 30px 0 58px;
+  background: radial-gradient(ellipse at 50% 70%, rgba(189, 214, 255, 0.5019607843), transparent 66%);
+}
+
+.showcase-grid {
+  position: absolute;
+  inset: 15% 0 0;
+  z-index: -1;
+  background-image: linear-gradient(rgba(218, 226, 237, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(218, 226, 237, 0.4) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(transparent, #000 45%, transparent);
+}
+
+.showcase-track {
+  display: grid;
+  grid-template-columns: 300px 720px 300px;
+  gap: 28px;
+  align-items: center;
+  width: max-content;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.story-card {
+  position: relative;
+  height: 362px;
+  border-radius: 12px;
+  overflow: hidden;
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(20, 35, 60, 0.1098039216);
+}
+
+.story-card img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.technology-card {
+  transform: perspective(1200px) rotateY(8deg) rotate(-5deg);
+  background: #102947;
+}
+
+.technology-card img {
+  object-position: 62% center;
+}
+
+.story-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 17, 44, 0.0509803922), rgba(0, 17, 44, 0.7490196078));
+}
+
+.story-content {
+  position: absolute;
+  z-index: 1;
+  left: 24px;
+  bottom: 25px;
+  right: 20px;
+}
+
+.card-eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+}
+
+.story-content h2 {
+  font-size: 2.8rem;
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  font-weight: 600;
+  margin: 14px 0;
+}
+
+.card-footnote {
+  font-size: 0.65rem;
+  color: #e0e6ef;
+}
+
+.campus-window {
+  position: relative;
+  border: 1px solid #dce2ec;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 25px 65px rgba(23, 61, 122, 0.1490196078), 0 3px 8px rgba(23, 61, 122, 0.0705882353);
+  transform: translateY(-8px);
+  overflow: hidden;
+}
+
+.window-toolbar {
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid #e7eaf0;
+  background: #fafbfc;
+  color: #727986;
+  font-size: 0.6rem;
+}
+
+.window-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.window-dots i {
+  width: 6px;
+  height: 6px;
+  background: #d4d8df;
+  border-radius: 50%;
+}
+
+.toolbar-symbol {
+  color: #0757ed;
+  font-size: 1rem;
+}
+
+.window-content {
+  padding: 20px;
+}
+
+.window-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.window-brand > span:first-child {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: #0a3058;
+}
+
+.brand-dot {
+  color: #eab52e;
+}
+
+.window-brand > span:last-child {
+  font-size: 0.58rem;
+  color: #6c7581;
+}
+
+.window-feature {
+  position: relative;
+  height: 282px;
+  border-radius: 5px;
+  background: #f3f4f4;
+  overflow: hidden;
+}
+
+.window-feature img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.window-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px;
+  background: linear-gradient(90deg, rgba(244, 245, 246, 0.9607843137), rgba(244, 245, 246, 0.7882352941) 33%, transparent 60%);
+  color: #0a3058;
+}
+
+.window-copy h2 {
+  font-size: 2.65rem;
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  margin: 15px 0 22px;
+}
+
+.window-copy a {
+  padding: 10px 12px;
+  color: #0a3058;
+  background: #f5c640;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.window-copy a > span {
+  margin-left: 10px;
+}
+
+.window-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 18px;
+  font-size: 0.62rem;
+  color: #667080;
+}
+
+.window-bottom > span:first-child > span {
+  color: #bd8811;
+  margin-right: 7px;
+}
+
+.community-card {
+  transform: perspective(1200px) rotateY(-8deg) rotate(5deg);
+  background: #133d6c;
+}
+
+.community-card img {
+  object-position: 70% center;
+}
+
+.community-top {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  z-index: 1;
+  top: 22px;
+  left: 24px;
+  right: 24px;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.community-top strong {
+  font-size: 1rem;
+}
+
+.community-top > span:last-child {
+  font-size: 1.6rem;
+  color: #f5c640;
+}
+
+.canvas-label {
+  display: block;
+  text-align: center;
+  margin-top: 30px;
+  font-size: 0.65rem;
+  color: #778393;
+}
+
+.hero-signature {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 24px 38px;
+  color: #747b86;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.hero-signature strong {
+  color: #343a45;
+  font-weight: 500;
+}
+
+.signature-name {
+  font-weight: 600;
+  color: #0a3058;
+}
+
+.signature-name > span {
+  color: #c28a14;
+  padding-left: 14px;
+  font-size: 1.4rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-intro {
+    animation: arrive 0.65s ease both;
+  }
+  .campus-window {
+    animation: arrive 0.9s 0.12s ease both;
+  }
+  @keyframes arrive {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
+@media (max-width: 1000px) {
+  .showcase-track {
+    grid-template-columns: 230px 620px 230px;
+    gap: 20px;
+  }
+  .story-card {
+    height: 330px;
+  }
+  .window-copy h2 {
+    font-size: 2.3rem;
+  }
+}
+@media (max-width: 700px) {
+  .hero-intro {
+    padding: 44px 20px 28px;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 8.4vw, 3.7rem);
+    letter-spacing: -0.055em;
+  }
+  .desktop-break {
+    display: none;
+  }
+  .showcase {
+    padding: 18px 16px 20px;
+  }
+  .showcase-track {
+    width: 100%;
+    left: auto;
+    transform: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .campus-window {
+    grid-column: 1/-1;
+    grid-row: 1;
+    transform: none;
+  }
+  .window-content {
+    padding: 12px;
+  }
+  .window-feature {
+    height: 230px;
+  }
+  .window-copy {
+    padding: 16px;
+  }
+  .window-copy h2 {
+    font-size: clamp(1.65rem, 5vw, 2.3rem);
+  }
+  .window-copy .card-eyebrow {
+    font-size: 0.52rem;
+  }
+  .window-copy a {
+    max-width: 160px;
+    line-height: 1.5;
+  }
+  .window-bottom {
+    font-size: 0.52rem;
+  }
+  .story-card {
+    height: 230px;
+    transform: none;
+  }
+  .story-content {
+    left: 14px;
+    right: 12px;
+    bottom: 18px;
+  }
+  .story-content h2 {
+    font-size: 1.9rem;
+  }
+  .card-footnote {
+    display: none;
+  }
+  .community-top {
+    top: 16px;
+    left: 14px;
+    right: 14px;
+  }
+  .hero-signature {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 12px;
+  }
+}</style>﻿<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-intro">
+    <a class="hero-announcement" href="#courses"
+      ><span class="announcement-mark" aria-hidden="true">✦</span> Un nuevo espacio para aprender
+      <span aria-hidden="true">↗</span></a
+    >
+    
+      <h1 id="hero-title">Aprende algo nuevo.<br /><span>Haz algo extraordinario.</span></h1>
+    <p class="hero-description">
+      Convierte tu curiosidad en nuevas posibilidades.<br class="desktop-break" />
+      Explora, aprende y crece con la Universidad Santo Tomás.
+    </p>
+    <div class="hero-actions">
+      <a class="primary-action" href="#courses"
+        >Explorar cursos <span aria-hidden="true">↗</span></a
+      >
+      
+        <a class="secondary-action" routerLink="/register"
+          >Crear mi cuenta <span aria-hidden="true">→</span></a
+        >
+    </div>
+    <p class="hero-note">Tu ritmo. Tu camino. Todo tu potencial.</p>
+  </div>
+
+  <div class="showcase" aria-label="Aprende, conecta y transforma con la Santoto">
+    <div class="showcase-grid" aria-hidden="true"></div>
+    <div class="showcase-track">
+      <article class="story-card technology-card">
+        <img
+          src="../frontend/public/images/chicopc.png"
+          alt="Estudiante trabajando en su computador"
+          width="1672"
+          height="941"
+        />
+        <div class="story-content">
+          <span class="card-eyebrow">Ideas que se convierten en realidad</span>
+          <h2>Imagina.<br />Crea.<br />Transforma.</h2>
+          <span class="card-footnote">El futuro también lo construyes tú.</span>
+        </div>
+      </article>
+
+      <article class="campus-window">
+        <div class="window-toolbar">
+          <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span
+          ><span>Tu universo de aprendizaje</span
+          ><span class="toolbar-symbol" aria-hidden="true">✦</span>
+        </div>
+        <div class="window-content">
+          <div class="window-brand">
+            <span>SANTOTO<span class="brand-dot">.</span></span
+            ><span>Campus virtual ↗</span>
+          </div>
+          <div class="window-feature">
+            <img
+              src="../frontend/public/images/hero-learning.png"
+              alt="Estudiante aprendiendo en línea y tomando notas"
+              width="2006"
+              height="784"
+              fetchpriority="high"
+            />
+            <div class="window-copy">
+              <span class="card-eyebrow">Aprender lo cambia todo</span>
+              <h2>El siguiente<br />capítulo es tuyo.</h2>
+              <a href="#courses">Descubre por dónde empezar <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+          <div class="window-bottom">
+            <span><span aria-hidden="true">✳</span> Sigue tu curiosidad</span
+            ><span>Aprende a tu ritmo <span aria-hidden="true">↗</span></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="story-card community-card">
+        <img
+          src="../frontend/public/images/chica1.png"
+          alt="Estudiante en el campus universitario"
+          width="1983"
+          height="793"
+        />
+        <div class="community-top">
+          <span>SOMOS<br /><strong>SANTOTO.</strong></span
+          ><span aria-hidden="true">↗</span>
+        </div>
+        <div class="story-content">
+          <span class="card-eyebrow">Conocimiento que conecta</span>
+          <h2>Tu mundo.<br />Más grande.</h2>
+          <span class="card-footnote">Una comunidad para ir más lejos.</span>
+        </div>
+      </article>
+    </div>
+    <span class="canvas-label" aria-hidden="true">Un espacio. Infinitas posibilidades.</span>
+  </div>
+  <div class="hero-signature">
+    <span
+      >El respaldo de una universidad.<br /><strong
+        >La libertad de aprender a tu manera.</strong
+      ></span
+    ><span class="signature-name">Universidad Santo Tomás <span aria-hidden="true">✦</span></span>
+  </div>
+</section>
+</html><style>*{animation:none!important}</style>

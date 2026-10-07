@@ -1,0 +1,456 @@
+:host {
+  display: block;
+  min-height: calc(100dvh - 92px);
+}
+
+/* =========================================
+   PÁGINA
+   ========================================= */
+
+.register-page {
+  --ink: #08284b;
+  --muted: #687a98;
+  --border: rgba(117, 139, 169, 0.28);
+  --surface: rgba(255, 255, 255, 0.82);
+  --link: #075bd8;
+  --gold: #f0b51b;
+
+  position: relative;
+  isolation: isolate;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: calc(100dvh - 92px);
+
+  box-sizing: border-box;
+
+  padding: 100px 24px 42px;
+
+  overflow: hidden;
+
+  color: var(--ink);
+
+  background: #08294c;
+}
+
+/* =========================================
+   FONDO
+   ========================================= */
+
+.campus-background {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+
+  background: url('/images/prueba1.png') center center / cover no-repeat;
+
+  transform: scale(1.015);
+}
+
+.campus-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 25, 48, 0.42) 0%,
+      rgba(3, 29, 55, 0.16) 28%,
+      rgba(6, 39, 70, 0.04) 55%,
+      rgba(4, 29, 55, 0.12) 75%,
+      rgba(3, 23, 44, 0.27) 100%
+    ),
+    linear-gradient(180deg, rgba(4, 28, 53, 0.04) 0%, transparent 55%, rgba(2, 19, 37, 0.37) 100%);
+
+  pointer-events: none;
+}
+
+/* =========================================
+   CARD
+   ========================================= */
+
+.register-card {
+  position: relative;
+  z-index: 4;
+
+  width: min(100%, 720px);
+
+  box-sizing: border-box;
+
+  padding: 25px 38px 24px;
+
+  border: 1px solid rgba(255, 255, 255, 0.76);
+
+  border-radius: 25px;
+
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(247, 249, 253, 0.78));
+
+  backdrop-filter: blur(17px) saturate(125%);
+
+  -webkit-backdrop-filter: blur(17px) saturate(125%);
+
+  box-shadow:
+    0 28px 70px rgba(3, 23, 46, 0.22),
+    0 8px 24px rgba(3, 23, 46, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  animation: card-enter 420ms ease-out both;
+}
+
+/* Reflejo glass */
+
+.register-card::before {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    transparent 35%,
+    rgba(255, 255, 255, 0.07)
+  );
+
+  pointer-events: none;
+}
+
+/* Mantiene el contenido sobre el reflejo */
+
+.register-header,
+app-register-form,
+.register-footer {
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================
+   HEADER REGISTER
+   ========================================= */
+
+.register-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin-bottom: 16px;
+
+  text-align: center;
+}
+
+/* Logo Campus Virtual */
+
+.campus-logo {
+  display: block;
+
+  width: min(100%, 245px);
+  height: auto;
+
+  margin: 0 auto 8px;
+
+  object-fit: contain;
+}
+
+/* =========================================
+   TITULO
+   ========================================= */
+
+.header-copy h1 {
+  margin: 0;
+
+  color: #08284b;
+
+  /*
+    Mantiene la personalidad que ya usamos
+    en el login sin hacerlo demasiado grande.
+  */
+
+  font-family: 'Segoe Script', 'Bradley Hand', cursive;
+
+  font-size: clamp(1.75rem, 2.5vw, 2.2rem);
+
+  font-weight: 600;
+
+  line-height: 1.12;
+
+  letter-spacing: -0.035em;
+}
+
+/* =========================================
+   SUBTÍTULO
+   ========================================= */
+
+.header-copy p {
+  margin: 6px 0 0;
+
+  color: #718199;
+
+  font-size: 0.72rem;
+  font-weight: 450;
+
+  line-height: 1.45;
+}
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.register-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  margin-top: 14px;
+
+  color: #8290a3;
+
+  font-size: 0.72rem;
+}
+
+.register-footer a {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #075bd8;
+
+  font-weight: 650;
+
+  text-decoration: none;
+
+  transition:
+    color 150ms ease,
+    gap 150ms ease;
+}
+
+.register-footer a:hover {
+  gap: 8px;
+
+  color: #0349b3;
+}
+
+.register-footer a span {
+  font-size: 1rem;
+
+  line-height: 1;
+}
+
+/* =========================================
+   DARK MODE
+   ========================================= */
+
+:host-context(.a11y-dark) .register-page {
+  --ink: #edf4fa;
+  --muted: #a7b7c8;
+}
+
+:host-context(.a11y-dark) .register-card {
+  border-color: rgba(255, 255, 255, 0.1);
+
+  background: linear-gradient(135deg, rgba(7, 29, 51, 0.96), rgba(5, 23, 42, 0.92));
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.a11y-dark) .header-copy h1 {
+  color: #f3f7fb;
+}
+
+:host-context(.a11y-dark) .header-copy p {
+  color: #a6b6c8;
+}
+
+:host-context(.a11y-dark) .register-footer {
+  color: #9bacc0;
+}
+
+:host-context(.a11y-dark) .register-footer a {
+  color: #72b8ef;
+}
+
+/* =========================================
+   ALTO CONTRASTE
+   ========================================= */
+
+:host-context(.a11y-contrast) .register-card {
+  border: 2px solid #ffffff;
+
+  background: rgba(255, 255, 255, 0.97);
+}
+
+:host-context(.a11y-contrast) .campus-overlay {
+  background: rgba(0, 18, 36, 0.58);
+}
+
+:host-context(.a11y-contrast) .header-copy h1 {
+  color: #00172d;
+}
+
+:host-context(.a11y-contrast) .header-copy p {
+  color: #253b53;
+}
+
+/* =========================================
+   TEXTO GRANDE
+   ========================================= */
+
+:host-context(.a11y-large-text) .header-copy h1 {
+  font-size: 2.3rem;
+}
+
+:host-context(.a11y-large-text) .header-copy p,
+:host-context(.a11y-large-text) .register-footer {
+  font-size: 0.84rem;
+}
+
+/* =========================================
+   ANIMACIÓN
+   ========================================= */
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register-card {
+    animation: none;
+  }
+
+  .register-footer a {
+    transition: none;
+  }
+}
+
+/* =========================================
+   PANTALLAS BAJAS
+   ========================================= */
+
+@media (max-height: 850px) and (min-width: 761px) {
+  .register-page {
+    align-items: flex-start;
+
+    padding-top: 88px;
+    padding-bottom: 28px;
+
+    overflow-y: auto;
+  }
+
+  .register-card {
+    width: min(100%, 700px);
+
+    padding: 21px 34px 20px;
+  }
+
+  .campus-logo {
+    width: 215px;
+
+    margin-bottom: 5px;
+  }
+
+  .header-copy h1 {
+    font-size: 1.75rem;
+  }
+
+  .register-header {
+    margin-bottom: 12px;
+  }
+}
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 900px) {
+  .campus-background {
+    background-position: 63% center;
+  }
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 760px) {
+  .register-page {
+    align-items: flex-start;
+
+    min-height: calc(100dvh - 92px);
+
+    padding: 100px 16px 28px;
+
+    overflow-y: auto;
+  }
+
+  .register-card {
+    width: 100%;
+
+    padding: 27px 24px 24px;
+
+    border-radius: 21px;
+
+    background: rgba(250, 252, 255, 0.9);
+  }
+
+  .campus-logo {
+    width: 220px;
+  }
+
+  .campus-background {
+    background-position: 70% center;
+  }
+
+  .campus-overlay {
+    background: linear-gradient(180deg, rgba(3, 25, 49, 0.27), rgba(3, 25, 49, 0.2));
+  }
+
+  .register-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================
+   MOBILE PEQUEÑO
+   ========================================= */
+
+@media (max-width: 480px) {
+  .register-page {
+    padding: 90px 12px 22px;
+  }
+
+  .register-card {
+    padding: 24px 18px 22px;
+  }
+
+  .campus-logo {
+    width: 200px;
+  }
+
+  .header-copy h1 {
+    font-size: 1.65rem;
+  }
+
+  .header-copy p {
+    max-width: 280px;
+  }
+}

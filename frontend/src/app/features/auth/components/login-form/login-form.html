@@ -1,0 +1,109 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate [attr.aria-busy]="loading()">
+  <div class="field">
+    <label for="identifier">
+      {{ 'Correo electrónico o número de cédula' | t }}
+    </label>
+
+    <div
+      class="input-wrap"
+      [class.invalid]="form.controls.identifier.touched && form.controls.identifier.invalid"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="12" cy="7" r="4" />
+        <path d="M4 21v-3a8 8 0 0 1 16 0v3Z" />
+      </svg>
+
+      <input
+        id="identifier"
+        formControlName="identifier"
+        type="text"
+        autocomplete="username"
+        [placeholder]="'Ingresa tu correo o número de cédula' | t"
+        aria-describedby="identifier-error"
+        [attr.aria-invalid]="form.controls.identifier.touched && form.controls.identifier.invalid"
+      />
+    </div>
+
+    <div id="identifier-error" class="field-error">
+      @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
+        {{ 'Ingresa tu correo o número de cédula.' | t }}
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="password">{{ 'Contraseña' | t }}</label>
+
+    <div
+      class="input-wrap"
+      [class.invalid]="form.controls.password.touched && form.controls.password.invalid"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <rect x="4" y="10" width="16" height="12" rx="2" />
+        <path d="M7 10V6a5 5 0 0 1 10 0v4" />
+      </svg>
+
+      <input
+        id="password"
+        formControlName="password"
+        [type]="showPassword() ? 'text' : 'password'"
+        autocomplete="current-password"
+        [placeholder]="'Ingresa tu contraseña' | t"
+        aria-describedby="password-error"
+        [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+      />
+
+      <button
+        class="eye"
+        type="button"
+        (click)="showPassword.set(!showPassword())"
+        [attr.aria-label]="(showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña') | t"
+        [attr.aria-pressed]="showPassword()"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+
+          <circle cx="12" cy="12" r="3" />
+
+          @if (showPassword()) {
+            <path d="m3 3 18 18" />
+          }
+        </svg>
+      </button>
+    </div>
+
+    <div id="password-error" class="field-error">
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        {{ 'La contraseña debe tener al menos 8 caracteres.' | t }}
+      }
+    </div>
+  </div>
+
+  <div class="form-options">
+    <label class="remember">
+      <input type="checkbox" formControlName="remember" />
+
+      <span>{{ 'Recordarme en este equipo' | t }}</span>
+    </label>
+
+    <button class="text-link" type="button" (click)="recoveryRequested.emit()">
+      {{ '¿Olvidaste tu contraseña?' | t }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="error-message" role="alert">
+      {{ error() | t }}
+    </p>
+  }
+
+  <button class="submit" type="submit" [disabled]="loading()">
+    <span class="submit-label">
+      {{ (loading() ? 'Iniciando sesión…' : 'Iniciar sesión') | t }}
+    </span>
+
+    @if (!loading()) {
+      <span class="submit-arrow" aria-hidden="true"> → </span>
+    }
+  </button>
+</form>

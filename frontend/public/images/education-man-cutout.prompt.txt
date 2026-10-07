@@ -1,0 +1,1 @@
+﻿Built-in imagegen, background extraction: remove only the white background from the supplied man photo; preserve face, smile, hair, blue shirt, trousers, hands, book, pose and framing; genuine transparent alpha; no added objects or shadows.

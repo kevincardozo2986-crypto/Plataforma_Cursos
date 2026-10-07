@@ -1,0 +1,58 @@
+﻿:host {
+  display: block;
+}
+.course-detail {
+  max-width: 1000px;
+  margin: auto;
+  padding: 65px 24px;
+  color: #153553;
+}
+.back {
+  display: block;
+  color: #426a95;
+  font-size: 0.85rem;
+  margin-bottom: 40px;
+  text-decoration: none;
+}
+.category {
+  font-size: 0.65rem;
+  letter-spacing: 0.13em;
+}
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  margin: 14px 0 30px;
+}
+.course-detail img {
+  display: block;
+  width: 100%;
+  max-height: 450px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.description {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  white-space: pre-line;
+  margin: 28px 0;
+}
+.login {
+  display: inline-block;
+  padding: 14px 24px;
+  color: #fff;
+  background: #1758df;
+  border-radius: 999px;
+  text-decoration: none;
+}
+a:focus-visible {
+  outline: 3px solid #e8bd37;
+  outline-offset: 5px;
+}
+:host-context(.a11y-dark) .course-detail {
+  color: #e1edf8;
+}
+
+.intro-video h2 { margin: 0 0 16px; font-size: 1.25rem; }
+.intro-video video { display: block; width: 100%; max-height: 520px; aspect-ratio: 16 / 9; object-fit: contain; background: #0f2339; border-radius: 12px; }
+.intro-video p { line-height: 1.7; }

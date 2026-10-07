@@ -1,0 +1,35 @@
+<main class="login-page">
+  <div class="campus-background" aria-hidden="true"></div>
+  <div class="campus-overlay" aria-hidden="true"></div>
+
+  <section class="login-card" aria-labelledby="welcome-title">
+    <app-login-header />
+
+    @if (auth.user(); as user) {
+      <section class="success" aria-live="polite">
+        <span class="check" aria-hidden="true">✓</span>
+
+        <h2>{{ 'Hola,' | t }} {{ user.firstName }}</h2>
+        <p>{{ 'Has iniciado sesión correctamente.' | t }}</p>
+        <p>{{ user.email }}</p>
+
+        <button type="button" (click)="auth.logout()">{{ 'Cerrar sesión' | t }}</button>
+      </section>
+    } @else {
+      <app-login-form
+        [loading]="loading()"
+        [error]="error()"
+        (submitted)="login($event)"
+        (recoveryRequested)="unavailable('La recuperación de contraseña')"
+      />
+
+      <app-login-links (requested)="unavailable($event)" />
+    }
+
+    @if (notice() || auth.storageNotice()) {
+      <p class="notice" role="status">
+        {{ notice() || auth.storageNotice() | t }}
+      </p>
+    }
+  </section>
+</main>

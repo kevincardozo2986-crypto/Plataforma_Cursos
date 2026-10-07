@@ -1,0 +1,122 @@
+:host {
+  display: block;
+}
+
+/* Usa las variables --p-* globales: cambian solas en modo oscuro. */
+.courses {
+  padding: clamp(4rem, 7vw, 7rem) clamp(1.5rem, 6vw, 7rem);
+
+  color: var(--p-ink);
+  background: var(--p-bg);
+}
+
+.courses-container {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+}
+
+.heading {
+  max-width: 720px;
+  margin: 0 auto 2.2rem;
+
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 1rem;
+
+  color: var(--p-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+h2 span {
+  color: var(--p-accent);
+}
+
+.heading p {
+  margin: 1.1rem 0 0;
+
+  color: var(--p-muted);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+
+  margin-bottom: 2rem;
+}
+
+.chip {
+  padding: 9px 18px;
+
+  color: var(--p-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 999px;
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.chip:hover {
+  background: var(--p-surface-2);
+}
+
+.chip.active {
+  color: var(--p-accent-ink);
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 26px;
+}
+
+.state {
+  margin: 2rem 0;
+
+  color: var(--p-muted);
+  text-align: center;
+}
+
+.state.error {
+  color: var(--p-danger);
+}
+
+.notice {
+  max-width: 560px;
+  margin: 0 auto 1.5rem;
+  padding: 12px 18px;
+
+  color: var(--p-accent);
+  font-size: 0.92rem;
+  text-align: center;
+
+  background: var(--p-accent-soft);
+  border-radius: 12px;
+}

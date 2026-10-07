@@ -1,0 +1,50 @@
+<main class="register-page">
+  <!-- Fondo -->
+  <div class="campus-background" aria-hidden="true"></div>
+
+  <div class="campus-overlay" aria-hidden="true"></div>
+
+  <!-- Card -->
+  <section class="register-card" aria-labelledby="register-title">
+    <!-- Header del formulario -->
+    <header class="register-header">
+      <img
+        class="campus-logo campus-logo--light"
+        src="/images/campus-virtual-logo.png"
+        [alt]="'Campus Virtual · Universidad Santo Tomás' | t"
+      />
+      <img
+        class="campus-logo campus-logo--dark"
+        src="/images/campus-virtual-logo-white.png"
+        [alt]="'Campus Virtual · Universidad Santo Tomás' | t"
+      />
+
+      <div class="header-copy">
+        <p>
+          {{ 'Regístrate para comenzar tu experiencia académica' | t }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Formulario -->
+    <app-register-form (submitted)="register($event)" />
+
+    @if (error()) {
+      <p class="register-error" role="alert">
+        {{ error() | t }}
+      </p>
+    }
+
+    <!-- Volver al login -->
+    <footer class="register-footer">
+      <span>
+        {{ '¿Ya tienes una cuenta?' | t }}
+      </span>
+
+      <a routerLink="/login">
+        {{ 'Iniciar sesión' | t }}
+        <span aria-hidden="true">→</span>
+      </a>
+    </footer>
+  </section>
+</main>

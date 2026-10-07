@@ -1,0 +1,32 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  max-width: 860px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tall {
+  min-height: 220px;
+}
+
+.duration {
+  max-width: 260px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+}

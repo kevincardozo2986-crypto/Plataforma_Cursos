@@ -1,0 +1,23 @@
+﻿<div class="divider">
+  <span></span>
+
+  <small>{{ 'o continúa explorando' | t }}</small>
+
+  <span></span>
+</div>
+
+<p class="guest">
+  <button class="action-link" type="button" (click)="requested.emit('El acceso como invitado')">
+    {{ 'Acceder como invitado' | t }}
+    <span aria-hidden="true">→</span>
+  </button>
+</p>
+
+<p class="signup">
+  <span>{{ '¿Aún no tienes una cuenta?' | t }}</span>
+
+  <a class="action-link" routerLink="/register">
+    {{ 'Crear cuenta' | t }}
+    <span aria-hidden="true">→</span>
+  </a>
+</p>

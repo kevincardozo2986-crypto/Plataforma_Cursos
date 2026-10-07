@@ -1,0 +1,457 @@
+:host {
+  display: block;
+}
+
+form {
+  width: 100%;
+}
+
+/* =========================================
+   FILAS DE DOS COLUMNAS
+   ========================================= */
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+/* =========================================
+   CAMPOS
+   ========================================= */
+
+.field {
+  min-width: 0;
+
+  margin-bottom: 10px;
+}
+
+.field > label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: var(--ink, #08284b);
+
+  font-size: 0.78rem;
+  font-weight: 650;
+
+  line-height: 1.3;
+}
+
+/* =========================================
+   INPUT
+   ========================================= */
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 49px;
+
+  gap: 10px;
+
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(113, 137, 169, 0.33);
+  border-radius: 11px;
+
+  background: rgba(255, 255, 255, 0.72);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.input-wrap:hover {
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.input-wrap:focus-within {
+  border-color: #4e78ad;
+
+  background: rgba(255, 255, 255, 0.94);
+
+  box-shadow: 0 0 0 3px rgba(36, 92, 157, 0.08);
+}
+
+/* =========================================
+   ICONOS
+   ========================================= */
+
+.input-wrap > svg {
+  width: 19px;
+  height: 19px;
+
+  flex: 0 0 auto;
+
+  fill: none;
+
+  stroke: #8190ad;
+  stroke-width: 1.7;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* =========================================
+   INPUT REAL
+   ========================================= */
+
+.input-wrap input {
+  min-width: 0;
+  width: 100%;
+  height: 47px;
+
+  padding: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--ink, #08284b);
+
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.input-wrap input::placeholder {
+  overflow: hidden;
+
+  color: #8a98ad;
+
+  opacity: 1;
+
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   MOSTRAR CONTRASEÑA
+   ========================================= */
+
+.eye {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 auto;
+
+  margin-right: -6px;
+  padding: 6px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #8290ab;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.eye:hover {
+  background: rgba(9, 44, 80, 0.06);
+
+  color: #173d68;
+}
+
+.eye svg {
+  width: 19px;
+  height: 19px;
+
+  fill: none;
+
+  stroke: currentColor;
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* =========================================
+   ERRORES
+   ========================================= */
+
+.field-error {
+  min-height: 15px;
+
+  padding-top: 2px;
+
+  color: #a62935;
+
+  font-size: 0.62rem;
+
+  line-height: 1.25;
+}
+
+.input-wrap.invalid {
+  border-color: #b83a43;
+
+  background: rgba(255, 250, 250, 0.88);
+
+  box-shadow: 0 0 0 2px rgba(184, 58, 67, 0.05);
+}
+
+/* =========================================
+   TÉRMINOS
+   ========================================= */
+
+.terms {
+  margin: 1px 0 15px;
+}
+
+.terms label {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  color: #687a96;
+
+  font-size: 0.68rem;
+
+  line-height: 1.45;
+
+  cursor: pointer;
+}
+
+.terms input {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 auto;
+
+  margin: 1px 0 0;
+
+  accent-color: #07355f;
+}
+
+.terms a {
+  color: #075bd8;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.terms a:hover {
+  text-decoration: underline;
+}
+
+.terms-error {
+  margin: 4px 0 0 24px;
+
+  color: #a62935;
+
+  font-size: 0.62rem;
+}
+
+/* =========================================
+   BOTÓN PRINCIPAL
+   ========================================= */
+
+.submit {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 52px;
+
+  padding: 0 58px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: linear-gradient(105deg, #073762 0%, #05294e 100%);
+
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 20px rgba(5, 42, 79, 0.11);
+
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+
+.submit:hover {
+  transform: translateY(-1px);
+
+  filter: brightness(1.06);
+
+  box-shadow: 0 11px 25px rgba(5, 42, 79, 0.16);
+}
+
+.submit:active {
+  transform: translateY(0);
+}
+
+.submit-arrow {
+  position: absolute;
+
+  top: 50%;
+  right: 25px;
+
+  transform: translateY(-52%);
+
+  font-size: 1.45rem;
+  font-weight: 300;
+
+  line-height: 1;
+}
+
+/* =========================================
+   ACCESIBILIDAD
+   ========================================= */
+
+:host-context(.a11y-large-text) {
+  .field > label {
+    font-size: 0.9rem;
+  }
+
+  .input-wrap input {
+    font-size: 0.9rem;
+  }
+
+  .terms label {
+    font-size: 0.8rem;
+  }
+
+  .submit {
+    font-size: 1rem;
+  }
+}
+
+:host-context(.a11y-contrast) {
+  .input-wrap {
+    border-color: #315575;
+
+    background: rgba(255, 255, 255, 0.97);
+  }
+
+  .field > label {
+    color: #001b34;
+  }
+}
+
+/* =========================================
+   DARK MODE
+   ========================================= */
+
+:host-context(.a11y-dark) {
+  .field > label {
+    color: #eaf2f9;
+  }
+
+  .input-wrap {
+    border-color: rgba(255, 255, 255, 0.14);
+
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .input-wrap:hover,
+  .input-wrap:focus-within {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .input-wrap:focus-within {
+    border-color: #5e9bcb;
+
+    box-shadow: 0 0 0 3px rgba(77, 150, 207, 0.1);
+  }
+
+  .input-wrap input {
+    color: #f1f6fb;
+  }
+
+  .input-wrap input::placeholder {
+    color: #91a3b7;
+  }
+
+  .input-wrap > svg,
+  .eye {
+    color: #9db0c4;
+    stroke: #9db0c4;
+  }
+
+  .terms label {
+    color: #aebed0;
+  }
+}
+
+/* =========================================
+   TABLET / MOBILE
+   ========================================= */
+
+@media (max-width: 620px) {
+  .form-row {
+    grid-template-columns: 1fr;
+
+    gap: 0;
+  }
+
+  .field {
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    min-height: 50px;
+  }
+
+  .input-wrap input {
+    height: 48px;
+  }
+}
+
+/* =========================================
+   MOBILE PEQUEÑO
+   ========================================= */
+
+@media (max-width: 400px) {
+  .input-wrap {
+    padding: 0 11px;
+
+    gap: 8px;
+  }
+
+  .field > label {
+    font-size: 0.75rem;
+  }
+
+  .terms label {
+    font-size: 0.65rem;
+  }
+}
+
+/* =========================================
+   MOVIMIENTO REDUCIDO
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .input-wrap,
+  .eye,
+  .submit {
+    transition: none;
+  }
+}

@@ -1,0 +1,97 @@
+﻿:host {
+  display: block;
+}
+
+/* =========================================
+   DIVISOR
+   ========================================= */
+
+.divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+
+  gap: 13px;
+
+  margin: 19px 0 17px;
+}
+
+.divider > span {
+  height: 1px;
+
+  background: rgba(112, 135, 163, 0.27);
+}
+
+.divider small {
+  color: #7586a0;
+
+  font-size: 0.68rem;
+  font-weight: 400;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   INVITADO
+   ========================================= */
+
+.guest,
+.signup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin: 19px 0 0;
+
+  color: #72829b;
+
+  font-size: 0.76rem;
+}
+
+.action-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: none;
+
+  color: #075bd8;
+
+  font: inherit;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.action-link span {
+  font-size: 1rem;
+}
+
+.action-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 480px) {
+  .divider {
+    margin: 17px 0 15px;
+  }
+
+  .guest,
+  .signup {
+    margin-top: 17px;
+  }
+}

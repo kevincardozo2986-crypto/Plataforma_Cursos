@@ -1,1 +1,97 @@
-/* You can add global styles to this file, and also import other style files */
+@use './panel';
+@use './app/features/home/home-dark';
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+button,
+input {
+  font-family: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+a:focus-visible,
+input[type='checkbox']:focus-visible {
+  outline: 3px solid #b8860b;
+  outline-offset: 4px;
+}
+body {
+  background: #fcfdff;
+}
+
+/* Global accessibility preferences. New pages can reuse these theme tokens. */
+html.a11y-large-text {
+  font-size: 118.75%;
+}
+html.a11y-dark {
+  color-scheme: dark;
+  --a11y-surface: #12263b;
+  --a11y-ink: #f0f5fc;
+  --a11y-border: #7c90a6;
+}
+html.a11y-contrast {
+  --a11y-surface: #fff;
+  --a11y-ink: #001529;
+  --a11y-border: #233d58;
+  color-scheme: light;
+}
+html.a11y-dark.a11y-contrast {
+  --a11y-surface: #07121e;
+  --a11y-ink: #fff;
+  --a11y-border: #fff;
+  color-scheme: dark;
+}
+html:is(.a11y-dark, .a11y-contrast) body {
+  background: var(--a11y-surface);
+  color: var(--a11y-ink);
+}
+html:is(.a11y-dark, .a11y-contrast) app-root main {
+  --ink: var(--a11y-ink);
+  --muted: var(--a11y-ink);
+  --surface: var(--a11y-surface);
+  --border: var(--a11y-border);
+}
+html:is(.a11y-dark, .a11y-contrast) .login-card {
+  background: var(--a11y-surface);
+  border-color: var(--a11y-border);
+}
+html:is(.a11y-dark, .a11y-contrast) .login-card :is(label, h1, h2, p, small, .divider small) {
+  color: var(--a11y-ink);
+}
+html:is(.a11y-dark, .a11y-contrast) .login-card .input-wrap {
+  background: var(--a11y-surface);
+  border-color: var(--a11y-border);
+}
+html:is(.a11y-dark, .a11y-contrast)
+  .login-card
+  :is(input, input::placeholder, .input-wrap svg, .eye) {
+  color: var(--a11y-ink);
+}
+html.a11y-dark .login-card :is(.text-link, .action-link) {
+  color: #99ceff;
+}
+/* Logo: se muestra solo la variante del tema activo (clara u oscura). */
+html:not(.a11y-dark) img.campus-logo--dark,
+html.a11y-dark img.campus-logo--light {
+  display: none !important;
+}
+html:is(.a11y-dark, .a11y-contrast) .login-card .error-message {
+  color: #8d1722;
+  background: #fff0f0;
+}
+
+@font-face {
+  font-family: 'Satisfy';
+  src: url('/fonts/satisfy/Satisfy-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}

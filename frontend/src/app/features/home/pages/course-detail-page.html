@@ -1,0 +1,30 @@
+﻿<main class="course-detail">
+  <a class="back" routerLink="/courses">← Volver al catálogo</a>
+  @if (error()) {
+    <p role="alert">No pudimos cargar este curso. Puede que ya no esté disponible.</p>
+  } @else if (course(); as item) {
+    <span class="category">{{ item.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
+    <h1>{{ item.title || item.name }}</h1>
+    @if (item.introVideoUrl; as video) {
+      <section class="intro-video" aria-labelledby="intro-title">
+        <h2 id="intro-title">Conoce el curso</h2>
+        @if (isPlayableVideoUrl(video)) {
+          <video controls playsinline preload="metadata" [src]="video" [poster]="item.imageUrl || item.image || item.thumbnail || ''" [attr.aria-label]="'Video introductorio de ' + (item.title || item.name)" (error)="videoError.set(true)">
+            Tu navegador no puede reproducir este video.
+          </video>
+          @if (videoError()) { <p role="status">No pudimos reproducir la introducción. Intenta de nuevo más tarde.</p> }
+        } @else {
+          <a class="login" [href]="video" target="_blank" rel="noopener noreferrer">Ver video introductorio ↗</a>
+        }
+      </section>
+    } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
+      <img [src]="image" [alt]="item.title || item.name || 'Imagen del curso'" />
+    }
+    <p class="description">
+      {{ item.description || 'Consulta la información disponible del curso al iniciar sesión.' }}
+    </p>
+    <a class="login" routerLink="/login">Iniciar sesión →</a>
+  } @else {
+    <p role="status">Cargando el curso…</p>
+  }
+</main>

@@ -1,13 +1,300 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String     @unique
+  passwordHash String
+  document     String     @unique
+  phone        String?
+  role         Role       @default(STUDENT)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Cursos creados por este profesor
+  courses Course[]
+
+  enrollments        Enrollment[]
+  evaluationAttempts EvaluationAttempt[]
+
+  @@map("users")
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String
+  slug        String       @unique
+  description String
+  imageUrl    String?
+  price       Decimal      @db.Decimal(10, 2)
+  level       CourseLevel  @default(BEGINNER)
+  status      CourseStatus @default(DRAFT)
+
+  // Acceso y cupo
+  visibility     CourseVisibility @default(PUBLIC)
+  /// Hash bcrypt; solo se usa cuando visibility = PASSWORD. Nunca se devuelve.
+  accessPassword String?
+  maxStudents    Int?
+  /// Contenido visible sin inscripción.
+  publicContent  Boolean          @default(false)
+  qaEnabled      Boolean          @default(true)
+
+  // Presentación
+  introVideoUrl String?
+
+  // Resumen del curso (paso "Adicional")
+  whatYouWillLearn String?
+  audience         String?
+  durationMinutes  Int?
+  materials        String?
+  requirements     String?
+
+  teacherId Int
+  teacher   User @relation(fields: [teacherId], references: [id])
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  modules     CourseModule[]
+  enrollments Enrollment[]
+
+  /// Cursos que hay que completar antes de inscribirse en este.
+  requires   CoursePrerequisite[] @relation("CourseRequires")
+  requiredBy CoursePrerequisite[] @relation("CourseRequiredBy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teacherId])
+  @@index([status])
+  @@index([categoryId])
+  @@map("courses")
+}
+
+enum CourseVisibility {
+  PUBLIC
+  PRIVATE
+  PASSWORD
+}
+
+model CoursePrerequisite {
+  courseId       Int
+  course         Course @relation("CourseRequires", fields: [courseId], references: [id], onDelete: Cascade)
+  prerequisiteId Int
+  prerequisite   Course @relation("CourseRequiredBy", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, prerequisiteId])
+  @@map("course_prerequisites")
+}
+
+enum ResourceType {
+  PDF
+  VIDEO
+  LINK
+  DOCUMENT
+  OTHER
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses Course[]
+
+  @@map("categories")
+}
+
+model CourseModule {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  position    Int     @default(1)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons     Lesson[]
+  evaluations Evaluation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, position])
+  @@map("modules")
+}
+
+model Lesson {
+  id              Int     @id @default(autoincrement())
+  title           String
+  content         String?
+  videoUrl        String?
+  durationMinutes Int?
+  position        Int     @default(1)
+
+  moduleId Int
+  module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  resources Resource[]
+  progress  LessonProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId, position])
+  @@map("lessons")
+}
+
+model Resource {
+  id    Int          @id @default(autoincrement())
+  title String
+  type  ResourceType @default(LINK)
+  url   String
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lessonId])
+  @@map("resources")
+}
+
+model Evaluation {
+  id           Int     @id @default(autoincrement())
+  title        String
+  description  String?
+  passingScore Int     @default(60)
+
+  moduleId Int
+  module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  attempts  EvaluationAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@map("evaluations")
+}
+
+model Question {
+  id       Int    @id @default(autoincrement())
+  text     String
+  points   Int    @default(1)
+  position Int    @default(1)
+
+  evaluationId Int
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  options Option[]
+
+  @@index([evaluationId, position])
+  @@map("questions")
+}
+
+model Option {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean @default(false)
+
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("options")
+}
+
+model EvaluationAttempt {
+  id     Int     @id @default(autoincrement())
+  score  Int
+  passed Boolean
+  answers Json
+
+  evaluationId Int
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([evaluationId, userId])
+  @@map("evaluation_attempts")
+}
+
+model Enrollment {
+  id          Int              @id @default(autoincrement())
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessonProgress LessonProgress[]
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          Int       @id @default(autoincrement())
+  completedAt DateTime  @default(now())
+
+  enrollmentId Int
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
 }

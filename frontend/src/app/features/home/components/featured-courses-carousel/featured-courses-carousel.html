@@ -1,0 +1,67 @@
+﻿<section class="featured-section" aria-labelledby="featured-title">
+  <header>
+    <div>
+      <span class="eyebrow">DESCUBRE</span>
+      <h2 id="featured-title">Cursos para<br />seguir avanzando.</h2>
+    </div>
+    <a routerLink="/courses">Ver todos los cursos <span aria-hidden="true">↗</span></a>
+  </header>
+  <div
+    class="course-track"
+    tabindex="0"
+    role="region"
+    aria-label="Cursos destacados"
+    [attr.aria-busy]="loading()"
+  >
+    @if (loading()) {
+      <p class="track-state" role="status">Preparando tu próxima oportunidad de aprender…</p>
+    } @else if (error()) {
+      <p class="track-state" role="status">
+        No pudimos cargar los cursos. <a routerLink="/courses">Ir al catálogo →</a>
+      </p>
+    } @else if (courses().length === 0) {
+      <p class="track-state">
+        La próxima oferta está en preparación. Aquí encontrarás los cursos cuando estén publicados.
+      </p>
+    } @else {
+      @for (course of courses(); track course.id; let index = $index) {
+        <a
+          class="course-panel"
+          [class.editorial]="index % 4 === 1 && !image(course)"
+          [class.graphic]="index % 4 === 2"
+          [class.minimal]="index % 4 === 3"
+          [class.has-photo]="!!image(course)"
+          [routerLink]="['/courses', course.id]"
+        >
+          @if (image(course); as source) {
+            <img [src]="source" alt="" loading="lazy" draggable="false" />
+          }
+          <span class="panel-number" aria-hidden="true">{{
+            (index + 1).toString().padStart(2, '0')
+          }}</span>
+          <span class="panel-meta"
+            >{{
+              course.level === 'ADVANCED'
+                ? 'Avanzado'
+                : course.level === 'INTERMEDIATE'
+                  ? 'Intermedio'
+                  : 'Básico'
+            }}
+            @if (course._count) {
+              · {{ course._count.modules }} módulos
+            }
+          </span>
+          <span class="panel-art" aria-hidden="true"></span>
+          <div class="panel-copy">
+            <span class="category">{{ course.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
+            <h3>{{ course.title || course.name || 'Explora este curso' }}</h3>
+            <p class="secondary">
+              {{ course.description || 'Encuentra una nueva oportunidad para aprender.' }}
+            </p>
+            <span class="explore">Explorar <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>
+      }
+    }
+  </div>
+</section>

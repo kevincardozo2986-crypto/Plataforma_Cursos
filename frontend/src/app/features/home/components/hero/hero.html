@@ -1,0 +1,120 @@
+<section class="hero education-hero" aria-labelledby="hero-title">
+  <div class="hero-intro">
+    <h1 id="hero-title">
+      Aprende hoy.<br /><span>Transforma<br />lo que sigue.</span>
+    </h1>
+    <p class="education-description">
+      Programas y cursos para fortalecer tus habilidades, ampliar tus conocimientos y seguir
+      avanzando en tu vida profesional.
+    </p>
+    <div class="hero-actions">
+      <a class="primary-action" routerLink="/courses">Explorar cursos </a>
+      @if (!auth.user()) {
+        <a class="secondary-action" routerLink="/register">Crear mi cuenta</a>
+      }
+    </div>
+    <div class="hero-highlights" aria-label="Tu experiencia de aprendizaje">
+      <div class="hero-highlight">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M3 4h6a3 3 0 0 1 3 3v14a5 5 0 0 0-4-2H3V4Zm18 0h-6a3 3 0 0 0-3 3v14a5 5 0 0 1 4-2h5V4Z"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div><strong>A tu ritmo</strong><span>Aprende paso a paso</span></div>
+      </div>
+      <div class="hero-highlight">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="13"
+            rx="2"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+          <path
+            d="M8 21h8m-4-4v4m-5-10 3 3 6-6"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div><strong>En línea</strong><span>Desde donde estés</span></div>
+      </div>
+      <div class="hero-highlight">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="m2 9 10-5 10 5-10 5L2 9Zm4 2v6c4 3 8 3 12 0v-6m4-2v8"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div><strong>Santoto</strong><span>Campus Virtual</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="education-visual">
+    <div class="education-shape shape-back" aria-hidden="true"></div>
+    <div class="education-shape shape-blue" aria-hidden="true"></div>
+    <img
+      class="education-emblem"
+      src="/images/1-Logo-Oficial-Santoto-Tunja.png"
+      alt=""
+      aria-hidden="true"
+    />
+    <div class="portrait-stage">
+      <img class="education-man" src="/images/education-man-cutout.png" alt="Estudiante sosteniendo un libro" fetchpriority="high" />
+      <img
+        class="education-woman"
+        src="/images/education-woman-cutout.png"
+        alt="Estudiante sosteniendo sus libros"
+        fetchpriority="high"
+      />
+    </div>
+    <div class="education-orbit" aria-hidden="true"></div>
+    <article class="benefit-card benefit-areas">
+      <span class="benefit-icon" aria-hidden="true"
+        ><svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 4h6a3 3 0 0 1 3 3v14a5 5 0 0 0-4-2H3V4Zm18 0h-6a3 3 0 0 0-3 3v14a5 5 0 0 1 4-2h5V4Z"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linejoin="round"
+          /></svg
+      ></span>
+      <h2>Encuentra tu<br />próximo reto.</h2>
+      <p>Explora el catálogo y elige lo que quieres aprender.</p>
+    </article>
+    <article class="benefit-card benefit-pace">
+      <span class="benefit-icon" aria-hidden="true"
+        ><svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor" />
+          <rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor" />
+          <rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor" /></svg
+      ></span>
+      <h2>Aprende<br />a tu ritmo.</h2>
+      <p>Un espacio para seguir creciendo, desde donde estés.</p>
+    </article>
+    <article class="benefit-card benefit-campus">
+      <span class="benefit-icon" aria-hidden="true"
+        ><svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="9" r="6" stroke="currentColor" stroke-width="1.8" />
+          <path
+            d="m8 14-2 8 6-3 6 3-2-8"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          /></svg
+      ></span>
+      <h2>Conocimiento<br />que te acompaña.</h2>
+      <p>Tu siguiente paso empieza en el Campus Virtual.</p>
+    </article>
+  </div>
+</section>

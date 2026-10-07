@@ -1,0 +1,228 @@
+/*
+ * Estilos compartidos de las pantallas de gestión (teacher/ y admin/).
+ * Todo usa variables --p-* que cambian solas en modo oscuro.
+ */
+
+:root {
+  --p-bg: #f4f7fb;
+  --p-surface: #ffffff;
+  --p-surface-2: #f0f5fb;
+  --p-ink: #0a2b50;
+  --p-muted: #60738d;
+  --p-border: #dbe4ef;
+  --p-accent: #1267d8;
+  --p-accent-ink: #ffffff;
+  --p-accent-soft: #e6f0fd;
+  --p-ok: #137a4f;
+  --p-ok-soft: #e3f6ec;
+  --p-warn: #8a5d00;
+  --p-warn-soft: #fff4d6;
+  --p-danger: #b3261e;
+  --p-danger-soft: #fdeceb;
+  --p-shadow: 0 10px 30px rgba(10, 43, 80, 0.08);
+}
+
+html.a11y-dark {
+  --p-bg: #0b1826;
+  --p-surface: #12263b;
+  --p-surface-2: #0e2033;
+  --p-ink: #eaf2fb;
+  --p-muted: #a9bdd2;
+  --p-border: #2b435d;
+  --p-accent: #5aa9ff;
+  --p-accent-ink: #06284d;
+  --p-accent-soft: rgba(90, 169, 255, 0.16);
+  --p-ok: #5fd3a0;
+  --p-ok-soft: rgba(95, 211, 160, 0.14);
+  --p-warn: #f4c35a;
+  --p-warn-soft: rgba(244, 195, 90, 0.14);
+  --p-danger: #ff8a80;
+  --p-danger-soft: rgba(255, 138, 128, 0.14);
+  --p-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Estructura */
+
+.panel-page {
+  min-height: calc(100dvh - 92px);
+  padding: 28px 24px 72px;
+
+  color: var(--p-ink);
+  background: var(--p-bg);
+}
+
+.panel-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.panel-card {
+  padding: 22px;
+
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 16px;
+  box-shadow: var(--p-shadow);
+}
+
+.panel-muted {
+  color: var(--p-muted);
+}
+
+/* Botones */
+
+.panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 0 18px;
+
+  color: var(--p-ink);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.panel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.panel-btn--primary {
+  color: var(--p-accent-ink);
+  background: var(--p-accent);
+}
+
+.panel-btn--primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.panel-btn--ghost {
+  border-color: var(--p-border);
+}
+
+.panel-btn--ghost:hover:not(:disabled) {
+  background: var(--p-surface-2);
+}
+
+.panel-btn--danger {
+  color: var(--p-danger);
+  border-color: var(--p-danger);
+}
+
+.panel-btn--danger:hover:not(:disabled) {
+  background: var(--p-danger-soft);
+}
+
+.panel-btn--sm {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  border-radius: 10px;
+}
+
+/* Formularios */
+
+.panel-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-field > label {
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.panel-input,
+.panel-select,
+.panel-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+
+  color: var(--p-ink);
+  font: inherit;
+  font-size: 0.94rem;
+
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+}
+
+.panel-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.panel-input:focus,
+.panel-select:focus,
+.panel-textarea:focus {
+  outline: 3px solid var(--p-accent-soft);
+  border-color: var(--p-accent);
+}
+
+.panel-input[aria-invalid='true'],
+.panel-select[aria-invalid='true'],
+.panel-textarea[aria-invalid='true'] {
+  border-color: var(--p-danger);
+}
+
+.panel-field-error {
+  margin: 0;
+
+  color: var(--p-danger);
+  font-size: 0.8rem;
+}
+
+.panel-hint {
+  margin: 0;
+
+  color: var(--p-muted);
+  font-size: 0.8rem;
+}
+
+/* Avisos */
+
+.panel-alert {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+
+  font-size: 0.9rem;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+
+.panel-alert--error {
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+  border-color: var(--p-danger);
+}
+
+.panel-alert--ok {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+  border-color: var(--p-ok);
+}
+
+@media (max-width: 640px) {
+  .panel-page {
+    padding: 20px 14px 56px;
+  }
+}

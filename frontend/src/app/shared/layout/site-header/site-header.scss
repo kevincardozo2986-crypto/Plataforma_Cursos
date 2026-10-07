@@ -1,0 +1,302 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-header {
+  padding: 14px 24px 0;
+}
+
+.bar {
+  max-width: 1440px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(16, 55, 91, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(4, 34, 65, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Logo */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-self: start;
+}
+
+.brand img {
+  display: block;
+  height: auto;
+}
+
+.campus-logo {
+  width: 170px;
+}
+
+/* Menú central */
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill {
+  padding: 10px 18px;
+
+  color: #3d5166;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  border-radius: 999px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+a.pill:hover {
+  color: #0b1f33;
+  background: rgba(16, 55, 91, 0.07);
+}
+
+.pill.is-active {
+  color: #fff;
+  background: #0b1f33;
+}
+
+.pill.is-soon {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Acciones (derecha) */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 10px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.who strong {
+  color: #0b1f33;
+  font-size: 0.88rem;
+}
+
+.who small {
+  color: #6b7f93;
+  font-size: 0.74rem;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  background: #12b5cb;
+  border-radius: 50%;
+}
+
+.login-link {
+  padding: 10px 12px;
+
+  color: #0a3762;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.register-button {
+  padding: 10px 18px;
+
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-decoration: none;
+
+  background: #0b1f33;
+  border-radius: 999px;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  color: #3d5166;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+
+  transition: background-color 150ms ease;
+}
+
+.icon-button:hover {
+  background: rgba(16, 55, 91, 0.08);
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #12b5cb;
+  outline-offset: 2px;
+}
+
+/* Móvil */
+
+.mobile-toggle {
+  display: none;
+}
+
+.mobile-menu {
+  max-width: 1440px;
+  margin: 8px auto 0;
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(16, 55, 91, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(4, 34, 65, 0.1);
+}
+
+.mobile-menu a,
+.mobile-menu span {
+  padding: 12px 14px;
+
+  color: #1d3349;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  border-radius: 10px;
+}
+
+.mobile-menu a:hover {
+  background: rgba(16, 55, 91, 0.07);
+}
+
+.mobile-menu .is-soon {
+  opacity: 0.5;
+}
+
+@media (max-width: 860px) {
+  .site-header {
+    padding: 10px 12px 0;
+  }
+
+  .bar {
+    grid-template-columns: 1fr auto;
+    padding: 0 12px;
+  }
+
+  .links,
+  .who,
+  .login-link {
+    display: none;
+  }
+
+  .mobile-toggle {
+    display: grid;
+  }
+
+  .campus-logo {
+    width: 130px;
+  }
+}
+
+/* Modo oscuro (clase del servicio de accesibilidad) */
+
+:host-context(.a11y-dark) {
+  .bar,
+  .mobile-menu {
+    background: rgba(18, 38, 59, 0.96);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .pill,
+  .icon-button,
+  .mobile-menu a,
+  .mobile-menu span,
+  .login-link {
+    color: #c9d6e4;
+  }
+
+  a.pill:hover,
+  .icon-button:hover,
+  .mobile-menu a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .pill.is-active,
+  .register-button {
+    color: #0b1f33;
+    background: #eaf2fb;
+  }
+
+  .who strong {
+    color: #f0f5fc;
+  }
+
+  .who small {
+    color: #a6b6c8;
+  }
+}
+
+/* Alto contraste */
+
+:host-context(.a11y-contrast) {
+  .bar {
+    border: 2px solid #001529;
+  }
+
+  .pill.is-active {
+    outline: 2px solid currentColor;
+  }
+}

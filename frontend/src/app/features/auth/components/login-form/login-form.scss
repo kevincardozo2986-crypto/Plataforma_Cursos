@@ -1,0 +1,352 @@
+:host {
+  display: block;
+}
+
+form {
+  width: 100%;
+}
+
+/* =========================================
+   CAMPOS
+   ========================================= */
+
+.field {
+  margin-bottom: 15px;
+}
+
+.field > label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--ink);
+
+  font-size: var(--control-size);
+  font-weight: 650;
+
+  line-height: 1.35;
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 54px;
+
+  gap: 14px;
+
+  padding: 0 16px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(113, 137, 169, 0.33);
+  border-radius: 11px;
+
+  background: rgba(255, 255, 255, 0.72);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.input-wrap:hover {
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.input-wrap:focus-within {
+  border-color: #4e78ad;
+
+  background: rgba(255, 255, 255, 0.92);
+
+  box-shadow: 0 0 0 3px rgba(36, 92, 157, 0.08);
+}
+
+.input-wrap > svg {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 auto;
+
+  fill: none;
+
+  stroke: #8190ad;
+  stroke-width: 1.8;
+}
+
+.input-wrap input {
+  min-width: 0;
+  width: 100%;
+  height: 52px;
+
+  padding: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--ink);
+
+  font: inherit;
+  font-size: var(--control-size);
+}
+
+.input-wrap input::placeholder {
+  color: #8492aa;
+
+  opacity: 1;
+}
+
+/* =========================================
+   MOSTRAR CONTRASEÑA
+   ========================================= */
+
+.eye {
+  display: grid;
+  place-items: center;
+
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 auto;
+
+  margin-right: -7px;
+  padding: 7px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #8290ab;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.eye:hover {
+  background: rgba(9, 44, 80, 0.06);
+
+  color: #173d68;
+}
+
+.eye svg {
+  width: 21px;
+  height: 21px;
+
+  fill: none;
+
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+/* =========================================
+   ERRORES
+   ========================================= */
+
+.field-error {
+  min-height: 17px;
+
+  padding-top: 3px;
+
+  color: #a62935;
+
+  font-size: 0.7rem;
+
+  line-height: 1.25;
+}
+
+.input-wrap.invalid {
+  border-color: #b83a43;
+
+  box-shadow: 0 0 0 2px rgba(184, 58, 67, 0.06);
+}
+
+.error-message {
+  margin: -3px 0 13px;
+
+  padding: 9px 11px;
+
+  border: 1px solid rgba(172, 43, 54, 0.12);
+  border-radius: 8px;
+
+  background: rgba(255, 239, 240, 0.9);
+
+  color: #922731;
+
+  font-size: 0.76rem;
+
+  line-height: 1.4;
+}
+
+/* =========================================
+   OPCIONES
+   ========================================= */
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin: -2px 0 20px;
+
+  font-size: 0.76rem;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #687a96;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+.remember input {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  flex: 0 0 auto;
+
+  accent-color: #07355f;
+}
+
+.text-link {
+  padding: 0;
+
+  border: 0;
+
+  background: none;
+
+  color: #0058df;
+
+  font: inherit;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   BOTÓN PRINCIPAL
+   ========================================= */
+
+.submit {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 55px;
+
+  padding: 0 58px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: linear-gradient(105deg, #073762 0%, #05294e 100%);
+
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 20px rgba(5, 42, 79, 0.11);
+
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  filter: brightness(1.06);
+
+  box-shadow: 0 11px 25px rgba(5, 42, 79, 0.16);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit:disabled {
+  opacity: 0.65;
+
+  cursor: wait;
+}
+
+.submit-arrow {
+  position: absolute;
+
+  right: 27px;
+
+  top: 50%;
+
+  transform: translateY(-52%);
+
+  font-size: 1.55rem;
+  font-weight: 300;
+
+  line-height: 1;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 480px) {
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .input-wrap {
+    min-height: 52px;
+
+    padding: 0 13px;
+
+    gap: 10px;
+  }
+
+  .input-wrap input {
+    height: 50px;
+  }
+
+  .form-options {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+  }
+
+  .remember,
+  .text-link {
+    white-space: normal;
+  }
+}

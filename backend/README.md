@@ -19,15 +19,18 @@ npm run test:e2e
 ## Configuración
 
 - `PORT`: puerto HTTP; por defecto, `3000`.
+- `DATABASE_URL`: conexión PostgreSQL requerida por Prisma.
 - `OBSERVE_APP_KEY` y `OBSERVE_APP_SECRET`: credenciales opcionales de NestJS Observe. La observabilidad permanece desactivada si falta alguna.
 
-Las variables se leen del entorno del proceso. El proyecto no carga `.env` automáticamente. Para usar un archivo local, copiar `.env.example` a `.env`, completar sus valores y, después de compilar, ejecutar desde esta carpeta:
+El backend carga `.env` desde el directorio de ejecución. Ejecutar los comandos desde `backend/`, copiar `.env.example` a `.env` y completar la conexión PostgreSQL. Después de compilar:
 
 ```bash
 node --env-file=.env dist/main.js
 ```
 
 No guardar credenciales reales en el código ni en archivos versionados.
+
+El cliente Prisma se genera automáticamente antes de compilar o ejecutar `start:dev`. También se puede generar con `npm run prisma:generate`. Su código queda en `src/generated/prisma` y no se versiona. La generación no modifica las tablas de la base de datos.
 
 ## Estructura
 
