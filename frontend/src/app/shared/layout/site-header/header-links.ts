@@ -19,7 +19,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 
 const common: HeaderLink[] = [
   { label: 'Inicio', route: '/' },
-  { label: 'Cursos', route: '/', fragment: 'courses' },
+  { label: 'Cursos', route: '/courses' },
 ];
 
 /**
@@ -32,13 +32,12 @@ export function headerLinksFor(role: UserRole | null): HeaderLink[] {
       return [...common, { label: 'Mis cursos', soon: true }];
     case 'TEACHER':
       return [
-        ...common,
         { label: 'Panel', route: '/teacher/dashboard', prefix: true },
         { label: 'Mis cursos', route: '/teacher/courses', prefix: true },
       ];
     case 'ADMIN':
       return [
-        ...common,
+        { label: 'Panel', route: '/teacher/dashboard', prefix: true },
         { label: 'Gestionar cursos', route: '/teacher/courses', prefix: true },
         { label: 'Usuarios', soon: true },
       ];

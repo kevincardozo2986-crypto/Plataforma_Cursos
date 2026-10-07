@@ -1,4 +1,5 @@
-﻿import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LoginPage } from './login-page';
@@ -6,7 +7,7 @@ describe('LoginPage', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }),
   );
   afterEach(() => TestBed.inject(HttpTestingController).verify());

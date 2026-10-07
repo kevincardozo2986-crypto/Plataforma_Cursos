@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -11,7 +12,7 @@ describe('Application language', () => {
   beforeEach(() => {
     localStorage.removeItem('campus.language');
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     });
   });
   afterEach(() => {
@@ -36,7 +37,9 @@ describe('Application language', () => {
     page.detectChanges();
     menu.detectChanges();
     await page.whenStable();
-    expect(page.nativeElement.querySelector('h1').textContent).toContain('Sign in to your campus');
+    expect(page.nativeElement.querySelector('label[for="identifier"]').textContent).toContain(
+      'Email address or document number',
+    );
     expect(page.nativeElement.querySelector('#identifier').placeholder).toContain(
       'Enter your email',
     );
@@ -49,12 +52,14 @@ describe('Application language', () => {
     expect(page.nativeElement.querySelector('[role="status"]').textContent).toContain(
       'Guest access',
     );
-    expect(menu.nativeElement.querySelector('h2').textContent).toBe('Accessibility');
+    expect(menu.nativeElement.querySelector('h2').textContent.trim()).toBe('Accessibility');
     expect(document.documentElement.lang).toBe('en');
     expect(localStorage.getItem('campus.language')).toBe('en');
     menu.nativeElement.querySelector('button[lang="es"]').click();
     page.detectChanges();
-    expect(page.nativeElement.querySelector('h1').textContent).toContain('Ingresa a tu campus');
+    expect(page.nativeElement.querySelector('label[for="identifier"]').textContent).toContain(
+      'Correo electr',
+    );
   });
   it('restores the saved language and retains it when the page is recreated', async () => {
     localStorage.setItem('campus.language', 'en');
@@ -66,7 +71,9 @@ describe('Application language', () => {
     first.destroy();
     const second = TestBed.createComponent(LoginPage);
     second.detectChanges();
-    expect(second.nativeElement.querySelector('h1').textContent).toContain('Sign in');
+    expect(second.nativeElement.querySelector('label[for="identifier"]').textContent).toContain(
+      'Email address',
+    );
   });
   it('defaults to Spanish for unsupported saved values', async () => {
     localStorage.setItem('campus.language', 'invalid');

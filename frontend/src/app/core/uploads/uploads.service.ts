@@ -4,8 +4,7 @@ import { Observable } from 'rxjs';
 import { UploadKind } from './upload-rules';
 
 export type UploadEvent =
-  | { type: 'progress'; percent: number }
-  | { type: 'done'; url: string; name: string; size: number };
+  { type: 'progress'; percent: number } | { type: 'done'; url: string; name: string; size: number };
 
 const ENDPOINTS: Record<UploadKind, string> = {
   image: '/api/uploads/images',
@@ -15,7 +14,9 @@ const ENDPOINTS: Record<UploadKind, string> = {
 /** El mismo token que usa el interceptor de autenticación. */
 function readToken(): string | null {
   try {
-    return localStorage.getItem('campus.accessToken') ?? sessionStorage.getItem('campus.accessToken');
+    return (
+      localStorage.getItem('campus.accessToken') ?? sessionStorage.getItem('campus.accessToken')
+    );
   } catch {
     return null;
   }
@@ -44,7 +45,10 @@ export class UploadsService {
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          subscriber.next({ type: 'progress', percent: Math.round((event.loaded / event.total) * 100) });
+          subscriber.next({
+            type: 'progress',
+            percent: Math.round((event.loaded / event.total) * 100),
+          });
         }
       };
 
@@ -66,7 +70,11 @@ export class UploadsService {
       };
 
       xhr.onerror = () =>
-        subscriber.error(new Error('No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.'));
+        subscriber.error(
+          new Error(
+            'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+          ),
+        );
 
       xhr.send(form);
 

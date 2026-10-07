@@ -45,10 +45,7 @@
   inset: 0;
   z-index: -3;
 
-  background:
-    url('/images/prueba1.png')
-    center center / cover
-    no-repeat;
+  background: url('/images/prueba1.png') center center / cover no-repeat;
 
   transform: scale(1.015);
 }
@@ -67,12 +64,7 @@
       rgba(4, 29, 55, 0.12) 75%,
       rgba(3, 23, 44, 0.27) 100%
     ),
-    linear-gradient(
-      180deg,
-      rgba(4, 28, 53, 0.04) 0%,
-      transparent 55%,
-      rgba(2, 19, 37, 0.37) 100%
-    );
+    linear-gradient(180deg, rgba(4, 28, 53, 0.04) 0%, transparent 55%, rgba(2, 19, 37, 0.37) 100%);
 
   pointer-events: none;
 }
@@ -91,37 +83,22 @@
 
   padding: 25px 38px 24px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.76);
 
   border-radius: 25px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.9),
-      rgba(247, 249, 253, 0.78)
-    );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(247, 249, 253, 0.78));
 
-  backdrop-filter:
-    blur(17px)
-    saturate(125%);
+  backdrop-filter: blur(17px) saturate(125%);
 
-  -webkit-backdrop-filter:
-    blur(17px)
-    saturate(125%);
+  -webkit-backdrop-filter: blur(17px) saturate(125%);
 
   box-shadow:
     0 28px 70px rgba(3, 23, 46, 0.22),
     0 8px 24px rgba(3, 23, 46, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
-  animation:
-    card-enter
-    420ms
-    ease-out
-    both;
+  animation: card-enter 420ms ease-out both;
 }
 
 /* Reflejo glass */
@@ -134,13 +111,12 @@
 
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.2),
-      transparent 35%,
-      rgba(255, 255, 255, 0.07)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    transparent 35%,
+    rgba(255, 255, 255, 0.07)
+  );
 
   pointer-events: none;
 }
@@ -195,16 +171,9 @@ app-register-form,
     en el login sin hacerlo demasiado grande.
   */
 
-  font-family:
-    'Segoe Script',
-    'Bradley Hand',
-    cursive;
+  font-family: 'Segoe Script', 'Bradley Hand', cursive;
 
-  font-size: clamp(
-    1.75rem,
-    2.5vw,
-    2.2rem
-  );
+  font-size: clamp(1.75rem, 2.5vw, 2.2rem);
 
   font-weight: 600;
 
@@ -218,10 +187,7 @@ app-register-form,
    ========================================= */
 
 .header-copy p {
-  margin:
-    6px
-    0
-    0;
+  margin: 6px 0 0;
 
   color: #718199;
 
@@ -282,48 +248,34 @@ app-register-form,
    DARK MODE
    ========================================= */
 
-:host-context(.a11y-dark)
-.register-page {
+:host-context(.a11y-dark) .register-page {
   --ink: #edf4fa;
   --muted: #a7b7c8;
 }
 
-:host-context(.a11y-dark)
-.register-card {
-  border-color:
-    rgba(255, 255, 255, 0.1);
+:host-context(.a11y-dark) .register-card {
+  border-color: rgba(255, 255, 255, 0.1);
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(7, 29, 51, 0.96),
-      rgba(5, 23, 42, 0.92)
-    );
+  background: linear-gradient(135deg, rgba(7, 29, 51, 0.96), rgba(5, 23, 42, 0.92));
 
   box-shadow:
-    0 30px 80px
-      rgba(0, 0, 0, 0.38),
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.08);
+    0 30px 80px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-:host-context(.a11y-dark)
-.header-copy h1 {
+:host-context(.a11y-dark) .header-copy h1 {
   color: #f3f7fb;
 }
 
-:host-context(.a11y-dark)
-.header-copy p {
+:host-context(.a11y-dark) .header-copy p {
   color: #a6b6c8;
 }
 
-:host-context(.a11y-dark)
-.register-footer {
+:host-context(.a11y-dark) .register-footer {
   color: #9bacc0;
 }
 
-:host-context(.a11y-dark)
-.register-footer a {
+:host-context(.a11y-dark) .register-footer a {
   color: #72b8ef;
 }
 
@@ -331,29 +283,21 @@ app-register-form,
    ALTO CONTRASTE
    ========================================= */
 
-:host-context(.a11y-contrast)
-.register-card {
-  border:
-    2px solid
-    #ffffff;
+:host-context(.a11y-contrast) .register-card {
+  border: 2px solid #ffffff;
 
-  background:
-    rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.97);
 }
 
-:host-context(.a11y-contrast)
-.campus-overlay {
-  background:
-    rgba(0, 18, 36, 0.58);
+:host-context(.a11y-contrast) .campus-overlay {
+  background: rgba(0, 18, 36, 0.58);
 }
 
-:host-context(.a11y-contrast)
-.header-copy h1 {
+:host-context(.a11y-contrast) .header-copy h1 {
   color: #00172d;
 }
 
-:host-context(.a11y-contrast)
-.header-copy p {
+:host-context(.a11y-contrast) .header-copy p {
   color: #253b53;
 }
 
@@ -361,15 +305,12 @@ app-register-form,
    TEXTO GRANDE
    ========================================= */
 
-:host-context(.a11y-large-text)
-.header-copy h1 {
+:host-context(.a11y-large-text) .header-copy h1 {
   font-size: 2.3rem;
 }
 
-:host-context(.a11y-large-text)
-.header-copy p,
-:host-context(.a11y-large-text)
-.register-footer {
+:host-context(.a11y-large-text) .header-copy p,
+:host-context(.a11y-large-text) .register-footer {
   font-size: 0.84rem;
 }
 
@@ -381,15 +322,13 @@ app-register-form,
   from {
     opacity: 0;
 
-    transform:
-      translateY(12px);
+    transform: translateY(12px);
   }
 
   to {
     opacity: 1;
 
-    transform:
-      translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -407,11 +346,7 @@ app-register-form,
    PANTALLAS BAJAS
    ========================================= */
 
-@media (
-  max-height: 850px
-) and (
-  min-width: 761px
-) {
+@media (max-height: 850px) and (min-width: 761px) {
   .register-page {
     align-items: flex-start;
 
@@ -424,10 +359,7 @@ app-register-form,
   .register-card {
     width: min(100%, 700px);
 
-    padding:
-      21px
-      34px
-      20px;
+    padding: 21px 34px 20px;
   }
 
   .campus-logo {
@@ -451,9 +383,7 @@ app-register-form,
 
 @media (max-width: 900px) {
   .campus-background {
-    background-position:
-      63%
-      center;
+    background-position: 63% center;
   }
 }
 
@@ -467,10 +397,7 @@ app-register-form,
 
     min-height: calc(100dvh - 92px);
 
-    padding:
-      100px
-      16px
-      28px;
+    padding: 100px 16px 28px;
 
     overflow-y: auto;
   }
@@ -478,20 +405,11 @@ app-register-form,
   .register-card {
     width: 100%;
 
-    padding:
-      27px
-      24px
-      24px;
+    padding: 27px 24px 24px;
 
     border-radius: 21px;
 
-    background:
-      rgba(
-        250,
-        252,
-        255,
-        0.9
-      );
+    background: rgba(250, 252, 255, 0.9);
   }
 
   .campus-logo {
@@ -499,18 +417,11 @@ app-register-form,
   }
 
   .campus-background {
-    background-position:
-      70%
-      center;
+    background-position: 70% center;
   }
 
   .campus-overlay {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(3, 25, 49, 0.27),
-        rgba(3, 25, 49, 0.2)
-      );
+    background: linear-gradient(180deg, rgba(3, 25, 49, 0.27), rgba(3, 25, 49, 0.2));
   }
 
   .register-footer {
@@ -524,17 +435,11 @@ app-register-form,
 
 @media (max-width: 480px) {
   .register-page {
-    padding:
-      90px
-      12px
-      22px;
+    padding: 90px 12px 22px;
   }
 
   .register-card {
-    padding:
-      24px
-      18px
-      22px;
+    padding: 24px 18px 22px;
   }
 
   .campus-logo {

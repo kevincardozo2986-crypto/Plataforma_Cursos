@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="bar">
-    <a class="brand" routerLink="/" (click)="closeMenu()" aria-label="Ir al inicio">
+    <a class="brand" [routerLink]="homeRoute()" (click)="closeMenu()" aria-label="Ir al inicio">
       <img
         class="campus-logo campus-logo--light"
         src="/images/campus-virtual-logo.png"

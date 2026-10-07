@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, input, OnDestroy, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  OnDestroy,
+  signal,
+  untracked,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { startWith, Subscription, switchMap } from 'rxjs';
@@ -69,7 +78,9 @@ export class MediaField implements OnDestroy {
   });
 
   readonly showImage = computed(() => this.kind() === 'image' && !!this.previewUrl());
-  readonly showVideo = computed(() => this.kind() === 'video' && isPlayableVideoUrl(this.previewUrl()));
+  readonly showVideo = computed(
+    () => this.kind() === 'video' && isPlayableVideoUrl(this.previewUrl()),
+  );
 
   private subscription: Subscription | null = null;
 
@@ -146,7 +157,9 @@ export class MediaField implements OnDestroy {
       },
       error: (error: unknown) => {
         this.uploading.set(false);
-        this.uploadError.set(error instanceof Error ? error.message : 'No pudimos subir el archivo.');
+        this.uploadError.set(
+          error instanceof Error ? error.message : 'No pudimos subir el archivo.',
+        );
       },
     });
   }

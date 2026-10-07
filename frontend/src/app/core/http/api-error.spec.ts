@@ -2,8 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { apiErrorMessage } from './api-error';
 
-const http = (status: number, body: unknown) =>
-  new HttpErrorResponse({ status, error: body });
+const http = (status: number, body: unknown) => new HttpErrorResponse({ status, error: body });
 
 describe('apiErrorMessage', () => {
   it('usa el mensaje del backend', () => {

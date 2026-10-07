@@ -1,8 +1,4 @@
-<form
-  [formGroup]="form"
-  (ngSubmit)="submit()"
-  novalidate
->
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <!-- NOMBRE + APELLIDO -->
   <div class="form-row">
     <div class="field">
@@ -12,10 +8,7 @@
 
       <div
         class="input-wrap"
-        [class.invalid]="
-          form.controls.firstName.touched &&
-          form.controls.firstName.invalid
-        "
+        [class.invalid]="form.controls.firstName.touched && form.controls.firstName.invalid"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <circle cx="12" cy="7" r="4" />
@@ -32,10 +25,7 @@
       </div>
 
       <div class="field-error">
-        @if (
-          form.controls.firstName.touched &&
-          form.controls.firstName.invalid
-        ) {
+        @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
           {{ 'Ingresa tu nombre.' | t }}
         }
       </div>
@@ -48,10 +38,7 @@
 
       <div
         class="input-wrap"
-        [class.invalid]="
-          form.controls.lastName.touched &&
-          form.controls.lastName.invalid
-        "
+        [class.invalid]="form.controls.lastName.touched && form.controls.lastName.invalid"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <circle cx="12" cy="7" r="4" />
@@ -68,10 +55,7 @@
       </div>
 
       <div class="field-error">
-        @if (
-          form.controls.lastName.touched &&
-          form.controls.lastName.invalid
-        ) {
+        @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
           {{ 'Ingresa tu apellido.' | t }}
         }
       </div>
@@ -86,10 +70,7 @@
 
     <div
       class="input-wrap"
-      [class.invalid]="
-        form.controls.document.touched &&
-        form.controls.document.invalid
-      "
+      [class.invalid]="form.controls.document.touched && form.controls.document.invalid"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24">
         <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -108,10 +89,7 @@
     </div>
 
     <div class="field-error">
-      @if (
-        form.controls.document.touched &&
-        form.controls.document.invalid
-      ) {
+      @if (form.controls.document.touched && form.controls.document.invalid) {
         {{ 'Ingresa un número de cédula válido.' | t }}
       }
     </div>
@@ -125,10 +103,7 @@
 
     <div
       class="input-wrap"
-      [class.invalid]="
-        form.controls.email.touched &&
-        form.controls.email.invalid
-      "
+      [class.invalid]="form.controls.email.touched && form.controls.email.invalid"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24">
         <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -145,10 +120,7 @@
     </div>
 
     <div class="field-error">
-      @if (
-        form.controls.email.touched &&
-        form.controls.email.invalid
-      ) {
+      @if (form.controls.email.touched && form.controls.email.invalid) {
         {{ 'Ingresa un correo electrónico válido.' | t }}
       }
     </div>
@@ -163,10 +135,7 @@
 
       <div
         class="input-wrap"
-        [class.invalid]="
-          form.controls.password.touched &&
-          form.controls.password.invalid
-        "
+        [class.invalid]="form.controls.password.touched && form.controls.password.invalid"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <rect x="4" y="10" width="16" height="11" rx="2" />
@@ -185,11 +154,7 @@
           class="eye"
           type="button"
           (click)="showPassword.set(!showPassword())"
-          [attr.aria-label]="
-            (showPassword()
-              ? 'Ocultar contraseña'
-              : 'Mostrar contraseña') | t
-          "
+          [attr.aria-label]="(showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña') | t"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24">
             <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
@@ -203,10 +168,7 @@
       </div>
 
       <div class="field-error">
-        @if (
-          form.controls.password.touched &&
-          form.controls.password.invalid
-        ) {
+        @if (form.controls.password.touched && form.controls.password.invalid) {
           {{ 'Usa al menos 8 caracteres.' | t }}
         }
       </div>
@@ -221,8 +183,7 @@
         class="input-wrap"
         [class.invalid]="
           form.controls.confirmPassword.touched &&
-          (!passwordsMatch ||
-            form.controls.confirmPassword.invalid)
+          (!passwordsMatch || form.controls.confirmPassword.invalid)
         "
       >
         <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -241,15 +202,9 @@
         <button
           class="eye"
           type="button"
-          (click)="
-            showConfirmPassword.set(
-              !showConfirmPassword()
-            )
-          "
+          (click)="showConfirmPassword.set(!showConfirmPassword())"
           [attr.aria-label]="
-            (showConfirmPassword()
-              ? 'Ocultar contraseña'
-              : 'Mostrar contraseña') | t
+            (showConfirmPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña') | t
           "
         >
           <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -264,10 +219,7 @@
       </div>
 
       <div class="field-error">
-        @if (
-          form.controls.confirmPassword.touched &&
-          !passwordsMatch
-        ) {
+        @if (form.controls.confirmPassword.touched && !passwordsMatch) {
           {{ 'Las contraseñas no coinciden.' | t }}
         }
       </div>
@@ -277,10 +229,7 @@
   <!-- TÉRMINOS -->
   <div class="terms">
     <label>
-      <input
-        type="checkbox"
-        formControlName="terms"
-      />
+      <input type="checkbox" formControlName="terms" />
 
       <span>
         {{ 'Acepto los' | t }}
@@ -291,33 +240,19 @@
       </span>
     </label>
 
-    @if (
-      form.controls.terms.touched &&
-      form.controls.terms.invalid
-    ) {
+    @if (form.controls.terms.touched && form.controls.terms.invalid) {
       <p class="terms-error">
-        {{
-          'Debes aceptar los términos para continuar.'
-            | t
-        }}
+        {{ 'Debes aceptar los términos para continuar.' | t }}
       </p>
     }
   </div>
 
   <!-- SUBMIT -->
-  <button
-    class="submit"
-    type="submit"
-  >
+  <button class="submit" type="submit">
     <span>
       {{ 'Crear cuenta' | t }}
     </span>
 
-    <span
-      class="submit-arrow"
-      aria-hidden="true"
-    >
-      →
-    </span>
+    <span class="submit-arrow" aria-hidden="true"> → </span>
   </button>
 </form>

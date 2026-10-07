@@ -1,0 +1,94 @@
+/*
+ * Modo oscuro de la página de inicio.
+ *
+ * Vive fuera de los componentes a propósito: así no engorda sus hojas de
+ * estilo (hay presupuesto de tamaño en el build) ni se cruza con los cambios
+ * de quien edite esos componentes. Usa !important porque la encapsulación de
+ * Angular da más especificidad a los selectores de cada componente.
+ * Se activa con la clase html.a11y-dark que pone AccessibilityService.
+ */
+
+html.a11y-dark {
+  /* ---------- Hero ---------- */
+  app-hero {
+    .hero {
+      background: #0b1826 !important;
+      color: #eaf2fb !important;
+    }
+
+    .hero::before {
+      opacity: 0.22 !important;
+    }
+
+    .hero h1 > span {
+      color: #9db0c6 !important;
+    }
+
+    .secondary-action {
+      color: #dbe8f7 !important;
+      background: linear-gradient(#17304b, #12273d) !important;
+      border-color: #2c4a6b !important;
+    }
+
+    .secondary-action:hover {
+      background: #1c3a5a !important;
+    }
+
+    .campus-window {
+      background: #12263b !important;
+      border-color: #2b435d !important;
+    }
+
+    .window-brand > span:first-child {
+      color: #eaf2fb !important;
+    }
+
+    .window-bottom {
+      color: #9fb1c5 !important;
+    }
+  }
+
+  /* ---------- Tu camino comienza aquí ---------- */
+
+  /* ---------- Explora tu camino ---------- */
+
+  /* ---------- Tarjeta de curso ---------- */
+  app-course-card {
+    .course-card {
+      background: #12263b !important;
+      border-color: #2b435d !important;
+    }
+
+    .course-image {
+      background: #0e2033 !important;
+    }
+
+    .course-footer {
+      border-top-color: #2b435d !important;
+    }
+
+    .course-meta {
+      color: #9fb1c5 !important;
+    }
+
+    .course-content h3,
+    .price strong {
+      color: #f0f5fc !important;
+    }
+
+    .course-content > p,
+    .price small {
+      color: #a9bdd2 !important;
+    }
+
+    .view-course {
+      background: #1b3550 !important;
+      color: #dbe8f7 !important;
+    }
+
+    .view-course:hover {
+      background: #2272cc !important;
+      color: #ffffff !important;
+    }
+  }
+}

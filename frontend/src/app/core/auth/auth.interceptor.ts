@@ -1,17 +1,11 @@
-import {
-  HttpInterceptorFn,
-} from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 
-export const authInterceptor: HttpInterceptorFn = (
-  req,
-  next,
-) => {
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
   let token: string | null = null;
 
   try {
     token =
-      localStorage.getItem('campus.accessToken') ??
-      sessionStorage.getItem('campus.accessToken');
+      localStorage.getItem('campus.accessToken') ?? sessionStorage.getItem('campus.accessToken');
   } catch {
     token = null;
   }

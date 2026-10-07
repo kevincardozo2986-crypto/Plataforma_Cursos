@@ -1,0 +1,195 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <span class="eyebrow">ESPACIO DOCENTE / BIBLIOTECA</span>
+    <app-page-header
+      [title]="isAdmin() ? 'Todos los cursos' : 'Mis cursos'"
+      subtitle="Tus ideas, en un solo lugar. Continúa creando y comparte lo que sabes."
+    >
+      <a class="panel-btn panel-btn--primary" routerLink="/teacher/courses/new"
+        ><span aria-hidden="true">＋</span> Crear curso</a
+      >
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Filtrar por estado">
+        @for (filter of filters; track filter.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="status() === filter.value"
+            [attr.aria-pressed]="status() === filter.value"
+            (click)="status.set(filter.value)"
+          >
+            {{ filter.label }}
+            <span class="count">{{ countFor(filter.value) }}</span>
+          </button>
+        }
+      </div>
+
+      <input
+        class="panel-input search"
+        type="search"
+        placeholder="Buscar por título o categoría"
+        aria-label="Buscar cursos"
+        [value]="search()"
+        (input)="onSearch($event)"
+      />
+    </div>
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando cursos…</p></div>
+    } @else if (error()) {
+      <div class="panel-card empty">
+        <h2>No pudimos cargar tu biblioteca</h2>
+        <p>Vuelve a abrir esta página para intentarlo de nuevo.</p>
+      </div>
+    } @else if (courses().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">▤</span>
+        <h2>Tu próxima idea empieza aquí</h2>
+        <p>Crea tu primer curso y organiza el conocimiento que quieres compartir.</p>
+        <a class="panel-btn panel-btn--primary" routerLink="/teacher/courses/new"
+          >Crear el primero</a
+        >
+      </div>
+    } @else if (visible().length === 0) {
+      <div class="panel-card"><p class="panel-muted">Ningún curso coincide con el filtro.</p></div>
+    } @else {
+      <ul class="list">
+        @for (course of visible(); track course.id) {
+          <li
+            class="panel-card item"
+            [class.busy]="busyId() === course.id"
+            [attr.aria-busy]="busyId() === course.id"
+          >
+            <a
+              class="cover"
+              [class.draft]="course.status === 'DRAFT'"
+              [routerLink]="['/teacher/courses', course.id, 'edit']"
+              [attr.aria-label]="'Editar ' + course.title"
+            >
+              @if (course.imageUrl) {
+                <img [src]="course.imageUrl" alt="" loading="lazy" />
+              } @else {
+                <span class="cover-book" aria-hidden="true">▤</span
+                ><span class="cover-label">{{ course.category?.name ?? 'CAMPUS VIRTUAL' }}</span>
+              }
+            </a>
+            <div class="main">
+              <div class="title-row">
+                <a class="title" [routerLink]="['/teacher/courses', course.id, 'edit']">
+                  {{ course.title }}
+                </a>
+                <app-status-badge [status]="course.status" />
+              </div>
+
+              <p class="meta panel-muted">
+                {{ course.category?.name ?? 'Sin categoría' }} · {{ levelLabels[course.level] }} ·
+                @if (+course.price === 0) {
+                  Gratis
+                } @else {
+                  &#36;{{ course.price | number: '1.2-2' }}
+                }
+                · Actualizado {{ course.updatedAt | date: 'dd/MM/yyyy' }}
+                @if (isAdmin() && course.teacher) {
+                  · {{ course.teacher.firstName }} {{ course.teacher.lastName }}
+                }
+              </p>
+            </div>
+
+            <div class="actions">
+              @if (confirmDeleteId() === course.id) {
+                <span class="confirm-text">¿Eliminar este curso?</span>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--danger panel-btn--sm"
+                  [disabled]="busyId() === course.id"
+                  (click)="remove(course)"
+                >
+                  Sí, eliminar
+                </button>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm"
+                  (click)="cancelDelete()"
+                >
+                  Cancelar
+                </button>
+              } @else {
+                <a
+                  class="panel-btn panel-btn--primary panel-btn--sm manage"
+                  [routerLink]="['/teacher/courses', course.id, 'edit']"
+                >
+                  {{ course.status === 'DRAFT' ? 'Continuar editando' : 'Gestionar curso' }}
+                  <span aria-hidden="true">→</span>
+                </a>
+                <details class="more" #menu>
+                  <summary [attr.aria-label]="'Más acciones para ' + course.title">
+                    <span aria-hidden="true">⋯</span>
+                  </summary>
+                  <div class="action-menu">
+                    <span class="menu-label">ACCIONES DEL CURSO</span>
+                    <a [routerLink]="['/teacher/courses', course.id, 'edit', 'curriculum']"
+                      >Organizar contenido</a
+                    >
+                    @switch (course.status) {
+                      @case ('DRAFT') {
+                        <button
+                          type="button"
+                          [disabled]="busyId() === course.id"
+                          (click)="menu.open = false; changeStatus(course, 'PUBLISHED')"
+                        >
+                          Publicar curso
+                        </button>
+                      }
+                      @case ('PUBLISHED') {
+                        <button
+                          type="button"
+                          [disabled]="busyId() === course.id"
+                          (click)="menu.open = false; changeStatus(course, 'DRAFT')"
+                        >
+                          Pasar a borrador
+                        </button>
+                        <button
+                          type="button"
+                          [disabled]="busyId() === course.id"
+                          (click)="menu.open = false; changeStatus(course, 'ARCHIVED')"
+                        >
+                          Archivar curso
+                        </button>
+                      }
+                      @case ('ARCHIVED') {
+                        <button
+                          type="button"
+                          [disabled]="busyId() === course.id"
+                          (click)="menu.open = false; changeStatus(course, 'DRAFT')"
+                        >
+                          Restaurar como borrador
+                        </button>
+                      }
+                    }
+                    <button
+                      type="button"
+                      class="delete-action"
+                      [disabled]="busyId() === course.id"
+                      (click)="menu.open = false; askDelete(course.id)"
+                    >
+                      Eliminar curso
+                    </button>
+                  </div>
+                </details>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>

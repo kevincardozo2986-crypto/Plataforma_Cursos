@@ -1,6 +1,6 @@
-﻿# Frontend — Plataforma de cursos
+# Frontend — Plataforma de cursos
 
-Aplicación Angular con SCSS y renderizado del lado del servidor (SSR). La página inicial contiene el login del campus, basado en la referencia visual proporcionada.
+Aplicación Angular con componentes standalone, SCSS y soporte SSR.
 
 ## Comandos
 
@@ -11,46 +11,57 @@ npm ci
 npm start
 npm run build
 npm test -- --watch=false
+npm run format
+npm run format:check
 ```
 
-El servidor de desarrollo está disponible en `http://localhost:4200`.
+El servidor de desarrollo usa `http://localhost:4200`. El backend debe estar iniciado en `http://localhost:3000`; `proxy.conf.json` redirige `/api` al backend. En producción se necesita un reverse proxy equivalente.
 
-El formulario envía `identifier` (correo o cédula) y `password` a `/api/auth/login`. En desarrollo, `proxy.conf.json` dirige `/api` al backend en `http://localhost:3000` sin cambiar su configuración CORS. El backend debe estar iniciado. En producción, configurar un reverse proxy equivalente para `/api`; el servidor SSR no lo incorpora automáticamente.
+## Organización
 
-El token se guarda en `sessionStorage`, o en `localStorage` cuando se marca «Recordarme». La contraseña no se guarda. Después del login se muestra una confirmación y un botón para cerrar sesión; todavía no hay un panel de usuario ni restauración automática de sesión al recargar. «Crear cuenta», «Invitado» y recuperación de contraseña muestran un aviso de funcionalidad pendiente.
+| Carpeta | Responsabilidad |
+| --- | --- |
+| `src/app/core/` | Autenticación, permisos, servicios HTTP, idioma, accesibilidad y utilidades compartidas. |
+| `src/app/features/auth/` | Páginas y componentes de login y registro. |
+| `src/app/features/home/pages/` | Composición de la portada pública y del catálogo. |
+| `src/app/features/home/components/` | Secciones visuales de la portada y componentes del catálogo. |
+| `src/app/features/teacher/` | Panel docente, cursos, módulos, lecciones, recursos y evaluaciones. |
+| `src/app/features/admin/` | Rutas del administrador. |
+| `src/app/shared/layout/` | Encabezado y estructura común de las páginas. |
+| `src/app/shared/ui/` | Elementos de interfaz reutilizables. |
+| `public/images/` | Imágenes y recursos visuales. |
 
-La referencia guía los colores y la composición. Toda la pantalla está construida con HTML y SCSS, sin usar la captura como fondo. El panel institucional usa identidad tipográfica y formas decorativas; una fotografía y un escudo oficiales se pueden incorporar después como recursos independientes. En móvil la identidad se presenta como cabecera compacta.
+`app.routes.ts` define las rutas principales. Cada página compone sus componentes; los servicios manejan HTTP y los modelos describen los datos. Mantener el HTML, SCSS y TypeScript de cada componente juntos. Las pruebas se ubican junto al archivo que verifican.
 
-## Organización del login
+## Rutas y sesión
 
-- `app.html`: solo contiene `router-outlet`.
-- `app.routes.ts`: redirige a `/login` y carga la página bajo demanda.
-- `core/auth/`: contratos de datos y `AuthService` para HTTP y almacenamiento de sesión.
-- `features/auth/pages/login/`: composición de la página, carga y mensajes de error.
-- `features/auth/components/campus-brand/`: identidad institucional y mensaje de bienvenida.
-- `features/auth/components/login-form/`: formulario reactivo, validación y mostrar contraseña; emite credenciales sin hacer HTTP.
-- `features/auth/components/login-links/`: acciones secundarias.
-- `shared/ui/accessibility-menu/`: opciones de contraste y tamaño de texto, comunicadas mediante inputs/outputs.
+- `/`: portada informativa; docentes y administradores con sesión se redirigen al panel.
+- `/courses`: catálogo público de cursos.
+- `/login` y `/register`: acceso y registro.
+- `/teacher`: panel y herramientas para docentes y administradores.
+- `/admin`: rutas restringidas al administrador.
 
-Cada componente tiene su propio archivo TypeScript, HTML y SCSS. Los estilos globales contienen únicamente la base; las variables visuales del login se definen en la página y se heredan por sus componentes.
+El login envía `identifier` (correo o documento) y `password`. El token se guarda en `sessionStorage` o en `localStorage` si se selecciona Recordarme. La contraseña no se almacena. Los permisos del frontend complementan las verificaciones del backend.
 
-Para ejecutar el servidor SSR después de compilar:
+## Estilos y movimiento
+
+- `styles.scss`: base global.
+- `panel.scss`: variables y elementos comunes del panel.
+- SCSS del componente: composición y apariencia propias.
+- Las animaciones de la portada usan APIs nativas del navegador, se inicializan después del renderizado y respetan movimiento reducido.
+
+Prettier usa la configuración de `.prettierrc`. Ejecutar `npm run format` después de editar y `npm run format:check` para verificar.
+
+## Idioma
+
+`core/i18n/language.service.ts` mantiene la preferencia de idioma. Las traducciones están en `core/i18n/translations.ts`; los componentes que traducen texto importan `TranslatePipe` (`t`). Los nombres y logos institucionales se conservan como recursos de marca.
+
+## SSR
+
+Después de compilar:
 
 ```bash
 npm run serve:ssr:frontend
 ```
 
-## Estructura
-
-- `src/app/`: componentes, configuración y rutas.
-- `src/styles.scss`: estilos globales.
-- `public/`: archivos estáticos.
-- `src/server.ts`: entrada del servidor SSR.
-
-Agregar las funcionalidades de cursos, usuarios y autenticación conforme se implementen. Las variables o credenciales privadas no deben incluirse en código que se envía al navegador.
-
-## Idioma global
-
-El menú de accesibilidad permite elegir Español o English. `core/i18n/language.service.ts` mantiene la preferencia durante la navegación, la guarda en `campus.language` y actualiza `html.lang` y el título del documento. La restauración se realiza después del renderizado para ser compatible con SSR.
-
-Los textos del login, sus validaciones, mensajes y etiquetas accesibles usan `TranslatePipe` (`t`). Las traducciones se mantienen en `core/i18n/translations.ts`. Para nuevas páginas, importar el pipe en el componente y añadir sus textos al diccionario. Los logos y nombres institucionales se conservan como recursos de marca.
+Las credenciales privadas deben permanecer en el backend y no incluirse en el código enviado al navegador.
