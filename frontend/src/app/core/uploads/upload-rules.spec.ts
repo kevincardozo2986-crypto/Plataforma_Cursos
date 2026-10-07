@@ -16,8 +16,12 @@ describe('validateFile', () => {
   });
 
   it('rechaza una extensión que no corresponde, con los formatos válidos en el mensaje', () => {
-    expect(validateFile('video', { name: 'foto.png', size: MB })).toBe('El video debe ser MP4, WebM, MOV u OGG.');
-    expect(validateFile('image', { name: 'clip.mp4', size: MB })).toBe('La imagen debe ser JPG, PNG, GIF o WebP.');
+    expect(validateFile('video', { name: 'foto.png', size: MB })).toBe(
+      'El video debe ser MP4, WebM, MOV u OGG.',
+    );
+    expect(validateFile('image', { name: 'clip.mp4', size: MB })).toBe(
+      'La imagen debe ser JPG, PNG, GIF o WebP.',
+    );
     expect(validateFile('image', { name: 'sin-extension', size: MB })).toContain('debe ser');
   });
 
@@ -67,7 +71,10 @@ describe('isPlayableVideoUrl', () => {
     expect(isPlayableVideoUrl(url)).toBe(true);
   });
 
-  it.each(['https://youtube.com/watch?v=abc', 'https://vimeo.com/123', ''])('%s no se previsualiza', (url) => {
-    expect(isPlayableVideoUrl(url)).toBe(false);
-  });
+  it.each(['https://youtube.com/watch?v=abc', 'https://vimeo.com/123', ''])(
+    '%s no se previsualiza',
+    (url) => {
+      expect(isPlayableVideoUrl(url)).toBe(false);
+    },
+  );
 });

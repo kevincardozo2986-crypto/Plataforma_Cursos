@@ -40,7 +40,10 @@ import { PageHeader } from '../page-header/page-header';
   `,
 })
 export class ComingSoon {
-  private readonly data = inject(ActivatedRoute).snapshot.data as Record<string, string | undefined>;
+  private readonly data = inject(ActivatedRoute).snapshot.data as Record<
+    string,
+    string | undefined
+  >;
 
   readonly title = this.data['title'] ?? 'Próximamente';
   readonly description = this.data['description'] ?? '';

@@ -1,10 +1,5 @@
 import { Component, output, signal } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 
 export interface RegisterSubmission {
@@ -40,26 +35,17 @@ export class RegisterForm {
 
     document: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.pattern(/^[0-9]+$/),
-      ],
+      validators: [Validators.required, Validators.pattern(/^[0-9]+$/)],
     }),
 
     email: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.email,
-      ],
+      validators: [Validators.required, Validators.email],
     }),
 
     password: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(8),
-      ],
+      validators: [Validators.required, Validators.minLength(8)],
     }),
 
     confirmPassword: new FormControl('', {
@@ -74,10 +60,7 @@ export class RegisterForm {
   });
 
   get passwordsMatch(): boolean {
-    return (
-      this.form.controls.password.value ===
-      this.form.controls.confirmPassword.value
-    );
+    return this.form.controls.password.value === this.form.controls.confirmPassword.value;
   }
 
   submit(): void {

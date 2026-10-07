@@ -60,8 +60,7 @@ form {
 
   background: rgba(255, 255, 255, 0.92);
 
-  box-shadow:
-    0 0 0 3px rgba(36, 92, 157, 0.08);
+  box-shadow: 0 0 0 3px rgba(36, 92, 157, 0.08);
 }
 
 .input-wrap > svg {
@@ -165,15 +164,11 @@ form {
 .input-wrap.invalid {
   border-color: #b83a43;
 
-  box-shadow:
-    0 0 0 2px rgba(184, 58, 67, 0.06);
+  box-shadow: 0 0 0 2px rgba(184, 58, 67, 0.06);
 }
 
 .error-message {
-  margin:
-    -3px
-    0
-    13px;
+  margin: -3px 0 13px;
 
   padding: 9px 11px;
 
@@ -200,10 +195,7 @@ form {
 
   gap: 12px;
 
-  margin:
-    -2px
-    0
-    20px;
+  margin: -2px 0 20px;
 
   font-size: 0.76rem;
 }
@@ -272,12 +264,7 @@ form {
   border: 0;
   border-radius: 11px;
 
-  background:
-    linear-gradient(
-      105deg,
-      #073762 0%,
-      #05294e 100%
-    );
+  background: linear-gradient(105deg, #073762 0%, #05294e 100%);
 
   color: #ffffff;
 
@@ -287,8 +274,7 @@ form {
 
   cursor: pointer;
 
-  box-shadow:
-    0 8px 20px rgba(5, 42, 79, 0.11);
+  box-shadow: 0 8px 20px rgba(5, 42, 79, 0.11);
 
   transition:
     transform 150ms ease,
@@ -301,8 +287,7 @@ form {
 
   filter: brightness(1.06);
 
-  box-shadow:
-    0 11px 25px rgba(5, 42, 79, 0.16);
+  box-shadow: 0 11px 25px rgba(5, 42, 79, 0.16);
 }
 
 .submit:active:not(:disabled) {

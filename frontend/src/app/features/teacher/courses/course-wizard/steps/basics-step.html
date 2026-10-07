@@ -1,0 +1,239 @@
+<form class="stack" [formGroup]="form" novalidate (ngSubmit)="$event.preventDefault()">
+  <!-- Título y dirección -->
+  <section class="panel-card block">
+    <h2>Título y dirección</h2>
+
+    <div class="panel-field">
+      <label for="title">Título del curso</label>
+      <input
+        id="title"
+        class="panel-input"
+        type="text"
+        formControlName="title"
+        placeholder="Ej. Introducción a la programación"
+        [attr.aria-invalid]="errorOf('title') ? 'true' : null"
+      />
+      @if (errorOf('title')) {
+        <p class="panel-field-error">{{ errorOf('title') }}</p>
+      }
+    </div>
+
+    <div class="panel-field">
+      <label for="slug">Dirección del curso</label>
+      <div class="slug-row">
+        <span class="slug-prefix" aria-hidden="true">/cursos/</span>
+        <input
+          id="slug"
+          class="panel-input"
+          type="text"
+          formControlName="slug"
+          autocomplete="off"
+          spellcheck="false"
+          (input)="onSlugInput()"
+          [attr.aria-invalid]="errorOf('slug') ? 'true' : null"
+        />
+      </div>
+      @if (errorOf('slug')) {
+        <p class="panel-field-error">{{ errorOf('slug') }}</p>
+      }
+      @if (autoSlug()) {
+        <p class="panel-hint">Se escribe sola a partir del título. Puedes cambiarla.</p>
+      } @else {
+        <!-- Siempre disponible, también cuando la dirección escrita a mano es inválida. -->
+        <p class="panel-hint">
+          Dirección personalizada.
+          <button type="button" class="link-btn" (click)="regenerateSlug()">
+            Generarla desde el título
+          </button>
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- Descripción -->
+  <section class="panel-card block">
+    <h2>Descripción</h2>
+
+    <div class="panel-field">
+      <label for="description">¿De qué trata el curso?</label>
+      <textarea
+        id="description"
+        class="panel-textarea tall"
+        formControlName="description"
+        placeholder="Cuéntales a los estudiantes qué van a aprender y por qué vale la pena."
+      ></textarea>
+    </div>
+  </section>
+
+  <!-- Opciones generales -->
+  <section class="panel-card block">
+    <h2>Opciones generales</h2>
+
+    <div class="row">
+      <div class="panel-field">
+        <label for="level">Nivel de dificultad</label>
+        <select id="level" class="panel-select" formControlName="level">
+          @for (level of levels; track level) {
+            <option [value]="level">{{ levelLabels[level] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="panel-field">
+        <label for="category">Categoría</label>
+        <select id="category" class="panel-select" formControlName="categoryId">
+          @if (canClearCategory) {
+            <option [ngValue]="null">Sin categoría</option>
+          }
+          @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+        @if (categories().length === 0) {
+          <p class="panel-hint">Aún no hay categorías creadas.</p>
+        }
+      </div>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" formControlName="publicContent" />
+      <span>
+        <strong>Curso público</strong>
+        <small>El contenido se puede ver sin inscribirse.</small>
+      </span>
+    </label>
+
+    <label class="check">
+      <input type="checkbox" formControlName="qaEnabled" />
+      <span>
+        <strong>Activar preguntas y respuestas</strong>
+        <small>Los estudiantes pueden hacer preguntas dentro del curso.</small>
+      </span>
+    </label>
+  </section>
+
+  <!-- Precio -->
+  <section class="panel-card block">
+    <h2>Precio</h2>
+
+    <fieldset class="choices">
+      <legend class="visually-hidden">Tipo de precio</legend>
+
+      <label class="choice">
+        <input type="radio" formControlName="pricing" value="FREE" />
+        <span><strong>Gratis</strong></span>
+      </label>
+
+      <label class="choice">
+        <input type="radio" formControlName="pricing" value="PAID" />
+        <span><strong>De pago</strong></span>
+      </label>
+    </fieldset>
+
+    @if (isPaid()) {
+      <div class="panel-field price">
+        <label for="price">Precio del curso</label>
+        <input
+          id="price"
+          class="panel-input"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+          formControlName="price"
+          placeholder="0.00"
+          [attr.aria-invalid]="errorOf('price') ? 'true' : null"
+        />
+        @if (errorOf('price')) {
+          <p class="panel-field-error">{{ errorOf('price') }}</p>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Visibilidad y cupo -->
+  <section class="panel-card block">
+    <h2>Quién puede entrar</h2>
+
+    <fieldset class="choices vertical">
+      <legend class="visually-hidden">Visibilidad del curso</legend>
+
+      @for (visibility of visibilities; track visibility) {
+        <label class="choice">
+          <input type="radio" formControlName="visibility" [value]="visibility" />
+          <span>
+            <strong>{{ visibilityInfo[visibility].label }}</strong>
+            <small>{{ visibilityInfo[visibility].hint }}</small>
+          </span>
+        </label>
+      }
+    </fieldset>
+
+    @if (needsPassword()) {
+      <div class="panel-field password">
+        <label for="accessPassword">Contraseña del curso</label>
+        <input
+          id="accessPassword"
+          class="panel-input"
+          type="text"
+          autocomplete="off"
+          formControlName="accessPassword"
+          [placeholder]="
+            hasSavedPassword() ? 'Déjalo vacío para conservar la actual' : 'Mínimo 4 caracteres'
+          "
+          [attr.aria-invalid]="errorOf('accessPassword') ? 'true' : null"
+        />
+        @if (errorOf('accessPassword')) {
+          <p class="panel-field-error">{{ errorOf('accessPassword') }}</p>
+        } @else if (hasSavedPassword()) {
+          <p class="panel-hint">
+            Ya hay una contraseña guardada. Escribe otra solo si quieres cambiarla.
+          </p>
+        }
+      </div>
+    }
+
+    <div class="panel-field capacity">
+      <label for="maxStudents">Cupo máximo de estudiantes</label>
+      <input
+        id="maxStudents"
+        class="panel-input"
+        type="number"
+        min="1"
+        formControlName="maxStudents"
+        placeholder="Sin límite"
+        [attr.aria-invalid]="errorOf('maxStudents') ? 'true' : null"
+      />
+      @if (errorOf('maxStudents')) {
+        <p class="panel-field-error">{{ errorOf('maxStudents') }}</p>
+      } @else {
+        <p class="panel-hint">Déjalo vacío para no limitar las inscripciones.</p>
+      }
+    </div>
+  </section>
+
+  <!-- Imagen y video -->
+  <section class="panel-card block">
+    <h2>Imagen y video</h2>
+
+    <app-media-field
+      kind="image"
+      inputId="imageUrl"
+      label="Miniatura del curso"
+      placeholder="Pega un enlace o sube un archivo"
+      hint="JPG, PNG, GIF o WebP, hasta 50 MB."
+      [control]="form.controls.imageUrl"
+      [error]="errorOf('imageUrl')"
+    />
+
+    <app-media-field
+      kind="video"
+      inputId="introVideoUrl"
+      label="Video introductorio (opcional)"
+      placeholder="Pega un enlace o sube un archivo"
+      hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace."
+      [control]="form.controls.introVideoUrl"
+      [error]="errorOf('introVideoUrl')"
+    />
+  </section>
+</form>

@@ -27,7 +27,8 @@ const NAMES: Record<UploadKind, { thing: string; formats: string }> = {
 /** "12,3 MB", "50 MB", "850 KB"… (sin decimales cuando son exactos o el archivo es grande). */
 export function formatSize(bytes: number): string {
   if (bytes >= MB) {
-    const megabytes = bytes >= 100 * MB ? Math.round(bytes / MB) : Math.round((bytes / MB) * 10) / 10;
+    const megabytes =
+      bytes >= 100 * MB ? Math.round(bytes / MB) : Math.round((bytes / MB) * 10) / 10;
 
     return `${String(megabytes).replace('.', ',')} MB`;
   }
@@ -42,7 +43,10 @@ export function extensionOf(fileName: string): string {
 }
 
 /** Mensaje de error si el archivo no sirve; null si se puede subir. */
-export function validateFile(kind: UploadKind, file: { name: string; size: number }): string | null {
+export function validateFile(
+  kind: UploadKind,
+  file: { name: string; size: number },
+): string | null {
   const { thing, formats } = NAMES[kind];
 
   if (!ALLOWED_EXTENSIONS[kind].includes(extensionOf(file.name))) {

@@ -10,6 +10,7 @@ export interface Course {
   /** BEGINNER | INTERMEDIATE | ADVANCED */
   level?: string;
   imageUrl?: string | null;
+  introVideoUrl?: string | null;
   _count?: { modules: number };
 
   category?: {

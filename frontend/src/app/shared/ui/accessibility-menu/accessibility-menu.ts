@@ -1,13 +1,6 @@
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LanguageService } from '../../../core/i18n/language.service';
-import {
-  Component,
-  ElementRef,
-  HostListener,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { AccessibilityService } from '../../../core/accessibility/accessibility.service';
 
 @Component({
@@ -22,13 +15,9 @@ export class AccessibilityMenu {
 
   readonly open = signal(false);
 
-  private readonly element =
-    inject(ElementRef<HTMLElement>);
+  private readonly element = inject(ElementRef<HTMLElement>);
 
-  readonly trigger =
-    viewChild<ElementRef<HTMLButtonElement>>(
-      'trigger',
-    );
+  readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger');
 
   close() {
     this.open.set(false);
@@ -43,16 +32,9 @@ export class AccessibilityMenu {
     }
   }
 
-  @HostListener(
-    'document:click',
-    ['$event'],
-  )
+  @HostListener('document:click', ['$event'])
   onOutsideClick(event: Event) {
-    if (
-      !this.element.nativeElement.contains(
-        event.target as Node,
-      )
-    ) {
+    if (!this.element.nativeElement.contains(event.target as Node)) {
       this.open.set(false);
     }
   }

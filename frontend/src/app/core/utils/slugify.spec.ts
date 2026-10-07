@@ -25,7 +25,10 @@ describe('SLUG_PATTERN', () => {
     expect(SLUG_PATTERN.test(slug)).toBe(true);
   });
 
-  it.each(['Curso', 'curso 1', '-curso', 'curso-', 'curso--uno', 'curso_uno'])('rechaza %s', (slug) => {
-    expect(SLUG_PATTERN.test(slug)).toBe(false);
-  });
+  it.each(['Curso', 'curso 1', '-curso', 'curso-', 'curso--uno', 'curso_uno'])(
+    'rechaza %s',
+    (slug) => {
+      expect(SLUG_PATTERN.test(slug)).toBe(false);
+    },
+  );
 });

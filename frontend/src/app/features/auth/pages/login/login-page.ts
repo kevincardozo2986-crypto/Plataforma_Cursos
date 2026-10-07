@@ -1,63 +1,31 @@
-import {
-  Component,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 
-import {
-  HttpErrorResponse,
-} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import {
-  Router,
-} from '@angular/router';
+import { Router } from '@angular/router';
 
-import {
-  finalize,
-} from 'rxjs';
+import { finalize } from 'rxjs';
 
-import {
-  takeUntilDestroyed,
-} from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import {
-  TranslatePipe,
-} from '../../../../core/i18n/translate.pipe';
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 
-import {
-  AuthService,
-} from '../../../../core/auth/auth.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 
-import {
-  LoginSubmission,
-} from '../../../../core/auth/auth.models';
+import { LoginSubmission } from '../../../../core/auth/auth.models';
 
-import {
-  homeFor,
-} from '../../../../core/auth/role-home';
+import { homeFor } from '../../../../core/auth/role-home';
 
-import {
-  LoginForm,
-} from '../../components/login-form/login-form';
+import { LoginForm } from '../../components/login-form/login-form';
 
-import {
-  LoginLinks,
-} from '../../components/login-links/login-links';
+import { LoginLinks } from '../../components/login-links/login-links';
 
-import {
-  LoginHeader,
-} from '../../components/login-header/login-header';
+import { LoginHeader } from '../../components/login-header/login-header';
 
 @Component({
   selector: 'app-login-page',
 
-  imports: [
-    TranslatePipe,
-    LoginHeader,
-    LoginForm,
-    LoginLinks,
-  ],
+  imports: [TranslatePipe, LoginHeader, LoginForm, LoginLinks],
 
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
@@ -65,28 +33,21 @@ import {
 export class LoginPage {
   readonly auth = inject(AuthService);
 
-  private readonly router =
-    inject(Router);
+  private readonly router = inject(Router);
 
-  private readonly destroyRef =
-    inject(DestroyRef);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly loading =
-    signal(false);
+  readonly loading = signal(false);
 
-  readonly error =
-    signal('');
+  readonly error = signal('');
 
-  readonly notice =
-    signal('');
+  readonly notice = signal('');
 
   /* =====================================
      LOGIN
      ===================================== */
 
-  login(
-    credentials: LoginSubmission,
-  ): void {
+  login(credentials: LoginSubmission): void {
     if (this.loading()) {
       return;
     }
@@ -98,13 +59,9 @@ export class LoginPage {
     this.auth
       .login(credentials)
       .pipe(
-        takeUntilDestroyed(
-          this.destroyRef,
-        ),
+        takeUntilDestroyed(this.destroyRef),
 
-        finalize(() =>
-          this.loading.set(false),
-        ),
+        finalize(() => this.loading.set(false)),
       )
       .subscribe({
         /* =============================
@@ -119,9 +76,7 @@ export class LoginPage {
            ERROR
            ============================= */
 
-        error: (
-          error: HttpErrorResponse,
-        ) => {
+        error: (error: HttpErrorResponse) => {
           this.error.set(
             error.status === 401
               ? 'No pudimos iniciar sesión. Revisa tus datos o el estado de tu cuenta.'
@@ -137,12 +92,7 @@ export class LoginPage {
      FUNCIONES NO DISPONIBLES
      ===================================== */
 
-  unavailable(
-    feature: string,
-  ): void {
-    this.notice.set(
-      feature +
-      ' aún no está disponible.',
-    );
+  unavailable(feature: string): void {
+    this.notice.set(feature + ' aún no está disponible.');
   }
 }

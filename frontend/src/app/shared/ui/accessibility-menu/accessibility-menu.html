@@ -18,11 +18,7 @@
 </button>
 
 @if (open()) {
-  <section
-    id="access-options"
-    class="options"
-    aria-labelledby="access-title"
-  >
+  <section id="access-options" class="options" aria-labelledby="access-title">
     <!-- HEADER -->
     <header class="panel-header">
       <div class="header-content">
@@ -39,10 +35,7 @@
           </h2>
 
           <p>
-            {{
-              'Personaliza tu experiencia'
-                | t
-            }}
+            {{ 'Personaliza tu experiencia' | t }}
           </p>
         </div>
       </div>
@@ -50,9 +43,7 @@
       <button
         class="close-button"
         type="button"
-        [attr.aria-label]="
-          'Cerrar opciones de accesibilidad' | t
-        "
+        [attr.aria-label]="'Cerrar opciones de accesibilidad' | t"
         (click)="close()"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -68,11 +59,7 @@
       class="option"
       type="button"
       [attr.aria-pressed]="settings.darkMode()"
-      (click)="
-        settings.darkMode.set(
-          !settings.darkMode()
-        )
-      "
+      (click)="settings.darkMode.set(!settings.darkMode())"
     >
       <span class="option-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
@@ -91,18 +78,11 @@
         </strong>
 
         <small>
-          {{
-            'Reduce el brillo de la interfaz'
-              | t
-          }}
+          {{ 'Reduce el brillo de la interfaz' | t }}
         </small>
       </span>
 
-      <span
-        class="switch"
-        [class.active]="settings.darkMode()"
-        aria-hidden="true"
-      >
+      <span class="switch" [class.active]="settings.darkMode()" aria-hidden="true">
         <span></span>
       </span>
     </button>
@@ -112,18 +92,9 @@
       class="option"
       type="button"
       [attr.aria-pressed]="settings.largeText()"
-      (click)="
-        settings.largeText.set(
-          !settings.largeText()
-        )
-      "
+      (click)="settings.largeText.set(!settings.largeText())"
     >
-      <span
-        class="option-icon text-icon"
-        aria-hidden="true"
-      >
-        Aa
-      </span>
+      <span class="option-icon text-icon" aria-hidden="true"> Aa </span>
 
       <span class="option-copy">
         <strong>
@@ -131,18 +102,11 @@
         </strong>
 
         <small>
-          {{
-            'Aumenta el tamaño del contenido'
-              | t
-          }}
+          {{ 'Aumenta el tamaño del contenido' | t }}
         </small>
       </span>
 
-      <span
-        class="switch"
-        [class.active]="settings.largeText()"
-        aria-hidden="true"
-      >
+      <span class="switch" [class.active]="settings.largeText()" aria-hidden="true">
         <span></span>
       </span>
     </button>
@@ -152,11 +116,7 @@
       class="option"
       type="button"
       [attr.aria-pressed]="settings.contrast()"
-      (click)="
-        settings.contrast.set(
-          !settings.contrast()
-        )
-      "
+      (click)="settings.contrast.set(!settings.contrast())"
     >
       <span class="option-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
@@ -175,11 +135,7 @@
         </small>
       </span>
 
-      <span
-        class="switch"
-        [class.active]="settings.contrast()"
-        aria-hidden="true"
-      >
+      <span class="switch" [class.active]="settings.contrast()" aria-hidden="true">
         <span></span>
       </span>
     </button>
@@ -193,24 +149,17 @@
       </legend>
 
       <p class="language-description">
-        {{
-          'Selecciona tu idioma de preferencia'
-            | t
-        }}
+        {{ 'Selecciona tu idioma de preferencia' | t }}
       </p>
 
       <div class="language-buttons">
         <button
           type="button"
           lang="es"
-          [attr.aria-pressed]="
-            language.language() === 'es'
-          "
+          [attr.aria-pressed]="language.language() === 'es'"
           (click)="language.setLanguage('es')"
         >
-          <span class="language-code">
-            ES
-          </span>
+          <span class="language-code"> ES </span>
 
           <span>Español</span>
         </button>
@@ -218,14 +167,10 @@
         <button
           type="button"
           lang="en"
-          [attr.aria-pressed]="
-            language.language() === 'en'
-          "
+          [attr.aria-pressed]="language.language() === 'en'"
           (click)="language.setLanguage('en')"
         >
-          <span class="language-code">
-            EN
-          </span>
+          <span class="language-code"> EN </span>
 
           <span>English</span>
         </button>
@@ -233,11 +178,7 @@
     </fieldset>
 
     <!-- RESET -->
-    <button
-      class="reset"
-      type="button"
-      (click)="settings.reset()"
-    >
+    <button class="reset" type="button" (click)="settings.reset()">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path
           d="M4 4v6h6M5.5 15a7 7 0 1 0

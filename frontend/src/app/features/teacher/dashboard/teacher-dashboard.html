@@ -1,0 +1,247 @@
+<section class="panel-page">
+  <div class="panel-container studio">
+    <header class="studio-header">
+      <div class="welcome-copy">
+        <h1>
+          Hola, {{ auth.user()?.firstName ?? 'Docente' }}<span class="welcome-period">.</span>
+        </h1>
+        <p>
+          Una buena clase comienza con <span class="underlined">una idea tuya.</span><br />Dale
+          forma, compártela y abre nuevas posibilidades.
+        </p>
+      </div>
+      <div class="chalk-scene" aria-hidden="true">
+        <span class="scene-spark">&#10038;</span>
+        <div class="chalk-board">
+          <span class="board-label">LA PRÓXIMA CLASE</span
+          ><span class="chalk-word">empieza<br />contigo.</span
+          ><svg viewBox="0 0 160 28" fill="none">
+            <path
+              d="M6 15c34-9 81-11 144-4M15 23c40-8 78-9 128-7"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            /></svg
+          ><span class="chalk-piece"></span>
+        </div>
+        <span class="scene-note">Idea + conocimiento<br />= nuevas posibilidades</span>
+      </div>
+    </header>
+    <div class="dashboard-layout">
+      <div class="dashboard-main">
+        @if (loading()) {
+          <div class="loading" role="status">
+            <span class="spinner" aria-hidden="true"></span> Cargando tu espacio de trabajo…
+          </div>
+        } @else if (error()) {
+          <div class="error" role="alert">
+            <h2>No pudimos cargar los cursos</h2>
+            <p>{{ error() }}</p>
+            <a routerLink="/teacher/courses">Ir a la biblioteca →</a>
+          </div>
+        } @else {
+          <section class="preparation" aria-labelledby="draft-title">
+            <div class="section-head">
+              <div>
+                <span class="overline">EN CONSTRUCCIÓN</span>
+                <h2 id="draft-title">
+                  Continúa preparando <span class="quantity">{{ stats()[2].value }}</span>
+                </h2>
+              </div>
+              <span class="section-note">Cada gran curso empieza con una idea.</span>
+            </div>
+            <div class="draft-grid">
+              @for (course of visibleDrafts(); track course.id; let index = $index) {
+                @if (course.status === 'DRAFT') {
+                  <a
+                    class="draft-card"
+                    [class.featured]="index === 0"
+                    [routerLink]="['/teacher/courses', course.id, 'edit']"
+                  >
+                    <div class="draft-image">
+                      @if (course.imageUrl) {
+                        <img [src]="course.imageUrl" alt="" loading="lazy" />
+                      } @else {
+                        <div class="cover-art" aria-hidden="true">
+                          <svg viewBox="0 0 160 120" fill="none">
+                            <rect
+                              x="41"
+                              y="20"
+                              width="73"
+                              height="86"
+                              rx="7"
+                              transform="rotate(-9 41 20)"
+                              fill="currentColor"
+                              opacity=".12"
+                            />
+                            <rect
+                              x="49"
+                              y="17"
+                              width="72"
+                              height="86"
+                              rx="7"
+                              fill="currentColor"
+                              opacity=".22"
+                            />
+                            <path
+                              d="M64 39h40M64 51h27M64 73h40M64 85h20"
+                              stroke="currentColor"
+                              stroke-width="3"
+                              stroke-linecap="round"
+                            />
+                            <path
+                              d="m120 15 3-8 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                      }
+                      <span class="draft-tag">Borrador</span>
+                    </div>
+                    <div class="draft-body">
+                      <span class="course-category">{{
+                        course.category?.name ?? 'Tu próximo curso'
+                      }}</span>
+                      <h3>{{ course.title || 'Curso sin título' }}</h3>
+                      <p>
+                        {{ levelLabels[course.level] }} <span aria-hidden="true">·</span> Editado
+                        {{ course.updatedAt | date: 'dd/MM/yyyy' }}
+                      </p>
+                      <span class="continue">Continuar editando </span>
+                    </div>
+                  </a>
+                }
+              }
+              @if (drafts().length === 0) {
+                <div class="draft-empty">
+                  <h3>Tu espacio está listo para una nueva idea.</h3>
+                  <p>Crea un curso para empezar a organizar tus lecciones.</p>
+                  <a class="create-button" routerLink="/teacher/courses/new"
+                    >Crear mi primer curso</a
+                  >
+                </div>
+              }
+            </div>
+          </section>
+          @if (draftPageCount() > 1) {
+            <nav class="draft-pagination" aria-label="Páginas de borradores">
+              <span>Página {{ currentDraftPage() }} de {{ draftPageCount() }}</span>
+              <div class="page-controls">
+                <button
+                  type="button"
+                  [disabled]="currentDraftPage() === 1"
+                  (click)="draftPage.set(currentDraftPage() - 1)"
+                  aria-label="Página anterior"
+                >
+                  ←
+                </button>
+                @for (page of draftPages(); track page) {
+                  <button
+                    type="button"
+                    [class.selected]="currentDraftPage() === page"
+                    [attr.aria-current]="currentDraftPage() === page ? 'page' : null"
+                    [attr.aria-label]="'Página ' + page"
+                    (click)="draftPage.set(page)"
+                  >
+                    {{ page }}
+                  </button>
+                }
+                <button
+                  type="button"
+                  [disabled]="currentDraftPage() === draftPageCount()"
+                  (click)="draftPage.set(currentDraftPage() + 1)"
+                  aria-label="Página siguiente"
+                >
+                  →
+                </button>
+              </div>
+            </nav>
+          }
+          <section class="published-section" aria-labelledby="published-title">
+            <div class="section-head">
+              <div>
+                <span class="overline">LISTOS PARA APRENDER</span>
+                <h2 id="published-title">
+                  Cursos publicados <span class="quantity">{{ stats()[1].value }}</span>
+                </h2>
+              </div>
+              <a class="library-link" routerLink="/teacher/courses">Gestionar biblioteca </a>
+            </div>
+            @if (stats()[1].value === 0) {
+              <div class="published-empty">
+                <span aria-hidden="true">↗</span>
+                <div>
+                  <h3>Tu próximo paso: compartirlo.</h3>
+                  <p>Cuando publiques un curso, lo encontrarás aquí.</p>
+                </div>
+              </div>
+            } @else {
+              <div class="published-list">
+                @for (course of courses(); track course.id) {
+                  @if (course.status === 'PUBLISHED') {
+                    <a class="published-row" [routerLink]="['/teacher/courses', course.id, 'edit']">
+                      <div class="published-thumb">
+                        @if (course.imageUrl) {
+                          <img [src]="course.imageUrl" alt="" loading="lazy" />
+                        } @else {
+                          <span aria-hidden="true">▤</span>
+                        }
+                      </div>
+                      <div class="published-info">
+                        <h3>{{ course.title }}</h3>
+                        <p>
+                          {{ course.category?.name ?? 'Sin categoría' }} ·
+                          {{ levelLabels[course.level] }}
+                        </p>
+                      </div>
+                      <span class="live"><i aria-hidden="true"></i> Publicado</span
+                      ><span class="manage">Gestionar</span>
+                    </a>
+                  }
+                }
+              </div>
+            }
+          </section>
+        }
+      </div>
+      <aside class="dashboard-side">
+        <a class="create-banner" routerLink="/teacher/courses/new"
+          ><span class="banner-plus" aria-hidden="true">+</span>
+          <div>
+            <strong>Crear curso</strong>
+            <p>Comparte lo que sabes</p>
+          </div>
+        </a>
+        <section class="quick-panel">
+          <h2>Accesos rápidos</h2>
+          <a routerLink="/teacher/courses/new"
+            ><span class="quick-icon blue" aria-hidden="true">+</span>
+            <div>
+              <strong>Nuevo curso</strong>
+              <p>Diseña tu siguiente clase</p>
+            </div> </a
+          ><a routerLink="/teacher/courses"
+            ><span class="quick-icon green" aria-hidden="true">▤</span>
+            <div>
+              <strong>Mi biblioteca</strong>
+              <p>Gestiona todos tus cursos</p>
+            </div>
+          </a>
+          @if (drafts()[0]; as course) {
+            <a [routerLink]="['/teacher/courses', course.id, 'edit', 'curriculum']"
+              ><span class="quick-icon purple" aria-hidden="true">✎</span>
+              <div>
+                <strong>Organizar contenido</strong>
+                <p>Lecciones y evaluaciones</p>
+              </div>
+            </a>
+          }
+        </section>
+      </aside>
+    </div>
+    <footer class="studio-footer">
+      <span>Tu conocimiento, nuevas posibilidades.</span
+      ><span>CAMPUS VIRTUAL <span aria-hidden="true">✦</span></span>
+    </footer>
+  </div>
+</section>

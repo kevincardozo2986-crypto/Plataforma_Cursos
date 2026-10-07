@@ -1,0 +1,1 @@
+﻿Background-extraction using built-in imagegen: remove the red background from the supplied woman photo; preserve identity, expression, pose, hair, white blouse, jeans and books; transparent alpha, natural hair edges; no text or decorative objects.

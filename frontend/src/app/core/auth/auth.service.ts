@@ -1,64 +1,36 @@
-import {
-  inject,
-  Injectable,
-  signal,
-} from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 
-import {
-  HttpClient,
-} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
-import {
-  catchError,
-  of,
-  tap,
-} from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 
-import {
-  LoginResponse,
-  LoginSubmission,
-  RegisterRequest,
-  RegisterResponse,
-} from './auth.models';
+import { LoginResponse, LoginSubmission, RegisterRequest, RegisterResponse } from './auth.models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly http =
-    inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   /* =====================================
      ESTADO DEL USUARIO
      ===================================== */
 
-  readonly user =
-    signal<LoginResponse['user'] | null>(
-      null,
-    );
+  readonly user = signal<LoginResponse['user'] | null>(null);
 
-  readonly storageNotice =
-    signal('');
+  readonly storageNotice = signal('');
 
   /* =====================================
      LOGIN
      ===================================== */
 
-  login({
-    identifier,
-    password,
-    remember,
-  }: LoginSubmission) {
+  login({ identifier, password, remember }: LoginSubmission) {
     return this.http
-      .post<LoginResponse>(
-        '/api/auth/login',
-        {
-          identifier:
-            identifier.trim(),
+      .post<LoginResponse>('/api/auth/login', {
+        identifier: identifier.trim(),
 
-          password,
-        },
-      )
+        password,
+      })
       .pipe(
         tap((response) => {
           this.storageNotice.set('');
@@ -70,13 +42,9 @@ export class AuthService {
              * la nueva.
              */
 
-            localStorage.removeItem(
-              'campus.accessToken',
-            );
+            localStorage.removeItem('campus.accessToken');
 
-            sessionStorage.removeItem(
-              'campus.accessToken',
-            );
+            sessionStorage.removeItem('campus.accessToken');
 
             /*
              * Si marcó "Recordarme":
@@ -86,18 +54,12 @@ export class AuthService {
              * sessionStorage.
              */
 
-            (
-              remember
-                ? localStorage
-                : sessionStorage
-            ).setItem(
+            (remember ? localStorage : sessionStorage).setItem(
               'campus.accessToken',
               response.accessToken,
             );
           } catch {
-            this.storageNotice.set(
-              'Tu navegador no permite guardar la sesión.',
-            );
+            this.storageNotice.set('Tu navegador no permite guardar la sesión.');
           }
 
           /*
@@ -105,9 +67,7 @@ export class AuthService {
            * en memoria.
            */
 
-          this.user.set(
-            response.user,
-          );
+          this.user.set(response.user);
         }),
       );
   }
@@ -116,31 +76,18 @@ export class AuthService {
      REGISTER
      ===================================== */
 
-  register(
-    data: RegisterRequest,
-  ) {
-    return this.http
-      .post<RegisterResponse>(
-        '/api/auth/register',
-        {
-          firstName:
-            data.firstName.trim(),
+  register(data: RegisterRequest) {
+    return this.http.post<RegisterResponse>('/api/auth/register', {
+      firstName: data.firstName.trim(),
 
-          lastName:
-            data.lastName.trim(),
+      lastName: data.lastName.trim(),
 
-          document:
-            data.document.trim(),
+      document: data.document.trim(),
 
-          email:
-            data.email
-              .trim()
-              .toLowerCase(),
+      email: data.email.trim().toLowerCase(),
 
-          password:
-            data.password,
-        },
-      );
+      password: data.password,
+    });
   }
 
   /* =====================================
@@ -157,16 +104,9 @@ export class AuthService {
 
     try {
       token =
-        localStorage.getItem(
-          'campus.accessToken',
-        ) ??
-        sessionStorage.getItem(
-          'campus.accessToken',
-        );
+        localStorage.getItem('campus.accessToken') ?? sessionStorage.getItem('campus.accessToken');
     } catch {
-      this.storageNotice.set(
-        'No pudimos acceder al almacenamiento del navegador.',
-      );
+      this.storageNotice.set('No pudimos acceder al almacenamiento del navegador.');
 
       return of(null);
     }
@@ -191,28 +131,24 @@ export class AuthService {
      * Authorization: Bearer <token>
      */
 
-    return this.http
-      .get<LoginResponse['user']>(
-        '/api/auth/me',
-      )
-      .pipe(
-        tap((user) => {
-          this.user.set(user);
-        }),
+    return this.http.get<LoginResponse['user']>('/api/auth/me').pipe(
+      tap((user) => {
+        this.user.set(user);
+      }),
 
-        catchError(() => {
-          /*
-           * Si el token expiró,
-           * es inválido o el backend
-           * devuelve 401, limpiamos
-           * la sesión.
-           */
+      catchError(() => {
+        /*
+         * Si el token expiró,
+         * es inválido o el backend
+         * devuelve 401, limpiamos
+         * la sesión.
+         */
 
-          this.clearSession();
+        this.clearSession();
 
-          return of(null);
-        }),
-      );
+        return of(null);
+      }),
+    );
   }
 
   /* =====================================
@@ -229,17 +165,11 @@ export class AuthService {
 
   private clearSession(): void {
     try {
-      localStorage.removeItem(
-        'campus.accessToken',
-      );
+      localStorage.removeItem('campus.accessToken');
 
-      sessionStorage.removeItem(
-        'campus.accessToken',
-      );
+      sessionStorage.removeItem('campus.accessToken');
     } catch {
-      this.storageNotice.set(
-        'No pudimos acceder al almacenamiento del navegador.',
-      );
+      this.storageNotice.set('No pudimos acceder al almacenamiento del navegador.');
     }
 
     this.user.set(null);

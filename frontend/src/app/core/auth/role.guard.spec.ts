@@ -28,8 +28,7 @@ describe('roleGuard', () => {
       roleGuard(...roles)({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
-  const path = (result: unknown) =>
-    TestBed.inject(Router).serializeUrl(result as UrlTree);
+  const path = (result: unknown) => TestBed.inject(Router).serializeUrl(result as UrlTree);
 
   it('manda al login a quien no tiene sesión', () => {
     expect(path(run('TEACHER'))).toBe('/login');

@@ -1,15 +1,9 @@
 ﻿:host {
   position: fixed;
 
-  right: max(
-    22px,
-    env(safe-area-inset-right)
-  );
+  right: max(22px, env(safe-area-inset-right));
 
-  bottom: max(
-    22px,
-    env(safe-area-inset-bottom)
-  );
+  bottom: max(22px, env(safe-area-inset-bottom));
 
   z-index: 1000;
 
@@ -31,17 +25,11 @@
 
   padding: 0;
 
-  border: 1px solid
-    rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.82);
 
   border-radius: 50%;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.98),
-      rgba(239, 245, 251, 0.94)
-    );
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(239, 245, 251, 0.94));
 
   color: #0b3c69;
 
@@ -60,18 +48,11 @@
 }
 
 .trigger:hover {
-  transform:
-    translateY(-3px)
-    scale(1.03);
+  transform: translateY(-3px) scale(1.03);
 
   color: #ffffff;
 
-  background:
-    linear-gradient(
-      145deg,
-      #0c4d80,
-      #07345e
-    );
+  background: linear-gradient(145deg, #0c4d80, #07345e);
 
   box-shadow:
     0 12px 30px rgba(3, 25, 48, 0.3),
@@ -81,12 +62,7 @@
 .trigger.open {
   color: #ffffff;
 
-  background:
-    linear-gradient(
-      145deg,
-      #0b4777,
-      #062e55
-    );
+  background: linear-gradient(145deg, #0b4777, #062e55);
 
   box-shadow:
     0 10px 28px rgba(3, 25, 48, 0.3),
@@ -114,8 +90,7 @@
 
   inset: -5px;
 
-  border: 1px solid
-    rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   border-radius: 50%;
 
@@ -132,13 +107,9 @@
   right: 0;
   bottom: 68px;
 
-  width: min(
-    330px,
-    calc(100vw - 32px)
-  );
+  width: min(330px, calc(100vw - 32px));
 
-  max-height:
-    calc(100dvh - 110px);
+  max-height: calc(100dvh - 110px);
 
   overflow-y: auto;
 
@@ -146,39 +117,22 @@
 
   box-sizing: border-box;
 
-  border: 1px solid
-    rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.7);
 
   border-radius: 20px;
 
-  background:
-    rgba(249, 251, 254, 0.94);
+  background: rgba(249, 251, 254, 0.94);
 
-  backdrop-filter:
-    blur(24px)
-    saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
 
-  -webkit-backdrop-filter:
-    blur(24px)
-    saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
 
   box-shadow:
-    0 25px 70px
-      rgba(3, 25, 48, 0.25),
-    0 8px 24px
-      rgba(3, 25, 48, 0.09),
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.9);
+    0 25px 70px rgba(3, 25, 48, 0.25),
+    0 8px 24px rgba(3, 25, 48, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
-  animation:
-    accessibility-enter
-    190ms
-    cubic-bezier(
-      0.22,
-      1,
-      0.36,
-      1
-    );
+  animation: accessibility-enter 190ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =========================================================
@@ -218,12 +172,7 @@
 
   border-radius: 12px;
 
-  background:
-    linear-gradient(
-      145deg,
-      #e8f2fb,
-      #dcebf8
-    );
+  background: linear-gradient(145deg, #e8f2fb, #dcebf8);
 
   color: #0d548d;
 }
@@ -294,8 +243,7 @@
 }
 
 .close-button:hover {
-  background:
-    rgba(10, 56, 95, 0.07);
+  background: rgba(10, 56, 95, 0.07);
 
   color: #0a365f;
 }
@@ -322,8 +270,7 @@
 
   margin: 5px auto;
 
-  background:
-    rgba(73, 101, 130, 0.13);
+  background: rgba(73, 101, 130, 0.13);
 }
 
 /* =========================================================
@@ -361,8 +308,7 @@
 }
 
 .option:hover {
-  background:
-    rgba(230, 239, 248, 0.72);
+  background: rgba(230, 239, 248, 0.72);
 }
 
 .option:active {
@@ -384,8 +330,7 @@
 
   border-radius: 11px;
 
-  background:
-    rgba(225, 237, 248, 0.75);
+  background: rgba(225, 237, 248, 0.75);
 
   color: #155889;
 }
@@ -404,10 +349,7 @@
 }
 
 .text-icon {
-  font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+  font-family: Georgia, 'Times New Roman', serif;
 
   font-size: 0.87rem;
   font-weight: 700;
@@ -461,12 +403,9 @@
 
   background: #cbd5df;
 
-  box-shadow:
-    inset 0 1px 2px
-      rgba(3, 25, 48, 0.09);
+  box-shadow: inset 0 1px 2px rgba(3, 25, 48, 0.09);
 
-  transition:
-    background 180ms ease;
+  transition: background 180ms ease;
 }
 
 .switch > span {
@@ -482,26 +421,17 @@
 
   background: #ffffff;
 
-  box-shadow:
-    0 1px 4px
-      rgba(3, 25, 48, 0.24);
+  box-shadow: 0 1px 4px rgba(3, 25, 48, 0.24);
 
-  transition:
-    transform 180ms ease;
+  transition: transform 180ms ease;
 }
 
 .switch.active {
-  background:
-    linear-gradient(
-      90deg,
-      #176ca8,
-      #0d5790
-    );
+  background: linear-gradient(90deg, #176ca8, #0d5790);
 }
 
 .switch.active > span {
-  transform:
-    translateX(17px);
+  transform: translateX(17px);
 }
 
 /* =========================================================
@@ -528,10 +458,7 @@
 }
 
 .language-description {
-  margin:
-    3px
-    0
-    10px;
+  margin: 3px 0 10px;
 
   color: #77889c;
 
@@ -543,8 +470,7 @@
 .language-buttons {
   display: grid;
 
-  grid-template-columns:
-    1fr 1fr;
+  grid-template-columns: 1fr 1fr;
 
   gap: 7px;
 }
@@ -561,13 +487,11 @@
 
   padding: 0 10px;
 
-  border: 1px solid
-    rgba(102, 126, 151, 0.2);
+  border: 1px solid rgba(102, 126, 151, 0.2);
 
   border-radius: 10px;
 
-  background:
-    rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.65);
 
   color: #5d7188;
 
@@ -585,25 +509,19 @@
 }
 
 .language-buttons button:hover {
-  background:
-    rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.95);
 
-  border-color:
-    rgba(23, 94, 148, 0.28);
+  border-color: rgba(23, 94, 148, 0.28);
 }
 
-.language-buttons
-button[aria-pressed='true'] {
+.language-buttons button[aria-pressed='true'] {
   border-color: #176ba6;
 
-  background:
-    rgba(228, 240, 251, 0.9);
+  background: rgba(228, 240, 251, 0.9);
 
   color: #0e578d;
 
-  box-shadow:
-    inset 0 0 0 1px
-      rgba(23, 107, 166, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(23, 107, 166, 0.1);
 }
 
 .language-code {
@@ -615,8 +533,7 @@ button[aria-pressed='true'] {
 
   border-radius: 6px;
 
-  background:
-    rgba(14, 74, 119, 0.07);
+  background: rgba(14, 74, 119, 0.07);
 
   font-size: 0.58rem;
   font-weight: 800;
@@ -631,8 +548,7 @@ button[aria-pressed='true'] {
 .reset {
   display: flex;
 
-  width:
-    calc(100% - 14px);
+  width: calc(100% - 14px);
 
   min-height: 40px;
 
@@ -641,20 +557,15 @@ button[aria-pressed='true'] {
 
   gap: 8px;
 
-  margin:
-    5px
-    7px
-    7px;
+  margin: 5px 7px 7px;
 
   padding: 0 12px;
 
-  border: 1px solid
-    rgba(93, 118, 144, 0.18);
+  border: 1px solid rgba(93, 118, 144, 0.18);
 
   border-radius: 10px;
 
-  background:
-    rgba(238, 243, 248, 0.62);
+  background: rgba(238, 243, 248, 0.62);
 
   color: #5c7086;
 
@@ -671,8 +582,7 @@ button[aria-pressed='true'] {
 }
 
 .reset:hover {
-  background:
-    rgba(228, 236, 244, 0.9);
+  background: rgba(228, 236, 244, 0.9);
 
   color: #163e64;
 }
@@ -698,17 +608,13 @@ button[aria-pressed='true'] {
   from {
     opacity: 0;
 
-    transform:
-      translateY(8px)
-      scale(0.97);
+    transform: translateY(8px) scale(0.97);
   }
 
   to {
     opacity: 1;
 
-    transform:
-      translateY(0)
-      scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -720,94 +626,65 @@ button[aria-pressed='true'] {
   color: #eaf2f9;
 }
 
-:host-context(.a11y-dark)
-.options {
-  border-color:
-    rgba(255, 255, 255, 0.08);
+:host-context(.a11y-dark) .options {
+  border-color: rgba(255, 255, 255, 0.08);
 
-  background:
-    rgba(7, 28, 48, 0.95);
+  background: rgba(7, 28, 48, 0.95);
 
-  box-shadow:
-    0 28px 75px
-      rgba(0, 0, 0, 0.4);
+  box-shadow: 0 28px 75px rgba(0, 0, 0, 0.4);
 }
 
-:host-context(.a11y-dark)
-.header-copy h2,
-:host-context(.a11y-dark)
-.option-copy strong,
-:host-context(.a11y-dark)
-.language-selector legend {
+:host-context(.a11y-dark) .header-copy h2,
+:host-context(.a11y-dark) .option-copy strong,
+:host-context(.a11y-dark) .language-selector legend {
   color: #f1f6fb;
 }
 
-:host-context(.a11y-dark)
-.header-copy p,
-:host-context(.a11y-dark)
-.option-copy small,
-:host-context(.a11y-dark)
-.language-description {
+:host-context(.a11y-dark) .header-copy p,
+:host-context(.a11y-dark) .option-copy small,
+:host-context(.a11y-dark) .language-description {
   color: #9db0c4;
 }
 
-:host-context(.a11y-dark)
-.option {
+:host-context(.a11y-dark) .option {
   color: #edf4fa;
 }
 
-:host-context(.a11y-dark)
-.option:hover {
-  background:
-    rgba(255, 255, 255, 0.055);
+:host-context(.a11y-dark) .option:hover {
+  background: rgba(255, 255, 255, 0.055);
 }
 
-:host-context(.a11y-dark)
-.option-icon,
-:host-context(.a11y-dark)
-.header-icon {
-  background:
-    rgba(76, 157, 218, 0.12);
+:host-context(.a11y-dark) .option-icon,
+:host-context(.a11y-dark) .header-icon {
+  background: rgba(76, 157, 218, 0.12);
 
   color: #75b9ec;
 }
 
-:host-context(.a11y-dark)
-.divider {
-  background:
-    rgba(255, 255, 255, 0.08);
+:host-context(.a11y-dark) .divider {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-:host-context(.a11y-dark)
-.language-buttons button {
-  border-color:
-    rgba(255, 255, 255, 0.09);
+:host-context(.a11y-dark) .language-buttons button {
+  border-color: rgba(255, 255, 255, 0.09);
 
-  background:
-    rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.045);
 
   color: #aebed0;
 }
 
-:host-context(.a11y-dark)
-.language-buttons
-button[aria-pressed='true'] {
-  border-color:
-    rgba(91, 169, 226, 0.5);
+:host-context(.a11y-dark) .language-buttons button[aria-pressed='true'] {
+  border-color: rgba(91, 169, 226, 0.5);
 
-  background:
-    rgba(49, 128, 188, 0.16);
+  background: rgba(49, 128, 188, 0.16);
 
   color: #ffffff;
 }
 
-:host-context(.a11y-dark)
-.reset {
-  border-color:
-    rgba(255, 255, 255, 0.08);
+:host-context(.a11y-dark) .reset {
+  border-color: rgba(255, 255, 255, 0.08);
 
-  background:
-    rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.04);
 
   color: #aebed0;
 }
@@ -818,15 +695,9 @@ button[aria-pressed='true'] {
 
 @media (max-width: 600px) {
   :host {
-    right: max(
-      14px,
-      env(safe-area-inset-right)
-    );
+    right: max(14px, env(safe-area-inset-right));
 
-    bottom: max(
-      14px,
-      env(safe-area-inset-bottom)
-    );
+    bottom: max(14px, env(safe-area-inset-bottom));
   }
 
   .trigger {
@@ -844,8 +715,7 @@ button[aria-pressed='true'] {
 
     width: auto;
 
-    max-height:
-      calc(100dvh - 100px);
+    max-height: calc(100dvh - 100px);
 
     border-radius: 18px;
   }
@@ -855,9 +725,7 @@ button[aria-pressed='true'] {
    MOVIMIENTO REDUCIDO
    ========================================================= */
 
-@media (
-  prefers-reduced-motion: reduce
-) {
+@media (prefers-reduced-motion: reduce) {
   .trigger,
   .switch,
   .switch > span,

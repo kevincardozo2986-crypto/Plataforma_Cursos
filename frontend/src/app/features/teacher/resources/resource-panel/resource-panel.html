@@ -1,0 +1,116 @@
+<section class="panel-card resources">
+  <h2>Recursos de la lección</h2>
+  <p class="panel-muted intro">
+    Enlaces a materiales de apoyo: PDF, videos, documentos o páginas web.
+  </p>
+
+  @if (error()) {
+    <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+  }
+
+  <ul class="list">
+    @for (resource of resources(); track resource.id) {
+      <li class="item">
+        <span class="type-tag">{{ labels[resource.type] }}</span>
+
+        <a class="name" [href]="resource.url" target="_blank" rel="noopener noreferrer">
+          {{ resource.title }}
+        </a>
+
+        <span class="item-actions">
+          @if (confirmId() === resource.id) {
+            <span class="confirm-text">¿Eliminar?</span>
+            <button
+              type="button"
+              class="panel-btn panel-btn--danger panel-btn--sm"
+              [disabled]="busy()"
+              (click)="remove(resource)"
+            >
+              Sí
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              (click)="confirmId.set(null)"
+            >
+              No
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              (click)="startEdit(resource)"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--danger panel-btn--sm"
+              (click)="confirmId.set(resource.id)"
+            >
+              Quitar
+            </button>
+          }
+        </span>
+      </li>
+    } @empty {
+      <li class="empty panel-muted">Aún no hay recursos en esta lección.</li>
+    }
+  </ul>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h3>{{ editingId() === null ? 'Añadir recurso' : 'Editar recurso' }}</h3>
+
+    <div class="grid">
+      <div class="panel-field">
+        <label for="resource-title">Título</label>
+        <input
+          id="resource-title"
+          class="panel-input"
+          type="text"
+          formControlName="title"
+          placeholder="Ej. Guía de la clase"
+          [attr.aria-invalid]="fieldError('title') ? 'true' : null"
+        />
+        @if (fieldError('title')) {
+          <p class="panel-field-error">{{ fieldError('title') }}</p>
+        }
+      </div>
+
+      <div class="panel-field">
+        <label for="resource-type">Tipo</label>
+        <select id="resource-type" class="panel-select" formControlName="type">
+          @for (type of types; track type) {
+            <option [value]="type">{{ labels[type] }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-field">
+      <label for="resource-url">Enlace (URL)</label>
+      <input
+        id="resource-url"
+        class="panel-input"
+        type="url"
+        formControlName="url"
+        placeholder="https://…"
+        [attr.aria-invalid]="fieldError('url') ? 'true' : null"
+      />
+      @if (fieldError('url')) {
+        <p class="panel-field-error">{{ fieldError('url') }}</p>
+      }
+    </div>
+
+    <div class="form-actions">
+      @if (editingId() !== null) {
+        <button type="button" class="panel-btn panel-btn--ghost" (click)="cancelEdit()">
+          Cancelar
+        </button>
+      }
+      <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
+        {{ editingId() === null ? 'Añadir recurso' : 'Guardar recurso' }}
+      </button>
+    </div>
+  </form>
+</section>

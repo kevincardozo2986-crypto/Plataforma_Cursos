@@ -1,0 +1,190 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <app-page-header
+      [title]="isEdit ? 'Editar evaluación' : 'Nueva evaluación'"
+      [subtitle]="'Quiz de opción múltiple · ' + totalPoints() + ' puntos en total'"
+    >
+      <a
+        class="panel-btn panel-btn--ghost"
+        [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
+      >
+        Volver al contenido
+      </a>
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando evaluación…</p></div>
+    } @else if (!loaded()) {
+      <div class="panel-card"><p class="panel-muted">No se encontró la evaluación.</p></div>
+    } @else {
+      <form class="stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="panel-card general">
+          <div class="panel-field">
+            <label for="title">Título</label>
+            <input
+              id="title"
+              class="panel-input"
+              type="text"
+              formControlName="title"
+              placeholder="Ej. Quiz del módulo 1"
+              [attr.aria-invalid]="titleError() ? 'true' : null"
+            />
+            @if (titleError()) {
+              <p class="panel-field-error">{{ titleError() }}</p>
+            }
+          </div>
+
+          <div class="panel-field">
+            <label for="description">Descripción (opcional)</label>
+            <textarea
+              id="description"
+              class="panel-textarea short"
+              formControlName="description"
+            ></textarea>
+          </div>
+
+          <div class="panel-field score">
+            <label for="passingScore">Nota mínima para aprobar (%)</label>
+            <input
+              id="passingScore"
+              class="panel-input"
+              type="number"
+              min="0"
+              max="100"
+              formControlName="passingScore"
+              [attr.aria-invalid]="scoreError() ? 'true' : null"
+            />
+            @if (scoreError()) {
+              <p class="panel-field-error">{{ scoreError() }}</p>
+            }
+          </div>
+        </div>
+
+        <div formArrayName="questions" class="questions">
+          @for (question of questions.controls; track question; let qi = $index) {
+            <fieldset class="panel-card question" [formGroupName]="qi">
+              <legend class="visually-hidden">Pregunta {{ qi + 1 }}</legend>
+
+              <div class="question-head">
+                <h2>Pregunta {{ qi + 1 }}</h2>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--danger panel-btn--sm"
+                  [disabled]="questions.length === 1"
+                  (click)="removeQuestion(qi)"
+                >
+                  Quitar pregunta
+                </button>
+              </div>
+
+              <div class="question-row">
+                <div class="panel-field grow">
+                  <label [attr.for]="'q-text-' + qi">Enunciado</label>
+                  <textarea
+                    class="panel-textarea short"
+                    [id]="'q-text-' + qi"
+                    formControlName="text"
+                    placeholder="Escribe la pregunta"
+                    [attr.aria-invalid]="shows(question.controls.text) ? 'true' : null"
+                  ></textarea>
+                  @if (shows(question.controls.text)) {
+                    <p class="panel-field-error">La pregunta debe tener al menos 3 caracteres.</p>
+                  }
+                </div>
+
+                <div class="panel-field points">
+                  <label [attr.for]="'q-points-' + qi">Puntos</label>
+                  <input
+                    class="panel-input"
+                    type="number"
+                    min="1"
+                    [id]="'q-points-' + qi"
+                    formControlName="points"
+                    [attr.aria-invalid]="shows(question.controls.points) ? 'true' : null"
+                  />
+                  @if (shows(question.controls.points)) {
+                    <p class="panel-field-error">Mínimo 1.</p>
+                  }
+                </div>
+              </div>
+
+              <p class="panel-hint">Marca con el círculo cuál es la respuesta correcta.</p>
+
+              <div formArrayName="options" class="options">
+                @for (option of question.controls.options.controls; track option; let oi = $index) {
+                  <div class="option">
+                    <input
+                      type="radio"
+                      class="radio"
+                      [name]="'correct-' + qi"
+                      [value]="oi"
+                      [formControl]="question.controls.correctIndex"
+                      [attr.aria-label]="'Marcar la opción ' + (oi + 1) + ' como correcta'"
+                    />
+
+                    <input
+                      class="panel-input"
+                      type="text"
+                      [formControlName]="oi"
+                      [placeholder]="'Opción ' + (oi + 1)"
+                      [attr.aria-label]="'Texto de la opción ' + (oi + 1)"
+                      [attr.aria-invalid]="shows(option) ? 'true' : null"
+                    />
+
+                    <button
+                      type="button"
+                      class="panel-btn panel-btn--ghost panel-btn--sm"
+                      [disabled]="question.controls.options.length <= 2"
+                      [attr.aria-label]="'Quitar la opción ' + (oi + 1)"
+                      (click)="removeOption(question, oi)"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  @if (shows(option)) {
+                    <p class="panel-field-error option-error">Escribe el texto de la opción.</p>
+                  }
+                }
+              </div>
+
+              <button
+                type="button"
+                class="panel-btn panel-btn--ghost panel-btn--sm add-option"
+                (click)="addOption(question)"
+              >
+                + Añadir opción
+              </button>
+            </fieldset>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost add-question"
+          (click)="addQuestion()"
+        >
+          + Añadir pregunta
+        </button>
+
+        <div class="footer">
+          <a
+            class="panel-btn panel-btn--ghost"
+            [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
+          >
+            Cancelar
+          </a>
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear evaluación' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>
