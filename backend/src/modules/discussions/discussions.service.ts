@@ -114,8 +114,9 @@ export class DiscussionsService {
       authorId: user.id,
     });
 
+    // Le llega al autor del curso y a todos sus instructores.
     await this.notifications.notify(
-      [course.teacherId],
+      [course.teacherId, ...(course.instructorIds ?? [])],
       {
         type: 'NEW_QUESTION',
         title: dto.title,
@@ -269,7 +270,10 @@ export class DiscussionsService {
   }
 
   /** Recalcula si una pregunta sigue respondida: ¿queda alguna respuesta del docente o un admin? */
-  private async refreshAnswered(rootId: number, course: { teacherId: number }) {
+  private async refreshAnswered(
+    rootId: number,
+    course: { teacherId: number; instructorIds?: number[] },
+  ) {
     const root = await this.repository.findPost(rootId);
 
     if (!root || root.kind !== 'QUESTION') {
@@ -279,7 +283,9 @@ export class DiscussionsService {
     const authors = await this.repository.repliesAuthors(rootId);
     const answered = authors.some(
       ({ author }) =>
-        author.id === course.teacherId || author.role === Role.ADMIN,
+        author.id === course.teacherId ||
+        (course.instructorIds ?? []).includes(author.id) ||
+        author.role === Role.ADMIN,
     );
 
     if (answered !== root.answered) {

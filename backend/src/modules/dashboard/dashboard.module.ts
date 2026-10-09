@@ -10,5 +10,7 @@ import { DashboardService } from './dashboard.service.js';
   imports: [AuthModule, CourseAccessModule],
   controllers: [DashboardController],
   providers: [DashboardService, DashboardRepository],
+  // El perfil del docente muestra sus estadísticas generales a través de este servicio.
+  exports: [DashboardService],
 })
 export class DashboardModule {}

@@ -1,0 +1,224 @@
+/* Estilos compartidos por las pantallas de calificar un intento de quiz y una entrega de tarea. */
+
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 860px;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--p-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--p-accent);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 18px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.meta {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.big {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.big.fail {
+  color: var(--p-danger);
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.state,
+.flag,
+.mark {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--p-warn);
+  background: var(--p-warn-soft);
+  border-radius: 999px;
+}
+
+.state.done,
+.mark.ok {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+.flag,
+.mark.bad {
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.q-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.q-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+  border-radius: 8px;
+}
+
+.type {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--p-muted);
+}
+
+.pts {
+  margin-left: auto;
+  font-size: 0.8rem;
+}
+
+.q-text {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.label {
+  margin: 4px 0 0;
+  color: var(--p-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Lo que escribió la persona: se respetan sus saltos de línea. */
+.answer {
+  margin: 0;
+  padding: 10px 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--p-surface-2);
+  border-radius: 10px;
+}
+
+.ok-text {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+.grade-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.points {
+  max-width: 200px;
+}
+
+.final {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.files li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 10px 14px;
+  background: var(--p-surface-2);
+  border-radius: 10px;
+}
+
+.file-name {
+  flex: 1 1 200px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .grade-row {
+    grid-template-columns: 1fr;
+  }
+
+  .result {
+    align-items: flex-start;
+  }
+}

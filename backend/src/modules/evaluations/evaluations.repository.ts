@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { AttemptStatus } from '../../generated/prisma/enums.js';
@@ -129,7 +130,7 @@ export class EvaluationsRepository {
       evaluation: {
         module: {
           courseId: filter.courseId,
-          course: filter.teacherId ? { teacherId: filter.teacherId } : undefined,
+          course: filter.teacherId ? managedBy(filter.teacherId) : undefined,
         },
       },
     };

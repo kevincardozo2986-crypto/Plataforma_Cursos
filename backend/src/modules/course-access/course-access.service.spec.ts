@@ -96,6 +96,64 @@ describe('CourseAccessService', () => {
   });
 });
 
+describe('CourseAccessService: instructores', () => {
+  const teacherOwner = user(7, Role.TEACHER);
+  const coInstructor = user(8, Role.TEACHER);
+  const otherTeacher = user(99, Role.TEACHER);
+
+  function build() {
+    const repository = {
+      findCourseBasics: vi.fn().mockResolvedValue({
+        id: 3, title: 'Angular', teacherId: 7, status: CourseStatus.PUBLISHED, instructors: [{ userId: 8 }],
+      }),
+    };
+
+    return new CourseAccessService(repository as unknown as CourseAccessRepository);
+  }
+
+  it('el autor y los instructores gestionan el curso; otro docente no', async () => {
+    const service = build();
+
+    await expect(service.assertCanManage(teacherOwner, 3)).resolves.toBeDefined();
+    await expect(service.assertCanManage(coInstructor, 3)).resolves.toBeDefined();
+    await expect(service.assertCanManage(otherTeacher, 3)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('un estudiante no gestiona el curso aunque su id coincida con el de un instructor', async () => {
+    await expect(build().assertCanManage(user(8, Role.STUDENT), 3)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('el curso trae la lista de ids de sus instructores', async () => {
+    expect((await build().getCourseOrThrow(3)).instructorIds).toEqual([8]);
+  });
+
+  it('un curso en borrador lo ve su instructor, no un estudiante', async () => {
+    const draft = new CourseAccessService({
+      findCourseBasics: vi.fn().mockResolvedValue({ id: 3, teacherId: 7, status: CourseStatus.DRAFT, instructors: [{ userId: 8 }] }),
+    } as unknown as CourseAccessRepository);
+
+    await expect(draft.assertCanView(coInstructor, 3)).resolves.toBeDefined();
+    await expect(draft.assertCanView(user(5, Role.STUDENT), 3)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  describe('assertIsOwner (lo delicado es solo del autor)', () => {
+    it('lo permite al autor y a un admin', async () => {
+      const service = build();
+
+      await expect(service.assertIsOwner(teacherOwner, 3)).resolves.toBeDefined();
+      await expect(service.assertIsOwner(user(1, Role.ADMIN), 3)).resolves.toBeDefined();
+    });
+
+    it('un instructor NO es el autor', async () => {
+      await expect(build().assertIsOwner(coInstructor, 3)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('un estudiante tampoco', async () => {
+      await expect(build().assertIsOwner(user(7, Role.STUDENT), 3)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+});
+
 describe('CourseAccessService: acceso al contenido y liberación gradual', () => {
   const teacher = user(7, Role.TEACHER);
   const admin = user(1, Role.ADMIN);

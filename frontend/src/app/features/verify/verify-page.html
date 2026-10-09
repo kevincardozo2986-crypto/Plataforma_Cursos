@@ -1,0 +1,98 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">VERIFICACIÓN</span>
+    <h1>Verificar un certificado</h1>
+    <p class="panel-muted lead">
+      Escribe el código que aparece al pie del certificado para comprobar que es auténtico.
+    </p>
+
+    <form class="panel-card search" (ngSubmit)="submit()">
+      <div class="panel-field">
+        <label for="code">Código del certificado</label>
+        <input
+          id="code"
+          class="panel-input code-input"
+          [formControl]="code"
+          placeholder="CC-XXXX-XXXX-XXXX"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button type="submit" class="panel-btn panel-btn--primary" [disabled]="loading()">
+        {{ loading() ? 'Comprobando…' : 'Verificar' }}
+      </button>
+    </form>
+
+    @if (result(); as certificate) {
+      <div
+        class="panel-card result"
+        [class.invalid]="!certificate.valid"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="badge" aria-hidden="true">{{ certificate.valid ? '✓' : '✕' }}</div>
+        <h2>
+          {{ certificate.valid ? 'Certificado válido' : 'Este certificado fue revocado' }}
+        </h2>
+
+        @if (!certificate.valid) {
+          <p class="panel-muted">
+            Existió, pero ya no es válido
+            @if (certificate.revokedAt) {
+              (revocado el {{ certificate.revokedAt | date: 'dd/MM/yyyy' }})
+            }
+            .
+          </p>
+        }
+
+        <dl>
+          <div>
+            <dt>Otorgado a</dt>
+            <dd>{{ certificate.studentName }}</dd>
+          </div>
+          <div>
+            <dt>Curso</dt>
+            <dd>{{ certificate.courseTitle }}</dd>
+          </div>
+          @if (formatDuration(certificate.courseMinutes)) {
+            <div>
+              <dt>Duración</dt>
+              <dd>{{ formatDuration(certificate.courseMinutes) }}</dd>
+            </div>
+          }
+          <div>
+            <dt>Docente</dt>
+            <dd>{{ certificate.instructorName }}</dd>
+          </div>
+          <div>
+            <dt>Fecha de emisión</dt>
+            <dd>{{ certificate.issuedAt | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+          <div>
+            <dt>Código</dt>
+            <dd class="mono">{{ certificate.code }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
+
+    @if (notFound()) {
+      <div class="panel-card result invalid" role="alert">
+        <div class="badge" aria-hidden="true">?</div>
+        <h2>No encontramos ese código</h2>
+        <p class="panel-muted">
+          Revisa que esté completo (formato CC-XXXX-XXXX-XXXX). Si lo copiaste de un documento, un
+          carácter mal leído cambia el resultado.
+        </p>
+      </div>
+    }
+
+    @if (failed()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        No pudimos conectar con el servidor. Inténtalo de nuevo en unos minutos.
+      </p>
+    }
+
+    <p class="back"><a routerLink="/">← Volver al inicio</a></p>
+  </div>
+</section>

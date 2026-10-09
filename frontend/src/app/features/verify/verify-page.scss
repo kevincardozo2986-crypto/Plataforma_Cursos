@@ -1,0 +1,117 @@
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 640px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.lead {
+  margin: 8px 0 24px;
+}
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search .panel-btn {
+  align-self: flex-start;
+}
+
+.code-input {
+  font-family: ui-monospace, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  text-align: center;
+  border-color: var(--p-ok);
+}
+
+.result.invalid {
+  border-color: var(--p-danger);
+}
+
+.result h2 {
+  margin: 4px 0 0;
+}
+
+.result p {
+  margin: 0;
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--p-ok);
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: var(--p-ok-soft);
+  border-radius: 50%;
+}
+
+.invalid .badge {
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+}
+
+dl {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin: 16px 0 0;
+  padding-top: 16px;
+  text-align: left;
+  border-top: 1px solid var(--p-border);
+}
+
+dl div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+dt {
+  color: var(--p-muted);
+  font-size: 0.82rem;
+}
+
+dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.mono {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.back {
+  margin-top: 24px;
+  font-size: 0.88rem;
+}

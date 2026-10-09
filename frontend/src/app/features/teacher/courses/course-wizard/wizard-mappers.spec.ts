@@ -139,6 +139,7 @@ describe('toAdditionalUpdate', () => {
         materials: '   ',
         requirements: 'Ganas',
         prerequisiteIds: [2, 5],
+        certificateTemplateId: 12,
       }),
     ).toEqual({
       whatYouWillLearn: 'Variables\nFunciones',
@@ -147,6 +148,22 @@ describe('toAdditionalUpdate', () => {
       materials: null,
       requirements: 'Ganas',
       prerequisiteIds: [2, 5],
+      certificateTemplateId: 12,
     });
+  });
+
+  it('sin plantilla manda null, que quita el certificado del curso', () => {
+    expect(
+      toAdditionalUpdate({
+        whatYouWillLearn: '',
+        audience: '',
+        hours: null,
+        minutes: null,
+        materials: '',
+        requirements: '',
+        prerequisiteIds: [],
+        certificateTemplateId: null,
+      }).certificateTemplateId,
+    ).toBeNull();
   });
 });

@@ -105,7 +105,7 @@ export class ReviewsService {
     // Solo la primera vez: editar una reseña no vuelve a avisar al docente.
     if (!existing) {
       await this.notifications.notify(
-        [course.teacherId],
+        [course.teacherId, ...(course.instructorIds ?? [])],
         {
           type: 'NEW_REVIEW',
           title: `Nueva reseña: ${dto.rating} de 5`,

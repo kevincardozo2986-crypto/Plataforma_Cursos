@@ -62,6 +62,8 @@ El backend no manda enlaces: con `type`, `courseId` y `refId` el frontend arma l
 | `NEW_REPLY` | Alguien responde tu pregunta o comentario | id de la pregunta o comentario (el hilo) |
 | `NEW_REVIEW` | Un alumno deja una reseña en tu curso (solo la primera vez, no al editarla) | id de la reseña |
 | `GRADED_ASSIGNMENT` | El docente califica (o corrige la nota de) tu tarea. El título trae la nota: "Calificaron tu tarea: 80 de 100" | id de la **tarea** |
+| `INSTRUCTOR_ADDED` | Te agregan como instructor de un curso | — (`courseId` del curso) |
+| `CERTIFICATE_ISSUED` | Terminas un curso con certificado | id del **certificado** |
 | `GRADED_QUIZ` | El docente termina de revisar las preguntas abiertas de tu quiz. No avisa mientras quede alguna pendiente | id del **quiz** |
 
 ## 3. Discusiones: preguntas y respuestas, y comentarios de lección

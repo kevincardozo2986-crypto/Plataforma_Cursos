@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import {
   CourseLevel,
@@ -9,6 +10,14 @@ import {
 } from '../../generated/prisma/enums.js';
 
 const teacherSelect = { id: true, firstName: true, lastName: true } as const;
+/** Datos de una persona del equipo de un curso (autor o instructor), para quien lo gestiona. */
+const memberSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+} as const;
+
 const listInclude = {
   category: true,
   teacher: { select: teacherSelect },
@@ -47,6 +56,7 @@ export interface CourseData {
   publicContent?: boolean;
   qaEnabled?: boolean;
   dripType?: DripType;
+  certificateTemplateId?: number | null;
   whatYouWillLearn?: string | null;
   audience?: string | null;
   durationMinutes?: number | null;
@@ -58,6 +68,8 @@ const withPrerequisites = {
   requires: {
     include: { prerequisite: { select: { id: true, title: true } } },
   },
+  // La plantilla de certificado asignada, para mostrarla en el editor.
+  certificateTemplate: { select: { id: true, name: true } },
 } as const;
 
 @Injectable()
@@ -104,15 +116,58 @@ export class CoursesRepository {
   findPublishedById(id: number) {
     return this.prisma.course.findFirst({
       where: { id, ...publicWhere },
-      include: listInclude,
+      include: {
+        ...listInclude,
+        // Los instructores se muestran junto al autor (solo nombres, sin correo).
+        instructors: {
+          orderBy: { addedAt: 'asc' },
+          select: { user: { select: teacherSelect } },
+        },
+      },
       omit: withoutSecrets,
     });
+  }
+
+  /** Autor e instructores de un curso, con sus datos básicos. */
+  async findTeam(courseId: number) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        teacher: { select: memberSelect },
+        instructors: {
+          orderBy: { addedAt: 'asc' },
+          select: { addedAt: true, user: { select: memberSelect } },
+        },
+      },
+    });
+
+    return course
+      ? {
+          owner: course.teacher,
+          instructors: course.instructors.map(({ addedAt, user }) => ({
+            ...user,
+            addedAt,
+          })),
+        }
+      : null;
+  }
+
+  addInstructor(courseId: number, userId: number) {
+    return this.prisma.courseInstructor.create({ data: { courseId, userId } });
+  }
+
+  async removeInstructor(courseId: number, userId: number): Promise<number> {
+    const result = await this.prisma.courseInstructor.deleteMany({
+      where: { courseId, userId },
+    });
+
+    return result.count;
   }
 
   /** `teacherId` undefined = todos los cursos (admin). */
   listManaged(teacherId?: number) {
     return this.prisma.course.findMany({
-      where: teacherId === undefined ? {} : { teacherId },
+      where: teacherId === undefined ? {} : managedBy(teacherId),
       include: listInclude,
       omit: withoutSecrets,
       orderBy: { updatedAt: 'desc' },

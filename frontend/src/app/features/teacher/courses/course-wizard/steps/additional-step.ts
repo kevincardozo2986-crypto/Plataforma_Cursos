@@ -1,8 +1,11 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 
+import { CertificateTemplate } from '../../../../../core/certificates/certificates.models';
+import { CertificatesService } from '../../../../../core/certificates/certificates.service';
 import { TeacherCourse } from '../../teacher-courses.models';
 import { TeacherCoursesService } from '../../teacher-courses.service';
 import { CourseWizardService } from '../course-wizard.service';
@@ -16,13 +19,14 @@ interface CandidateCourse {
 /** Paso 3: qué aprenderá el estudiante, a quién va dirigido, duración, requisitos y prerrequisitos. */
 @Component({
   selector: 'app-additional-step',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './additional-step.html',
   styleUrl: './additional-step.scss',
 })
 export class AdditionalStep {
   private readonly api = inject(TeacherCoursesService);
   private readonly wizard = inject(CourseWizardService);
+  private readonly certificates = inject(CertificatesService);
 
   private readonly course = this.wizard.course() as NonNullable<
     ReturnType<CourseWizardService['course']>
@@ -32,9 +36,11 @@ export class AdditionalStep {
   readonly candidates = signal<CandidateCourse[]>([]);
   readonly loadingCandidates = signal(true);
 
+  /** Mis plantillas de certificado, para elegir cuál se emite al completar el curso. */
+  readonly templates = signal<CertificateTemplate[]>([]);
+
   /** Lo que todavía no existe en el asistente; se muestra como aviso, sin enlaces falsos. */
   readonly upcoming = [
-    { label: 'Certificado', hint: 'Elegir una plantilla y verla antes de asignarla.' },
     { label: 'Adjuntos', hint: 'Archivos descargables del curso.' },
     { label: 'Clase en vivo', hint: 'Crear una reunión de Zoom asociada al curso.' },
   ];
@@ -64,6 +70,9 @@ export class AdditionalStep {
       nonNullable: true,
       validators: [Validators.maxLength(5000)],
     }),
+    certificateTemplateId: new FormControl<number | null>(
+      this.course.certificateTemplate?.id ?? null,
+    ),
     prerequisiteIds: new FormControl<number[]>(
       (this.course.prerequisites ?? []).map((item) => item.id),
       {
@@ -84,6 +93,11 @@ export class AdditionalStep {
         error: () => this.loadingCandidates.set(false),
       });
 
+    this.certificates
+      .templates()
+      .pipe(takeUntilDestroyed())
+      .subscribe({ next: (templates) => this.templates.set(templates) });
+
     // Un aviso de un intento anterior ya no aplica en cuanto se vuelve a editar.
     this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.wizard.clearMessages());
 
@@ -101,6 +115,13 @@ export class AdditionalStep {
 
     control.setValue(checked ? [...current, id] : current);
     control.markAsDirty();
+  }
+
+  onTemplate(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+
+    this.form.controls.certificateTemplateId.setValue(value ? Number(value) : null);
+    this.form.controls.certificateTemplateId.markAsDirty();
   }
 
   durationError(): string {

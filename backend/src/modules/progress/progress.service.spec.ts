@@ -10,6 +10,7 @@ import {
 } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
+import type { CertificatesService } from '../certificates/certificates.service.js';
 import type { LessonsService } from '../lessons/lessons.service.js';
 import type { ProgressRepository } from './progress.repository.js';
 import { ProgressService } from './progress.service.js';
@@ -44,13 +45,16 @@ function build() {
   };
   const lessons = { idsByCourse: vi.fn() };
 
+  const certificates = { tryIssue: vi.fn().mockResolvedValue(undefined) };
+
   const service = new ProgressService(
     repository as unknown as ProgressRepository,
     access as unknown as CourseAccessService,
     lessons as unknown as LessonsService,
+    certificates as unknown as CertificatesService,
   );
 
-  return { service, repository, access, lessons };
+  return { service, repository, access, lessons, certificates };
 }
 
 describe('ProgressService', () => {
@@ -255,6 +259,39 @@ describe('ProgressService', () => {
         1,
         expect.objectContaining({ status: EnrollmentStatus.COMPLETED }),
       );
+    });
+
+    it('al completar el curso se emite el certificado', async () => {
+      const { service, repository, lessons, certificates } = build();
+      repository.findEnrollment.mockResolvedValue({ id: 1, status: EnrollmentStatus.ACTIVE });
+      lessons.idsByCourse.mockResolvedValue([1, 2]);
+      repository.completedLessonIds.mockResolvedValue([1, 2]);
+
+      await service.completeLesson(student, 2);
+
+      expect(certificates.tryIssue).toHaveBeenCalledWith(5, 10);
+    });
+
+    it('mientras falten lecciones, no se emite nada', async () => {
+      const { service, repository, lessons, certificates } = build();
+      repository.findEnrollment.mockResolvedValue({ id: 1, status: EnrollmentStatus.ACTIVE });
+      lessons.idsByCourse.mockResolvedValue([1, 2]);
+      repository.completedLessonIds.mockResolvedValue([1]);
+
+      await service.completeLesson(student, 1);
+
+      expect(certificates.tryIssue).not.toHaveBeenCalled();
+    });
+
+    it('volver a marcar una lección con el curso ya completado no emite otra vez', async () => {
+      const { service, repository, lessons, certificates } = build();
+      repository.findEnrollment.mockResolvedValue({ id: 1, status: EnrollmentStatus.COMPLETED });
+      lessons.idsByCourse.mockResolvedValue([1, 2]);
+      repository.completedLessonIds.mockResolvedValue([1, 2]);
+
+      await service.completeLesson(student, 2);
+
+      expect(certificates.tryIssue).not.toHaveBeenCalled();
     });
 
     it('un curso sin lecciones no se marca como completado', async () => {

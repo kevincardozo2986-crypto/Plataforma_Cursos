@@ -13,6 +13,7 @@ import {
   EnrollmentStatus,
 } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
+import { CertificatesService } from '../certificates/certificates.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { LessonsService } from '../lessons/lessons.service.js';
 import { ProgressRepository } from './progress.repository.js';
@@ -23,6 +24,7 @@ export class ProgressService {
     private readonly repository: ProgressRepository,
     private readonly access: CourseAccessService,
     private readonly lessons: LessonsService,
+    private readonly certificates: CertificatesService,
   ) {}
 
   // --- Inscripciones ---
@@ -140,6 +142,10 @@ export class ProgressService {
         status: EnrollmentStatus.COMPLETED,
         completedAt: new Date(),
       });
+
+      // Si el curso tiene plantilla de certificado, se emite. Un fallo aquí no debe impedir
+      // que la lección quede marcada como completada.
+      await this.certificates.tryIssue(user.id, courseId);
     }
 
     return progress;

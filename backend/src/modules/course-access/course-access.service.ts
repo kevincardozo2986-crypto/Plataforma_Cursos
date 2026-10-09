@@ -41,7 +41,13 @@ export class CourseAccessService {
       throw new NotFoundException('El curso no existe');
     }
 
-    return course;
+    const { instructors, ...basics } = course;
+
+    // `instructorIds`: los docentes que comparten la gestión con el autor (`teacherId`).
+    return {
+      ...basics,
+      instructorIds: (instructors ?? []).map((instructor) => instructor.userId),
+    };
   }
 
   /** Estado, acceso, cupo y prerrequisitos de un curso, para decidir si alguien puede inscribirse. */
@@ -61,11 +67,38 @@ export class CourseAccessService {
     };
   }
 
-  canManage(user: AuthenticatedUser, course: { teacherId: number }): boolean {
+  /** Gestionan un curso su autor, sus instructores y los administradores. */
+  canManage(
+    user: AuthenticatedUser,
+    course: { teacherId: number; instructorIds?: number[] },
+  ): boolean {
+    return (
+      user.role === Role.ADMIN ||
+      (user.role === Role.TEACHER &&
+        (course.teacherId === user.id ||
+          (course.instructorIds ?? []).includes(user.id)))
+    );
+  }
+
+  /** El autor del curso o un administrador (los instructores no cuentan). */
+  isOwner(user: AuthenticatedUser, course: { teacherId: number }): boolean {
     return (
       user.role === Role.ADMIN ||
       (user.role === Role.TEACHER && course.teacherId === user.id)
     );
+  }
+
+  /** Para lo que solo debe poder hacer el autor: borrar el curso o administrar a los instructores. */
+  async assertIsOwner(user: AuthenticatedUser, courseId: number) {
+    const course = await this.getCourseOrThrow(courseId);
+
+    if (!this.isOwner(user, course)) {
+      throw new ForbiddenException(
+        'Solo el autor del curso puede hacer esto',
+      );
+    }
+
+    return course;
   }
 
   async assertCanManage(user: AuthenticatedUser, courseId: number) {

@@ -37,9 +37,16 @@ export const TEACHER_NAV: NavItem[] = [
     icon: ['M4 4h16v13H6.5A2.5 2.5 0 0 0 4 19.5z', 'M4 19.5A2.5 2.5 0 0 0 6.5 22H20'],
   },
   {
+    label: 'Mi perfil',
+    path: 'profile',
+    ready: true,
+    description: 'Tus datos, tu perfil público, tu firma para certificados y tu contraseña.',
+    icon: ['M20 21a8 8 0 0 0-16 0', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+  },
+  {
     label: 'Anuncios',
     path: 'announcements',
-    ready: false,
+    ready: true,
     description:
       'Comunicados del docente a los estudiantes inscritos en un curso, con filtro por curso.',
     icon: [
@@ -51,7 +58,7 @@ export const TEACHER_NAV: NavItem[] = [
   {
     label: 'Intentos del cuestionario',
     path: 'quiz-attempts',
-    ready: false,
+    ready: true,
     description:
       'Bandeja de evaluaciones presentadas por los estudiantes, filtrable por curso y estado, para revisar sus respuestas.',
     icon: [
@@ -63,7 +70,7 @@ export const TEACHER_NAV: NavItem[] = [
   {
     label: 'Discusiones',
     path: 'discussions',
-    ready: false,
+    ready: true,
     description:
       'Preguntas y respuestas de los estudiantes en cada curso y comentarios dejados en las lecciones.',
     icon: ['M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'],
@@ -71,7 +78,7 @@ export const TEACHER_NAV: NavItem[] = [
   {
     label: 'Tareas',
     path: 'assignments',
-    ready: false,
+    ready: true,
     description: 'Entregas de tareas de los estudiantes para revisarlas y calificarlas.',
     icon: [
       'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z',
@@ -111,7 +118,7 @@ export const TEACHER_NAV: NavItem[] = [
   {
     label: 'Certificados',
     path: 'certificates',
-    ready: false,
+    ready: true,
     description:
       'Constructor de certificados personalizados y asignación de cada certificado a un curso.',
     icon: ['M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12z', 'M8.5 14L7 22l5-3 5 3-1.5-8'],

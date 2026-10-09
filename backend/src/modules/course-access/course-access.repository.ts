@@ -23,6 +23,7 @@ export class CourseAccessRepository {
         qaEnabled: true,
         publicContent: true,
         dripType: true,
+        instructors: { select: { userId: true } },
       },
     });
   }

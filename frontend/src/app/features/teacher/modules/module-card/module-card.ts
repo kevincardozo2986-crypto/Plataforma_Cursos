@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -5,6 +6,7 @@ import { forkJoin, Observable } from 'rxjs';
 
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { moveItem } from '../../../../core/utils/reorder';
+import { Assignment, TeacherAssignmentsService } from '../../assignments/assignments.service';
 import { EvaluationSummary } from '../../evaluations/evaluations.models';
 import { TeacherEvaluationsService } from '../../evaluations/evaluations.service';
 import { Lesson } from '../../lessons/lessons.models';
@@ -18,7 +20,7 @@ import { TeacherModulesService } from '../modules.service';
  */
 @Component({
   selector: 'app-module-card',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe],
   templateUrl: './module-card.html',
   styleUrl: './module-card.scss',
 })
@@ -26,6 +28,7 @@ export class ModuleCard {
   private readonly modulesApi = inject(TeacherModulesService);
   private readonly lessonsApi = inject(TeacherLessonsService);
   private readonly evaluationsApi = inject(TeacherEvaluationsService);
+  private readonly assignmentsApi = inject(TeacherAssignmentsService);
 
   readonly courseModule = input.required<CourseModule>();
   readonly courseId = input.required<number>();
@@ -41,6 +44,8 @@ export class ModuleCard {
   readonly confirmLessonId = signal<number | null>(null);
   readonly evaluations = signal<EvaluationSummary[]>([]);
   readonly confirmEvaluationId = signal<number | null>(null);
+  readonly assignments = signal<Assignment[]>([]);
+  readonly confirmAssignmentId = signal<number | null>(null);
   readonly busy = signal(false);
   readonly error = signal('');
 
@@ -60,7 +65,10 @@ export class ModuleCard {
     effect(() => {
       const moduleId = this.courseModule().id;
 
-      untracked(() => this.loadEvaluations(moduleId));
+      untracked(() => {
+        this.loadEvaluations(moduleId);
+        this.loadAssignments(moduleId);
+      });
     });
   }
 
@@ -69,6 +77,32 @@ export class ModuleCard {
       next: (list) => this.evaluations.set(list),
       error: (error: unknown) =>
         this.error.set(apiErrorMessage(error, 'No pudimos cargar las evaluaciones.')),
+    });
+  }
+
+  private loadAssignments(moduleId: number): void {
+    this.assignmentsApi.listByModule(moduleId).subscribe({
+      next: (list) => this.assignments.set(list),
+      error: (error: unknown) =>
+        this.error.set(apiErrorMessage(error, 'No pudimos cargar las tareas.')),
+    });
+  }
+
+  removeAssignment(assignment: Assignment): void {
+    this.error.set('');
+    this.busy.set(true);
+
+    this.assignmentsApi.remove(assignment.id).subscribe({
+      next: () => {
+        this.assignments.update((list) => list.filter((item) => item.id !== assignment.id));
+        this.confirmAssignmentId.set(null);
+        this.busy.set(false);
+      },
+      error: (error: unknown) => {
+        this.confirmAssignmentId.set(null);
+        this.busy.set(false);
+        this.error.set(apiErrorMessage(error, 'No pudimos eliminar la tarea.'));
+      },
     });
   }
 

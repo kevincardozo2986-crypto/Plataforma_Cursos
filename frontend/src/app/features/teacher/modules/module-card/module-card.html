@@ -275,4 +275,90 @@
       + Añadir evaluación
     </a>
   </section>
+
+  <section class="evaluations" aria-label="Tareas del módulo">
+    <h3>Tareas</h3>
+
+    <ul class="eval-list">
+      @for (assignment of assignments(); track assignment.id) {
+        <li class="eval">
+          <span class="eval-tag">Tarea</span>
+
+          <a
+            class="eval-title"
+            [routerLink]="['/teacher/courses', courseId(), 'assignments', assignment.id, 'edit']"
+          >
+            {{ assignment.title }}
+          </a>
+
+          <span class="panel-muted eval-meta">
+            @if (assignment.dueAt) {
+              Vence {{ assignment.dueAt | date: 'dd/MM/yyyy HH:mm' }}
+            } @else {
+              Sin fecha límite
+            }
+            · {{ assignment.maxScore }} pts · {{ assignment.submissionCount ?? 0 }}
+            {{ assignment.submissionCount === 1 ? 'entrega' : 'entregas' }}
+          </span>
+
+          <span class="lesson-actions">
+            @if (confirmAssignmentId() === assignment.id) {
+              <span class="confirm-text">¿Eliminar con sus entregas?</span>
+              <button
+                type="button"
+                class="panel-btn panel-btn--danger panel-btn--sm"
+                [disabled]="busy()"
+                (click)="removeAssignment(assignment)"
+              >
+                Sí
+              </button>
+              <button
+                type="button"
+                class="panel-btn panel-btn--ghost panel-btn--sm"
+                (click)="confirmAssignmentId.set(null)"
+              >
+                No
+              </button>
+            } @else {
+              <a
+                class="panel-btn panel-btn--ghost panel-btn--sm"
+                [routerLink]="[
+                  '/teacher/courses',
+                  courseId(),
+                  'assignments',
+                  assignment.id,
+                  'edit',
+                ]"
+              >
+                Editar
+              </a>
+              <button
+                type="button"
+                class="panel-btn panel-btn--danger panel-btn--sm"
+                (click)="confirmAssignmentId.set(assignment.id)"
+              >
+                Eliminar
+              </button>
+            }
+          </span>
+        </li>
+      } @empty {
+        <li class="no-lessons panel-muted">Este módulo aún no tiene tareas.</li>
+      }
+    </ul>
+
+    <a
+      class="panel-btn panel-btn--ghost add-lesson"
+      [routerLink]="[
+        '/teacher/courses',
+        courseId(),
+        'modules',
+        courseModule().id,
+        'assignments',
+        'new',
+      ]"
+    >
+      + Añadir tarea
+    </a>
+  </section>
 </article>

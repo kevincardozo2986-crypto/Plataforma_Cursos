@@ -60,6 +60,8 @@ export interface TeacherCourse {
 
   /** Solo en GET /courses/manage/:id. */
   prerequisites?: { id: number; title: string }[];
+  /** Plantilla de certificado asignada (solo en GET /courses/manage/:id). */
+  certificateTemplate?: { id: number; name: string } | null;
 
   createdAt: string;
   updatedAt: string;
@@ -107,4 +109,6 @@ export interface CourseUpdate {
   requirements?: string | null;
   /** Reemplaza la lista completa de prerrequisitos. */
   prerequisiteIds?: number[];
+  /** Plantilla propia que se emite al completar el curso; `null` quita el certificado. */
+  certificateTemplateId?: number | null;
 }

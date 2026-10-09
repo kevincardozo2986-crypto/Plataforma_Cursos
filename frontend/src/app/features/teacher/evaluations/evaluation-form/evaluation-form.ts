@@ -14,17 +14,31 @@ import { startWith } from 'rxjs';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { PageHeader } from '../../../../shared/ui/page-header/page-header';
 import {
-  correctIndexAfterRemoving,
+  changeType,
+  markOnlyCorrect,
+  newDraft,
   QuestionDraft,
   toQuestionDrafts,
   toQuestionInputs,
+  validateQuestion,
 } from '../evaluation-mapper';
-import { EvaluationInput } from '../evaluations.models';
+import { EvaluationInput, QUESTION_TYPES, QuestionType } from '../evaluations.models';
 import { TeacherEvaluationsService } from '../evaluations.service';
 
 const MIN_OPTIONS = 2;
 
-/** Crear (desde un módulo) o editar una evaluación con sus preguntas. */
+type OptionGroup = FormGroup<{ text: FormControl<string>; correct: FormControl<boolean> }>;
+
+type QuestionGroup = FormGroup<{
+  type: FormControl<QuestionType>;
+  text: FormControl<string>;
+  points: FormControl<number>;
+  isTrue: FormControl<boolean>;
+  options: FormArray<OptionGroup>;
+  answers: FormArray<FormControl<string>>;
+}>;
+
+/** Crear (desde un módulo) o editar una evaluación con sus preguntas, de cinco tipos. */
 @Component({
   selector: 'app-evaluation-form',
   imports: [ReactiveFormsModule, RouterLink, PageHeader],
@@ -43,11 +57,15 @@ export class EvaluationForm {
   readonly evaluationId = Number(this.params.get('evaluationId')) || null;
   readonly isEdit = this.evaluationId !== null;
 
+  readonly types = QUESTION_TYPES;
+
   readonly loading = signal(this.isEdit);
   readonly loaded = signal(false);
   readonly saving = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
+  /** Tras el primer intento de guardar se muestran los errores de cada pregunta. */
+  readonly attempted = signal(false);
 
   readonly form = new FormGroup({
     title: new FormControl('', {
@@ -65,10 +83,11 @@ export class EvaluationForm {
     questions: new FormArray<QuestionGroup>([], { validators: [Validators.minLength(1)] }),
   });
 
-  /** Puntos totales del quiz, para mostrarlos en la cabecera. */
   private readonly questionValues = toSignal(
     this.form.controls.questions.valueChanges.pipe(startWith(null)),
   );
+
+  /** Puntos totales del quiz, para mostrarlos en la cabecera. */
   readonly totalPoints = computed(() => {
     this.questionValues();
 
@@ -76,6 +95,15 @@ export class EvaluationForm {
       (sum, question) => sum + (Number(question.controls.points.value) || 0),
       0,
     );
+  });
+
+  /** Cuántas preguntas se califican a mano, para avisarlo en la cabecera. */
+  readonly manualCount = computed(() => {
+    this.questionValues();
+
+    return this.form.controls.questions.controls.filter(
+      (question) => question.controls.type.value === 'ESSAY',
+    ).length;
   });
 
   constructor() {
@@ -108,6 +136,14 @@ export class EvaluationForm {
     return this.form.controls.questions;
   }
 
+  typeHint(question: QuestionGroup): string {
+    return this.types.find((entry) => entry.value === question.controls.type.value)?.hint ?? '';
+  }
+
+  hasOptions(question: QuestionGroup): boolean {
+    return ['SINGLE', 'MULTIPLE'].includes(question.controls.type.value);
+  }
+
   addQuestion(): void {
     this.questions.push(this.newQuestion());
   }
@@ -118,21 +154,48 @@ export class EvaluationForm {
     }
   }
 
+  setType(question: QuestionGroup, event: Event): void {
+    const type = (event.target as HTMLSelectElement).value as QuestionType;
+    const adjusted = changeType(this.draftOf(question), type);
+
+    question.controls.type.setValue(type);
+    question.controls.options.controls.forEach((option, index) =>
+      option.controls.correct.setValue(adjusted.options[index].correct),
+    );
+  }
+
   addOption(question: QuestionGroup): void {
     question.controls.options.push(this.newOption());
   }
 
   removeOption(question: QuestionGroup, index: number): void {
-    const options = question.controls.options;
-
-    if (options.length <= MIN_OPTIONS) {
-      return;
+    if (question.controls.options.length > MIN_OPTIONS) {
+      question.controls.options.removeAt(index);
     }
+  }
 
-    question.controls.correctIndex.setValue(
-      correctIndexAfterRemoving(question.controls.correctIndex.value, index),
+  /** Opción única: marcar una desmarca las demás. */
+  chooseCorrect(question: QuestionGroup, index: number): void {
+    const next = markOnlyCorrect(this.draftOf(question).options, index);
+
+    question.controls.options.controls.forEach((option, position) =>
+      option.controls.correct.setValue(next[position].correct),
     );
-    options.removeAt(index);
+  }
+
+  addAnswer(question: QuestionGroup): void {
+    question.controls.answers.push(this.newAnswer());
+  }
+
+  removeAnswer(question: QuestionGroup, index: number): void {
+    if (question.controls.answers.length > 1) {
+      question.controls.answers.removeAt(index);
+    }
+  }
+
+  /** Error de la pregunta, visible solo después de intentar guardar. */
+  questionError(question: QuestionGroup): string {
+    return this.attempted() ? (validateQuestion(this.draftOf(question)) ?? '') : '';
   }
 
   /** ¿Se debe mostrar el error de este control? Solo tras tocarlo o intentar guardar. */
@@ -161,10 +224,18 @@ export class EvaluationForm {
   submit(): void {
     this.error.set('');
     this.notice.set('');
+    this.attempted.set(true);
 
-    if (this.form.invalid) {
+    const drafts = this.questions.controls.map((question) => this.draftOf(question));
+    const invalidQuestion = drafts.findIndex((draft) => validateQuestion(draft) !== null);
+
+    if (this.form.invalid || invalidQuestion !== -1) {
       this.form.markAllAsTouched();
-      this.error.set('Revisa los campos marcados antes de guardar.');
+      this.error.set(
+        invalidQuestion !== -1
+          ? `Pregunta ${invalidQuestion + 1}: ${validateQuestion(drafts[invalidQuestion])}`
+          : 'Revisa los campos marcados antes de guardar.',
+      );
       return;
     }
 
@@ -176,14 +247,7 @@ export class EvaluationForm {
       // Al editar, null borra la descripción; al crear se omite.
       description: description || (this.isEdit ? null : undefined),
       passingScore: Number(value.passingScore),
-      questions: toQuestionInputs(
-        value.questions.map((question) => ({
-          text: question.text,
-          points: Number(question.points),
-          correctIndex: question.correctIndex,
-          options: question.options,
-        })),
-      ),
+      questions: toQuestionInputs(drafts),
     };
 
     this.saving.set(true);
@@ -211,34 +275,49 @@ export class EvaluationForm {
     });
   }
 
-  private newQuestion(draft?: QuestionDraft): QuestionGroup {
-    const options = draft?.options ?? ['', ''];
+  private draftOf(question: QuestionGroup): QuestionDraft {
+    const value = question.getRawValue();
 
+    return {
+      type: value.type,
+      text: value.text,
+      points: Number(value.points),
+      isTrue: value.isTrue,
+      options: value.options,
+      answers: value.answers,
+    };
+  }
+
+  private newQuestion(draft: QuestionDraft = newDraft()): QuestionGroup {
     return new FormGroup({
-      text: new FormControl(draft?.text ?? '', {
+      type: new FormControl(draft.type, { nonNullable: true }),
+      text: new FormControl(draft.text, {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(3)],
       }),
-      points: new FormControl(draft?.points ?? 1, {
+      points: new FormControl(draft.points, {
         nonNullable: true,
         validators: [Validators.required, Validators.min(1), Validators.max(1000)],
       }),
-      correctIndex: new FormControl(draft?.correctIndex ?? 0, { nonNullable: true }),
-      options: new FormArray(options.map((text) => this.newOption(text))),
+      isTrue: new FormControl(draft.isTrue, { nonNullable: true }),
+      options: new FormArray(
+        draft.options.map((option) => this.newOption(option.text, option.correct)),
+      ),
+      answers: new FormArray(draft.answers.map((answer) => this.newAnswer(answer))),
     });
   }
 
-  private newOption(text = ''): FormControl<string> {
-    return new FormControl(text, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(300)],
+  private newOption(text = '', correct = false): OptionGroup {
+    return new FormGroup({
+      text: new FormControl(text, {
+        nonNullable: true,
+        validators: [Validators.maxLength(300)],
+      }),
+      correct: new FormControl(correct, { nonNullable: true }),
     });
+  }
+
+  private newAnswer(text = ''): FormControl<string> {
+    return new FormControl(text, { nonNullable: true, validators: [Validators.maxLength(300)] });
   }
 }
-
-type QuestionGroup = FormGroup<{
-  text: FormControl<string>;
-  points: FormControl<number>;
-  correctIndex: FormControl<number>;
-  options: FormArray<FormControl<string>>;
-}>;

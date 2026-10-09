@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { EnrollmentStatus } from '../../generated/prisma/enums.js';
@@ -12,7 +13,7 @@ export interface Scope {
 }
 
 const courseFilter = (scope: Scope): Prisma.CourseWhereInput => ({
-  teacherId: scope.teacherId,
+  ...(scope.teacherId === undefined ? {} : managedBy(scope.teacherId)),
   id: scope.courseId,
 });
 
@@ -21,7 +22,12 @@ function courseSql(scope: Scope) {
   const conditions = [Prisma.sql`TRUE`];
 
   if (scope.teacherId !== undefined) {
-    conditions.push(Prisma.sql`c."teacherId" = ${scope.teacherId}`);
+    // El autor del curso o uno de sus instructores.
+    conditions.push(
+      Prisma.sql`(c."teacherId" = ${scope.teacherId} OR EXISTS (
+        SELECT 1 FROM course_instructors ci
+        WHERE ci."courseId" = c."id" AND ci."userId" = ${scope.teacherId}))`,
+    );
   }
   if (scope.courseId !== undefined) {
     conditions.push(Prisma.sql`c."id" = ${scope.courseId}`);

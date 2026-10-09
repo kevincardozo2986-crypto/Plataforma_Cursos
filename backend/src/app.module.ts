@@ -21,6 +21,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AnnouncementsModule } from './modules/announcements/announcements.module.js';
 import { DiscussionsModule } from './modules/discussions/discussions.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
+import { ProfileModule } from './modules/profile/profile.module.js';
+import { CertificatesModule } from './modules/certificates/certificates.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -63,6 +65,8 @@ export const observeEnabled = Boolean(
     AnnouncementsModule,
     DiscussionsModule,
     ReviewsModule,
+    ProfileModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,165 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <a class="back" routerLink="/teacher/certificates">← Volver a certificados</a>
+
+    <app-page-header
+      [title]="id === null ? 'Nueva plantilla' : 'Editar plantilla'"
+      subtitle="Lo que escribas se ve a la derecha al instante. El PDF final lo genera el servidor."
+    />
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando plantilla…</p></div>
+    } @else {
+      <div class="layout">
+        <form class="panel-card form" [formGroup]="form" novalidate (ngSubmit)="save()">
+          <div class="panel-field">
+            <label for="name">Nombre de la plantilla</label>
+            <input
+              id="name"
+              class="panel-input"
+              formControlName="name"
+              placeholder="Ej. Certificado azul de cursos"
+              [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
+            />
+            <p class="panel-hint">Solo lo ves tú, para reconocerla en la lista.</p>
+            @if (form.controls.name.touched && form.controls.name.invalid) {
+              <p class="panel-field-error">Escribe un nombre de 2 a 100 caracteres.</p>
+            }
+          </div>
+
+          <div class="panel-field">
+            <label for="title">Título del certificado</label>
+            <input id="title" class="panel-input" formControlName="title" />
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <p class="panel-field-error">El título debe tener de 2 a 80 caracteres.</p>
+            }
+          </div>
+
+          <div class="panel-field">
+            <label for="body">Texto</label>
+            <textarea
+              #bodyBox
+              id="body"
+              class="panel-textarea"
+              formControlName="body"
+              rows="5"
+            ></textarea>
+            <div class="tokens" role="group" aria-label="Insertar un dato automático">
+              <span class="panel-hint">Insertar:</span>
+              @for (item of placeholders; track item.token) {
+                <button type="button" class="token" (click)="insert(item.token)">
+                  {{ item.label }}
+                </button>
+              }
+            </div>
+            @if (unknown().length > 0) {
+              <p class="panel-field-error" role="alert">
+                Estos datos no existen: {{ unknown().join(', ') }}. Usa los botones de arriba.
+              </p>
+            }
+            @if (form.controls.body.touched && form.controls.body.invalid) {
+              <p class="panel-field-error">El texto debe tener de 10 a 600 caracteres.</p>
+            }
+            <p class="panel-hint">
+              El nombre del estudiante y el del curso ya salen grandes en el certificado; este texto
+              va debajo.
+            </p>
+          </div>
+
+          <fieldset class="layouts">
+            <legend>Diseño</legend>
+            <div class="layout-options">
+              @for (option of layouts; track option) {
+                <label
+                  class="layout-option"
+                  [class.selected]="form.controls.layout.value === option"
+                >
+                  <input type="radio" formControlName="layout" [value]="option" />
+                  <strong>{{ layoutLabels[option].label }}</strong>
+                  <span class="panel-muted">{{ layoutLabels[option].hint }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+
+          <div class="panel-field">
+            <label for="accentColor">Color principal</label>
+            <div class="color-row">
+              <input
+                class="color-picker"
+                type="color"
+                aria-label="Elegir color"
+                [value]="preview().color"
+                (input)="
+                  form.controls.accentColor.setValue($any($event.target).value.toUpperCase());
+                  form.controls.accentColor.markAsDirty()
+                "
+              />
+              <input
+                id="accentColor"
+                class="panel-input hex"
+                formControlName="accentColor"
+                maxlength="7"
+                placeholder="#1F3A8A"
+              />
+            </div>
+            @if (form.controls.accentColor.touched && form.controls.accentColor.invalid) {
+              <p class="panel-field-error">Escribe un color como #1F3A8A (6 dígitos).</p>
+            }
+          </div>
+
+          <p class="panel-hint">
+            La firma sale de tu perfil.
+            <a routerLink="/teacher/profile">Cambiar mi firma</a>
+          </p>
+
+          <div class="buttons">
+            <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : 'Guardar plantilla' }}
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost"
+              [disabled]="saving()"
+              (click)="openPdf()"
+            >
+              Guardar y ver PDF
+            </button>
+          </div>
+        </form>
+
+        <aside class="preview-col" aria-label="Vista previa">
+          <span class="preview-label">VISTA PREVIA</span>
+
+          <div
+            class="cert"
+            [class.modern]="preview().layout === 'MODERN'"
+            [style.--accent]="preview().color"
+          >
+            <h2 class="cert-title">{{ preview().title }}</h2>
+            <p class="cert-to">Se otorga a</p>
+            <p class="cert-name">{{ preview().student }}</p>
+            <p class="cert-body">{{ preview().body }}</p>
+
+            <div class="cert-sign">
+              <span class="line"></span>
+              <strong>{{ preview().instructor }}</strong>
+              <small>Docente</small>
+            </div>
+          </div>
+
+          <p class="panel-hint">
+            Es una aproximación. Con «Guardar y ver PDF» ves el documento real, con tu firma.
+          </p>
+        </aside>
+      </div>
+    }
+  </div>
+</section>

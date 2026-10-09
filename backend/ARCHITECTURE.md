@@ -38,10 +38,28 @@ lessons, resources,         ▼
 course-modules, progress, evaluations, courses ──► course-access
 assignments ──► progress, uploads   (inscripción; documentos privados de las entregas)
 announcements, discussions, reviews ──► progress, notifications   (inscritos; avisos)
+progress, courses ──► certificates ──► users, notifications   (emiten y asignan certificados)
+profile ──► users, dashboard   (cuenta y estadísticas del docente)
 notifications ◄── cualquier módulo que necesite avisar a un usuario (NotificationsService.notify)
 dashboard ──► course-access   (lee cursos, inscripciones y evaluaciones; solo lectura)
 todos ──► auth (guards)
 ```
+
+## Gestión de un curso: autor, instructores y admin
+
+`canManage` (en `course-access`) deja gestionar un curso a su **autor** (`Course.teacherId`), a sus **instructores**
+(tabla `CourseInstructor`) y a los admin. Lo que solo debe hacer el autor (borrar el curso, administrar instructores) usa
+`assertIsOwner`. Todas las consultas de "mis cursos" usan el helper `managedBy(userId)` de `common/prisma/managed-by.ts` en vez
+de filtrar por `teacherId`: así, al agregar una consulta nueva, un instructor ve lo mismo que el autor. Detalles en `API-INSTRUCTORES.md`.
+
+## Perfil y certificados
+
+- `profile` guarda perfil y preferencias en una tabla propia (`UserProfile`, 1 a 1 con `User`), sin tocar la tabla de usuarios;
+  los datos básicos (nombre, teléfono) y la contraseña se cambian a través de `UsersService`.
+- `certificates` emite el certificado cuando un estudiante termina el curso: `progress` lo llama al completar la última lección
+  y `courses` lo llama al asignar una plantilla (para quienes ya habían terminado). El certificado **guarda una copia** de todo
+  lo que muestra (nombre, curso, diseño, firma), así no cambia aunque luego se edite el curso o la plantilla. El PDF se genera
+  en el servidor con `pdfkit`; la verificación pública `GET /certificates/verify/:code` no pide sesión.
 
 ## Acceso al contenido
 

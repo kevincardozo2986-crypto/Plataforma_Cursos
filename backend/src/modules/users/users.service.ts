@@ -35,6 +35,27 @@ export class UsersService {
     });
   }
 
+  /** Para el cambio de contraseña: el usuario con su hash. Nunca se devuelve al cliente. */
+  async findWithPasswordHash(id: number) {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  /** Edición de los datos básicos desde el perfil. `phone: null` borra el teléfono. */
+  async updateBasics(
+    id: number,
+    data: { firstName?: string; lastName?: string; phone?: string | null },
+  ) {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      omit: { passwordHash: true },
+    });
+  }
+
+  async updatePasswordHash(id: number, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id }, data: { passwordHash } });
+  }
+
   async create(data: CreateUserData) {
     return this.prisma.user.create({
       data: {

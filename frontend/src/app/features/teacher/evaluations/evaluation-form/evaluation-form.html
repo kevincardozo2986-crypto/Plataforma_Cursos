@@ -2,7 +2,12 @@
   <div class="panel-container">
     <app-page-header
       [title]="isEdit ? 'Editar evaluación' : 'Nueva evaluación'"
-      [subtitle]="'Quiz de opción múltiple · ' + totalPoints() + ' puntos en total'"
+      [subtitle]="
+        'Quiz · ' +
+        totalPoints() +
+        ' puntos en total' +
+        (manualCount() ? ' · ' + manualCount() + ' para calificar a mano' : '')
+      "
     >
       <a
         class="panel-btn panel-btn--ghost"
@@ -85,18 +90,23 @@
               </div>
 
               <div class="question-row">
-                <div class="panel-field grow">
-                  <label [attr.for]="'q-text-' + qi">Enunciado</label>
-                  <textarea
-                    class="panel-textarea short"
-                    [id]="'q-text-' + qi"
-                    formControlName="text"
-                    placeholder="Escribe la pregunta"
-                    [attr.aria-invalid]="shows(question.controls.text) ? 'true' : null"
-                  ></textarea>
-                  @if (shows(question.controls.text)) {
-                    <p class="panel-field-error">La pregunta debe tener al menos 3 caracteres.</p>
-                  }
+                <div class="panel-field type">
+                  <label [attr.for]="'q-type-' + qi">Tipo de pregunta</label>
+                  <select
+                    class="panel-select"
+                    [id]="'q-type-' + qi"
+                    [value]="question.controls.type.value"
+                    (change)="setType(question, $event)"
+                  >
+                    @for (entry of types; track entry.value) {
+                      <option
+                        [value]="entry.value"
+                        [selected]="question.controls.type.value === entry.value"
+                      >
+                        {{ entry.label }}
+                      </option>
+                    }
+                  </select>
                 </div>
 
                 <div class="panel-field points">
@@ -109,58 +119,154 @@
                     formControlName="points"
                     [attr.aria-invalid]="shows(question.controls.points) ? 'true' : null"
                   />
-                  @if (shows(question.controls.points)) {
-                    <p class="panel-field-error">Mínimo 1.</p>
-                  }
                 </div>
               </div>
 
-              <p class="panel-hint">Marca con el círculo cuál es la respuesta correcta.</p>
+              <p class="panel-hint type-hint">{{ typeHint(question) }}</p>
 
-              <div formArrayName="options" class="options">
-                @for (option of question.controls.options.controls; track option; let oi = $index) {
-                  <div class="option">
-                    <input
-                      type="radio"
-                      class="radio"
-                      [name]="'correct-' + qi"
-                      [value]="oi"
-                      [formControl]="question.controls.correctIndex"
-                      [attr.aria-label]="'Marcar la opción ' + (oi + 1) + ' como correcta'"
-                    />
+              <div class="panel-field">
+                <label [attr.for]="'q-text-' + qi">Enunciado</label>
+                <textarea
+                  class="panel-textarea short"
+                  [id]="'q-text-' + qi"
+                  formControlName="text"
+                  placeholder="Escribe la pregunta"
+                  [attr.aria-invalid]="shows(question.controls.text) ? 'true' : null"
+                ></textarea>
+              </div>
 
-                    <input
-                      class="panel-input"
-                      type="text"
-                      [formControlName]="oi"
-                      [placeholder]="'Opción ' + (oi + 1)"
-                      [attr.aria-label]="'Texto de la opción ' + (oi + 1)"
-                      [attr.aria-invalid]="shows(option) ? 'true' : null"
-                    />
+              @switch (question.controls.type.value) {
+                @case ('TRUE_FALSE') {
+                  <fieldset class="tf">
+                    <legend>Respuesta correcta</legend>
+                    <label class="choice">
+                      <input type="radio" [value]="true" formControlName="isTrue" />
+                      Verdadero
+                    </label>
+                    <label class="choice">
+                      <input type="radio" [value]="false" formControlName="isTrue" />
+                      Falso
+                    </label>
+                  </fieldset>
+                }
+
+                @case ('FILL_BLANK') {
+                  <div class="answers" formArrayName="answers">
+                    <p class="panel-hint">
+                      Escribe cada respuesta que quieras aceptar (por ejemplo «París» y «Ciudad
+                      Luz»).
+                    </p>
+
+                    @for (
+                      answer of question.controls.answers.controls;
+                      track answer;
+                      let ai = $index
+                    ) {
+                      <div class="answer">
+                        <input
+                          class="panel-input"
+                          type="text"
+                          [formControlName]="ai"
+                          [placeholder]="'Respuesta aceptada ' + (ai + 1)"
+                          [attr.aria-label]="'Respuesta aceptada ' + (ai + 1)"
+                        />
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          [disabled]="question.controls.answers.length <= 1"
+                          [attr.aria-label]="'Quitar la respuesta ' + (ai + 1)"
+                          (click)="removeAnswer(question, ai)"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    }
 
                     <button
                       type="button"
-                      class="panel-btn panel-btn--ghost panel-btn--sm"
-                      [disabled]="question.controls.options.length <= 2"
-                      [attr.aria-label]="'Quitar la opción ' + (oi + 1)"
-                      (click)="removeOption(question, oi)"
+                      class="panel-btn panel-btn--ghost panel-btn--sm add-option"
+                      (click)="addAnswer(question)"
                     >
-                      Quitar
+                      + Añadir respuesta aceptada
                     </button>
                   </div>
-                  @if (shows(option)) {
-                    <p class="panel-field-error option-error">Escribe el texto de la opción.</p>
-                  }
                 }
-              </div>
 
-              <button
-                type="button"
-                class="panel-btn panel-btn--ghost panel-btn--sm add-option"
-                (click)="addOption(question)"
-              >
-                + Añadir opción
-              </button>
+                @case ('ESSAY') {
+                  <p class="essay-note">
+                    El estudiante escribirá su respuesta y tú le pondrás la nota (de 0 a los puntos
+                    de esta pregunta) en <strong>Intentos del cuestionario</strong>.
+                  </p>
+                }
+
+                @default {
+                  <p class="panel-hint">
+                    {{
+                      question.controls.type.value === 'SINGLE'
+                        ? 'Marca con el círculo cuál es la respuesta correcta.'
+                        : 'Marca todas las respuestas correctas (al menos 2 y al menos una incorrecta).'
+                    }}
+                  </p>
+
+                  <div formArrayName="options" class="options">
+                    @for (
+                      option of question.controls.options.controls;
+                      track option;
+                      let oi = $index
+                    ) {
+                      <div class="option" [formGroupName]="oi">
+                        @if (question.controls.type.value === 'SINGLE') {
+                          <input
+                            type="radio"
+                            class="radio"
+                            [name]="'correct-' + qi"
+                            [checked]="option.controls.correct.value"
+                            [attr.aria-label]="'Marcar la opción ' + (oi + 1) + ' como correcta'"
+                            (change)="chooseCorrect(question, oi)"
+                          />
+                        } @else {
+                          <input
+                            type="checkbox"
+                            class="radio"
+                            formControlName="correct"
+                            [attr.aria-label]="'Marcar la opción ' + (oi + 1) + ' como correcta'"
+                          />
+                        }
+
+                        <input
+                          class="panel-input"
+                          type="text"
+                          formControlName="text"
+                          [placeholder]="'Opción ' + (oi + 1)"
+                          [attr.aria-label]="'Texto de la opción ' + (oi + 1)"
+                        />
+
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          [disabled]="question.controls.options.length <= 2"
+                          [attr.aria-label]="'Quitar la opción ' + (oi + 1)"
+                          (click)="removeOption(question, oi)"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    }
+                  </div>
+
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm add-option"
+                    (click)="addOption(question)"
+                  >
+                    + Añadir opción
+                  </button>
+                }
+              }
+
+              @if (questionError(question)) {
+                <p class="panel-field-error" role="alert">{{ questionError(question) }}</p>
+              }
             </fieldset>
           }
         </div>

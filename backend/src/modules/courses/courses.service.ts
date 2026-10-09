@@ -18,6 +18,7 @@ import { CategoriesService } from '../categories/categories.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { CourseModulesService } from '../course-modules/course-modules.service.js';
 import { ProgressService } from '../progress/progress.service.js';
+import { CertificatesService } from '../certificates/certificates.service.js';
 import { ReviewsService } from '../reviews/reviews.service.js';
 import { CoursesRepository } from './courses.repository.js';
 import {
@@ -40,6 +41,7 @@ export class CoursesService {
     private readonly modules: CourseModulesService,
     private readonly progress: ProgressService,
     private readonly reviews: ReviewsService,
+    private readonly certificates: CertificatesService,
   ) {}
 
   async listPublished(query: ListCoursesQueryDto) {
@@ -75,18 +77,27 @@ export class CoursesService {
     }
 
     const ratings = await this.reviews.ratingsOf([id]);
+    const { instructors, ...rest } = course;
 
     return {
-      ...course,
+      ...rest,
+      // El autor sigue en `teacher`; aquí van los demás docentes del curso.
+      instructors: instructors.map((item) => item.user),
       rating: ratings.get(id),
       modules: await this.modules.outline(id),
     };
   }
 
-  listManaged(user: AuthenticatedUser) {
-    return this.repository.listManaged(
+  /** Cursos que gestiona el docente (como autor o instructor); `isOwner` dice cuáles son suyos. */
+  async listManaged(user: AuthenticatedUser) {
+    const courses = await this.repository.listManaged(
       user.role === Role.ADMIN ? undefined : user.id,
     );
+
+    return courses.map((course) => ({
+      ...course,
+      isOwner: this.access.isOwner(user, course),
+    }));
   }
 
   async findManaged(user: AuthenticatedUser, id: number) {
@@ -100,6 +111,7 @@ export class CoursesService {
 
     return {
       ...this.toManaged(course),
+      isOwner: this.access.isOwner(user, course),
       modules: await this.modules.outline(id, true),
     };
   }
@@ -156,6 +168,11 @@ export class CoursesService {
     await this.assertSlugFree(dto.slug, id);
     const prerequisiteIds = await this.checkPrerequisites(dto.prerequisiteIds, id);
 
+    // Solo se puede asignar una plantilla propia.
+    if (dto.certificateTemplateId) {
+      await this.certificates.assertUsable(user, dto.certificateTemplateId);
+    }
+
     const visibility = dto.visibility ?? current.visibility;
     const accessPassword = await this.resolvePassword(
       visibility,
@@ -177,6 +194,7 @@ export class CoursesService {
         qaEnabled: dto.qaEnabled ?? undefined,
         dripType: dto.dripType ?? undefined,
         // Estos sí: null los borra.
+        certificateTemplateId: dto.certificateTemplateId,
         imageUrl: dto.imageUrl,
         introVideoUrl: dto.introVideoUrl,
         categoryId: dto.categoryId,
@@ -191,7 +209,12 @@ export class CoursesService {
       prerequisiteIds,
     );
 
-    return this.toManaged(updated);
+    // Quienes ya habían completado el curso antes de que tuviera plantilla reciben su certificado.
+    const retroactive = dto.certificateTemplateId
+      ? await this.certificates.issueMissing(id)
+      : 0;
+
+    return { ...this.toManaged(updated), certificatesIssued: retroactive };
   }
 
   async updateStatus(
@@ -208,8 +231,9 @@ export class CoursesService {
     return this.repository.updateStatus(id, status);
   }
 
+  /** Borrar un curso es solo del autor (o un admin); un instructor no puede. */
   async remove(user: AuthenticatedUser, id: number) {
-    await this.access.assertCanManage(user, id);
+    await this.access.assertIsOwner(user, id);
 
     if ((await this.progress.countEnrollments(id)) > 0) {
       throw new ConflictException(

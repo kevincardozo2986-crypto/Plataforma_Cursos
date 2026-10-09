@@ -65,6 +65,10 @@ model User {
   announcements         Announcement[]
   discussionPosts       DiscussionPost[]
   reviews               Review[]
+  instructingCourses    CourseInstructor[]
+  profile               UserProfile?
+  certificates          Certificate[]
+  certificateTemplates  CertificateTemplate[]
 
   @@map("users")
 }
@@ -110,6 +114,12 @@ model Course {
   announcements   Announcement[]
   discussionPosts DiscussionPost[]
   reviews         Review[]
+  instructors     CourseInstructor[]
+  certificates    Certificate[]
+
+  /// Plantilla del certificado que se emite al completar el curso (sin plantilla, no hay certificado).
+  certificateTemplateId Int?
+  certificateTemplate   CertificateTemplate? @relation(fields: [certificateTemplateId], references: [id], onDelete: SetNull)
 
   /// Cursos que hay que completar antes de inscribirse en este.
   requires   CoursePrerequisite[] @relation("CourseRequires")
@@ -343,6 +353,140 @@ enum NotificationType {
   NEW_REVIEW
   GRADED_ASSIGNMENT
   GRADED_QUIZ
+  INSTRUCTOR_ADDED
+  CERTIFICATE_ISSUED
+}
+
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum FontSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ColorFilter {
+  NONE
+  PROTANOPIA
+  DEUTERANOPIA
+  TRITANOPIA
+  GRAYSCALE
+}
+
+/// Perfil y preferencias de una cuenta (1 a 1 con User). Se crea al guardar por primera vez;
+/// mientras no exista, se usan los valores por defecto.
+model UserProfile {
+  userId Int  @id
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  occupation String?
+  timezone   String  @default("America/Bogota")
+  /// Nombre con el que se muestra al docente en los cursos (si no, nombre y apellido).
+  publicName String?
+  bio        String?
+  /// Firma del docente para los certificados (URL de una imagen subida).
+  signatureUrl String?
+
+  facebookUrl String?
+  xUrl        String?
+  linkedinUrl String?
+  githubUrl   String?
+  websiteUrl  String?
+
+  autoplayNext Boolean         @default(true)
+  reduceMotion Boolean         @default(false)
+  theme        ThemePreference @default(SYSTEM)
+  fontSize     FontSize        @default(MEDIUM)
+  highContrast Boolean         @default(false)
+  colorFilter  ColorFilter     @default(NONE)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+enum CertificateLayout {
+  CLASSIC
+  MODERN
+}
+
+/// Diseño de certificado de un docente. Se asigna a cursos (`Course.certificateTemplateId`).
+model CertificateTemplate {
+  id   Int    @id @default(autoincrement())
+  name String
+  /// Encabezado, por ejemplo "Certificado de finalización".
+  title String
+  /// Texto con marcadores: {{student}}, {{course}}, {{date}}, {{hours}}, {{instructor}}.
+  body        String
+  accentColor String            @default("#1F3A8A")
+  layout      CertificateLayout @default(CLASSIC)
+
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  courses Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@map("certificate_templates")
+}
+
+enum CertificateStatus {
+  VALID
+  REVOKED
+}
+
+/// Certificado emitido. Guarda una copia de todo lo que muestra (nombre, curso, diseño, firma),
+/// así no cambia aunque luego se edite el curso, la plantilla o el perfil del docente.
+model Certificate {
+  id     Int               @id @default(autoincrement())
+  /// Código público para verificarlo, por ejemplo "CC-7F3K-9QXA-B2MD".
+  code   String            @unique
+  status CertificateStatus @default(VALID)
+
+  studentName    String
+  courseTitle    String
+  courseMinutes  Int?
+  instructorName String
+  signatureUrl   String?
+  /// { title, body, accentColor, layout } de la plantilla al emitir.
+  design         Json
+
+  issuedAt  DateTime  @default(now())
+  revokedAt DateTime?
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@map("certificates")
+}
+
+/// Docente que comparte la gestión de un curso con su autor (`Course.teacherId`).
+/// Puede editar contenido, calificar y comunicarse con los estudiantes; no puede borrar
+/// el curso ni administrar a los demás instructores.
+model CourseInstructor {
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  addedAt DateTime @default(now())
+
+  @@id([courseId, userId])
+  @@index([userId])
+  @@map("course_instructors")
 }
 
 /// Calificación (1 a 5) y comentario de un estudiante sobre un curso. Una por estudiante y curso.

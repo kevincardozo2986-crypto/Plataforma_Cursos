@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { RatingCount } from './reviews-calc.js';
 
@@ -94,7 +95,7 @@ export class ReviewsRepository {
     const where = {
       rating: options.rating,
       courseId: options.courseId,
-      ...(options.teacherId ? { course: { teacherId: options.teacherId } } : {}),
+      ...(options.teacherId ? { course: managedBy(options.teacherId) } : {}),
     };
 
     const [items, total] = await this.prisma.$transaction([

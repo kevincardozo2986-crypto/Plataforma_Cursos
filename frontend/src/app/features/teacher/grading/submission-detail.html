@@ -1,0 +1,112 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <a class="back" routerLink="/teacher/assignments">← Volver a tareas</a>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando entrega…</p></div>
+    } @else if (submission(); as data) {
+      <header class="panel-card summary">
+        <div>
+          <h1>{{ data.student.firstName }} {{ data.student.lastName }}</h1>
+          <p class="meta panel-muted">
+            {{ data.student.email }} · {{ data.assignment.title }} · {{ data.course.title }}
+          </p>
+          <p class="meta panel-muted">
+            Entregada el {{ data.submittedAt | date: "d 'de' MMM y, HH:mm" }}
+            @if (data.assignment.dueAt) {
+              · Fecha límite {{ data.assignment.dueAt | date: "d 'de' MMM y, HH:mm" }}
+            }
+          </p>
+        </div>
+
+        <div class="result">
+          @if (data.late) {
+            <span class="flag">Entregada tarde</span>
+          }
+          <span class="state" [class.done]="data.status === 'GRADED'">
+            {{ data.status === 'GRADED' ? 'Calificada' : 'Por calificar' }}
+          </span>
+          @if (data.score !== null) {
+            <strong class="big">{{ data.score }}/{{ data.maxScore }}</strong>
+          }
+        </div>
+      </header>
+
+      <section class="panel-card block">
+        <h2>Entrega</h2>
+
+        @if (data.text) {
+          <p class="label">Texto</p>
+          <p class="answer">{{ data.text }}</p>
+        }
+
+        @if (data.files.length > 0) {
+          <p class="label">Archivos</p>
+          <ul class="files">
+            @for (file of data.files; track file.name) {
+              <li>
+                <span class="file-name">{{ file.originalName }}</span>
+                <span class="panel-muted small">{{ fileSize(file.size) }}</span>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm"
+                  [disabled]="downloading() === file.name"
+                  (click)="download(file)"
+                >
+                  {{ downloading() === file.name ? 'Descargando…' : 'Descargar' }}
+                </button>
+              </li>
+            }
+          </ul>
+        } @else if (!data.text) {
+          <p class="panel-muted">La entrega no trae contenido.</p>
+        }
+      </section>
+
+      <form class="panel-card block" (ngSubmit)="save(data.maxScore)">
+        <h2>{{ data.status === 'GRADED' ? 'Corregir la nota' : 'Calificar' }}</h2>
+
+        <div class="panel-field points">
+          <label for="score">Nota (0 a {{ data.maxScore }})</label>
+          <input
+            id="score"
+            name="score"
+            class="panel-input"
+            inputmode="numeric"
+            [ngModel]="score()"
+            (ngModelChange)="score.set($event)"
+            [attr.aria-invalid]="scoreInvalid(data.maxScore)"
+          />
+          @if (scoreInvalid(data.maxScore)) {
+            <p class="panel-field-error">Escribe un número entero entre 0 y {{ data.maxScore }}.</p>
+          }
+        </div>
+
+        <div class="panel-field">
+          <label for="feedback">Comentario para el estudiante (opcional)</label>
+          <textarea
+            id="feedback"
+            name="feedback"
+            class="panel-textarea"
+            rows="4"
+            [ngModel]="feedback()"
+            (ngModelChange)="feedback.set($event)"
+          ></textarea>
+        </div>
+
+        <div>
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : 'Guardar calificación' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

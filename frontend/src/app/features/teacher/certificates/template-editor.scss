@@ -1,0 +1,254 @@
+:host {
+  display: block;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--p-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--p-accent);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.token {
+  padding: 5px 11px;
+  color: var(--p-accent);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  background: var(--p-accent-soft);
+  border: 0;
+  border-radius: 999px;
+}
+
+.token:hover {
+  filter: brightness(0.95);
+}
+
+.layouts {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.layouts legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.layout-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.layout-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.layout-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.layout-option.selected {
+  background: var(--p-accent-soft);
+  border-color: var(--p-accent);
+}
+
+.layout-option:has(input:focus-visible) {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-picker {
+  width: 48px;
+  height: 42px;
+  padding: 2px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 10px;
+}
+
+.hex {
+  max-width: 140px;
+  font-family: ui-monospace, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- Vista previa ---------- */
+
+.preview-col {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-label {
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+/* Misma proporción que el PDF (A4 horizontal). Los colores del papel no cambian con el modo oscuro. */
+.cert {
+  --paper: #fff;
+  --paper-ink: #111827;
+  --paper-soft: #4b5563;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  aspect-ratio: 841.89 / 595.28;
+  padding: 7% 9% 5%;
+  color: var(--paper-ink);
+  text-align: center;
+  background: var(--paper);
+  border: 5px solid var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: -14px;
+  border-radius: 4px;
+  box-shadow: var(--p-shadow);
+  container-type: inline-size;
+}
+
+.cert-title {
+  margin: 0;
+  color: var(--accent);
+  font-size: 5.2cqw;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.cert-to {
+  margin: 6cqw 0 0;
+  color: var(--paper-soft);
+  font-size: 2.3cqw;
+}
+
+.cert-name {
+  margin: 1cqw 0 0;
+  padding-bottom: 2.2cqw;
+  font-size: 6.2cqw;
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  border-bottom: 2px solid var(--accent);
+}
+
+.cert-body {
+  margin: 3cqw 0 0;
+  color: #1f2937;
+  font-size: 2.5cqw;
+  line-height: 1.5;
+}
+
+.cert-sign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 38%;
+  margin-top: auto;
+}
+
+.cert-sign .line {
+  width: 100%;
+  border-top: 1px solid #374151;
+}
+
+.cert-sign strong {
+  margin-top: 4px;
+  font-size: 2cqw;
+}
+
+.cert-sign small {
+  color: var(--paper-soft);
+  font-size: 1.6cqw;
+}
+
+/* Diseño moderno: barra a la izquierda, texto alineado a la izquierda. */
+.cert.modern {
+  align-items: flex-start;
+  padding-left: 11%;
+  text-align: left;
+  border: 0;
+  border-left: 4.5cqw solid var(--accent);
+  outline: 0;
+}
+
+.cert.modern .cert-title {
+  font-size: 4cqw;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cert.modern .cert-name {
+  padding-bottom: 0;
+  font-size: 5.4cqw;
+  border-bottom: 0;
+}
+
+.cert.modern .cert-sign {
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-col {
+    position: static;
+    order: -1;
+  }
+}

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { DiscussionKind } from '../../generated/prisma/enums.js';
@@ -73,7 +74,7 @@ export class DiscussionsRepository {
       answered: options.answered,
       courseId: options.courseId,
       ...(options.scope && 'teacherId' in options.scope
-        ? { course: { teacherId: options.scope.teacherId } }
+        ? { course: managedBy(options.scope.teacherId) }
         : {}),
       ...(options.scope && 'courseIds' in options.scope
         ? { courseId: options.courseId ?? { in: options.scope.courseIds } }

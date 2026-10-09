@@ -90,6 +90,15 @@ describe('DiscussionsService', () => {
       await expect(service.askQuestion(student, 3, { ...dto, lessonId: 8 })).rejects.toBeInstanceOf(BadRequestException);
     });
 
+    it('la pregunta le llega al autor del curso y a todos sus instructores', async () => {
+      const { service, access, notifications } = build();
+      access.getCourseOrThrow.mockResolvedValue({ ...course, instructorIds: [8, 9] });
+
+      await service.askQuestion(student, 3, dto);
+
+      expect(notifications.notify).toHaveBeenCalledWith([7, 8, 9], expect.anything(), 5);
+    });
+
     it('un docente que pregunta en su propio curso no se avisa a sí mismo', async () => {
       const { service, notifications } = build();
 
@@ -300,6 +309,20 @@ describe('DiscussionsService', () => {
       await service.remove(teacher, 31);
 
       expect(repository.setAnswered).toHaveBeenCalledWith(20, false);
+    });
+
+    it('la respuesta de un instructor también cuenta como del docente', async () => {
+      const { service, repository, access } = build();
+      access.getCourseOrThrow.mockResolvedValue({ ...course, instructorIds: [8] });
+      repository.findPost
+        .mockResolvedValueOnce({ id: 31, kind: 'QUESTION', courseId: 3, authorId: 6, parentId: 20 })
+        .mockResolvedValueOnce({ ...question, answered: true });
+      // Se borra una respuesta de un alumno; queda una del instructor 8.
+      repository.repliesAuthors.mockResolvedValue([{ author: { id: 8, role: Role.TEACHER } }]);
+
+      await service.remove(admin, 31);
+
+      expect(repository.setAnswered).not.toHaveBeenCalled();
     });
 
     it('si aún queda otra respuesta del docente, sigue respondida', async () => {

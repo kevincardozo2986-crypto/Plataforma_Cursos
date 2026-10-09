@@ -1,0 +1,143 @@
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 820px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.stats li {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 14px;
+}
+
+.stats strong {
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.stats span {
+  color: var(--p-muted);
+  font-size: 0.8rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spaced {
+  margin-top: 18px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.intro {
+  margin: -8px 0 0;
+  font-size: 0.9rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.danger {
+  color: var(--p-danger);
+}
+
+.signature {
+  display: grid;
+  place-items: center;
+  max-width: 360px;
+  padding: 16px;
+  /* Cuadrícula de fondo: deja ver que la firma es transparente. */
+  background:
+    linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%) 0 0 / 16px
+      16px,
+    linear-gradient(45deg, #e5e7eb 25%, #fff 25%, #fff 75%, #e5e7eb 75%) 8px 8px / 16px 16px;
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+}
+
+.signature img {
+  display: block;
+  max-width: 100%;
+  max-height: 140px;
+}
+
+.file {
+  position: relative;
+  cursor: pointer;
+}
+
+.file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file:has(input:focus-visible) {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 3px;
+}
+
+.progress {
+  height: 8px;
+  overflow: hidden;
+  background: var(--p-surface-2);
+  border-radius: 999px;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--p-accent);
+  transition: width 0.2s;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

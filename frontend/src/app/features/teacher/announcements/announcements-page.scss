@@ -1,0 +1,167 @@
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 860px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.composer h2,
+h3 {
+  margin: 0;
+}
+
+.composer h2 {
+  font-size: 1.05rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--p-accent);
+}
+
+.buttons,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar {
+  display: flex;
+  margin-bottom: 18px;
+}
+
+.toolbar .panel-field {
+  min-width: 260px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.item.busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+h3 {
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+}
+
+.body {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.body :first-child {
+  margin-top: 0;
+}
+
+.body :last-child {
+  margin-bottom: 0;
+}
+
+.edit {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--p-border);
+}
+
+.danger {
+  color: var(--p-danger);
+}
+
+.confirm-text {
+  color: var(--p-danger);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 44px 24px;
+  text-align: center;
+}
+
+.empty h2,
+.empty p {
+  margin: 0;
+}
+
+.empty p {
+  max-width: 400px;
+  color: var(--p-muted);
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  color: var(--p-accent);
+  font-size: 1.8rem;
+  background: var(--p-surface-2);
+  border-radius: 18px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 0.82rem;
+}

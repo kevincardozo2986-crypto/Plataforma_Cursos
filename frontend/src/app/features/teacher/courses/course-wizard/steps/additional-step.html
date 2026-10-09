@@ -111,6 +111,39 @@
     }
   </section>
 
+  <!-- Certificado -->
+  <section class="panel-card block">
+    <h2>Certificado</h2>
+    <p class="panel-muted intro">
+      Se emite solo cuando un estudiante termina todas las lecciones. Quienes ya lo terminaron lo
+      reciben al guardar.
+    </p>
+
+    <div class="panel-field">
+      <label for="certificateTemplateId">Plantilla</label>
+      <select id="certificateTemplateId" class="panel-select" (change)="onTemplate($event)">
+        <option value="" [selected]="form.controls.certificateTemplateId.value === null">
+          Este curso no da certificado
+        </option>
+        @for (template of templates(); track template.id) {
+          <option
+            [value]="template.id"
+            [selected]="form.controls.certificateTemplateId.value === template.id"
+          >
+            {{ template.name }}
+          </option>
+        }
+      </select>
+      <p class="panel-hint">
+        @if (templates().length === 0) {
+          Aún no tienes plantillas.
+        }
+        <a routerLink="/teacher/certificates/new" target="_blank">Crear una plantilla</a>
+        (se abre en otra pestaña; al volver, recarga esta página para verla en la lista).
+      </p>
+    </div>
+  </section>
+
   <!-- Lo que todavía no está -->
   <section class="panel-card block upcoming">
     <h2>Próximamente en el asistente</h2>

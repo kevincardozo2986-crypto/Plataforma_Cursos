@@ -1,0 +1,257 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <span class="eyebrow">ESPACIO DOCENTE / CERTIFICADOS</span>
+    <app-page-header
+      title="Certificados"
+      subtitle="Diseña tus plantillas, asígnalas a un curso y se emiten solas cuando un estudiante lo termina."
+    >
+      <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new"
+        ><span aria-hidden="true">＋</span> Nueva plantilla</a
+      >
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    <div class="tabs" role="tablist" aria-label="Certificados">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab() === 'templates'"
+        [attr.aria-selected]="tab() === 'templates'"
+        (click)="show('templates')"
+      >
+        Plantillas <span class="count">{{ templates().length }}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab() === 'issued'"
+        [attr.aria-selected]="tab() === 'issued'"
+        (click)="show('issued')"
+      >
+        Emitidos
+      </button>
+    </div>
+
+    @if (tab() === 'templates') {
+      @if (loadingTemplates()) {
+        <div class="panel-card"><p class="panel-muted">Cargando plantillas…</p></div>
+      } @else if (templates().length === 0) {
+        <div class="panel-card empty">
+          <span class="empty-icon" aria-hidden="true">✦</span>
+          <h2>Crea tu primera plantilla</h2>
+          <p>
+            Elige un diseño, un color y escribe el texto. Luego la asignas a un curso desde el paso
+            «Adicional» del asistente.
+          </p>
+          <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new"
+            >Crear plantilla</a
+          >
+        </div>
+      } @else {
+        <ul class="list">
+          @for (template of templates(); track template.id) {
+            <li class="panel-card item" [class.busy]="busyId() === template.id">
+              <span
+                class="swatch"
+                [style.--accent]="template.accentColor"
+                [class.modern]="template.layout === 'MODERN'"
+                aria-hidden="true"
+              ></span>
+
+              <div class="main">
+                <a class="title" [routerLink]="['/teacher/certificates', template.id]">{{
+                  template.name
+                }}</a>
+                <p class="meta panel-muted">
+                  Diseño {{ layoutLabels[template.layout].label }} ·
+                  @if (template._count?.courses) {
+                    Usada en {{ template._count?.courses }}
+                    {{ template._count?.courses === 1 ? 'curso' : 'cursos' }}
+                  } @else {
+                    Sin asignar a ningún curso
+                  }
+                  · Actualizada {{ template.updatedAt | date: 'dd/MM/yyyy' }}
+                </p>
+              </div>
+
+              <div class="actions">
+                @if (confirmDeleteId() === template.id) {
+                  <span class="confirm-text">¿Eliminar esta plantilla?</span>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--danger panel-btn--sm"
+                    [disabled]="busyId() === template.id"
+                    (click)="remove(template)"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    (click)="cancelDelete()"
+                  >
+                    Cancelar
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    [disabled]="busyId() === template.id"
+                    (click)="preview(template)"
+                  >
+                    Ver PDF
+                  </button>
+                  <a
+                    class="panel-btn panel-btn--primary panel-btn--sm"
+                    [routerLink]="['/teacher/certificates', template.id]"
+                    >Editar</a
+                  >
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                    (click)="askDelete(template.id)"
+                  >
+                    Eliminar
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="toolbar">
+        <div class="panel-field">
+          <label for="course-filter">Curso</label>
+          <select id="course-filter" class="panel-select" (change)="setCourse($event)">
+            <option value="">Todos mis cursos</option>
+            @for (course of courses(); track course.id) {
+              <option [value]="course.id">{{ course.title }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="panel-field">
+          <label for="status-filter">Estado</label>
+          <select id="status-filter" class="panel-select" (change)="setStatus($event)">
+            <option value="">Todos</option>
+            <option value="VALID">Vigentes</option>
+            <option value="REVOKED">Revocados</option>
+          </select>
+        </div>
+      </div>
+
+      @if (loadingIssued()) {
+        <div class="panel-card"><p class="panel-muted">Cargando certificados…</p></div>
+      } @else if (issued().length === 0) {
+        <div class="panel-card">
+          <p class="panel-muted">
+            Todavía no hay certificados emitidos con este filtro. Se emiten cuando un estudiante
+            termina un curso que tiene plantilla asignada.
+          </p>
+        </div>
+      } @else {
+        <div class="panel-card table-card">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Curso</th>
+                  <th>Código</th>
+                  <th>Emitido</th>
+                  <th>Estado</th>
+                  <th><span class="sr-only">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of issued(); track item.id) {
+                  <tr [class.busy]="busyId() === item.id">
+                    <td>
+                      <strong>{{ item.studentName }}</strong>
+                      <span class="sub panel-muted">{{ item.user.email }}</span>
+                    </td>
+                    <td>{{ item.courseTitle }}</td>
+                    <td class="code">{{ item.code }}</td>
+                    <td>{{ item.issuedAt | date: 'dd/MM/yyyy' }}</td>
+                    <td>
+                      <span class="pill" [class.revoked]="item.status === 'REVOKED'">
+                        {{ item.status === 'VALID' ? 'Vigente' : 'Revocado' }}
+                      </span>
+                    </td>
+                    <td class="row-actions">
+                      @if (confirmRevokeId() === item.id) {
+                        <span class="confirm-text">¿Revocar?</span>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--danger panel-btn--sm"
+                          [disabled]="busyId() === item.id"
+                          (click)="revoke(item)"
+                        >
+                          Sí
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          (click)="cancelRevoke()"
+                        >
+                          No
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          [disabled]="busyId() === item.id"
+                          (click)="download(item)"
+                        >
+                          PDF
+                        </button>
+                        @if (item.status === 'VALID') {
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                            (click)="askRevoke(item.id)"
+                          >
+                            Revocar
+                          </button>
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              [disabled]="!hasPrev()"
+              (click)="page(-1)"
+            >
+              ← Anterior
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              [disabled]="!hasNext()"
+              (click)="page(1)"
+            >
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</section>

@@ -1,0 +1,120 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <app-page-header
+      [title]="isEdit ? 'Editar tarea' : 'Nueva tarea'"
+      subtitle="Los estudiantes la entregan con texto, archivos o ambos, y tú la calificas en «Tareas»."
+    >
+      <a
+        class="panel-btn panel-btn--ghost"
+        [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
+      >
+        Volver al contenido
+      </a>
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando tarea…</p></div>
+    } @else if (!loaded()) {
+      <div class="panel-card"><p class="panel-muted">No se encontró la tarea.</p></div>
+    } @else {
+      <form class="panel-card stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="panel-field">
+          <label for="title">Título</label>
+          <input
+            id="title"
+            class="panel-input"
+            type="text"
+            formControlName="title"
+            placeholder="Ej. Informe del módulo 1"
+            [attr.aria-invalid]="shows('title') ? 'true' : null"
+          />
+          @if (shows('title')) {
+            <p class="panel-field-error">El título debe tener entre 2 y 150 caracteres.</p>
+          }
+        </div>
+
+        <div class="panel-field">
+          <label for="description">Instrucciones</label>
+          <textarea
+            id="description"
+            class="panel-textarea"
+            rows="7"
+            formControlName="description"
+            placeholder="Qué deben entregar, formato, criterios de calificación…"
+          ></textarea>
+          <p class="panel-hint">Una línea en blanco separa los párrafos.</p>
+          @if (losesFormat()) {
+            <p class="panel-alert panel-alert--error">
+              Esta tarea tiene formato (negritas, enlaces o listas). Al guardarla desde aquí queda
+              como texto simple y ese formato se pierde.
+            </p>
+          }
+        </div>
+
+        <div class="row">
+          <div class="panel-field">
+            <label for="dueAt">Fecha límite (opcional)</label>
+            <div class="date-row">
+              <input id="dueAt" class="panel-input" type="datetime-local" formControlName="dueAt" />
+              @if (form.controls.dueAt.value) {
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm"
+                  (click)="clearDate()"
+                >
+                  Quitar
+                </button>
+              }
+            </div>
+            <p class="panel-hint">En tu hora local. Sin fecha, no hay plazo.</p>
+          </div>
+
+          <div class="panel-field score">
+            <label for="maxScore">Puntaje máximo</label>
+            <input
+              id="maxScore"
+              class="panel-input"
+              type="number"
+              min="1"
+              max="1000"
+              formControlName="maxScore"
+              [attr.aria-invalid]="shows('maxScore') ? 'true' : null"
+            />
+            @if (shows('maxScore')) {
+              <p class="panel-field-error">Entero entre 1 y 1000.</p>
+            }
+          </div>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" formControlName="allowLate" />
+          <span>
+            Aceptar entregas después de la fecha límite
+            <small class="panel-muted">
+              (se marcan como «tarde»; si lo desactivas, pasada la fecha ya no se puede entregar)
+            </small>
+          </span>
+        </label>
+
+        <div class="footer">
+          <a
+            class="panel-btn panel-btn--ghost"
+            [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
+          >
+            Cancelar
+          </a>
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear tarea' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

@@ -1,0 +1,259 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">ESPACIO DOCENTE / MI PERFIL</span>
+    <app-page-header
+      title="Mi perfil"
+      subtitle="Así te ven tus estudiantes y esto es lo que aparece en tus certificados."
+    />
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando tu perfil…</p></div>
+    } @else if (data(); as profile) {
+      @if (profile.stats; as stats) {
+        <ul class="stats" aria-label="Tus números">
+          <li>
+            <strong>{{ stats.courses }}</strong>
+            <span>{{ stats.courses === 1 ? 'curso' : 'cursos' }}</span>
+          </li>
+          <li>
+            <strong>{{ stats.students }}</strong>
+            <span>{{ stats.students === 1 ? 'estudiante' : 'estudiantes' }}</span>
+          </li>
+          <li>
+            <strong>{{ stats.rating.average ?? '—' }}</strong>
+            <span>calificación ({{ stats.rating.count }})</span>
+          </li>
+        </ul>
+      }
+
+      <form class="stack" [formGroup]="form" novalidate (ngSubmit)="save()">
+        <section class="panel-card block">
+          <h2>Cuenta</h2>
+
+          <div class="row">
+            <div class="panel-field">
+              <label for="firstName">Nombre</label>
+              <input id="firstName" class="panel-input" formControlName="firstName" />
+              @if (fieldInvalid('firstName')) {
+                <p class="panel-field-error">Mínimo 2 caracteres.</p>
+              }
+            </div>
+            <div class="panel-field">
+              <label for="lastName">Apellido</label>
+              <input id="lastName" class="panel-input" formControlName="lastName" />
+              @if (fieldInvalid('lastName')) {
+                <p class="panel-field-error">Mínimo 2 caracteres.</p>
+              }
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="panel-field">
+              <label for="email">Correo</label>
+              <input id="email" class="panel-input" [value]="profile.account.email" disabled />
+              <p class="panel-hint">El correo no se puede cambiar desde aquí.</p>
+            </div>
+            <div class="panel-field">
+              <label for="phone">Teléfono</label>
+              <input id="phone" class="panel-input" type="tel" formControlName="phone" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="panel-field">
+              <label for="occupation">Ocupación</label>
+              <input
+                id="occupation"
+                class="panel-input"
+                formControlName="occupation"
+                placeholder="Ej. Ingeniera de software"
+              />
+            </div>
+            <div class="panel-field">
+              <label for="timezone">Zona horaria</label>
+              <select id="timezone" class="panel-select" formControlName="timezone">
+                @for (zone of zones; track zone) {
+                  <option [value]="zone">{{ zone }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card block">
+          <h2>Perfil público</h2>
+          <p class="panel-muted intro">Aparece en la sección «Sobre el docente» de tus cursos.</p>
+
+          <div class="panel-field">
+            <label for="publicName">Nombre público</label>
+            <input
+              id="publicName"
+              class="panel-input"
+              formControlName="publicName"
+              placeholder="Ej. Dra. Laura Gómez"
+            />
+            <p class="panel-hint">
+              También sale en tus certificados. Si lo dejas vacío se usa tu nombre y apellido.
+            </p>
+          </div>
+
+          <div class="panel-field">
+            <label for="bio">Biografía</label>
+            <textarea id="bio" class="panel-textarea" rows="5" formControlName="bio"></textarea>
+            <p class="panel-hint">{{ form.controls.bio.value.length }} / 2000</p>
+            @if (fieldInvalid('bio')) {
+              <p class="panel-field-error">Máximo 2000 caracteres.</p>
+            }
+          </div>
+        </section>
+
+        <section class="panel-card block">
+          <h2>Redes sociales</h2>
+
+          @for (social of socials; track social.control) {
+            <div class="panel-field">
+              <label [for]="social.control">{{ social.label }}</label>
+              <input
+                [id]="social.control"
+                class="panel-input"
+                type="url"
+                [formControlName]="social.control"
+                [placeholder]="social.placeholder"
+              />
+              @if (fieldInvalid(social.control)) {
+                <p class="panel-field-error">Debe empezar con http:// o https://</p>
+              }
+            </div>
+          }
+        </section>
+
+        <div class="buttons">
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : 'Guardar perfil' }}
+          </button>
+        </div>
+      </form>
+
+      @if (isTeacher()) {
+        <section class="panel-card block spaced">
+          <h2>Firma para certificados</h2>
+          <p class="panel-muted intro">
+            Se imprime sobre la línea de tu nombre. Funciona mejor una imagen de 700 × 430 px con
+            fondo transparente (PNG).
+          </p>
+
+          @if (signatureUrl(); as url) {
+            <div class="signature">
+              <img [src]="url" alt="Tu firma actual" />
+            </div>
+          } @else {
+            <p class="panel-muted">Todavía no subes una firma. Tus certificados salen sin ella.</p>
+          }
+
+          @if (uploading()) {
+            <div class="progress" role="progressbar" [attr.aria-valuenow]="percent()">
+              <span [style.width.%]="percent()"></span>
+            </div>
+          }
+
+          @if (signatureError()) {
+            <p class="panel-field-error" role="alert">{{ signatureError() }}</p>
+          }
+
+          <div class="buttons">
+            <label class="panel-btn panel-btn--ghost file">
+              {{ signatureUrl() ? 'Cambiar firma' : 'Subir firma' }}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                [disabled]="uploading() || saving()"
+                (change)="onSignature($event)"
+              />
+            </label>
+            @if (signatureUrl()) {
+              <button
+                type="button"
+                class="panel-btn panel-btn--ghost danger"
+                [disabled]="saving()"
+                (click)="removeSignature()"
+              >
+                Quitar firma
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      <form
+        class="panel-card block spaced"
+        [formGroup]="passwordForm"
+        novalidate
+        (ngSubmit)="changePassword()"
+      >
+        <h2>Contraseña</h2>
+
+        @if (passwordError()) {
+          <p class="panel-alert panel-alert--error" role="alert">{{ passwordError() }}</p>
+        }
+        @if (passwordNotice()) {
+          <p class="panel-alert panel-alert--ok" role="status">{{ passwordNotice() }}</p>
+        }
+
+        <div class="panel-field">
+          <label for="currentPassword">Contraseña actual</label>
+          <input
+            id="currentPassword"
+            class="panel-input"
+            type="password"
+            autocomplete="current-password"
+            formControlName="currentPassword"
+          />
+        </div>
+
+        <div class="row">
+          <div class="panel-field">
+            <label for="newPassword">Contraseña nueva</label>
+            <input
+              id="newPassword"
+              class="panel-input"
+              type="password"
+              autocomplete="new-password"
+              formControlName="newPassword"
+            />
+            @if (
+              passwordForm.controls.newPassword.touched && passwordForm.controls.newPassword.invalid
+            ) {
+              <p class="panel-field-error">Mínimo 8 caracteres.</p>
+            }
+          </div>
+          <div class="panel-field">
+            <label for="repeat">Repite la nueva</label>
+            <input
+              id="repeat"
+              class="panel-input"
+              type="password"
+              autocomplete="new-password"
+              formControlName="repeat"
+            />
+            @if (passwordForm.controls.repeat.touched && !passwordsMatch()) {
+              <p class="panel-field-error">Las contraseñas no coinciden.</p>
+            }
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="savingPassword()">
+            {{ savingPassword() ? 'Cambiando…' : 'Cambiar contraseña' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

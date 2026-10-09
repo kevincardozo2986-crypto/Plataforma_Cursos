@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
@@ -14,6 +15,7 @@ import type { CategoriesService } from '../categories/categories.service.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
 import type { CourseModulesService } from '../course-modules/course-modules.service.js';
 import type { ProgressService } from '../progress/progress.service.js';
+import type { CertificatesService } from '../certificates/certificates.service.js';
 import type { ReviewsService } from '../reviews/reviews.service.js';
 import type { CoursesRepository } from './courses.repository.js';
 import { CoursesService, DRAFT_TITLE } from './courses.service.js';
@@ -47,9 +49,13 @@ function build() {
     ),
     updateStatus: vi.fn(),
     delete: vi.fn(),
-    listManaged: vi.fn(),
+    listManaged: vi.fn().mockResolvedValue([]),
   };
-  const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
+  const access = {
+    assertCanManage: vi.fn().mockResolvedValue({}),
+    assertIsOwner: vi.fn().mockResolvedValue({}),
+    isOwner: vi.fn((user: AuthenticatedUser, c: { teacherId: number }) => user.role === Role.ADMIN || c.teacherId === user.id),
+  };
   const categories = { exists: vi.fn().mockResolvedValue(true) };
   const modules = { countByCourse: vi.fn().mockResolvedValue(1), outline: vi.fn() };
   const progress = { countEnrollments: vi.fn() };
@@ -59,6 +65,11 @@ function build() {
     ),
   };
 
+  const certificates = {
+    assertUsable: vi.fn().mockResolvedValue(undefined),
+    issueMissing: vi.fn().mockResolvedValue(0),
+  };
+
   const service = new CoursesService(
     repository as unknown as CoursesRepository,
     access as unknown as CourseAccessService,
@@ -66,12 +77,53 @@ function build() {
     modules as unknown as CourseModulesService,
     progress as unknown as ProgressService,
     reviews as unknown as ReviewsService,
+    certificates as unknown as CertificatesService,
   );
 
-  return { service, repository, access, categories, modules, progress, reviews };
+  return { service, repository, access, categories, modules, progress, reviews, certificates };
 }
 
 describe('CoursesService', () => {
+  describe('certificado del curso', () => {
+    it('al asignar una plantilla comprueba que sea del docente y emite los certificados pendientes', async () => {
+      const { service, certificates, repository } = build();
+      certificates.issueMissing.mockResolvedValue(3);
+
+      const result = await service.update(teacher, 1, { certificateTemplateId: 12 });
+
+      expect(certificates.assertUsable).toHaveBeenCalledWith(teacher, 12);
+      expect(repository.update).toHaveBeenCalledWith(1, expect.objectContaining({ certificateTemplateId: 12 }), undefined);
+      expect(certificates.issueMissing).toHaveBeenCalledWith(1);
+      expect(result.certificatesIssued).toBe(3);
+    });
+
+    it('una plantilla ajena se rechaza y no cambia nada', async () => {
+      const { service, certificates, repository } = build();
+      certificates.assertUsable.mockRejectedValue(new ForbiddenException());
+
+      await expect(service.update(teacher, 1, { certificateTemplateId: 99 })).rejects.toBeInstanceOf(ForbiddenException);
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    it('null quita el certificado del curso, sin emitir ni comprobar nada', async () => {
+      const { service, certificates, repository } = build();
+
+      await service.update(teacher, 1, { certificateTemplateId: null });
+
+      expect(repository.update).toHaveBeenCalledWith(1, expect.objectContaining({ certificateTemplateId: null }), undefined);
+      expect(certificates.assertUsable).not.toHaveBeenCalled();
+      expect(certificates.issueMissing).not.toHaveBeenCalled();
+    });
+
+    it('si no se toca la plantilla, no se emite nada', async () => {
+      const { service, certificates } = build();
+
+      await service.update(teacher, 1, { title: 'Otro nombre' });
+
+      expect(certificates.issueMissing).not.toHaveBeenCalled();
+    });
+  });
+
   describe('catálogo público', () => {
     it('cada curso del listado trae su calificación promedio (null si no tiene reseñas)', async () => {
       const { service, repository, reviews } = build();
@@ -86,10 +138,18 @@ describe('CoursesService', () => {
 
     it('el detalle de un curso publicado también trae su calificación', async () => {
       const { service, repository, modules } = build();
-      repository.findPublishedById.mockResolvedValue({ id: 1, title: 'A' });
+      repository.findPublishedById.mockResolvedValue({
+        id: 1,
+        title: 'A',
+        instructors: [{ user: { id: 9, firstName: 'Luis', lastName: 'Gómez' } }],
+      });
       modules.outline.mockResolvedValue([]);
 
-      await expect(service.findPublished(1)).resolves.toMatchObject({ rating: { average: 4.5, count: 8 } });
+      await expect(service.findPublished(1)).resolves.toMatchObject({
+        rating: { average: 4.5, count: 8 },
+        // Los instructores salen solo con su nombre, sin el envoltorio de la tabla.
+        instructors: [{ id: 9, firstName: 'Luis', lastName: 'Gómez' }],
+      });
     });
   });
 
@@ -345,9 +405,30 @@ describe('CoursesService', () => {
       });
       expect(repository.delete).toHaveBeenCalledWith(1);
     });
+
+    it('solo el autor (o un admin) puede borrar; un instructor no', async () => {
+      const { service, access, progress, repository } = build();
+      progress.countEnrollments.mockResolvedValue(0);
+      access.assertIsOwner.mockRejectedValue(new ForbiddenException());
+
+      await expect(service.remove(teacher, 1)).rejects.toBeInstanceOf(ForbiddenException);
+      expect(repository.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe('listManaged', () => {
+    it('marca cuáles cursos son del propio docente y cuáles solo comparte como instructor', async () => {
+      const { service, repository } = build();
+      repository.listManaged.mockResolvedValue([
+        { id: 1, teacherId: 7 }, // autor
+        { id: 2, teacherId: 99 }, // instructor
+      ]);
+
+      const result = await service.listManaged(teacher);
+
+      expect(result.map((c) => c.isOwner)).toEqual([true, false]);
+    });
+
     it('el profesor ve solo sus cursos', async () => {
       const { service, repository } = build();
 

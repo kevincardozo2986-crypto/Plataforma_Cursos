@@ -1,0 +1,153 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <a class="back" routerLink="/teacher/quiz-attempts">← Volver a intentos</a>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando intento…</p></div>
+    } @else if (attempt(); as data) {
+      <header class="panel-card summary">
+        <div>
+          <h1>{{ data.student.firstName }} {{ data.student.lastName }}</h1>
+          <p class="meta panel-muted">
+            {{ data.student.email }} · {{ data.evaluation.title }} · {{ data.course.title }} ·
+            {{ data.createdAt | date: "d 'de' MMM y, HH:mm" }}
+          </p>
+        </div>
+
+        <div class="result">
+          <span class="state" [class.done]="data.status === 'GRADED'">
+            {{ data.status === 'GRADED' ? 'Calificado' : 'Por revisar' }}
+          </span>
+          <strong class="big" [class.fail]="data.status === 'GRADED' && !data.passed">
+            {{ data.score }}%
+          </strong>
+          <span class="panel-muted small">
+            {{ data.earnedPoints }} de {{ data.totalPoints }} puntos
+            @if (data.status === 'GRADED') {
+              · {{ data.passed ? 'Aprobó' : 'No aprobó' }}
+            } @else {
+              · provisional
+            }
+          </span>
+        </div>
+      </header>
+
+      <ol class="questions">
+        @for (question of data.questions; track question.questionId; let index = $index) {
+          <li class="panel-card question">
+            <div class="q-head">
+              <span class="q-num">{{ index + 1 }}</span>
+              <span class="type">{{ typeLabels[question.type] }}</span>
+              <span class="pts panel-muted">
+                @if (question.earned !== null) {
+                  {{ question.earned }} / {{ question.points }} pts
+                } @else {
+                  {{ question.points }} pts
+                }
+              </span>
+              @if (question.type !== 'ESSAY') {
+                <span class="mark" [class.ok]="question.correct" [class.bad]="!question.correct">
+                  {{ question.correct ? 'Correcta' : 'Incorrecta' }}
+                </span>
+              }
+            </div>
+
+            <p class="q-text">{{ question.text }}</p>
+
+            @if (question.type === 'ESSAY') {
+              @if (question.written?.trim()) {
+                <p class="label">Respuesta del estudiante</p>
+                <p class="answer">{{ question.written }}</p>
+
+                <div class="grade-row">
+                  <div class="panel-field points">
+                    <label [for]="'points-' + question.questionId"
+                      >Nota (0 a {{ question.points }})</label
+                    >
+                    <input
+                      [id]="'points-' + question.questionId"
+                      class="panel-input"
+                      inputmode="numeric"
+                      [value]="draft(question).points"
+                      [attr.aria-invalid]="invalid(question)"
+                      (input)="edit(question, 'points', $event)"
+                    />
+                    @if (invalid(question)) {
+                      <p class="panel-field-error">Entero entre 0 y {{ question.points }}.</p>
+                    }
+                  </div>
+
+                  <div class="panel-field comment">
+                    <label [for]="'comment-' + question.questionId">Comentario (opcional)</label>
+                    <textarea
+                      [id]="'comment-' + question.questionId"
+                      class="panel-textarea"
+                      rows="2"
+                      [value]="draft(question).comment"
+                      (input)="edit(question, 'comment', $event)"
+                    ></textarea>
+                  </div>
+                </div>
+              } @else {
+                <p class="panel-muted">No respondió esta pregunta (vale 0).</p>
+              }
+            } @else {
+              @if (question.written !== undefined) {
+                <p class="label">Escribió</p>
+                <p class="answer">{{ question.written || '—' }}</p>
+              } @else {
+                <p class="label">Eligió</p>
+                <p class="answer">
+                  {{ question.chosen?.length ? question.chosen?.join(' · ') : 'Nada' }}
+                </p>
+              }
+
+              @if (!question.correct && question.expected?.length) {
+                <p class="label">Respuesta correcta</p>
+                <p class="answer ok-text">{{ question.expected?.join(' · ') }}</p>
+              }
+            }
+          </li>
+        }
+      </ol>
+
+      @if (essays().length > 0) {
+        <form class="panel-card final" (ngSubmit)="save()">
+          <div class="panel-field">
+            <label for="feedback">Comentario general para el estudiante (opcional)</label>
+            <textarea
+              id="feedback"
+              class="panel-textarea"
+              rows="3"
+              [ngModel]="feedback()"
+              (ngModelChange)="feedback.set($event)"
+              name="feedback"
+            ></textarea>
+          </div>
+
+          <p class="panel-hint">
+            Puedes volver a guardar para corregir una nota. Cuando todas las abiertas tengan nota,
+            el intento queda calificado y el estudiante recibe un aviso.
+          </p>
+
+          <div>
+            <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : 'Guardar calificación' }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        <p class="panel-card panel-muted">
+          Este intento no tiene preguntas abiertas con respuesta: se calificó automáticamente.
+        </p>
+      }
+    }
+  </div>
+</section>

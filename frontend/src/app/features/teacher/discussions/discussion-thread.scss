@@ -1,0 +1,139 @@
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 860px;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--p-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--p-accent);
+}
+
+.root,
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top {
+  display: flex;
+  gap: 8px;
+}
+
+.kind,
+.state,
+.badge {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.kind {
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+}
+
+.kind.comment {
+  color: var(--p-muted);
+  background: var(--p-surface-2);
+}
+
+.state {
+  color: var(--p-warn);
+  background: var(--p-warn-soft);
+}
+
+.state.done,
+.badge {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+/* El texto es plano: se respetan los saltos de línea que escribió la persona. */
+.text {
+  margin: 0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.danger {
+  color: var(--p-danger);
+}
+
+.confirm-text {
+  color: var(--p-danger);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.replies-title {
+  margin: 28px 0 12px;
+  font-size: 1rem;
+}
+
+.replies {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Las respuestas del docente se distinguen con una franja de color. */
+.reply.staff {
+  border-left: 4px solid var(--p-ok);
+}
+
+.reply-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.when {
+  margin-left: auto;
+  font-size: 0.78rem;
+}
+
+.answer label {
+  font-size: 0.9rem;
+  font-weight: 650;
+}

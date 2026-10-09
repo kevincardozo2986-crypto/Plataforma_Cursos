@@ -1,0 +1,228 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">ESPACIO DOCENTE / ANUNCIOS</span>
+    <app-page-header
+      title="Anuncios"
+      subtitle="Comunica novedades a los estudiantes inscritos en tus cursos."
+    >
+      @if (!composing()) {
+        <button type="button" class="panel-btn panel-btn--primary" (click)="openComposer()">
+          <span aria-hidden="true">＋</span> Nuevo anuncio
+        </button>
+      }
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+    }
+
+    @if (composing()) {
+      <form class="panel-card composer" [formGroup]="composer" novalidate (ngSubmit)="publish()">
+        <h2>Nuevo anuncio</h2>
+
+        <div class="panel-field">
+          <label for="new-course">Curso</label>
+          <select
+            id="new-course"
+            class="panel-select"
+            [value]="composer.controls.courseId.value ?? ''"
+            (change)="setComposerCourse($event)"
+          >
+            <option value="">Elige un curso…</option>
+            @for (course of courses(); track course.id) {
+              <option
+                [value]="course.id"
+                [selected]="composer.controls.courseId.value === course.id"
+              >
+                {{ course.title }}
+              </option>
+            }
+          </select>
+          @if (composer.controls.courseId.touched && composer.controls.courseId.invalid) {
+            <p class="panel-field-error">Elige a qué curso va el anuncio.</p>
+          }
+        </div>
+
+        <div class="panel-field">
+          <label for="new-title">Título</label>
+          <input
+            id="new-title"
+            class="panel-input"
+            formControlName="title"
+            placeholder="Ej. Cambio de horario"
+          />
+          @if (composer.controls.title.touched && composer.controls.title.invalid) {
+            <p class="panel-field-error">Escribe un título (máximo 150 caracteres).</p>
+          }
+        </div>
+
+        <div class="panel-field">
+          <label for="new-body">Mensaje</label>
+          <textarea id="new-body" class="panel-textarea" rows="6" formControlName="body"></textarea>
+          <p class="panel-hint">Una línea en blanco separa los párrafos.</p>
+          @if (composer.controls.body.touched && composer.controls.body.invalid) {
+            <p class="panel-field-error">Escribe el mensaje.</p>
+          }
+        </div>
+
+        <label class="check">
+          <input type="checkbox" formControlName="notify" />
+          <span>Avisar a los estudiantes con una notificación</span>
+        </label>
+
+        <div class="buttons">
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="publishing()">
+            {{ publishing() ? 'Publicando…' : 'Publicar anuncio' }}
+          </button>
+          <button type="button" class="panel-btn panel-btn--ghost" (click)="closeComposer()">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="toolbar">
+      <div class="panel-field">
+        <label for="course-filter">Filtrar por curso</label>
+        <select id="course-filter" class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando anuncios…</p></div>
+    } @else if (items().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">✉</span>
+        <h2>Aún no hay anuncios</h2>
+        <p>Publica el primero para que tus estudiantes se enteren de las novedades.</p>
+      </div>
+    } @else {
+      <ul class="list">
+        @for (item of items(); track item.id) {
+          <li class="panel-card item" [class.busy]="busyId() === item.id">
+            @if (editingId() === item.id) {
+              <form [formGroup]="editor" novalidate (ngSubmit)="saveEdit(item)" class="edit">
+                <div class="panel-field">
+                  <label [for]="'edit-title-' + item.id">Título</label>
+                  <input
+                    [id]="'edit-title-' + item.id"
+                    class="panel-input"
+                    formControlName="title"
+                  />
+                </div>
+                <div class="panel-field">
+                  <label [for]="'edit-body-' + item.id">Mensaje</label>
+                  <textarea
+                    [id]="'edit-body-' + item.id"
+                    class="panel-textarea"
+                    rows="6"
+                    formControlName="body"
+                  ></textarea>
+                </div>
+                @if (editLosesFormat()) {
+                  <p class="panel-alert panel-alert--error">
+                    Este anuncio tiene formato (negritas, enlaces o listas). Al editarlo aquí se
+                    guarda como texto simple y ese formato se pierde.
+                  </p>
+                }
+                <div class="buttons">
+                  <button
+                    type="submit"
+                    class="panel-btn panel-btn--primary panel-btn--sm"
+                    [disabled]="saving()"
+                  >
+                    {{ saving() ? 'Guardando…' : 'Guardar' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    (click)="cancelEdit()"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <header>
+                <h3>{{ item.title }}</h3>
+                <p class="meta panel-muted">
+                  {{ item.course.title }} · {{ item.author.firstName }} {{ item.author.lastName }} ·
+                  {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }}
+                  @if (item.updatedAt !== item.createdAt) {
+                    · editado
+                  }
+                </p>
+              </header>
+
+              <div class="body" [innerHTML]="item.body"></div>
+
+              <div class="actions">
+                @if (confirmDeleteId() === item.id) {
+                  <span class="confirm-text">¿Eliminar este anuncio?</span>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--danger panel-btn--sm"
+                    [disabled]="busyId() === item.id"
+                    (click)="remove(item)"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    (click)="cancelDelete()"
+                  >
+                    Cancelar
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    (click)="edit(item)"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                    (click)="askDelete(item.id)"
+                  >
+                    Eliminar
+                  </button>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+
+      <div class="pager">
+        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasPrev()"
+          (click)="page(-1)"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasNext()"
+          (click)="page(1)"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+</section>

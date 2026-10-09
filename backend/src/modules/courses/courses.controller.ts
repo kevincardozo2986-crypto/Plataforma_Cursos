@@ -17,7 +17,9 @@ import { Role } from '../../generated/prisma/enums.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { CourseInstructorsService } from './course-instructors.service.js';
 import { CoursesService } from './courses.service.js';
+import { AddInstructorDto } from './dto/instructor.dto.js';
 import {
   CreateCourseDto,
   ListCoursesQueryDto,
@@ -27,7 +29,10 @@ import {
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly courses: CoursesService) {}
+  constructor(
+    private readonly courses: CoursesService,
+    private readonly instructors: CourseInstructorsService,
+  ) {}
 
   // --- Catálogo público (solo cursos publicados) ---
 
@@ -100,6 +105,7 @@ export class CoursesController {
     return this.courses.updateStatus(user, id, dto.status);
   }
 
+  /** Solo el autor del curso (o un admin) puede borrarlo. */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.ADMIN)
@@ -108,5 +114,42 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.courses.remove(user, id);
+  }
+
+  // --- Equipo del curso: autor e instructores ---
+
+  /** Autor e instructores. Lo ve quien gestiona el curso. */
+  @Get(':id/instructors')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  team(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.instructors.team(user, id);
+  }
+
+  /** Agrega a un docente como instructor, por su correo. Solo el autor o un admin. */
+  @Post(':id/instructors')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  addInstructor(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: AddInstructorDto,
+  ) {
+    return this.instructors.add(user, id, dto.email);
+  }
+
+  /** El autor (o un admin) quita a un instructor; un instructor puede salirse él mismo. */
+  @Delete(':id/instructors/:userId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  removeInstructor(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.instructors.remove(user, id, userId);
   }
 }

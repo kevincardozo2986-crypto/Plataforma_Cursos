@@ -84,6 +84,7 @@ export interface AdditionalValue {
   materials: string;
   requirements: string;
   prerequisiteIds: number[];
+  certificateTemplateId: number | null;
 }
 
 export function splitDuration(totalMinutes: number | null): {
@@ -112,5 +113,6 @@ export function toAdditionalUpdate(value: AdditionalValue): CourseUpdate {
     materials: value.materials.trim() || null,
     requirements: value.requirements.trim() || null,
     prerequisiteIds: value.prerequisiteIds,
+    certificateTemplateId: value.certificateTemplateId,
   };
 }

@@ -1,0 +1,142 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <a class="back" routerLink="/teacher/discussions">← Volver a discusiones</a>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando…</p></div>
+    } @else if (thread(); as root) {
+      <article class="panel-card root">
+        <div class="top">
+          <span class="kind" [class.comment]="root.kind === 'COMMENT'">
+            {{ root.kind === 'QUESTION' ? 'Pregunta' : 'Comentario de lección' }}
+          </span>
+          @if (root.kind === 'QUESTION') {
+            <span class="state" [class.done]="root.answered">
+              {{ root.answered ? 'Respondida' : 'Sin responder' }}
+            </span>
+          }
+        </div>
+
+        @if (root.title) {
+          <h1>{{ root.title }}</h1>
+        }
+
+        <p class="meta panel-muted">
+          {{ root.author.firstName }} {{ root.author.lastName }} · {{ root.course.title }}
+          @if (root.lesson) {
+            · {{ root.lesson.title }}
+          }
+          · {{ root.createdAt | date: "d 'de' MMM y, HH:mm" }}
+        </p>
+
+        <p class="text">{{ root.body }}</p>
+
+        <div class="actions">
+          @if (confirmDelete() === 'root') {
+            <span class="confirm-text">¿Eliminar esto y todas sus respuestas?</span>
+            <button
+              type="button"
+              class="panel-btn panel-btn--danger panel-btn--sm"
+              [disabled]="deleting()"
+              (click)="remove()"
+            >
+              Sí, eliminar
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              (click)="cancelDelete()"
+            >
+              Cancelar
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm danger"
+              (click)="askDelete('root')"
+            >
+              Eliminar
+            </button>
+          }
+        </div>
+      </article>
+
+      <h2 class="replies-title">
+        {{ root.replies.length }}
+        {{ root.replies.length === 1 ? 'respuesta' : 'respuestas' }}
+      </h2>
+
+      <ul class="replies">
+        @for (item of root.replies; track item.id) {
+          <li class="panel-card reply" [class.staff]="isStaff(item.author)">
+            <div class="reply-head">
+              <strong>{{ item.author.firstName }} {{ item.author.lastName }}</strong>
+              @if (isStaff(item.author)) {
+                <span class="badge">{{
+                  item.author.role === 'ADMIN' ? 'Administrador' : 'Docente'
+                }}</span>
+              }
+              <span class="panel-muted when">{{
+                item.createdAt | date: "d 'de' MMM y, HH:mm"
+              }}</span>
+            </div>
+
+            <p class="text">{{ item.body }}</p>
+
+            <div class="actions">
+              @if (confirmDelete() === item.id) {
+                <span class="confirm-text">¿Eliminar esta respuesta?</span>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--danger panel-btn--sm"
+                  [disabled]="deleting()"
+                  (click)="remove()"
+                >
+                  Sí, eliminar
+                </button>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm"
+                  (click)="cancelDelete()"
+                >
+                  Cancelar
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                  (click)="askDelete(item.id)"
+                >
+                  Eliminar
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+
+      <form class="panel-card answer" novalidate (ngSubmit)="send()">
+        <label for="reply">Tu respuesta</label>
+        <textarea
+          id="reply"
+          class="panel-textarea"
+          rows="4"
+          [formControl]="reply"
+          placeholder="Escribe una respuesta clara; le llegará una notificación al estudiante."
+        ></textarea>
+        @if (reply.touched && reply.invalid) {
+          <p class="panel-field-error">Escribe una respuesta (máximo 5000 caracteres).</p>
+        }
+        <div>
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="sending()">
+            {{ sending() ? 'Enviando…' : 'Responder' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

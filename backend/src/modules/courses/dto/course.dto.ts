@@ -146,6 +146,14 @@ export class UpdateCourseDto {
    * Cómo se libera el contenido a los inscritos: NONE (todo abierto), BY_DATE, AFTER_DAYS,
    * SEQUENTIAL o PREREQUISITES. Los ajustes de cada módulo se configuran en el módulo.
    */
+  /**
+   * Plantilla del certificado que se emite al completar el curso (una de las tuyas,
+   * `GET /certificate-templates`). `null` quita el certificado del curso.
+   */
+  @IsOptional()
+  @IsInt()
+  certificateTemplateId?: number | null;
+
   @IsOptional()
   @IsEnum(DripType, {
     message: `La liberación del contenido debe ser una de: ${Object.values(DripType).join(', ')}`,

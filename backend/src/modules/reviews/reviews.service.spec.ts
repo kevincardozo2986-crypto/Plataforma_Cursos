@@ -63,6 +63,15 @@ describe('ReviewsService', () => {
       );
     });
 
+    it('la reseña nueva le llega al autor del curso y a sus instructores', async () => {
+      const { service, access, notifications } = build();
+      access.assertCanView.mockResolvedValue({ ...published, instructorIds: [8, 9] });
+
+      await service.saveMine(student, 3, { rating: 4 });
+
+      expect(notifications.notify).toHaveBeenCalledWith([7, 8, 9], expect.anything(), 5);
+    });
+
     it('el comentario es opcional', async () => {
       const { service, repository } = build();
 

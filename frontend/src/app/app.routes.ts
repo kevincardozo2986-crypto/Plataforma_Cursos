@@ -41,6 +41,19 @@ export const routes: Routes = [
       },
 
       {
+        // Pública: el código del certificado se comprueba sin iniciar sesión.
+        path: 'verificar',
+        title: 'Verificar certificado',
+        loadComponent: () => import('./features/verify/verify-page').then((m) => m.VerifyPage),
+      },
+
+      {
+        path: 'verificar/:code',
+        title: 'Verificar certificado',
+        loadComponent: () => import('./features/verify/verify-page').then((m) => m.VerifyPage),
+      },
+
+      {
         path: 'teacher',
         canActivate: [roleGuard('TEACHER', 'ADMIN')],
         loadChildren: () =>

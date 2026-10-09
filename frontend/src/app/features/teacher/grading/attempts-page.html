@@ -1,0 +1,102 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">ESPACIO DOCENTE / CUESTIONARIOS</span>
+    <app-page-header
+      title="Intentos del cuestionario"
+      subtitle="Revisa las respuestas abiertas de tus estudiantes y ponles nota."
+    />
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Estado">
+        @for (entry of filters; track entry.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="filter() === entry.value"
+            [attr.aria-pressed]="filter() === entry.value"
+            (click)="setFilter(entry.value)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+
+      <div class="panel-field course">
+        <label for="course-filter">Curso</label>
+        <select id="course-filter" class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando intentos…</p></div>
+    } @else if (items().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">✓</span>
+        <h2>{{ filter() === 'PENDING_REVIEW' ? 'Todo revisado' : 'No hay intentos' }}</h2>
+        <p>
+          {{
+            filter() === 'PENDING_REVIEW'
+              ? 'No tienes quizzes esperando revisión.'
+              : 'Cuando tus estudiantes presenten un quiz, aparecerá aquí.'
+          }}
+        </p>
+      </div>
+    } @else {
+      <ul class="list">
+        @for (item of items(); track item.id) {
+          <li>
+            <a class="panel-card item" [routerLink]="['/teacher/quiz-attempts', item.id]">
+              <div class="main">
+                <strong class="title"
+                  >{{ item.student.firstName }} {{ item.student.lastName }}</strong
+                >
+                <p class="meta panel-muted">
+                  {{ item.evaluation.title }} · {{ item.course.title }} ·
+                  {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }}
+                </p>
+              </div>
+
+              <div class="side">
+                <span class="state" [class.done]="item.status === 'GRADED'">
+                  {{ item.status === 'GRADED' ? 'Calificado' : 'Por revisar' }}
+                </span>
+                <span class="score" [class.fail]="item.status === 'GRADED' && !item.passed">
+                  {{ item.score }}%{{ item.status === 'PENDING_REVIEW' ? ' (provisional)' : '' }}
+                </span>
+              </div>
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="pager">
+        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasPrev()"
+          (click)="page(-1)"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasNext()"
+          (click)="page(1)"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+</section>

@@ -8,10 +8,11 @@ const childPaths = (): string[] =>
   (TEACHER_ROUTES[0].children ?? []).map((route: Route) => route.path ?? '');
 
 describe('TEACHER_NAV', () => {
-  it('trae las 9 secciones pedidas', () => {
+  it('trae las secciones pedidas y el perfil', () => {
     expect(TEACHER_NAV.map((item) => item.label)).toEqual([
       'Inicio',
       'Cursos',
+      'Mi perfil',
       'Anuncios',
       'Intentos del cuestionario',
       'Discusiones',
@@ -58,12 +59,15 @@ describe('TEACHER_NAV', () => {
 
     expect(pending).not.toContain('dashboard');
     expect(pending).not.toContain('courses');
+    expect(pending).not.toContain('certificates');
+    expect(pending).not.toContain('profile');
+    expect(pending).not.toContain('announcements');
+    expect(pending).not.toContain('discussions');
+    expect(pending).not.toContain('quiz-attempts');
+    expect(pending).not.toContain('assignments');
     expect(pending).toEqual(
       expect.arrayContaining([
-        'announcements',
-        'quiz-attempts',
         'zoom/api',
-        'certificates',
         'analytics',
       ]),
     );

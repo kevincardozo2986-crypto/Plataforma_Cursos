@@ -1,0 +1,106 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">ESPACIO DOCENTE / DISCUSIONES</span>
+    <app-page-header
+      title="Discusiones"
+      subtitle="Preguntas y comentarios de tus estudiantes. Responde para resolver sus dudas."
+    />
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Qué mostrar">
+        @for (entry of views; track entry.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="view() === entry.value"
+            [attr.aria-pressed]="view() === entry.value"
+            (click)="setView(entry.value)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+
+      <div class="panel-field course">
+        <label for="course-filter">Curso</label>
+        <select id="course-filter" class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando discusiones…</p></div>
+    } @else if (items().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">💬</span>
+        <h2>{{ view() === 'PENDING' ? 'Todo al día' : 'No hay nada para mostrar' }}</h2>
+        <p>
+          {{
+            view() === 'PENDING'
+              ? 'No tienes preguntas sin responder.'
+              : 'Cuando tus estudiantes pregunten o comenten en una lección, aparecerá aquí.'
+          }}
+        </p>
+      </div>
+    } @else {
+      <ul class="list">
+        @for (item of items(); track item.id) {
+          <li>
+            <a class="panel-card item" [routerLink]="['/teacher/discussions', item.id]">
+              <div class="top">
+                <span class="kind" [class.comment]="item.kind === 'COMMENT'">
+                  {{ item.kind === 'QUESTION' ? 'Pregunta' : 'Comentario' }}
+                </span>
+                @if (item.kind === 'QUESTION') {
+                  <span class="state" [class.done]="item.answered">
+                    {{ item.answered ? 'Respondida' : 'Sin responder' }}
+                  </span>
+                }
+              </div>
+
+              <strong class="title">{{ headline(item) }}</strong>
+
+              <p class="meta panel-muted">
+                {{ item.author.firstName }} {{ item.author.lastName }} · {{ item.course.title }}
+                @if (item.lesson) {
+                  · {{ item.lesson.title }}
+                }
+                · {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }} ·
+                {{ item._count.replies }}
+                {{ item._count.replies === 1 ? 'respuesta' : 'respuestas' }}
+              </p>
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="pager">
+        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasPrev()"
+          (click)="page(-1)"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasNext()"
+          (click)="page(1)"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+</section>
