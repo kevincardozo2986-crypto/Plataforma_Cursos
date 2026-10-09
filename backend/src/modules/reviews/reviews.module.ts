@@ -12,5 +12,7 @@ import { ReviewsService } from './reviews.service.js';
   imports: [AuthModule, CourseAccessModule, ProgressModule, NotificationsModule],
   controllers: [ReviewsController],
   providers: [ReviewsService, ReviewsRepository],
+  // El catálogo de cursos muestra el promedio de cada curso a través de este servicio.
+  exports: [ReviewsService],
 })
 export class ReviewsModule {}

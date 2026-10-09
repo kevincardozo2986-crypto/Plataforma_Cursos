@@ -35,6 +35,19 @@ export class CourseModulesController {
     return this.modules.listByCourse(user, courseId);
   }
 
+  /**
+   * Qué módulos tiene abiertos quien consulta, según la liberación gradual del curso.
+   * Cada módulo: `locked`, y si está cerrado `reason` (DATE, DAYS, PREVIOUS, PREREQUISITES,
+   * NOT_ENROLLED), `unlocksAt` y `requiredModules`.
+   */
+  @Get('courses/:courseId/modules/availability')
+  availability(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('courseId', ParseIntPipe) courseId: number,
+  ) {
+    return this.modules.availability(user, courseId);
+  }
+
   @Post('courses/:courseId/modules')
   @Roles(Role.TEACHER, Role.ADMIN)
   create(

@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Role } from '../../generated/prisma/enums.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
+import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { ProgressService } from '../progress/progress.service.js';
 import type { QuestionDto } from './dto/evaluation.dto.js';
 import type { EvaluationsRepository } from './evaluations.repository.js';
@@ -56,6 +57,8 @@ function build(findOne?: unknown) {
   const repository = {
     findWithAnswers: vi.fn().mockResolvedValue(evaluation),
     findForView: vi.fn().mockResolvedValue(findOne),
+    findAttemptDetail: vi.fn(),
+    saveGrading: vi.fn().mockResolvedValue({}),
     createAttempt: vi.fn((data: unknown) => Promise.resolve({ id: 1, ...(data as object) })),
     create: vi.fn((_data: unknown, questions: unknown) => Promise.resolve({ id: 1, questions })),
   };
@@ -64,17 +67,20 @@ function build(findOne?: unknown) {
     courseIdOfModule: vi.fn().mockResolvedValue(10),
     assertCanView: vi.fn().mockResolvedValue({}),
     assertCanManage: vi.fn().mockResolvedValue({}),
+    assertContentAccess: vi.fn().mockResolvedValue(undefined),
     canManage: vi.fn().mockReturnValue(false),
   };
   const progress = { isEnrolled: vi.fn().mockResolvedValue(true) };
+  const notifications = { notify: vi.fn().mockResolvedValue(1) };
 
   const service = new EvaluationsService(
     repository as unknown as EvaluationsRepository,
     access as unknown as CourseAccessService,
     progress as unknown as ProgressService,
+    notifications as unknown as NotificationsService,
   );
 
-  return { service, repository, access, progress };
+  return { service, repository, access, progress, notifications };
 }
 
 /** Respuestas que aciertan las cuatro preguntas del ejemplo. */
@@ -199,6 +205,43 @@ describe('EvaluationsService', () => {
       const result = await service.findOne(teacher, 1);
 
       expect(result.questions[1].options).toHaveLength(1);
+    });
+  });
+
+  describe('gradeAttempt', () => {
+    const essay = (id: number, graded = false) => ({
+      questionId: id, text: `Pregunta ${id}`, type: 'ESSAY', points: 4, correct: null, earned: null, written: 'Mi respuesta', graded,
+    });
+    const attempt = (results: unknown[]) => ({
+      id: 9, status: 'PENDING_REVIEW', score: 0, passed: false, feedback: null, createdAt: new Date(), gradedAt: null,
+      user: { id: 5, firstName: 'Ana', lastName: 'Ruiz', email: 'a@x.com' },
+      evaluation: { id: 1, title: 'Quiz final', passingScore: 60, module: { courseId: 10, course: { title: 'Angular' } } },
+      results,
+    });
+
+    it('avisa al estudiante cuando ya no queda nada por calificar', async () => {
+      const { service, repository, notifications } = build();
+      repository.findAttemptDetail.mockResolvedValue(attempt([essay(1)]));
+
+      await service.gradeAttempt(teacher, 9, { grades: [{ questionId: 1, points: 4 }] });
+
+      expect(notifications.notify).toHaveBeenCalledWith([5], {
+        type: 'GRADED_QUIZ',
+        title: 'Revisaron tu quiz: 100 de 100',
+        message: '«Quiz final» en «Angular»',
+        courseId: 10,
+        refId: 1,
+      });
+    });
+
+    it('si aún quedan preguntas abiertas sin calificar, NO avisa todavía', async () => {
+      const { service, repository, notifications } = build();
+      repository.findAttemptDetail.mockResolvedValue(attempt([essay(1), essay(2)]));
+
+      await service.gradeAttempt(teacher, 9, { grades: [{ questionId: 1, points: 4 }] });
+
+      expect(repository.saveGrading).toHaveBeenCalledWith(9, expect.objectContaining({ status: 'PENDING_REVIEW' }));
+      expect(notifications.notify).not.toHaveBeenCalled();
     });
   });
 

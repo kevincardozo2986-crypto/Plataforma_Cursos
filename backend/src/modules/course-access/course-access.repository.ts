@@ -21,8 +21,84 @@ export class CourseAccessRepository {
         status: true,
         visibility: true,
         qaEnabled: true,
+        publicContent: true,
+        dripType: true,
       },
     });
+  }
+
+  /** Módulos de un curso con sus ajustes de liberación (solo lectura). */
+  async findDripModules(courseId: number) {
+    const modules = await this.prisma.courseModule.findMany({
+      where: { courseId },
+      orderBy: { position: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        position: true,
+        unlockAt: true,
+        unlockAfterDays: true,
+        requires: { select: { requiredModuleId: true } },
+      },
+    });
+
+    return modules.map(({ requires, ...module }) => ({
+      ...module,
+      requires: requires.map((r) => r.requiredModuleId),
+    }));
+  }
+
+  findEnrollmentBasics(userId: number, courseId: number) {
+    return this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+      select: { id: true, status: true, enrolledAt: true },
+    });
+  }
+
+  /** Ids de los módulos del curso con todas sus lecciones terminadas (uno sin lecciones cuenta como terminado). */
+  async completedModuleIds(enrollmentId: number, courseId: number): Promise<number[]> {
+    const modules = await this.prisma.courseModule.findMany({
+      where: { courseId },
+      select: {
+        id: true,
+        lessons: {
+          select: {
+            progress: { where: { enrollmentId }, select: { id: true } },
+          },
+        },
+      },
+    });
+
+    return modules
+      .filter((m) => m.lessons.every((lesson) => lesson.progress.length > 0))
+      .map((m) => m.id);
+  }
+
+  async moduleIdOfLesson(lessonId: number): Promise<number | null> {
+    const found = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { moduleId: true },
+    });
+
+    return found?.moduleId ?? null;
+  }
+
+  async moduleIdOfEvaluation(evaluationId: number): Promise<number | null> {
+    const found = await this.prisma.evaluation.findUnique({
+      where: { id: evaluationId },
+      select: { moduleId: true },
+    });
+
+    return found?.moduleId ?? null;
+  }
+
+  async moduleIdOfAssignment(assignmentId: number): Promise<number | null> {
+    const found = await this.prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      select: { moduleId: true },
+    });
+
+    return found?.moduleId ?? null;
   }
 
   /** Condiciones para inscribirse en un curso (solo lectura). */

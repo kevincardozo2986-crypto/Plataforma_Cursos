@@ -124,6 +124,9 @@ export class ProgressService {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     const enrollment = await this.getActiveEnrollment(user.id, courseId);
 
+    // No se puede dar por vista una lección de un módulo que todavía está cerrado.
+    await this.access.assertContentAccess(user, { lessonId });
+
     await this.repository.markLessonDone(enrollment.id, lessonId);
 
     const progress = await this.computeProgress(enrollment.id, courseId);

@@ -15,6 +15,7 @@ export class LessonsService {
   async listByModule(user: AuthenticatedUser, moduleId: number) {
     const courseId = await this.access.courseIdOfModule(moduleId);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { moduleId });
 
     return this.repository.findByModule(moduleId);
   }
@@ -22,6 +23,7 @@ export class LessonsService {
   async findOne(user: AuthenticatedUser, id: number) {
     const courseId = await this.access.courseIdOfLesson(id);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { lessonId: id });
 
     const lesson = await this.repository.findByIdWithResources(id);
 

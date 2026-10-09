@@ -24,6 +24,7 @@ function build() {
       total: 1,
     }),
     ratingCounts: vi.fn().mockResolvedValue([{ rating: 5, count: 3 }, { rating: 4, count: 1 }]),
+    averagesOf: vi.fn().mockResolvedValue([]),
     findForTeacher: vi.fn().mockResolvedValue({
       items: [{ id: 1, rating: 4, user: { id: 5, firstName: 'Ana', lastName: 'Ruiz' }, course: { id: 3, title: 'Angular' } }],
       total: 1,
@@ -133,6 +134,25 @@ describe('ReviewsService', () => {
         await expect(service.listPublic(3, {})).rejects.toBeInstanceOf(NotFoundException);
         await expect(service.summary(3)).rejects.toBeInstanceOf(NotFoundException);
       }
+    });
+  });
+
+  describe('ratingsOf (para el catálogo)', () => {
+    it('devuelve promedio y cantidad por curso, y null para los que no tienen reseñas', async () => {
+      const { service, repository } = build();
+      repository.averagesOf.mockResolvedValue([{ courseId: 3, average: 4.333, count: 6 }]);
+
+      const result = await service.ratingsOf([3, 8]);
+
+      expect(result.get(3)).toEqual({ average: 4.3, count: 6 });
+      expect(result.get(8)).toEqual({ average: null, count: 0 });
+    });
+
+    it('sin cursos no consulta la base', async () => {
+      const { service, repository } = build();
+
+      expect((await service.ratingsOf([])).size).toBe(0);
+      expect(repository.averagesOf).not.toHaveBeenCalled();
     });
   });
 

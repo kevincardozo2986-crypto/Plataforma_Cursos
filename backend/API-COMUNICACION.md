@@ -61,6 +61,8 @@ El backend no manda enlaces: con `type`, `courseId` y `refId` el frontend arma l
 | `NEW_QUESTION` | Un alumno hace una pregunta (le llega al docente del curso) | id de la pregunta |
 | `NEW_REPLY` | Alguien responde tu pregunta o comentario | id de la pregunta o comentario (el hilo) |
 | `NEW_REVIEW` | Un alumno deja una reseña en tu curso (solo la primera vez, no al editarla) | id de la reseña |
+| `GRADED_ASSIGNMENT` | El docente califica (o corrige la nota de) tu tarea. El título trae la nota: "Calificaron tu tarea: 80 de 100" | id de la **tarea** |
+| `GRADED_QUIZ` | El docente termina de revisar las preguntas abiertas de tu quiz. No avisa mientras quede alguna pendiente | id del **quiz** |
 
 ## 3. Discusiones: preguntas y respuestas, y comentarios de lección
 
@@ -129,6 +131,9 @@ Solo existen para cursos **publicados y no privados**; para cualquier otro, `404
 ```
 
 - `average` tiene un decimal y es `null` si todavía no hay reseñas (no mostrar "0 estrellas").
+- **Catálogo:** el listado público `GET /courses` y el detalle `GET /courses/:id` ya traen en cada curso
+  `rating: { "average": 4.5, "count": 8 }` (`average: null` y `count: 0` si no tiene reseñas), para pintar las estrellas
+  en las tarjetas sin pedir el resumen curso por curso.
 - Por privacidad el público ve `author` como **nombre + inicial del apellido** ("Ana R."), nunca el apellido completo ni el correo.
 
 ### Estudiante inscrito

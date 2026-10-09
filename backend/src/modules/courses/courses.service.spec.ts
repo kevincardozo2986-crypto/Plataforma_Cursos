@@ -14,6 +14,7 @@ import type { CategoriesService } from '../categories/categories.service.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
 import type { CourseModulesService } from '../course-modules/course-modules.service.js';
 import type { ProgressService } from '../progress/progress.service.js';
+import type { ReviewsService } from '../reviews/reviews.service.js';
 import type { CoursesRepository } from './courses.repository.js';
 import { CoursesService, DRAFT_TITLE } from './courses.service.js';
 
@@ -36,6 +37,8 @@ function build() {
     slugExists: vi.fn().mockResolvedValue(false),
     slugOwner: vi.fn().mockResolvedValue(null),
     findUntouchedDraft: vi.fn().mockResolvedValue(null),
+    listPublished: vi.fn(),
+    findPublishedById: vi.fn(),
     countByIds: vi.fn(),
     findById: vi.fn().mockResolvedValue(course()),
     update: vi.fn(
@@ -50,6 +53,11 @@ function build() {
   const categories = { exists: vi.fn().mockResolvedValue(true) };
   const modules = { countByCourse: vi.fn().mockResolvedValue(1), outline: vi.fn() };
   const progress = { countEnrollments: vi.fn() };
+  const reviews = {
+    ratingsOf: vi.fn((ids: number[]) =>
+      Promise.resolve(new Map(ids.map((id) => [id, { average: id === 1 ? 4.5 : null, count: id === 1 ? 8 : 0 }]))),
+    ),
+  };
 
   const service = new CoursesService(
     repository as unknown as CoursesRepository,
@@ -57,12 +65,34 @@ function build() {
     categories as unknown as CategoriesService,
     modules as unknown as CourseModulesService,
     progress as unknown as ProgressService,
+    reviews as unknown as ReviewsService,
   );
 
-  return { service, repository, access, categories, modules, progress };
+  return { service, repository, access, categories, modules, progress, reviews };
 }
 
 describe('CoursesService', () => {
+  describe('catálogo público', () => {
+    it('cada curso del listado trae su calificación promedio (null si no tiene reseñas)', async () => {
+      const { service, repository, reviews } = build();
+      repository.listPublished.mockResolvedValue({ data: [{ id: 1, title: 'A' }, { id: 2, title: 'B' }], total: 2 });
+
+      const result = await service.listPublished({});
+
+      expect(reviews.ratingsOf).toHaveBeenCalledWith([1, 2]);
+      expect(result.data[0]).toMatchObject({ id: 1, rating: { average: 4.5, count: 8 } });
+      expect(result.data[1]).toMatchObject({ id: 2, rating: { average: null, count: 0 } });
+    });
+
+    it('el detalle de un curso publicado también trae su calificación', async () => {
+      const { service, repository, modules } = build();
+      repository.findPublishedById.mockResolvedValue({ id: 1, title: 'A' });
+      modules.outline.mockResolvedValue([]);
+
+      await expect(service.findPublished(1)).resolves.toMatchObject({ rating: { average: 4.5, count: 8 } });
+    });
+  });
+
   describe('create', () => {
     it('genera el slug desde el título y asigna al profesor como dueño', async () => {
       const { service, repository } = build();

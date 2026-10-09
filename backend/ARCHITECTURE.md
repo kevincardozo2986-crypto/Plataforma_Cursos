@@ -43,6 +43,13 @@ dashboard ──► course-access   (lee cursos, inscripciones y evaluaciones; s
 todos ──► auth (guards)
 ```
 
+## Acceso al contenido
+
+Además de "quién gestiona un curso", `course-access` decide **quién puede abrir su contenido**
+(`assertContentAccess`): el docente y los admin siempre; un estudiante inscrito salvo que el módulo siga cerrado por la
+liberación gradual (`drip.ts`, lógica pura); y sin inscripción solo si el curso es de contenido público y no usa liberación
+gradual. Lecciones, recursos, evaluaciones, tareas y progreso lo llaman antes de entregar contenido. Detalles en `API-CONTENIDO.md`.
+
 ## Permisos
 
 Centralizados en `course-access/course-access.service.ts`:

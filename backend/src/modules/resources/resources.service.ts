@@ -15,6 +15,7 @@ export class ResourcesService {
   async listByLesson(user: AuthenticatedUser, lessonId: number) {
     const courseId = await this.access.courseIdOfLesson(lessonId);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { lessonId });
 
     return this.repository.findByLesson(lessonId);
   }

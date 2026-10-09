@@ -54,6 +54,22 @@ export class ReviewsRepository {
     return { items, total };
   }
 
+  /** Promedio y cantidad de reseñas de varios cursos a la vez (para el catálogo). */
+  async averagesOf(courseIds: number[]) {
+    const rows = await this.prisma.review.groupBy({
+      by: ['courseId'],
+      where: { courseId: { in: courseIds } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+
+    return rows.map((row) => ({
+      courseId: row.courseId,
+      average: row._avg.rating ?? 0,
+      count: row._count._all,
+    }));
+  }
+
   async ratingCounts(courseId: number): Promise<RatingCount[]> {
     const rows = await this.prisma.review.groupBy({
       by: ['rating'],

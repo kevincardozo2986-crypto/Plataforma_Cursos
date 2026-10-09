@@ -40,6 +40,7 @@ function build() {
   const access = {
     getEnrollmentRules: vi.fn(),
     courseIdOfLesson: vi.fn().mockResolvedValue(10),
+    assertContentAccess: vi.fn().mockResolvedValue(undefined),
   };
   const lessons = { idsByCourse: vi.fn() };
 

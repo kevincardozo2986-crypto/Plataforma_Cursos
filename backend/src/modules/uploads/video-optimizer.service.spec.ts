@@ -126,9 +126,15 @@ describe('VideoOptimizerService', () => {
     const service = new VideoOptimizerService(runner);
 
     service.enqueue(original(ID, 'mov', 1000));
-    await new Promise((resolve) => setTimeout(resolve, 1100)); // el avance se guarda como mucho una vez por segundo
 
-    await expect(service.statusOf(`${ID}.mp4`)).resolves.toEqual({ status: 'processing', percent: 40 });
+    // El avance se guarda como mucho una vez por segundo: se espera a que aparezca en vez de
+    // dormir un tiempo fijo, que con el equipo ocupado a veces no alcanza.
+    await vi.waitFor(
+      async () => {
+        await expect(service.statusOf(`${ID}.mp4`)).resolves.toEqual({ status: 'processing', percent: 40 });
+      },
+      { timeout: 10_000, interval: 100 },
+    );
 
     release();
     await service.idle();

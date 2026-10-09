@@ -8,6 +8,7 @@ import {
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { ProgressService } from '../progress/progress.service.js';
 import { UploadsService } from '../uploads/uploads.service.js';
 import {
@@ -37,11 +38,13 @@ export class AssignmentsService {
     private readonly access: CourseAccessService,
     private readonly progress: ProgressService,
     private readonly uploads: UploadsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listByModule(user: AuthenticatedUser, moduleId: number) {
     const courseId = await this.access.courseIdOfModule(moduleId);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { moduleId });
 
     const assignments = await this.repository.findByModule(moduleId, user.id);
 
@@ -55,6 +58,7 @@ export class AssignmentsService {
   async findOne(user: AuthenticatedUser, id: number) {
     const courseId = await this.access.courseIdOfAssignment(id);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { assignmentId: id });
 
     return this.getOrThrow(id);
   }
@@ -127,6 +131,7 @@ export class AssignmentsService {
   ) {
     const courseId = await this.access.courseIdOfAssignment(assignmentId);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { assignmentId });
 
     if (!(await this.progress.isEnrolled(user.id, courseId))) {
       throw new ForbiddenException(
@@ -235,6 +240,15 @@ export class AssignmentsService {
       score: dto.score,
       feedback: dto.feedback,
       gradedById: user.id,
+    });
+
+    // El estudiante se entera de su nota (también si el docente la corrige después).
+    await this.notifications.notify([detail.user.id], {
+      type: 'GRADED_ASSIGNMENT',
+      title: `Calificaron tu tarea: ${dto.score} de ${detail.assignment.maxScore}`,
+      message: `«${detail.assignment.title}» en «${detail.assignment.module.course.title}»`,
+      courseId: detail.assignment.module.courseId,
+      refId: detail.assignment.id,
     });
 
     return this.getSubmission(user, id);

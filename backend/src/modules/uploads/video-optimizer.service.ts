@@ -38,6 +38,8 @@ const PENDING_ORIGINAL = /^([a-f0-9]{32})\.(mp4|mov|webm|ogv|ogg)$/;
 export class VideoOptimizerService implements OnModuleInit {
   private readonly logger = new Logger(VideoOptimizerService.name);
   private chain: Promise<void> = Promise.resolve();
+  /** Última operación pendiente sobre el estado de cada video (ver `inOrder`). */
+  private readonly stateOps = new Map<string, Promise<void>>();
 
   constructor(private readonly runner: FfmpegRunner) {}
 
@@ -174,13 +176,34 @@ export class VideoOptimizerService implements OnModuleInit {
     return join(stateDir(), `${id}.json`);
   }
 
-  private async writeState(id: string, state: StoredState): Promise<void> {
-    try {
-      await mkdir(stateDir(), { recursive: true });
-      await writeFile(this.statePath(id), JSON.stringify(state));
-    } catch {
-      /* El avance es informativo: no debe romper la conversión. */
-    }
+  private writeState(id: string, state: StoredState): Promise<void> {
+    return this.inOrder(id, async () => {
+      try {
+        await mkdir(stateDir(), { recursive: true });
+        await writeFile(this.statePath(id), JSON.stringify(state));
+      } catch {
+        /* El avance es informativo: no debe romper la conversión. */
+      }
+    });
+  }
+
+  /**
+   * Las operaciones sobre el estado de un mismo video se ejecutan una tras otra, en el orden
+   * en que se pidieron. Sin esto, dos escrituras casi simultáneas (el "0 %" inicial y el primer
+   * avance) podían terminar al revés y dejar el estado viejo, o una escritura tardía podía
+   * recrear el archivo justo después de borrarlo al terminar.
+   */
+  private inOrder(id: string, operation: () => Promise<void>): Promise<void> {
+    const next = (this.stateOps.get(id) ?? Promise.resolve()).then(operation);
+
+    this.stateOps.set(id, next);
+    void next.finally(() => {
+      if (this.stateOps.get(id) === next) {
+        this.stateOps.delete(id);
+      }
+    });
+
+    return next;
   }
 
   private async readState(id: string): Promise<StoredState | null> {
@@ -191,7 +214,7 @@ export class VideoOptimizerService implements OnModuleInit {
     }
   }
 
-  private async clearState(id: string): Promise<void> {
-    await rm(this.statePath(id), { force: true });
+  private clearState(id: string): Promise<void> {
+    return this.inOrder(id, () => rm(this.statePath(id), { force: true }));
   }
 }

@@ -18,6 +18,7 @@ import { CategoriesService } from '../categories/categories.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { CourseModulesService } from '../course-modules/course-modules.service.js';
 import { ProgressService } from '../progress/progress.service.js';
+import { ReviewsService } from '../reviews/reviews.service.js';
 import { CoursesRepository } from './courses.repository.js';
 import {
   CreateCourseDto,
@@ -38,6 +39,7 @@ export class CoursesService {
     private readonly categories: CategoriesService,
     private readonly modules: CourseModulesService,
     private readonly progress: ProgressService,
+    private readonly reviews: ReviewsService,
   ) {}
 
   async listPublished(query: ListCoursesQueryDto) {
@@ -54,7 +56,15 @@ export class CoursesService {
       limit,
     );
 
-    return { data, total, page, limit };
+    // Cada curso del catálogo trae su calificación promedio (null si aún no tiene reseñas).
+    const ratings = await this.reviews.ratingsOf(data.map((course) => course.id));
+
+    return {
+      data: data.map((course) => ({ ...course, rating: ratings.get(course.id) })),
+      total,
+      page,
+      limit,
+    };
   }
 
   async findPublished(id: number) {
@@ -64,7 +74,13 @@ export class CoursesService {
       throw new NotFoundException('El curso no existe');
     }
 
-    return { ...course, modules: await this.modules.outline(id) };
+    const ratings = await this.reviews.ratingsOf([id]);
+
+    return {
+      ...course,
+      rating: ratings.get(id),
+      modules: await this.modules.outline(id),
+    };
   }
 
   listManaged(user: AuthenticatedUser) {
@@ -159,6 +175,7 @@ export class CoursesService {
         visibility: dto.visibility ?? undefined,
         publicContent: dto.publicContent ?? undefined,
         qaEnabled: dto.qaEnabled ?? undefined,
+        dripType: dto.dripType ?? undefined,
         // Estos sí: null los borra.
         imageUrl: dto.imageUrl,
         introVideoUrl: dto.introVideoUrl,

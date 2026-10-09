@@ -14,7 +14,11 @@ import { CourseAccessService } from '../course-access/course-access.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ProgressService } from '../progress/progress.service.js';
 import { ListReviewsQueryDto, SaveReviewDto } from './dto/review.dto.js';
-import { publicName, summarizeRatings } from './reviews-calc.js';
+import {
+  publicName,
+  summarizeRatings,
+  weightedAverage,
+} from './reviews-calc.js';
 import { ReviewsRepository } from './reviews.repository.js';
 
 @Injectable()
@@ -52,6 +56,32 @@ export class ReviewsService {
     await this.assertPublic(courseId);
 
     return summarizeRatings(await this.repository.ratingCounts(courseId));
+  }
+
+  /**
+   * Para otros módulos (catálogo de cursos): promedio y cantidad de reseñas de varios cursos.
+   * Un curso sin reseñas trae `{ average: null, count: 0 }`.
+   */
+  async ratingsOf(
+    courseIds: number[],
+  ): Promise<Map<number, { average: number | null; count: number }>> {
+    const rows =
+      courseIds.length === 0 ? [] : await this.repository.averagesOf(courseIds);
+    const byCourse = new Map(rows.map((row) => [row.courseId, row]));
+
+    return new Map(
+      courseIds.map((id) => {
+        const row = byCourse.get(id);
+
+        return [
+          id,
+          {
+            average: row ? weightedAverage([row]) : null,
+            count: row?.count ?? 0,
+          },
+        ];
+      }),
+    );
   }
 
   // --- Estudiante ---

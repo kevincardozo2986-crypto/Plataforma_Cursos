@@ -25,6 +25,7 @@ import {
   UpdateEvaluationDto,
 } from './dto/evaluation.dto.js';
 import { EvaluationsRepository } from './evaluations.repository.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import {
   type GivenAnswer,
   normalizeText,
@@ -39,6 +40,7 @@ export class EvaluationsService {
     private readonly repository: EvaluationsRepository,
     private readonly access: CourseAccessService,
     private readonly progress: ProgressService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listByModule(user: AuthenticatedUser, moduleId: number) {
@@ -52,6 +54,7 @@ export class EvaluationsService {
   async findOne(user: AuthenticatedUser, id: number) {
     const courseId = await this.access.courseIdOfEvaluation(id);
     const course = await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { evaluationId: id });
     const reveal = this.access.canManage(user, course);
 
     const evaluation = await this.repository.findForView(id, reveal);
@@ -124,6 +127,7 @@ export class EvaluationsService {
   ) {
     const courseId = await this.access.courseIdOfEvaluation(evaluationId);
     await this.access.assertCanView(user, courseId);
+    await this.access.assertContentAccess(user, { evaluationId });
 
     if (!(await this.progress.isEnrolled(user.id, courseId))) {
       throw new ForbiddenException(
@@ -260,6 +264,17 @@ export class EvaluationsService {
       gradedAt: summary.pending ? null : new Date(),
       gradedById: user.id,
     });
+
+    // Se avisa cuando ya no queda nada por calificar, no a cada pregunta que se va revisando.
+    if (!summary.pending) {
+      await this.notifications.notify([attempt.user.id], {
+        type: 'GRADED_QUIZ',
+        title: `Revisaron tu quiz: ${summary.score} de 100`,
+        message: `«${attempt.evaluation.title}» en «${attempt.evaluation.module.course.title}»`,
+        courseId: attempt.evaluation.module.courseId,
+        refId: attempt.evaluation.id,
+      });
+    }
 
     return this.getAttempt(user, id);
   }

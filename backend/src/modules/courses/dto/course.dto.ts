@@ -23,6 +23,7 @@ import {
   CourseLevel,
   CourseStatus,
   CourseVisibility,
+  DripType,
 } from '../../../generated/prisma/enums.js';
 
 /** Dirección del curso: minúsculas, números y guiones; sin guiones al borde ni dobles. */
@@ -140,6 +141,16 @@ export class UpdateCourseDto {
   @IsOptional()
   @IsBoolean()
   qaEnabled?: boolean;
+
+  /**
+   * Cómo se libera el contenido a los inscritos: NONE (todo abierto), BY_DATE, AFTER_DAYS,
+   * SEQUENTIAL o PREREQUISITES. Los ajustes de cada módulo se configuran en el módulo.
+   */
+  @IsOptional()
+  @IsEnum(DripType, {
+    message: `La liberación del contenido debe ser una de: ${Object.values(DripType).join(', ')}`,
+  })
+  dripType?: DripType;
 
   // --- Resumen del curso ---
 

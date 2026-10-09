@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
+import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { ProgressService } from '../progress/progress.service.js';
 import type { UploadsService } from '../uploads/uploads.service.js';
 import type { AssignmentsRepository } from './assignments.repository.js';
@@ -46,6 +47,7 @@ function build() {
     courseIdOfModule: vi.fn().mockResolvedValue(10),
     assertCanView: vi.fn().mockResolvedValue({}),
     assertCanManage: vi.fn().mockResolvedValue({}),
+    assertContentAccess: vi.fn().mockResolvedValue(undefined),
   };
   const progress = { isEnrolled: vi.fn().mockResolvedValue(true) };
   const uploads = {
@@ -54,14 +56,17 @@ function build() {
     removePrivate: vi.fn().mockResolvedValue(undefined),
   };
 
+  const notifications = { notify: vi.fn().mockResolvedValue(1) };
+
   const service = new AssignmentsService(
     repository as unknown as AssignmentsRepository,
     access as unknown as CourseAccessService,
     progress as unknown as ProgressService,
     uploads as unknown as UploadsService,
+    notifications as unknown as NotificationsService,
   );
 
-  return { service, repository, access, progress, uploads };
+  return { service, repository, access, progress, uploads, notifications };
 }
 
 describe('AssignmentsService', () => {
@@ -182,6 +187,24 @@ describe('AssignmentsService', () => {
       await service.gradeSubmission(teacher, 9, { score: 45, feedback: 'Bien' });
 
       expect(repository.saveGrade).toHaveBeenCalledWith(9, { score: 45, feedback: 'Bien', gradedById: 7 });
+    });
+
+    it('avisa al estudiante de su nota, y no avisa si la nota es inválida', async () => {
+      const { service, repository, notifications } = build();
+      repository.findDetail.mockResolvedValue(detail);
+
+      await expect(service.gradeSubmission(teacher, 9, { score: 99 })).rejects.toBeInstanceOf(BadRequestException);
+      expect(notifications.notify).not.toHaveBeenCalled();
+
+      await service.gradeSubmission(teacher, 9, { score: 45 });
+
+      expect(notifications.notify).toHaveBeenCalledWith([5], {
+        type: 'GRADED_ASSIGNMENT',
+        title: 'Calificaron tu tarea: 45 de 50',
+        message: '«Tarea 1» en «Curso»',
+        courseId: 10,
+        refId: 1,
+      });
     });
 
     it('un docente que no gestiona el curso no puede calificar', async () => {

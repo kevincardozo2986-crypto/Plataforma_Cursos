@@ -5,6 +5,7 @@ import {
   CourseLevel,
   CourseStatus,
   CourseVisibility,
+  DripType,
 } from '../../generated/prisma/enums.js';
 
 const teacherSelect = { id: true, firstName: true, lastName: true } as const;
@@ -45,6 +46,7 @@ export interface CourseData {
   maxStudents?: number | null;
   publicContent?: boolean;
   qaEnabled?: boolean;
+  dripType?: DripType;
   whatYouWillLearn?: string | null;
   audience?: string | null;
   durationMinutes?: number | null;
