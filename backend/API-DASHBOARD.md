@@ -25,11 +25,13 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
   },
   "quizzes": { "attempts": 120, "averageScore": 74, "passRate": 81, "pendingReview": 5 },
   "assignments": { "pendingGrading": 7 },
+  "rating": { "average": 4.3, "count": 25 },
   "bucket": "day",
   "series": [ { "date": "2026-09-06", "enrollments": 2, "completions": 0 } ],
   "courseBreakdown": [
     { "id": 3, "title": "Curso de Angular", "status": "PUBLISHED",
-      "enrolled": 40, "completed": 12, "cancelled": 2, "completionRate": 32, "averageScore": 78 }
+      "enrolled": 40, "completed": 12, "cancelled": 2, "completionRate": 32, "averageScore": 78,
+      "rating": { "average": 4.5, "count": 8 } }
   ]
 }
 ```
@@ -50,6 +52,9 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
   (es el número que va en un aviso "Tienes 5 por revisar", que lleva a la bandeja `GET /evaluation-attempts?status=PENDING_REVIEW`).
 - **`assignments.pendingGrading`:** entregas de tareas esperando nota, sin límite de fecha. Junto con `quizzes.pendingReview`
   forma el aviso unificado "Tienes N por revisar" (ver `API-TAREAS.md` y `API-EVALUACIONES.md`).
+- **`rating`:** calificación promedio (1 a 5, un decimal) de las **reseñas del periodo** y cuántas son. Con varios cursos es un
+  promedio **ponderado** por cantidad de reseñas (un curso con 9 reseñas pesa más que uno con 1). `average` es `null` si no
+  hay reseñas. En `courseBreakdown[].rating` viene el de cada curso.
 - **`series` (para la gráfica):** inscripciones y finalizaciones por fecha.
   - `bucket` es `day` (`date: "2026-10-06"`) en `7d`, `30d` y `90d`, y `month` (`date: "2026-10"`) en `1y` y `all`.
   - Los días o meses sin movimiento vienen con ceros, así que se puede graficar directo sin rellenar huecos.
@@ -58,5 +63,5 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
 
 ## Todavía no disponible
 
-Las **ganancias** y la **calificación promedio** (reseñas) no están aquí porque dependen de los módulos de pagos y de
-reseñas, que aún no existen. Cuando se construyan se agregan `earnings` y `rating` a esta misma respuesta.
+Las **ganancias** no están aquí porque dependen del módulo de pagos, que aún no existe. Cuando se construya se agrega
+`earnings` a esta misma respuesta.

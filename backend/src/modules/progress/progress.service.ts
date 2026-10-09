@@ -99,6 +99,16 @@ export class ProgressService {
     );
   }
 
+  /** Para otros módulos (anuncios): estudiantes con inscripción vigente en el curso. */
+  async enrolledUserIds(courseId: number): Promise<number[]> {
+    return this.repository.enrolledUserIds(courseId);
+  }
+
+  /** Para otros módulos (anuncios, discusiones): cursos en los que el usuario está inscrito. */
+  async enrolledCourseIds(userId: number): Promise<number[]> {
+    return this.repository.enrolledCourseIds(userId);
+  }
+
   // --- Progreso ---
 
   async courseProgress(user: AuthenticatedUser, courseId: number) {

@@ -13,6 +13,7 @@ import {
   sinceOf,
 } from './dashboard-calc.js';
 import { DashboardRepository, type Scope } from './dashboard.repository.js';
+import { weightedAverage } from '../reviews/reviews-calc.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -59,6 +60,7 @@ export class DashboardService {
       scores,
       pendingReview,
       pendingSubmissions,
+      ratings,
     ] = await Promise.all([
       this.repository.courseCountsByStatus(scope),
       this.repository.findCourses(scope),
@@ -72,6 +74,7 @@ export class DashboardService {
       this.repository.averageScoreByCourse(scope, since),
       this.repository.countPendingReviews(scope),
       this.repository.countPendingSubmissions(scope),
+      this.repository.ratingByCourse(scope, since),
     ]);
 
     const count = (status: string) => enrollmentCounts.get(status) ?? 0;
@@ -81,6 +84,7 @@ export class DashboardService {
     const enrolled = active + completed + cancelled;
 
     const scoreOf = new Map(scores.map((s) => [s.courseId, s.average]));
+    const ratingOf = new Map(ratings.map((r) => [r.courseId, r]));
 
     return {
       period,
@@ -113,6 +117,11 @@ export class DashboardService {
         // Entregas esperando nota, sin límite de fecha.
         pendingGrading: pendingSubmissions,
       },
+      // Calificación promedio (1 a 5) de las reseñas del periodo; null si no hay ninguna.
+      rating: {
+        average: weightedAverage(ratings),
+        count: ratings.reduce((total, r) => total + r.count, 0),
+      },
       bucket,
       series: fillSeries(
         mergeSeries(enrolledSeries, completedSeries, bucket),
@@ -141,6 +150,12 @@ export class DashboardService {
             courseEnrolled - courseCancelled,
           ),
           averageScore: scoreOf.get(course.id) ?? null,
+          rating: {
+            average: weightedAverage(
+              ratingOf.has(course.id) ? [ratingOf.get(course.id)!] : [],
+            ),
+            count: ratingOf.get(course.id)?.count ?? 0,
+          },
         };
       }),
     };

@@ -17,6 +17,10 @@ import { ProgressModule } from './modules/progress/progress.module.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { AssignmentsModule } from './modules/assignments/assignments.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { AnnouncementsModule } from './modules/announcements/announcements.module.js';
+import { DiscussionsModule } from './modules/discussions/discussions.module.js';
+import { ReviewsModule } from './modules/reviews/reviews.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -55,6 +59,10 @@ export const observeEnabled = Boolean(
     UploadsModule,
     DashboardModule,
     AssignmentsModule,
+    NotificationsModule,
+    AnnouncementsModule,
+    DiscussionsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -37,6 +37,8 @@ evaluations ──► progress    │
 lessons, resources,         ▼
 course-modules, progress, evaluations, courses ──► course-access
 assignments ──► progress, uploads   (inscripción; documentos privados de las entregas)
+announcements, discussions, reviews ──► progress, notifications   (inscritos; avisos)
+notifications ◄── cualquier módulo que necesite avisar a un usuario (NotificationsService.notify)
 dashboard ──► course-access   (lee cursos, inscripciones y evaluaciones; solo lectura)
 todos ──► auth (guards)
 ```

@@ -49,6 +49,10 @@ model User {
   enrollments           Enrollment[]
   evaluationAttempts    EvaluationAttempt[]
   assignmentSubmissions AssignmentSubmission[]
+  notifications         Notification[]
+  announcements         Announcement[]
+  discussionPosts       DiscussionPost[]
+  reviews               Review[]
 
   @@map("users")
 }
@@ -88,8 +92,11 @@ model Course {
   categoryId Int?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  modules     CourseModule[]
-  enrollments Enrollment[]
+  modules         CourseModule[]
+  enrollments     Enrollment[]
+  announcements   Announcement[]
+  discussionPosts DiscussionPost[]
+  reviews         Review[]
 
   /// Cursos que hay que completar antes de inscribirse en este.
   requires   CoursePrerequisite[] @relation("CourseRequires")
@@ -178,8 +185,9 @@ model Lesson {
   moduleId Int
   module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
-  resources Resource[]
-  progress  LessonProgress[]
+  resources       Resource[]
+  progress        LessonProgress[]
+  discussionPosts DiscussionPost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -295,6 +303,114 @@ model EvaluationAttempt {
   @@index([evaluationId, userId])
   @@index([status])
   @@map("evaluation_attempts")
+}
+
+/// Avisos que ve cada usuario en su campana de notificaciones.
+enum NotificationType {
+  ANNOUNCEMENT
+  NEW_QUESTION
+  NEW_REPLY
+  NEW_REVIEW
+}
+
+/// Calificación (1 a 5) y comentario de un estudiante sobre un curso. Una por estudiante y curso.
+model Review {
+  id      Int     @id @default(autoincrement())
+  rating  Int
+  /// Texto plano.
+  comment String?
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, userId])
+  @@index([courseId, rating])
+  @@map("reviews")
+}
+
+model Notification {
+  id      Int              @id @default(autoincrement())
+  type    NotificationType
+  title   String
+  message String?
+  /// Curso y elemento a los que lleva el aviso (el frontend arma el enlace).
+  courseId Int?
+  refId    Int?
+  readAt   DateTime?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+/// Aviso del docente a los inscritos de un curso.
+model Announcement {
+  id    Int    @id @default(autoincrement())
+  title String
+  /// HTML ya sanitizado.
+  body  String
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, createdAt])
+  @@map("announcements")
+}
+
+/// QUESTION: pregunta del curso (P y R). COMMENT: comentario en una lección.
+enum DiscussionKind {
+  QUESTION
+  COMMENT
+}
+
+/// Una publicación de la conversación del curso. Las raíces (parentId nulo) son preguntas o
+/// comentarios; las respuestas apuntan a su raíz. Texto plano.
+model DiscussionPost {
+  id    Int            @id @default(autoincrement())
+  kind  DiscussionKind
+  /// Solo las preguntas llevan título.
+  title String?
+  body  String
+  /// Una pregunta queda respondida cuando el docente del curso contesta.
+  answered Boolean @default(false)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessonId Int?
+  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parentId Int?
+  parent   DiscussionPost?  @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  DiscussionPost[] @relation("PostReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, kind, parentId])
+  @@index([lessonId, parentId])
+  @@index([parentId])
+  @@map("discussion_posts")
 }
 
 /// SUBMITTED: entregada, esperando nota. GRADED: calificada por el docente.

@@ -14,7 +14,14 @@ export class CourseAccessRepository {
   findCourseBasics(courseId: number) {
     return this.prisma.course.findUnique({
       where: { id: courseId },
-      select: { id: true, teacherId: true, status: true },
+      select: {
+        id: true,
+        title: true,
+        teacherId: true,
+        status: true,
+        visibility: true,
+        qaEnabled: true,
+      },
     });
   }
 

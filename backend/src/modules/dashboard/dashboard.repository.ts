@@ -160,6 +160,25 @@ export class DashboardRepository {
       GROUP BY m."courseId"`;
   }
 
+  /** Promedio de estrellas y cantidad de reseñas por curso. */
+  async ratingByCourse(scope: Scope, since?: Date) {
+    const rows = await this.prisma.review.groupBy({
+      by: ['courseId'],
+      where: {
+        course: courseFilter(scope),
+        createdAt: since ? { gte: since } : undefined,
+      },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+
+    return rows.map((row) => ({
+      courseId: row.courseId,
+      average: row._avg.rating ?? 0,
+      count: row._count._all,
+    }));
+  }
+
   /** Entregas de tareas esperando nota (sin límite de fecha). */
   countPendingSubmissions(scope: Scope) {
     return this.prisma.assignmentSubmission.count({

@@ -24,6 +24,26 @@ export class ProgressRepository {
     });
   }
 
+  /** Ids de los estudiantes con inscripción vigente (activa o completada) en un curso. */
+  async enrolledUserIds(courseId: number): Promise<number[]> {
+    const rows = await this.prisma.enrollment.findMany({
+      where: { courseId, status: { not: EnrollmentStatus.CANCELLED } },
+      select: { userId: true },
+    });
+
+    return rows.map((row) => row.userId);
+  }
+
+  /** Ids de los cursos en los que el usuario tiene inscripción vigente. */
+  async enrolledCourseIds(userId: number): Promise<number[]> {
+    const rows = await this.prisma.enrollment.findMany({
+      where: { userId, status: { not: EnrollmentStatus.CANCELLED } },
+      select: { courseId: true },
+    });
+
+    return rows.map((row) => row.courseId);
+  }
+
   /** De esos cursos, ids de los que el usuario ya completó. */
   async completedCourseIds(userId: number, courseIds: number[]): Promise<number[]> {
     const completed = await this.prisma.enrollment.findMany({

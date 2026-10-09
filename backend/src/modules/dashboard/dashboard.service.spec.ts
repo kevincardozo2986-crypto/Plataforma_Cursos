@@ -35,6 +35,11 @@ function build() {
     averageScoreByCourse: vi.fn().mockResolvedValue([{ courseId: 1, average: 80 }]),
     countPendingReviews: vi.fn().mockResolvedValue(3),
     countPendingSubmissions: vi.fn().mockResolvedValue(4),
+    // Curso 1: 9 reseñas con 5,0 y curso 2: 1 reseña con 1,0.
+    ratingByCourse: vi.fn().mockResolvedValue([
+      { courseId: 1, average: 5, count: 9 },
+      { courseId: 2, average: 1, count: 1 },
+    ]),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
   const service = new DashboardService(
@@ -70,6 +75,8 @@ describe('DashboardService.teacher', () => {
     expect(result.courses).toEqual({ total: 3, published: 2, draft: 1, archived: 0 });
     expect(result.quizzes).toEqual({ attempts: 10, averageScore: 72, passRate: 70, pendingReview: 3 });
     expect(result.assignments).toEqual({ pendingGrading: 4 });
+    // Promedio ponderado por cantidad de reseñas: (45 + 1) / 10.
+    expect(result.rating).toEqual({ average: 4.6, count: 10 });
   });
 
   it('desglosa por curso, con su tasa y nota promedio (null si no hay intentos)', async () => {
@@ -80,6 +87,8 @@ describe('DashboardService.teacher', () => {
     expect(courseBreakdown[0]).toMatchObject({ id: 1, enrolled: 6, completed: 3, completionRate: 50, averageScore: 80 });
     expect(courseBreakdown[1]).toMatchObject({ id: 2, enrolled: 4, cancelled: 1, completionRate: 67, averageScore: null });
     expect(courseBreakdown[2]).toMatchObject({ id: 3, enrolled: 0, completionRate: 0 });
+    expect(courseBreakdown[0].rating).toEqual({ average: 5, count: 9 });
+    expect(courseBreakdown[2].rating).toEqual({ average: null, count: 0 }); // sin reseñas
   });
 
   it('un docente mide solo sus cursos; un admin, todos', async () => {
