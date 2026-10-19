@@ -1,4 +1,4 @@
-import { cleanHtml, hasVisibleText } from './sanitize-html.js';
+import { IFRAME_HOSTS, cleanHtml, hasVisibleText } from './sanitize-html.js';
 
 describe('hasVisibleText', () => {
   it('un HTML sin texto cuenta como vacío', () => {
@@ -70,5 +70,44 @@ describe('cleanHtml', () => {
 
   it('un texto sin etiquetas queda igual', () => {
     expect(cleanHtml('Solo texto, sin HTML')).toBe('Solo texto, sin HTML');
+  });
+});
+
+describe('cleanHtml: editor enriquecido', () => {
+  it('conserva la alineación del texto y descarta los demás estilos', () => {
+    expect(cleanHtml('<p style="text-align: center">Hola</p>')).toBe('<p style="text-align:center">Hola</p>');
+    expect(cleanHtml('<p style="text-align:right; color:red; position:fixed">Hola</p>')).toBe(
+      '<p style="text-align:right">Hola</p>',
+    );
+    expect(cleanHtml('<p style="text-align:expression(alert(1))">Hola</p>')).toBe('<p>Hola</p>');
+  });
+
+  it('admite los sitios de la lista y rechaza los demás', () => {
+    for (const host of IFRAME_HOSTS) {
+      expect(cleanHtml(`<iframe src="https://${host}/embed/x"></iframe>`)).toContain(host);
+    }
+
+    expect(cleanHtml('<iframe src="https://www.youtube.com.malo.com/embed/x"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="http://localhost:3000/"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="//malo.com/x"></iframe>')).toBe('');
+  });
+
+  it('todo marco queda con sandbox y carga diferida, aunque pidan otra cosa', () => {
+    const html = cleanHtml(
+      '<iframe src="https://www.youtube.com/embed/x" sandbox="allow-top-navigation allow-forms" loading="eager"></iframe>',
+    );
+
+    expect(html).toContain('sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"');
+    expect(html).not.toContain('allow-top-navigation');
+    expect(html).toContain('loading="lazy"');
+  });
+
+  it('un iframe con javascript: o data: en el src se elimina', () => {
+    expect(cleanHtml('<iframe src="javascript:alert(1)"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="data:text/html,<script>alert(1)</script>"></iframe>')).toBe('');
+  });
+
+  it('un iframe con srcdoc no puede colar HTML propio', () => {
+    expect(cleanHtml('<iframe srcdoc="<script>alert(1)</script>"></iframe>')).toBe('');
   });
 });

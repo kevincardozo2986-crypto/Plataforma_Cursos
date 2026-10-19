@@ -1,3 +1,4 @@
+import { htmlToPlainText } from '../../../../core/html/plain-text';
 import { Course as ApiCourse } from '../../../../core/courses/courses.models';
 import { Course as CardCourse } from '../course-card/course-card';
 
@@ -18,7 +19,8 @@ export function toCardCourse(course: ApiCourse): CardCourse {
     id: String(course.id),
     title: course.title ?? course.name ?? 'Curso',
     category: course.category?.name ?? 'General',
-    description: course.description ?? '',
+    // La descripción es HTML del editor; las tarjetas muestran solo el texto.
+    description: htmlToPlainText(course.description),
     image: course.imageUrl || course.image || course.thumbnail || FALLBACK_IMAGE,
     duration: modules === 0 ? 'Próximamente' : modules === 1 ? '1 módulo' : `${modules} módulos`,
     level: LEVELS[course.level ?? ''] ?? 'Todos los niveles',

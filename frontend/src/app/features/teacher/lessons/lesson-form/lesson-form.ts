@@ -1,3 +1,4 @@
+import { RichEditor } from '../../../../shared/ui/rich-editor/rich-editor';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +13,7 @@ import { TeacherLessonsService } from '../lessons.service';
 /** Crear (desde un módulo) o editar una lección, con sus recursos. */
 @Component({
   selector: 'app-lesson-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, ResourcePanel, MediaField],
+  imports: [RichEditor, ReactiveFormsModule, RouterLink, PageHeader, ResourcePanel, MediaField],
   templateUrl: './lesson-form.html',
   styleUrl: './lesson-form.scss',
 })

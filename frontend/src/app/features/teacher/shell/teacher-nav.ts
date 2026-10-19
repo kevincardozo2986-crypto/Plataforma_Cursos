@@ -30,6 +30,13 @@ export const TEACHER_NAV: NavItem[] = [
     icon: ['M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z'],
   },
   {
+    label: 'Resumen',
+    path: 'summary',
+    ready: true,
+    description: 'Tus estudiantes, inscripciones, finalización, calificaciones y reseñas, con gráficas.',
+    icon: ['M3 3v18h18', 'm7 15 4-4 3 3 5-6'],
+  },
+  {
     label: 'Cursos',
     path: 'courses',
     ready: true,
@@ -74,6 +81,13 @@ export const TEACHER_NAV: NavItem[] = [
     description:
       'Preguntas y respuestas de los estudiantes en cada curso y comentarios dejados en las lecciones.',
     icon: ['M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'],
+  },
+  {
+    label: 'Reseñas',
+    path: 'reviews',
+    ready: true,
+    description: 'Las calificaciones y comentarios que dejan tus estudiantes en tus cursos.',
+    icon: ['M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z'],
   },
   {
     label: 'Tareas',

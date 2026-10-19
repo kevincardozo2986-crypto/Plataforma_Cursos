@@ -1,0 +1,134 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <span class="eyebrow">ESPACIO DOCENTE / RESEÑAS</span>
+    <app-page-header title="Reseñas" subtitle="Lo que opinan tus estudiantes de tus cursos." />
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Filtrar por estrellas">
+        <button
+          type="button"
+          class="chip"
+          [class.active]="ratingFilter() === null"
+          [attr.aria-pressed]="ratingFilter() === null"
+          (click)="setRating(null)"
+        >
+          Todas
+        </button>
+        @for (rating of ratings; track rating) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="ratingFilter() === rating"
+            [attr.aria-pressed]="ratingFilter() === rating"
+            [attr.aria-label]="rating + (rating === 1 ? ' estrella' : ' estrellas')"
+            (click)="setRating(rating)"
+          >
+            {{ rating }} ★
+          </button>
+        }
+      </div>
+
+      <div class="panel-field course">
+        <label for="course-filter">Curso</label>
+        <select id="course-filter" class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (summary(); as data) {
+      @if (data.average !== null) {
+        <section class="panel-card summary" aria-label="Resumen del curso">
+          <div class="average">
+            <strong>{{ data.average.toString().replace('.', ',') }}</strong>
+            <span class="stars" [attr.aria-label]="data.average + ' de 5'">{{
+              starText(data.average)
+            }}</span>
+            <span class="panel-muted"
+              >{{ data.count }} {{ data.count === 1 ? 'reseña' : 'reseñas' }}</span
+            >
+          </div>
+
+          <ul class="bars">
+            @for (bar of bars(); track bar.rating) {
+              <li>
+                <span class="bar-label">{{ bar.rating }} ★</span>
+                <span class="track"><span class="fill" [style.width.%]="bar.width"></span></span>
+                <span class="bar-count">{{ bar.count }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando reseñas…</p></div>
+    } @else if (items().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">★</span>
+        <h2>Aún no hay reseñas</h2>
+        <p>
+          {{
+            ratingFilter() || courseFilter()
+              ? 'Ninguna reseña coincide con el filtro.'
+              : 'Cuando un estudiante califique uno de tus cursos, aparecerá aquí.'
+          }}
+        </p>
+      </div>
+    } @else {
+      <ul class="list">
+        @for (item of items(); track item.id) {
+          <li class="panel-card item">
+            <div class="top">
+              <span class="stars" [attr.aria-label]="item.rating + ' de 5'">{{
+                starText(item.rating)
+              }}</span>
+              <span class="panel-muted when">{{ item.createdAt | date: "d 'de' MMM y" }}</span>
+            </div>
+
+            @if (item.comment) {
+              <p class="comment">{{ item.comment }}</p>
+            } @else {
+              <p class="comment panel-muted">Sin comentario.</p>
+            }
+
+            <p class="meta panel-muted">
+              {{ item.student.firstName }} {{ item.student.lastName }} · {{ item.course.title }}
+              @if (item.updatedAt !== item.createdAt) {
+                · editada
+              }
+            </p>
+          </li>
+        }
+      </ul>
+
+      <div class="pager">
+        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasPrev()"
+          (click)="page(-1)"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasNext()"
+          (click)="page(1)"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+</section>

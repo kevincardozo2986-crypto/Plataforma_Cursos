@@ -1,12 +1,27 @@
 import { Transform } from 'class-transformer';
 import sanitize from 'sanitize-html';
 
-/** Videos que se pueden incrustar con <iframe>. Cualquier otro sitio se descarta. */
-const IFRAME_HOSTS = [
+/**
+ * Sitios que se pueden incrustar con <iframe>: videos, presentaciones y documentos de servicios
+ * conocidos. Cualquier otro sitio se descarta, porque un marco a una página cualquiera serviría
+ * para suplantar un inicio de sesión.
+ */
+export const IFRAME_HOSTS = [
   'www.youtube.com',
   'www.youtube-nocookie.com',
   'player.vimeo.com',
+  'www.loom.com',
+  'fast.wistia.net',
+  'www.dailymotion.com',
+  'drive.google.com',
+  'docs.google.com',
+  'www.canva.com',
+  'codepen.io',
+  'view.genial.ly',
 ];
+
+/** Lo que se le impone a todo marco incrustado, diga lo que diga el HTML original. */
+const IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-presentation allow-popups';
 
 const OPTIONS: sanitize.IOptions = {
   allowedTags: [
@@ -22,10 +37,24 @@ const OPTIONS: sanitize.IOptions = {
   allowedAttributes: {
     a: ['href', 'title', 'target', 'rel'],
     img: ['src', 'alt', 'title', 'width', 'height'],
-    iframe: ['src', 'width', 'height', 'title', 'allowfullscreen', 'frameborder'],
+    iframe: [
+      'src',
+      'width',
+      'height',
+      'title',
+      'allowfullscreen',
+      'frameborder',
+      'sandbox',
+      'loading',
+      'referrerpolicy',
+    ],
     th: ['colspan', 'rowspan'],
     td: ['colspan', 'rowspan'],
-    '*': ['title'],
+    // El estilo solo se admite para alinear el texto (ver allowedStyles).
+    '*': ['title', 'style'],
+  },
+  allowedStyles: {
+    '*': { 'text-align': [/^(left|right|center|justify)$/] },
   },
   // Sin javascript:, data: ni otros esquemas; los enlaces relativos (/api/uploads/...) pasan.
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -33,6 +62,16 @@ const OPTIONS: sanitize.IOptions = {
   allowProtocolRelative: false,
   allowedIframeHostnames: IFRAME_HOSTS,
   transformTags: {
+    // Todo marco queda aislado y con carga diferida, aunque el HTML traiga otros valores.
+    iframe: (tagName, attribs) => ({
+      tagName,
+      attribs: {
+        ...attribs,
+        sandbox: IFRAME_SANDBOX,
+        loading: 'lazy',
+        referrerpolicy: 'strict-origin-when-cross-origin',
+      },
+    }),
     // Los enlaces que abren otra pestaña no deben poder controlar la página de origen.
     a: (tagName, attribs) => ({
       tagName,

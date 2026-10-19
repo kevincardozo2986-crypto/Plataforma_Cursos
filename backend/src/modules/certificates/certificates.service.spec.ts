@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Logger, Not
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
+import type { CertificateFontsService } from '../certificate-fonts/certificate-fonts.service.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { UsersService } from '../users/users.service.js';
@@ -25,7 +26,7 @@ const course = {
 const stored = {
   id: 40, code: 'CC-7F3K-9QXA-B2MD', status: 'VALID', userId: 5, courseId: 3,
   studentName: 'Ana Ruiz', courseTitle: 'Angular', courseMinutes: 1200, instructorName: 'Laura Gómez',
-  signatureUrl: null, design: { title: 'Certificado', body: 'Curso {{course}}', accentColor: '#1F3A8A', layout: 'CLASSIC' },
+  studentDocument: '1234567890', signatureUrl: null, design: { title: 'Certificado', body: 'Curso {{course}}', accentColor: '#1F3A8A', layout: 'CLASSIC' },
   issuedAt: new Date('2026-10-09T15:00:00.000Z'),
 };
 
@@ -50,17 +51,22 @@ function build() {
     revoke: vi.fn().mockResolvedValue({ ...stored, status: 'REVOKED' }),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
-  const users = { findById: vi.fn().mockResolvedValue({ id: 5, firstName: 'Ana', lastName: 'Ruiz' }) };
+  const users = { findById: vi.fn().mockResolvedValue({ id: 5, firstName: 'Ana', lastName: 'Ruiz', document: '1234567890' }) };
   const notifications = { notify: vi.fn().mockResolvedValue(1) };
+  const fonts = {
+    assertUsable: vi.fn().mockResolvedValue(undefined),
+    resolve: vi.fn().mockResolvedValue({ regular: 'Helvetica', bold: 'Helvetica-Bold' }),
+  };
 
   const service = new CertificatesService(
     repository as unknown as CertificatesRepository,
     access as unknown as CourseAccessService,
     users as unknown as UsersService,
     notifications as unknown as NotificationsService,
+    fonts as unknown as CertificateFontsService,
   );
 
-  return { service, repository, access, users, notifications };
+  return { service, repository, access, users, notifications, fonts };
 }
 
 describe('CertificatesService', () => {
@@ -148,6 +154,67 @@ describe('CertificatesService', () => {
     });
   });
 
+  describe('tipografías', () => {
+    it('una plantilla nueva usa Helvetica en títulos y texto si no se elige otra', async () => {
+      const { service, repository } = build();
+
+      await service.createTemplate(owner, { name: 'Básica' });
+
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({ font: 'SANS', bodyFont: 'SANS' }));
+    });
+
+    it('guarda la tipografía de títulos y la del texto por separado, y las valida con quien edita', async () => {
+      const { service, repository, fonts } = build();
+
+      await service.createTemplate(owner, { name: 'Mixta', font: 'great-vibes', bodyFont: 'custom:4' });
+
+      expect(fonts.assertUsable).toHaveBeenCalledWith(owner, 'great-vibes');
+      expect(fonts.assertUsable).toHaveBeenCalledWith(owner, 'custom:4');
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({ font: 'great-vibes', bodyFont: 'custom:4' }));
+    });
+
+    it('una tipografía que no existe o es de otro docente rechaza la plantilla (y no se guarda nada)', async () => {
+      const { service, repository, fonts } = build();
+      fonts.assertUsable.mockRejectedValue(new BadRequestException('La tipografía elegida no existe'));
+
+      await expect(service.createTemplate(owner, { name: 'Mala', font: 'custom:99' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.updateTemplate(owner, 12, { bodyFont: 'custom:99' })).rejects.toBeInstanceOf(BadRequestException);
+      expect(repository.createTemplate).not.toHaveBeenCalled();
+      expect(repository.updateTemplate).not.toHaveBeenCalled();
+    });
+
+    it('editar sin tocar la tipografía no la vuelve a validar', async () => {
+      const { service, fonts } = build();
+
+      await service.updateTemplate(owner, 12, { name: 'Otro nombre' });
+
+      expect(fonts.assertUsable).not.toHaveBeenCalled();
+    });
+
+    it('al emitir, el certificado guarda las dos tipografías de la plantilla', async () => {
+      const { service, repository } = build();
+      repository.findCourseForCertificate.mockResolvedValue({
+        ...course,
+        certificateTemplate: { ...course.certificateTemplate, font: 'playfair-display', bodyFont: 'lora' },
+      });
+
+      await service.issueFor(5, 3);
+
+      expect((repository.createCertificate.mock.calls[0][0] as unknown as { design: object }).design).toMatchObject({ font: 'playfair-display', bodyFont: 'lora' });
+    });
+
+    it('un certificado antiguo (una sola tipografía) usa esa misma para el texto', async () => {
+      const { service, repository, fonts } = build();
+      repository.findById.mockResolvedValue({ ...stored, design: { ...stored.design, font: 'SERIF' } });
+
+      await service.pdf(student, 40);
+
+      expect(fonts.resolve).toHaveBeenCalledWith('SERIF');
+      expect(fonts.resolve).toHaveBeenCalledTimes(2);
+      expect(fonts.resolve.mock.calls.map(([key]) => key)).toEqual(['SERIF', 'SERIF']);
+    });
+  });
+
   describe('emisión', () => {
     it('emite el certificado con una copia de todo, un código válido, y avisa al estudiante', async () => {
       const { service, repository, notifications } = build();
@@ -158,7 +225,7 @@ describe('CertificatesService', () => {
       expect(certificate).toBeTruthy();
       const data = repository.createCertificate.mock.calls[0][0];
       expect(data).toMatchObject({
-        studentName: 'Ana Ruiz', courseTitle: 'Angular', courseMinutes: 1200,
+        studentName: 'Ana Ruiz', studentDocument: '1234567890', courseTitle: 'Angular', courseMinutes: 1200,
         instructorName: 'Dra. Laura Gómez', // el nombre público del docente
         signatureUrl: '/api/uploads/a1b2c3d4e5f60718293a4b5c6d7e8f90.webp',
         courseId: 3, userId: 5,

@@ -1,3 +1,4 @@
+import { RichEditor } from '../../../../../shared/ui/rich-editor/rich-editor';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -26,7 +27,7 @@ const URL_PATTERN = /^$|^(?:https?:\/\/\S+|\/api\/uploads\/[a-f0-9]{32}\.[a-z0-9
 /** Paso 1: título y dirección, descripción, opciones, precio, acceso, imagen y video. */
 @Component({
   selector: 'app-basics-step',
-  imports: [ReactiveFormsModule, MediaField],
+  imports: [RichEditor, ReactiveFormsModule, MediaField],
   templateUrl: './basics-step.html',
   styleUrl: './basics-step.scss',
 })

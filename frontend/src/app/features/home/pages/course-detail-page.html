@@ -20,9 +20,11 @@
     } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
       <img [src]="image" [alt]="item.title || item.name || 'Imagen del curso'" />
     }
-    <p class="description">
-      {{ item.description || 'Consulta la información disponible del curso al iniciar sesión.' }}
-    </p>
+    @if (item.description) {
+      <div class="description rich-content" [innerHTML]="item.description | richHtml"></div>
+    } @else {
+      <p class="description">Consulta la información disponible del curso al iniciar sesión.</p>
+    }
     <a class="login" routerLink="/login">Iniciar sesión →</a>
   } @else {
     <p role="status">Cargando el curso…</p>

@@ -1,4 +1,5 @@
-﻿import { Component, inject, signal } from '@angular/core';
+﻿import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
+import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
@@ -8,7 +9,7 @@ import { isPlayableVideoUrl } from '../../../core/uploads/upload-rules';
 
 @Component({
   selector: 'app-course-detail-page',
-  imports: [RouterLink],
+  imports: [RouterLink, RichHtmlPipe],
   templateUrl: './course-detail-page.html',
   styleUrl: './course-detail-page.scss',
 })

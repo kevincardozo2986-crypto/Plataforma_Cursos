@@ -11,11 +11,13 @@ describe('TEACHER_NAV', () => {
   it('trae las secciones pedidas y el perfil', () => {
     expect(TEACHER_NAV.map((item) => item.label)).toEqual([
       'Inicio',
+      'Resumen',
       'Cursos',
       'Mi perfil',
       'Anuncios',
       'Intentos del cuestionario',
       'Discusiones',
+      'Reseñas',
       'Tareas',
       'Zoom',
       'Certificados',
@@ -65,6 +67,8 @@ describe('TEACHER_NAV', () => {
     expect(pending).not.toContain('discussions');
     expect(pending).not.toContain('quiz-attempts');
     expect(pending).not.toContain('assignments');
+    expect(pending).not.toContain('reviews');
+    expect(pending).not.toContain('summary');
     expect(pending).toEqual(
       expect.arrayContaining([
         'zoom/api',

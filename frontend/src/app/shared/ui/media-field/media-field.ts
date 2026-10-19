@@ -9,9 +9,11 @@ import {
   untracked,
 } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { DomSanitizer } from '@angular/platform-browser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { startWith, Subscription, switchMap } from 'rxjs';
 
+import { toEmbed } from '../../../core/html/video-embed';
 import {
   ACCEPT,
   formatSize,
@@ -34,6 +36,7 @@ import { UploadsService } from '../../../core/uploads/uploads.service';
 })
 export class MediaField implements OnDestroy {
   private readonly uploads = inject(UploadsService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly control = input.required<FormControl<string>>();
   readonly kind = input.required<UploadKind>();
@@ -81,6 +84,15 @@ export class MediaField implements OnDestroy {
   readonly showVideo = computed(
     () => this.kind() === 'video' && isPlayableVideoUrl(this.previewUrl()),
   );
+
+  /** Enlace de YouTube, Vimeo, etc.: no es un archivo, se muestra con un reproductor incrustado. */
+  readonly embed = computed(() => (this.kind() === 'video' ? toEmbed(this.previewUrl()) : null));
+  readonly embedSrc = computed(() => {
+    const embed = this.embed();
+
+    // La dirección sale de toEmbed, que solo devuelve sitios de la lista de permitidos.
+    return embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed.src) : null;
+  });
 
   private subscription: Subscription | null = null;
 

@@ -2,6 +2,8 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   { path: 'courses', renderMode: RenderMode.Client },
+  // Pide la sesión, que vive en el navegador.
+  { path: 'notifications', renderMode: RenderMode.Client },
   { path: 'courses/:id', renderMode: RenderMode.Client },
   // El código del certificado llega en la dirección: se consulta en el navegador.
   { path: 'verificar/:code', renderMode: RenderMode.Client },

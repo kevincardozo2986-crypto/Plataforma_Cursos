@@ -99,3 +99,13 @@ export function pdfFileName(courseTitle: string): string {
 
   return `certificado-${slug || 'curso'}.pdf`;
 }
+
+/**
+ * El documento tal como se imprime: si son solo dígitos, con puntos de miles
+ * (`1234567890` → `1.234.567.890`); si trae letras u otros signos, tal cual.
+ */
+export function formatDocument(document: string): string {
+  const value = document.trim();
+
+  return /^\d{4,}$/.test(value) ? value.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : value;
+}

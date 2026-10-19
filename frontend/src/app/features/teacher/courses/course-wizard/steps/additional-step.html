@@ -5,23 +5,13 @@
 
     <div class="panel-field">
       <label for="whatYouWillLearn">Qué aprenderá el estudiante</label>
-      <textarea
-        id="whatYouWillLearn"
-        class="panel-textarea"
-        formControlName="whatYouWillLearn"
-        placeholder="Un resultado por línea&#10;Ej. Crear una página web desde cero"
-      ></textarea>
-      <p class="panel-hint">Escribe un resultado por línea.</p>
+      <app-rich-editor inputId="whatYouWillLearn" label="Qué aprenderá el estudiante" formControlName="whatYouWillLearn" [minHeight]="180" placeholder="Ej. Crear una página web desde cero" />
+      <p class="panel-hint">Una lista con viñetas funciona muy bien aquí.</p>
     </div>
 
     <div class="panel-field">
       <label for="audience">A quién va dirigido</label>
-      <textarea
-        id="audience"
-        class="panel-textarea short"
-        formControlName="audience"
-        placeholder="Ej. Personas sin experiencia previa que quieren empezar en programación"
-      ></textarea>
+      <app-rich-editor inputId="audience" label="A quién va dirigido" formControlName="audience" [minHeight]="130" placeholder="Ej. Personas sin experiencia previa que quieren empezar en programación" />
     </div>
 
     <fieldset class="duration">
@@ -63,22 +53,12 @@
 
     <div class="panel-field">
       <label for="materials">Materiales incluidos</label>
-      <textarea
-        id="materials"
-        class="panel-textarea short"
-        formControlName="materials"
-        placeholder="Ej. Guías en PDF, plantillas y código de ejemplo"
-      ></textarea>
+      <app-rich-editor inputId="materials" label="Materiales incluidos" formControlName="materials" [minHeight]="130" placeholder="Ej. Guías en PDF, plantillas y código de ejemplo" />
     </div>
 
     <div class="panel-field">
       <label for="requirements">Requisitos</label>
-      <textarea
-        id="requirements"
-        class="panel-textarea short"
-        formControlName="requirements"
-        placeholder="Ej. Un computador con conexión a internet"
-      ></textarea>
+      <app-rich-editor inputId="requirements" label="Requisitos" formControlName="requirements" [minHeight]="130" placeholder="Ej. Un computador con conexión a internet" />
     </div>
   </section>
 

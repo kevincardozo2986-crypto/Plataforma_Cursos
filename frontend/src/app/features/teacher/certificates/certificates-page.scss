@@ -82,34 +82,10 @@ tr.busy {
   pointer-events: none;
 }
 
-/* Miniatura del diseño, con el color de la plantilla. */
+/* Miniatura del diseño: el mismo dibujo del certificado, en pequeño. */
 .swatch {
-  position: relative;
-  flex: 0 0 96px;
-  height: 68px;
-  background: #fff;
-  border: 3px solid var(--accent);
-  border-radius: 6px;
-}
-
-.swatch::after {
-  content: '';
-  position: absolute;
-  inset: 22px 16px auto;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 3px;
-  box-shadow: 0 12px 0 -2px #cbd5e1;
-}
-
-.swatch.modern {
-  border: 1px solid var(--p-border);
-  border-left: 14px solid var(--accent);
-}
-
-.swatch.modern::after {
-  inset: 22px auto auto 14px;
-  width: 44px;
+  flex: 0 0 150px;
+  pointer-events: none;
 }
 
 .main {

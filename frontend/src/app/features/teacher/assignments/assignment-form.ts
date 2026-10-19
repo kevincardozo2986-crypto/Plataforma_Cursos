@@ -3,15 +3,15 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
-import { hasRichFormatting, htmlToText, textToHtml } from '../../../core/utils/html-text';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { RichEditor } from '../../../shared/ui/rich-editor/rich-editor';
 import { AssignmentInput, TeacherAssignmentsService } from './assignments.service';
 import { isoToLocalInput, localInputToIso } from './due-date';
 
 /** Crear (desde un módulo) o editar una tarea. */
 @Component({
   selector: 'app-assignment-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor],
   templateUrl: './assignment-form.html',
   styleUrl: './assignment-form.scss',
 })
@@ -32,9 +32,6 @@ export class AssignmentForm {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
-  /** La tarea tenía formato (negritas, enlaces…) que al editar como texto se pierde. */
-  readonly losesFormat = signal(false);
-
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,
@@ -42,7 +39,7 @@ export class AssignmentForm {
     }),
     description: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.maxLength(10000)],
+      validators: [Validators.maxLength(20000)],
     }),
     dueAt: new FormControl('', { nonNullable: true }),
     allowLate: new FormControl(true, { nonNullable: true }),
@@ -62,12 +59,11 @@ export class AssignmentForm {
       next: (assignment) => {
         this.form.reset({
           title: assignment.title,
-          description: htmlToText(assignment.description ?? ''),
+          description: assignment.description ?? '',
           dueAt: isoToLocalInput(assignment.dueAt),
           allowLate: assignment.allowLate,
           maxScore: assignment.maxScore,
         });
-        this.losesFormat.set(hasRichFormatting(assignment.description ?? ''));
         this.loading.set(false);
         this.loaded.set(true);
       },
@@ -109,7 +105,7 @@ export class AssignmentForm {
 
     const input: AssignmentInput = {
       title: value.title.trim(),
-      description: textToHtml(value.description),
+      description: value.description,
       allowLate: value.allowLate,
       maxScore: Number(value.maxScore),
       // Al crear la fecha se omite si no hay; al editar, null la quita.
@@ -129,7 +125,6 @@ export class AssignmentForm {
 
         if (this.isEdit) {
           this.form.markAsPristine();
-          this.losesFormat.set(false);
           this.notice.set('Cambios guardados.');
         } else {
           void this.router.navigate(['/teacher/courses', this.courseId, 'edit', 'curriculum']);

@@ -69,6 +69,7 @@ model User {
   profile               UserProfile?
   certificates          Certificate[]
   certificateTemplates  CertificateTemplate[]
+  certificateFonts      CertificateCustomFont[]
 
   @@map("users")
 }
@@ -412,6 +413,16 @@ model UserProfile {
 enum CertificateLayout {
   CLASSIC
   MODERN
+  ELEGANT
+  BOLD
+  MINIMAL
+  SEAL
+  GEOMETRIC
+  SIDEBAR
+  FRAME
+  DARK
+  WAVES
+  RIBBON
 }
 
 /// Diseño de certificado de un docente. Se asigna a cursos (`Course.certificateTemplateId`).
@@ -424,6 +435,10 @@ model CertificateTemplate {
   body        String
   accentColor String            @default("#1F3A8A")
   layout      CertificateLayout @default(CLASSIC)
+  /// Tipografía de título y nombre: "SANS" (Helvetica), "SERIF" (Times), una de la biblioteca ("playfair-display") o "custom:<id>".
+  font        String            @default("SANS")
+  /// Tipografía del texto, con los mismos valores.
+  bodyFont    String            @default("SANS")
 
   ownerId Int
   owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -451,6 +466,8 @@ model Certificate {
   status CertificateStatus @default(VALID)
 
   studentName    String
+  /// Documento de identidad del estudiante al emitir (los certificados anteriores no lo tienen).
+  studentDocument String?
   courseTitle    String
   courseMinutes  Int?
   instructorName String
@@ -679,4 +696,21 @@ model LessonProgress {
 
   @@unique([enrollmentId, lessonId])
   @@map("lesson_progress")
+}
+
+/// Tipografía que un docente sube para usar en sus certificados (.ttf, .otf, .woff o .woff2).
+model CertificateCustomFont {
+  id Int @id @default(autoincrement())
+  /// Nombre para mostrar en la lista.
+  name String
+  /// Archivo en la carpeta privada de tipografías (nombre aleatorio).
+  fileName String @unique
+
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+  @@map("certificate_custom_fonts")
 }

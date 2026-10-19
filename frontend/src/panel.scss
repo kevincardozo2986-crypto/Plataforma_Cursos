@@ -226,3 +226,132 @@ html.a11y-dark {
     padding: 20px 14px 56px;
   }
 }
+
+
+/*
+ * Contenido con formato (HTML del editor enriquecido). Se usa dentro del editor y en cualquier
+ * lugar donde se muestre ese HTML con [innerHTML]. Es global porque el HTML se inserta por
+ * código y los estilos de un componente no llegan a sus elementos.
+ */
+.rich-content {
+  color: var(--p-ink);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.rich-content > :first-child {
+  margin-top: 0;
+}
+
+.rich-content > :last-child {
+  margin-bottom: 0;
+}
+
+.rich-content p,
+.rich-content ul,
+.rich-content ol,
+.rich-content blockquote,
+.rich-content pre,
+.rich-content table,
+.rich-content figure {
+  margin: 0 0 1em;
+}
+
+.rich-content h2,
+.rich-content h3,
+.rich-content h4,
+.rich-content h5,
+.rich-content h6 {
+  margin: 1.2em 0 0.5em;
+  line-height: 1.25;
+}
+
+.rich-content h2 {
+  font-size: 1.5rem;
+}
+
+.rich-content h3 {
+  font-size: 1.25rem;
+}
+
+.rich-content h4 {
+  font-size: 1.1rem;
+}
+
+.rich-content ul,
+.rich-content ol {
+  padding-left: 1.6em;
+}
+
+.rich-content a {
+  color: var(--p-accent);
+  text-decoration: underline;
+}
+
+.rich-content blockquote {
+  padding: 4px 0 4px 16px;
+  color: var(--p-muted);
+  border-left: 4px solid var(--p-border);
+}
+
+.rich-content pre,
+.rich-content code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--p-surface-2);
+  border-radius: 6px;
+}
+
+.rich-content pre {
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+
+.rich-content code {
+  padding: 1px 5px;
+}
+
+.rich-content pre code {
+  padding: 0;
+  background: none;
+}
+
+.rich-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Los videos incrustados se adaptan al ancho, en proporción 16:9. */
+.rich-content iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 1em;
+  border: 0;
+  border-radius: 8px;
+  background: var(--p-surface-2);
+}
+
+.rich-content hr {
+  margin: 1.5em 0;
+  border: 0;
+  border-top: 1px solid var(--p-border);
+}
+
+.rich-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rich-content th,
+.rich-content td {
+  padding: 8px 10px;
+  border: 1px solid var(--p-border);
+}
+
+.rich-content th {
+  background: var(--p-surface-2);
+}

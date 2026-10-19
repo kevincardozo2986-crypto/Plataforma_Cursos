@@ -42,20 +42,13 @@
 
         <div class="panel-field">
           <label for="description">Instrucciones</label>
-          <textarea
-            id="description"
-            class="panel-textarea"
-            rows="7"
+          <app-rich-editor
+            inputId="description"
+            label="Instrucciones de la tarea"
+            [minHeight]="220"
             formControlName="description"
             placeholder="Qué deben entregar, formato, criterios de calificación…"
-          ></textarea>
-          <p class="panel-hint">Una línea en blanco separa los párrafos.</p>
-          @if (losesFormat()) {
-            <p class="panel-alert panel-alert--error">
-              Esta tarea tiene formato (negritas, enlaces o listas). Al guardarla desde aquí queda
-              como texto simple y ese formato se pierde.
-            </p>
-          }
+          />
         </div>
 
         <div class="row">

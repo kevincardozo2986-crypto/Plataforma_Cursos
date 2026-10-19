@@ -1,0 +1,158 @@
+:host {
+  display: block;
+}
+
+.narrow {
+  max-width: 780px;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  color: var(--p-muted);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 650;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.chip:hover {
+  color: var(--p-ink);
+  background: var(--p-surface);
+}
+
+.chip.active {
+  color: var(--p-ink);
+  background: var(--p-surface);
+  border-color: var(--p-border);
+}
+
+.count {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  color: var(--p-accent-ink);
+  font-size: 0.7rem;
+  background: var(--p-accent);
+  border-radius: 999px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  border-color: var(--p-accent);
+}
+
+.item.unread {
+  background: var(--p-accent-soft);
+}
+
+.dot {
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  margin-top: 7px;
+  border-radius: 50%;
+}
+
+.unread .dot {
+  background: var(--p-accent);
+}
+
+.text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.message {
+  color: var(--p-muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.when {
+  flex: 0 0 auto;
+  color: var(--p-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 44px 24px;
+  text-align: center;
+}
+
+.empty h2,
+.empty p {
+  margin: 0;
+}
+
+.empty p {
+  max-width: 380px;
+  color: var(--p-muted);
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  font-size: 1.7rem;
+  background: var(--p-surface-2);
+  border-radius: 18px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 0.82rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

@@ -1,12 +1,60 @@
-export type CertificateLayout = 'CLASSIC' | 'MODERN';
+export type CertificateLayout =
+  | 'CLASSIC'
+  | 'MODERN'
+  | 'ELEGANT'
+  | 'BOLD'
+  | 'MINIMAL'
+  | 'SEAL'
+  | 'GEOMETRIC'
+  | 'SIDEBAR'
+  | 'FRAME'
+  | 'DARK'
+  | 'WAVES'
+  | 'RIBBON';
 export type CertificateStatus = 'VALID' | 'REVOKED';
 
 export const LAYOUT_LABELS: Record<CertificateLayout, { label: string; hint: string }> = {
-  CLASSIC: { label: 'Clásico', hint: 'Doble borde y todo centrado.' },
-  MODERN: { label: 'Moderno', hint: 'Barra de color a la izquierda y texto alineado.' },
+  CLASSIC: { label: 'Clásico', hint: 'Doble borde, todo centrado.' },
+  MODERN: { label: 'Moderno', hint: 'Barra de color a la izquierda.' },
+  ELEGANT: { label: 'Elegante', hint: 'Papel crema, filete y remates en las esquinas.' },
+  BOLD: { label: 'Cabecera', hint: 'Banda de color con el título en blanco.' },
+  MINIMAL: { label: 'Minimalista', hint: 'Mucho aire, solo una línea de color.' },
+  SEAL: { label: 'Con sello', hint: 'Borde fino y un sello con cinta.' },
+  GEOMETRIC: { label: 'Geométrico', hint: 'Triángulos de color en dos esquinas.' },
+  SIDEBAR: { label: 'Panel lateral', hint: 'Panel de color con sello a la izquierda.' },
+  FRAME: { label: 'Marco', hint: 'Marco grueso con esquinas redondeadas.' },
+  DARK: { label: 'Oscuro', hint: 'Fondo oscuro con texto claro.' },
+  WAVES: { label: 'Olas', hint: 'Olas de color arriba y abajo.' },
+  RIBBON: { label: 'Cinta', hint: 'Cinta vertical con un sello.' },
 };
 
 export const LAYOUTS = Object.keys(LAYOUT_LABELS) as CertificateLayout[];
+
+/** Las del PDF, sin incrustar nada. */
+export const DEFAULT_FONT = 'SANS';
+
+export type FontCategory = 'Sans' | 'Serif' | 'Cursiva' | 'Título' | 'Mía';
+
+/** Una tipografía que se puede elegir (de GET /certificate-fonts). */
+export interface FontOption {
+  /** "SANS", "SERIF", "playfair-display" o "custom:12". Es lo que guarda la plantilla. */
+  key: string;
+  label: string;
+  category: FontCategory;
+  /** false = no tiene negrita: los títulos usan la normal. */
+  hasBold: boolean;
+  /** Archivo para mostrarla en pantalla; las del PDF (Helvetica y Times) no lo necesitan. */
+  regularUrl?: string;
+  boldUrl?: string | null;
+  /** Solo en las propias. */
+  id?: number;
+}
+
+export interface FontCatalog {
+  standard: FontOption[];
+  library: FontOption[];
+  custom: FontOption[];
+}
 
 /** Marcadores que se pueden escribir en el texto: se reemplazan al emitir el certificado. */
 export const PLACEHOLDERS: { token: string; label: string }[] = [
@@ -29,6 +77,10 @@ export interface CertificateTemplate {
   body: string;
   accentColor: string;
   layout: CertificateLayout;
+  /** Tipografía de título y nombre. */
+  font: string;
+  /** Tipografía del texto. */
+  bodyFont: string;
   ownerId: number;
   createdAt: string;
   updatedAt: string;
@@ -43,6 +95,8 @@ export interface CertificateTemplateInput {
   body: string;
   accentColor: string;
   layout: CertificateLayout;
+  font: string;
+  bodyFont: string;
 }
 
 export interface IssuedCertificate {

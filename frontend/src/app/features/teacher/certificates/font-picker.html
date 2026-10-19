@@ -1,0 +1,90 @@
+<div class="picker">
+  <span class="label" [id]="inputId() + '-label'">{{ label() }}</span>
+
+  <button
+    type="button"
+    class="trigger"
+    [id]="inputId()"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="open()"
+    [attr.aria-labelledby]="inputId() + '-label ' + inputId()"
+    (click)="toggle()"
+  >
+    <span class="name" [style.font-family]="family(current())">{{ current().label }}</span>
+    <span class="chip">{{ current().category === 'Mía' ? 'Mía' : current().category }}</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+  </button>
+
+  @if (open()) {
+    <div class="panel" (keydown)="onKey($event)">
+      <div class="list" role="listbox" [attr.aria-labelledby]="inputId() + '-label'">
+        @for (group of groups(); track group.category) {
+          <p class="group" role="presentation">{{ group.title }}</p>
+
+          @for (option of group.items; track option.key) {
+            <div class="row" role="presentation">
+              @if (confirmDeleteId() !== null && confirmDeleteId() === option.id) {
+                <span class="confirm">¿Borrar «{{ option.label }}»?</span>
+                <button type="button" class="mini danger" (click)="remove(option)">Sí</button>
+                <button type="button" class="mini" (click)="confirmDeleteId.set(null)">No</button>
+              } @else {
+                <button
+                  type="button"
+                  class="option"
+                  role="option"
+                  [class.selected]="option.key === value()"
+                  [attr.aria-selected]="option.key === value()"
+                  [style.font-family]="family(option)"
+                  (click)="select(option)"
+                >
+                  {{ option.label }}
+                  @if (option.key === value()) {
+                    <span class="check" aria-hidden="true">✓</span>
+                  }
+                </button>
+
+                @if (option.category === 'Mía') {
+                  <button
+                    type="button"
+                    class="mini danger"
+                    [attr.aria-label]="'Borrar la tipografía ' + option.label"
+                    (click)="askDelete(option)"
+                  >
+                    ×
+                  </button>
+                }
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="foot">
+        <label class="upload" [class.busy]="uploading()">
+          {{ uploading() ? 'Subiendo…' : '＋ Subir mi tipografía' }}
+          <input
+            type="file"
+            accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"
+            [disabled]="uploading()"
+            (change)="onFile($event)"
+          />
+        </label>
+        <span class="hint">.ttf, .otf, .woff o .woff2 · hasta 2 MB · solo la ves tú</span>
+
+        @if (error()) {
+          <p class="msg error" role="alert">{{ error() }}</p>
+        }
+        @if (notice()) {
+          <p class="msg ok" role="status">{{ notice() }}</p>
+        }
+      </div>
+    </div>
+  } @else {
+    @if (error()) {
+      <p class="msg error" role="alert">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p class="msg ok" role="status">{{ notice() }}</p>
+    }
+  }
+</div>

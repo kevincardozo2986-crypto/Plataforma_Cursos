@@ -43,6 +43,7 @@ export class DiscussionsRepository {
       where: { id, parentId: null },
       include: {
         author: { select: authorSelect },
+        course: { select: { id: true, title: true } },
         lesson: { select: { id: true, title: true } },
         replies: {
           orderBy: { createdAt: 'asc' },

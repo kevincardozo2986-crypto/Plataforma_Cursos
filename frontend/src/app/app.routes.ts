@@ -41,6 +41,15 @@ export const routes: Routes = [
       },
 
       {
+        // Todas las notificaciones de quien tiene la sesión, sea cual sea su rol.
+        path: 'notifications',
+        title: 'Notificaciones',
+        canActivate: [roleGuard('STUDENT', 'TEACHER', 'ADMIN')],
+        loadComponent: () =>
+          import('./features/notifications/notifications-page').then((m) => m.NotificationsPage),
+      },
+
+      {
         // Pública: el código del certificado se comprueba sin iniciar sesión.
         path: 'verificar',
         title: 'Verificar certificado',

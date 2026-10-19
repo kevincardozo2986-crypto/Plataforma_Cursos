@@ -68,9 +68,15 @@
               <p class="panel-field-error">El texto debe tener de 10 a 600 caracteres.</p>
             }
             <p class="panel-hint">
-              El nombre del estudiante y el del curso ya salen grandes en el certificado; este texto
-              va debajo.
+              El nombre y la cédula del estudiante salen siempre bajo «Se otorga a». El nombre del
+              curso, la fecha, la duración y el docente solo salen si los incluyes en este texto.
             </p>
+            @if (missingCourse()) {
+              <p class="panel-field-error" role="status">
+                Tu texto no menciona el curso: el certificado no diría de qué curso es. Usa el botón
+                «Curso» para incluirlo.
+              </p>
+            }
           </div>
 
           <fieldset class="layouts">
@@ -82,12 +88,44 @@
                   [class.selected]="form.controls.layout.value === option"
                 >
                   <input type="radio" formControlName="layout" [value]="option" />
+                  <app-certificate-preview
+                    class="thumb"
+                    [layout]="option"
+                    [color]="preview().color"
+                    [font]="preview().font"
+                    [bodyFont]="preview().bodyFont"
+                    [title]="preview().title"
+                    [body]="''"
+                    [student]="''"
+                    [instructor]="''"
+                  />
                   <strong>{{ layoutLabels[option].label }}</strong>
-                  <span class="panel-muted">{{ layoutLabels[option].hint }}</span>
                 </label>
               }
             </div>
+            <p class="panel-hint">{{ layoutLabels[form.controls.layout.value].hint }}</p>
           </fieldset>
+
+          <div class="fonts">
+            <app-font-picker
+              inputId="font"
+              label="Tipografía de título y nombre"
+              [value]="form.controls.font.value"
+              (valueChange)="form.controls.font.setValue($event); form.controls.font.markAsDirty()"
+            />
+            <app-font-picker
+              inputId="bodyFont"
+              label="Tipografía del texto"
+              [value]="form.controls.bodyFont.value"
+              (valueChange)="
+                form.controls.bodyFont.setValue($event); form.controls.bodyFont.markAsDirty()
+              "
+            />
+          </div>
+          <p class="panel-hint fonts-hint">
+            Puedes combinarlas: por ejemplo, el nombre en cursiva y el texto en una serif. ¿No está
+            la tuya? Súbela desde la lista; solo la verás tú.
+          </p>
 
           <div class="panel-field">
             <label for="accentColor">Color principal</label>
@@ -138,26 +176,19 @@
         <aside class="preview-col" aria-label="Vista previa">
           <span class="preview-label">VISTA PREVIA</span>
 
-          <div
-            class="cert"
-            [class.modern]="preview().layout === 'MODERN'"
-            [style.--accent]="preview().color"
-          >
-            <h2 class="cert-title">{{ preview().title }}</h2>
-            <p class="cert-to">Se otorga a</p>
-            <p class="cert-name">{{ preview().student }}</p>
-            <p class="cert-body">{{ preview().body }}</p>
+          <app-certificate-preview
+            [layout]="preview().layout"
+            [color]="preview().color"
+            [font]="preview().font"
+            [bodyFont]="preview().bodyFont"
+            [title]="preview().title"
+            [body]="preview().body"
+            [student]="preview().student"
+            [document]="preview().document"
+            [instructor]="preview().instructor"
+          />
 
-            <div class="cert-sign">
-              <span class="line"></span>
-              <strong>{{ preview().instructor }}</strong>
-              <small>Docente</small>
-            </div>
-          </div>
-
-          <p class="panel-hint">
-            Es una aproximación. Con «Guardar y ver PDF» ves el documento real, con tu firma.
-          </p>
+          <p class="panel-hint">Con «Guardar y ver PDF» ves el documento real, con tu firma.</p>
         </aside>
       </div>
     }

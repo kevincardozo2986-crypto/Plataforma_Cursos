@@ -46,6 +46,12 @@ export const TEACHER_ROUTES: Routes = [
       },
 
       {
+        path: 'summary',
+        title: 'Resumen',
+        loadComponent: () => import('./summary/summary-page').then((m) => m.SummaryPage),
+      },
+
+      {
         path: 'courses',
         title: 'Mis cursos',
         loadComponent: () => import('./courses/course-list/course-list').then((m) => m.CourseList),
@@ -176,6 +182,12 @@ export const TEACHER_ROUTES: Routes = [
         title: 'Discusión',
         loadComponent: () =>
           import('./discussions/discussion-thread').then((m) => m.DiscussionThreadPage),
+      },
+
+      {
+        path: 'reviews',
+        title: 'Reseñas',
+        loadComponent: () => import('./reviews/reviews-page').then((m) => m.ReviewsPage),
       },
 
       {

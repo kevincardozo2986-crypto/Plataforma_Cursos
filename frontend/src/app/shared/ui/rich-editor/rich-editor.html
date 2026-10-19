@@ -1,0 +1,340 @@
+<div class="editor" [class.disabled]="disabled()" (keydown.escape)="closePanels()">
+  <div class="top">
+    <button
+      type="button"
+      class="media-btn"
+      [disabled]="disabled()"
+      (mousedown)="$event.preventDefault()"
+      (click)="openMedia()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <circle cx="9" cy="10" r="1.6" />
+        <path d="m3 17 5-4 4 3 3-2 6 4" />
+      </svg>
+      Añadir medios
+    </button>
+
+    <div class="tabs" role="tablist" aria-label="Modo del editor">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="mode() === 'visual'"
+        [attr.aria-selected]="mode() === 'visual'"
+        (click)="show('visual')"
+      >
+        Visual
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="mode() === 'code'"
+        [attr.aria-selected]="mode() === 'code'"
+        (click)="show('code')"
+      >
+        Código
+      </button>
+    </div>
+  </div>
+
+  <div class="frame">
+    @if (mode() === 'visual') {
+      <div class="toolbar" role="toolbar" aria-label="Formato del texto">
+        <div class="group">
+          <select
+            class="block"
+            aria-label="Tipo de párrafo"
+            [disabled]="disabled()"
+            (change)="setBlock($event)"
+          >
+            @for (entry of blocks; track entry.value) {
+              <option [value]="entry.value" [selected]="block() === entry.value">
+                {{ entry.label }}
+              </option>
+            }
+          </select>
+        </div>
+
+        @for (group of toolbar; track $index) {
+          <div class="group">
+            @for (button of group; track button.id) {
+              <button
+                type="button"
+                class="tool"
+                [class.on]="button.state && active()[button.state]"
+                [attr.aria-pressed]="button.state ? !!active()[button.state] : null"
+                [attr.aria-label]="button.title"
+                [attr.title]="button.title"
+                [disabled]="disabled()"
+                (mousedown)="$event.preventDefault()"
+                (click)="run(button)"
+              >
+                @if (button.icon) {
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    @for (path of button.icon; track path) {
+                      <path [attr.d]="path" />
+                    }
+                  </svg>
+                } @else {
+                  <span class="glyph" [class]="'glyph g-' + button.id">{{ button.glyph }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
+
+        <div class="group">
+          <button
+            type="button"
+            class="tool"
+            aria-label="Insertar enlace"
+            title="Insertar enlace"
+            [class.on]="linkOpen()"
+            [disabled]="disabled()"
+            (mousedown)="$event.preventDefault()"
+            (click)="openLink()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              @for (path of linkIcon; track path) {
+                <path [attr.d]="path" />
+              }
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="tool"
+            aria-label="Quitar enlace"
+            title="Quitar enlace"
+            [disabled]="disabled()"
+            (mousedown)="$event.preventDefault()"
+            (click)="run({ id: 'unlink', title: '', command: 'unlink' })"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              @for (path of linkIcon; track path) {
+                <path [attr.d]="path" />
+              }
+              <path d="M4 4l16 16" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="group">
+          @for (button of toolbarEnd; track button.id) {
+            <button
+              type="button"
+              class="tool"
+              [attr.aria-label]="button.title"
+              [attr.title]="button.title"
+              [disabled]="disabled()"
+              (mousedown)="$event.preventDefault()"
+              (click)="run(button)"
+            >
+              @if (button.icon) {
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  @for (path of button.icon; track path) {
+                    <path [attr.d]="path" />
+                  }
+                </svg>
+              } @else {
+                <span class="glyph">{{ button.glyph }}</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (linkOpen()) {
+        <div class="panel link-panel" role="group" aria-label="Insertar enlace">
+          <input
+            class="panel-input"
+            type="url"
+            placeholder="https://ejemplo.com"
+            aria-label="Dirección del enlace"
+            [value]="linkUrl()"
+            (input)="setField('linkUrl', $event)"
+            (keydown.enter)="$event.preventDefault(); applyLink()"
+          />
+          <button
+            type="button"
+            class="panel-btn panel-btn--primary panel-btn--sm"
+            (click)="applyLink()"
+          >
+            Aplicar
+          </button>
+          <button
+            type="button"
+            class="panel-btn panel-btn--ghost panel-btn--sm"
+            (click)="closePanels()"
+          >
+            Cancelar
+          </button>
+          @if (linkError()) {
+            <p class="panel-field-error" role="alert">{{ linkError() }}</p>
+          }
+        </div>
+      }
+
+      <div class="area-wrap">
+        @if (empty()) {
+          <span class="placeholder" aria-hidden="true">{{ placeholder() }}</span>
+        }
+        <div
+          #area
+          class="area rich-content"
+          role="textbox"
+          aria-multiline="true"
+          [id]="inputId()"
+          [attr.aria-label]="label()"
+          [attr.contenteditable]="disabled() ? 'false' : 'true'"
+          [style.min-height.px]="minHeight()"
+          (input)="onInput()"
+          (keyup)="refreshState()"
+          (mouseup)="refreshState()"
+          (blur)="onBlur()"
+          (paste)="onPaste($event)"
+        ></div>
+      </div>
+    } @else {
+      <textarea
+        #code
+        class="code"
+        spellcheck="false"
+        [id]="inputId()"
+        [disabled]="disabled()"
+        [value]="html()"
+        [style.min-height.px]="minHeight()"
+        aria-label="Código HTML"
+        placeholder="<p>Escribe HTML aquí. Puedes pegar el código &lt;iframe&gt; de un video.</p>"
+        (input)="onCode($event)"
+        (blur)="onBlur()"
+      ></textarea>
+    }
+
+    @if (mediaOpen()) {
+      <div class="dialog" role="dialog" aria-modal="true" aria-label="Añadir medios">
+        <div class="dialog-head">
+          <strong>Añadir medios</strong>
+          <button type="button" class="close" aria-label="Cerrar" (click)="closePanels()">×</button>
+        </div>
+
+        <div class="media-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="mediaTab() === 'upload'"
+            [attr.aria-selected]="mediaTab() === 'upload'"
+            (click)="mediaTab.set('upload'); mediaError.set('')"
+          >
+            Subir imagen
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="mediaTab() === 'image'"
+            [attr.aria-selected]="mediaTab() === 'image'"
+            (click)="mediaTab.set('image'); mediaError.set('')"
+          >
+            Imagen por enlace
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="mediaTab() === 'video'"
+            [attr.aria-selected]="mediaTab() === 'video'"
+            (click)="mediaTab.set('video'); mediaError.set('')"
+          >
+            Video o iframe
+          </button>
+        </div>
+
+        <div class="dialog-body">
+          @switch (mediaTab()) {
+            @case ('upload') {
+              <label class="file panel-btn panel-btn--ghost">
+                {{ uploading() ? 'Subiendo… ' + percent() + '%' : 'Elegir una imagen' }}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  [disabled]="uploading()"
+                  (change)="onFile($event)"
+                />
+              </label>
+              <p class="panel-hint">PNG, JPG, WEBP o GIF. Se inserta donde estaba el cursor.</p>
+            }
+            @case ('image') {
+              <div class="panel-field">
+                <label for="media-url">Dirección de la imagen</label>
+                <input
+                  id="media-url"
+                  class="panel-input"
+                  type="url"
+                  placeholder="https://…/foto.png"
+                  [value]="mediaUrl()"
+                  (input)="setField('mediaUrl', $event)"
+                />
+              </div>
+              <button
+                type="button"
+                class="panel-btn panel-btn--primary panel-btn--sm"
+                (click)="addImageByUrl()"
+              >
+                Insertar imagen
+              </button>
+            }
+            @case ('video') {
+              <div class="panel-field">
+                <label for="media-embed">Enlace del video o código para incrustar</label>
+                <textarea
+                  id="media-embed"
+                  class="panel-textarea"
+                  rows="4"
+                  placeholder='https://www.youtube.com/watch?v=…   o   &lt;iframe src="…"&gt;&lt;/iframe&gt;'
+                  [value]="mediaEmbed()"
+                  (input)="setField('mediaEmbed', $event)"
+                ></textarea>
+                <p class="panel-hint">
+                  Funciona con YouTube, Vimeo, Loom, Dailymotion, Google Drive y Docs, Canva,
+                  CodePen y Genially. Pega el enlace o el código &lt;iframe&gt; que te dan al
+                  compartir.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="panel-btn panel-btn--primary panel-btn--sm"
+                (click)="addEmbed()"
+              >
+                Insertar
+              </button>
+            }
+          }
+
+          @if (mediaTab() !== 'video') {
+            <div class="panel-field alt">
+              <label for="media-alt">Texto alternativo (opcional)</label>
+              <input
+                id="media-alt"
+                class="panel-input"
+                [value]="mediaAlt()"
+                placeholder="Describe la imagen para quien no pueda verla"
+                (input)="setField('mediaAlt', $event)"
+              />
+            </div>
+          }
+
+          @if (mediaError()) {
+            <p class="panel-field-error" role="alert">{{ mediaError() }}</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+</div>

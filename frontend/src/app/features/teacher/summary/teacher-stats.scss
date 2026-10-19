@@ -1,0 +1,428 @@
+/*
+ * Colores de las series: los dos primeros espacios de la paleta categórica validada (azul y naranja),
+ * con su paso para fondo oscuro. Pasan la separación para daltonismo y el contraste (≥ 3:1)
+ * en ambos modos.
+ */
+:host {
+  --s1: #2a78d6;
+  --s2: #eb6834;
+
+  display: block;
+}
+
+:host-context(html.a11y-dark) {
+  --s1: #3987e5;
+  --s2: #d95926;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.overline {
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+h1 {
+  margin: 4px 0 0;
+  color: var(--p-ink);
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.periods,
+.view {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--p-surface-2);
+  border-radius: 10px;
+}
+
+.chip {
+  padding: 7px 12px;
+  color: var(--p-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.chip:hover {
+  color: var(--p-ink);
+}
+
+.chip.active {
+  color: var(--p-ink);
+  background: var(--p-surface);
+  box-shadow: 0 1px 3px rgba(10, 43, 80, 0.12);
+}
+
+.course .panel-select {
+  min-width: 200px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: opacity 0.15s;
+}
+
+.body.reloading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.loading,
+.empty {
+  padding: 24px 0;
+  text-align: center;
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+}
+
+.notice.pending {
+  color: var(--p-warn);
+  background: var(--p-warn-soft);
+}
+
+.notice.error {
+  margin-bottom: 14px;
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+}
+
+.links {
+  display: flex;
+  gap: 14px;
+}
+
+.links a {
+  color: inherit;
+  font-weight: 700;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 14px;
+}
+
+.label {
+  color: var(--p-muted);
+  font-size: 0.8rem;
+}
+
+/* Cifras grandes con números proporcionales; los tabulares solo van en columnas. */
+.value {
+  color: var(--p-ink);
+  font-size: 1.9rem;
+  line-height: 1.15;
+}
+
+.note {
+  color: var(--p-muted);
+  font-size: 0.76rem;
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0;
+  padding: 0 4px;
+  color: var(--p-muted);
+  font-size: 0.85rem;
+  list-style: none;
+}
+
+.states strong {
+  color: var(--p-ink);
+}
+
+/* ---------- Gráfica ---------- */
+
+.chart {
+  margin: 0;
+}
+
+.chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-head p {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+}
+
+.legend {
+  display: flex;
+  gap: 18px;
+  margin: 14px 0 6px;
+  padding: 0;
+  color: var(--p-ink);
+  font-size: 0.85rem;
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Clave de línea (no un recuadro): un trazo corto del color de la serie. */
+.key {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid;
+  border-radius: 2px;
+}
+
+.key.s1 {
+  border-color: var(--s1);
+}
+
+.key.s2 {
+  border-color: var(--s2);
+}
+
+.plot-wrap {
+  position: relative;
+}
+
+.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+.plot:focus-visible {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Retícula y ejes: hairline, sólidos y discretos. El texto usa color de texto, no el de la serie. */
+.grid {
+  stroke: var(--p-border);
+  stroke-width: 1;
+}
+
+.axis {
+  fill: var(--p-muted);
+  font-size: 11px;
+}
+
+/* Líneas de 2 px con extremos redondeados. */
+.line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line.s1 {
+  stroke: var(--s1);
+}
+
+.line.s2 {
+  stroke: var(--s2);
+}
+
+/*
+ * Punto de 4 px de radio con un anillo de 2 px del color de la tarjeta: el trazo se pinta
+ * detrás del relleno, así solo se ve la parte de afuera y no se confunde donde se cruzan las líneas.
+ */
+.dot {
+  stroke: var(--p-surface);
+  stroke-width: 4;
+  paint-order: stroke;
+}
+
+.dot.s1 {
+  fill: var(--s1);
+}
+
+.dot.s2 {
+  fill: var(--s2);
+}
+
+.cross {
+  stroke: var(--p-muted);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.tip {
+  position: absolute;
+  top: 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(10, 43, 80, 0.18);
+  transform: translateX(12px);
+  pointer-events: none;
+}
+
+.tip.left {
+  transform: translateX(calc(-100% - 12px));
+}
+
+.tip-date {
+  color: var(--p-muted);
+  font-size: 0.76rem;
+}
+
+.tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--p-muted);
+}
+
+/* En el cuadro, el valor manda y el nombre de la serie queda en segundo plano. */
+.tip-row strong {
+  min-width: 2ch;
+  color: var(--p-ink);
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+/* ---------- Tablas ---------- */
+
+.table-scroll {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+table.data th,
+table.data td {
+  padding: 10px 12px;
+  text-align: left;
+  border-top: 1px solid var(--p-border);
+}
+
+table.data thead th {
+  color: var(--p-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-top: 0;
+}
+
+table.data tbody th {
+  font-weight: 600;
+}
+
+table.data .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+table.data a {
+  color: var(--p-ink);
+  text-decoration: none;
+}
+
+table.data a:hover {
+  color: var(--p-accent);
+  text-decoration: underline;
+}
+
+.status {
+  display: block;
+  color: var(--p-muted);
+  font-size: 0.74rem;
+  font-weight: 400;
+}
+
+.breakdown h3 {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 600px) {
+  .course .panel-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filters,
+  .course {
+    width: 100%;
+  }
+}

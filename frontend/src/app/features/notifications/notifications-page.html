@@ -1,0 +1,101 @@
+<section class="panel-page">
+  <div class="panel-container narrow">
+    <app-page-header
+      title="Notificaciones"
+      subtitle="Avisos de tus cursos: preguntas, reseñas, calificaciones y más."
+    >
+      @if (center.unread() > 0) {
+        <button type="button" class="panel-btn panel-btn--ghost" (click)="markAll()">
+          Marcar todas como leídas
+        </button>
+      }
+    </app-page-header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="filters" role="group" aria-label="Qué mostrar">
+      <button
+        type="button"
+        class="chip"
+        [class.active]="!onlyUnread()"
+        [attr.aria-pressed]="!onlyUnread()"
+        (click)="setUnread(false)"
+      >
+        Todas
+      </button>
+      <button
+        type="button"
+        class="chip"
+        [class.active]="onlyUnread()"
+        [attr.aria-pressed]="onlyUnread()"
+        (click)="setUnread(true)"
+      >
+        Sin leer
+        @if (center.unread() > 0) {
+          <span class="count">{{ center.unread() }}</span>
+        }
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="panel-card"><p class="panel-muted">Cargando notificaciones…</p></div>
+    } @else if (items().length === 0) {
+      <div class="panel-card empty">
+        <span class="empty-icon" aria-hidden="true">🔔</span>
+        <h2>{{ onlyUnread() ? 'Estás al día' : 'No tienes notificaciones' }}</h2>
+        <p>
+          {{
+            onlyUnread()
+              ? 'No tienes avisos sin leer.'
+              : 'Cuando pase algo en tus cursos, te avisaremos aquí.'
+          }}
+        </p>
+      </div>
+    } @else {
+      <ul class="list">
+        @for (item of items(); track item.id) {
+          <li>
+            <button
+              type="button"
+              class="panel-card item"
+              [class.unread]="!item.readAt"
+              (click)="select(item)"
+            >
+              <span class="dot" aria-hidden="true"></span>
+              <span class="text">
+                <strong>{{ item.title }}</strong>
+                <span class="message">{{ item.message }}</span>
+              </span>
+              <span class="when">{{ timeAgo(item.createdAt) }}</span>
+              @if (!item.readAt) {
+                <span class="sr-only">Sin leer</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+
+      <div class="pager">
+        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasPrev()"
+          (click)="page(-1)"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          class="panel-btn panel-btn--ghost panel-btn--sm"
+          [disabled]="!hasNext()"
+          (click)="page(1)"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+</section>

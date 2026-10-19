@@ -14,6 +14,7 @@ import { apiErrorMessage } from '../../../core/http/api-error';
 import { downloadBlob, openBlob } from '../../../core/utils/download';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { TeacherCourse } from '../courses/teacher-courses.models';
+import { CertificatePreview } from './certificate-preview';
 import { TeacherCoursesService } from '../courses/teacher-courses.service';
 
 type Tab = 'templates' | 'issued';
@@ -23,7 +24,7 @@ const PAGE_SIZE = 20;
 /** Certificados del docente: sus plantillas y los certificados ya emitidos en sus cursos. */
 @Component({
   selector: 'app-certificates-page',
-  imports: [RouterLink, DatePipe, PageHeader],
+  imports: [RouterLink, DatePipe, PageHeader, CertificatePreview],
   templateUrl: './certificates-page.html',
   styleUrl: './certificates-page.scss',
 })

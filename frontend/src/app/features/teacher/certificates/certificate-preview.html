@@ -1,0 +1,133 @@
+<div class="cert" role="img" [attr.aria-label]="'Vista previa del certificado: ' + title()">
+  <div class="art" [innerHTML]="art()"></div>
+
+  @let b = box();
+
+  <p
+    class="t title"
+    [style.left.%]="x(b.x)"
+    [style.top.%]="y(b.titleY)"
+    [style.width.%]="x(b.width)"
+    [style.text-align]="b.align"
+    [style.font-size.cqw]="size(titleSize())"
+    [style.color]="b.colors.title"
+    [style.font-family]="headingFamily()"
+    [style.font-weight]="headingWeight()"
+    [style.letter-spacing.cqw]="b.upper ? size(1.5) : null"
+  >
+    {{ titleText() }}
+  </p>
+
+  <p
+    class="t"
+    [style.left.%]="x(b.x)"
+    [style.top.%]="y(b.contentY)"
+    [style.width.%]="x(b.width)"
+    [style.text-align]="b.align"
+    [style.font-size.cqw]="size(14)"
+    [style.color]="b.colors.soft"
+    [style.font-family]="bodyFamily()"
+    [style.font-weight]="400"
+  >
+    Se otorga a
+  </p>
+
+  <p
+    class="t strong"
+    [style.left.%]="x(b.x)"
+    [style.top.%]="y(b.contentY + 30)"
+    [style.width.%]="x(b.width)"
+    [style.text-align]="b.align"
+    [style.font-size.cqw]="size(nameSize())"
+    [style.color]="b.colors.name"
+    [style.font-family]="headingFamily()"
+    [style.font-weight]="headingWeight()"
+  >
+    {{ student() }}
+  </p>
+
+  @if (document()) {
+    <p
+      class="t"
+      [style.left.%]="x(b.x)"
+      [style.top.%]="y(b.contentY + 80)"
+      [style.width.%]="x(b.width)"
+      [style.text-align]="b.align"
+      [style.font-size.cqw]="size(11)"
+      [style.color]="b.colors.soft"
+      [style.font-family]="bodyFamily()"
+      [style.font-weight]="400"
+    >
+      Documento de identidad: {{ document() }}
+    </p>
+  }
+
+  @if (b.rule !== 'none') {
+    <span
+      class="rule"
+      [style.left.%]="x(ruleLeft())"
+      [style.top.%]="y(b.contentY + 100)"
+      [style.width.%]="x(260)"
+      [style.background]="b.colors.accent"
+    ></span>
+  }
+
+  <p
+    class="t wrap"
+    [style.left.%]="x(b.x + inset())"
+    [style.top.%]="y(bodyTop())"
+    [style.width.%]="x(b.width - inset() * 2)"
+    [style.text-align]="b.align"
+    [style.font-size.cqw]="size(16)"
+    [style.color]="b.colors.text"
+    [style.font-family]="bodyFamily()"
+    [style.font-weight]="400"
+  >
+    {{ body() }}
+  </p>
+
+  <span
+    class="sign-line"
+    [style.left.%]="x(b.signature.x)"
+    [style.top.%]="y(462)"
+    [style.width.%]="x(b.signature.width)"
+    [style.background]="b.colors.line"
+  ></span>
+  <p
+    class="t strong"
+    [style.left.%]="x(b.signature.x)"
+    [style.top.%]="y(468)"
+    [style.width.%]="x(b.signature.width)"
+    [style.text-align]="'center'"
+    [style.font-size.cqw]="size(12)"
+    [style.color]="b.colors.name"
+    [style.font-family]="headingFamily()"
+    [style.font-weight]="headingWeight()"
+  >
+    {{ instructor() }}
+  </p>
+  <p
+    class="t"
+    [style.left.%]="x(b.signature.x)"
+    [style.top.%]="y(484)"
+    [style.width.%]="x(b.signature.width)"
+    [style.text-align]="'center'"
+    [style.font-size.cqw]="size(9.5)"
+    [style.color]="b.colors.soft"
+    [style.font-family]="bodyFamily()"
+    [style.font-weight]="400"
+  >
+    Docente
+  </p>
+
+  <p
+    class="t footer"
+    [style.left.%]="x(b.x)"
+    [style.top.%]="y(b.footerY)"
+    [style.width.%]="x(b.width)"
+    [style.font-size.cqw]="size(8.5)"
+    [style.color]="b.colors.footer"
+  >
+    Código de verificación: {{ code() }}
+  </p>
+</div>

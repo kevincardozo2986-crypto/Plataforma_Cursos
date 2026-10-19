@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+/* El papel no cambia con el modo oscuro: un certificado se imprime sobre blanco. */
+.cert {
+  position: relative;
+  aspect-ratio: 841.89 / 595.28;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 2px;
+  font-family: Helvetica, Arial, sans-serif;
+  box-shadow: 0 6px 22px rgba(10, 43, 80, 0.16);
+  user-select: none;
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+}
+
+/* El SVG se inserta por código: sus elementos no llevan el atributo de este componente. */
+.art ::ng-deep svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.t {
+  position: absolute;
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.t.wrap {
+  white-space: normal;
+  line-height: 1.32;
+}
+
+.strong {
+  font-weight: 700;
+}
+
+.title {
+  font-weight: 700;
+}
+
+.footer {
+  text-align: center;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.rule,
+.sign-line {
+  position: absolute;
+  height: 0.15cqw;
+}

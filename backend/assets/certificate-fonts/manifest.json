@@ -1,0 +1,198 @@
+[
+  {
+    "key": "anton",
+    "label": "Anton",
+    "category": "Sans",
+    "regular": "anton-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "bebas-neue",
+    "label": "Bebas Neue",
+    "category": "Sans",
+    "regular": "bebas-neue-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "lato",
+    "label": "Lato",
+    "category": "Sans",
+    "regular": "lato-regular.woff",
+    "bold": "lato-bold.woff"
+  },
+  {
+    "key": "montserrat",
+    "label": "Montserrat",
+    "category": "Sans",
+    "regular": "montserrat-regular.woff",
+    "bold": "montserrat-bold.woff"
+  },
+  {
+    "key": "nunito",
+    "label": "Nunito",
+    "category": "Sans",
+    "regular": "nunito-regular.woff",
+    "bold": "nunito-bold.woff"
+  },
+  {
+    "key": "open-sans",
+    "label": "Open Sans",
+    "category": "Sans",
+    "regular": "open-sans-regular.woff",
+    "bold": "open-sans-bold.woff"
+  },
+  {
+    "key": "oswald",
+    "label": "Oswald",
+    "category": "Sans",
+    "regular": "oswald-regular.woff",
+    "bold": "oswald-bold.woff"
+  },
+  {
+    "key": "poppins",
+    "label": "Poppins",
+    "category": "Sans",
+    "regular": "poppins-regular.woff",
+    "bold": "poppins-bold.woff"
+  },
+  {
+    "key": "raleway",
+    "label": "Raleway",
+    "category": "Sans",
+    "regular": "raleway-regular.woff",
+    "bold": "raleway-bold.woff"
+  },
+  {
+    "key": "roboto",
+    "label": "Roboto",
+    "category": "Sans",
+    "regular": "roboto-regular.woff",
+    "bold": "roboto-bold.woff"
+  },
+  {
+    "key": "cinzel",
+    "label": "Cinzel",
+    "category": "Serif",
+    "regular": "cinzel-regular.woff",
+    "bold": "cinzel-bold.woff"
+  },
+  {
+    "key": "cormorant-garamond",
+    "label": "Cormorant Garamond",
+    "category": "Serif",
+    "regular": "cormorant-garamond-regular.woff",
+    "bold": "cormorant-garamond-bold.woff"
+  },
+  {
+    "key": "eb-garamond",
+    "label": "EB Garamond",
+    "category": "Serif",
+    "regular": "eb-garamond-regular.woff",
+    "bold": "eb-garamond-bold.woff"
+  },
+  {
+    "key": "libre-baskerville",
+    "label": "Libre Baskerville",
+    "category": "Serif",
+    "regular": "libre-baskerville-regular.woff",
+    "bold": "libre-baskerville-bold.woff"
+  },
+  {
+    "key": "lora",
+    "label": "Lora",
+    "category": "Serif",
+    "regular": "lora-regular.woff",
+    "bold": "lora-bold.woff"
+  },
+  {
+    "key": "merriweather",
+    "label": "Merriweather",
+    "category": "Serif",
+    "regular": "merriweather-regular.woff",
+    "bold": "merriweather-bold.woff"
+  },
+  {
+    "key": "playfair-display",
+    "label": "Playfair Display",
+    "category": "Serif",
+    "regular": "playfair-display-regular.woff",
+    "bold": "playfair-display-bold.woff"
+  },
+  {
+    "key": "allura",
+    "label": "Allura",
+    "category": "Cursiva",
+    "regular": "allura-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "dancing-script",
+    "label": "Dancing Script",
+    "category": "Cursiva",
+    "regular": "dancing-script-regular.woff",
+    "bold": "dancing-script-bold.woff"
+  },
+  {
+    "key": "great-vibes",
+    "label": "Great Vibes",
+    "category": "Cursiva",
+    "regular": "great-vibes-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "pacifico",
+    "label": "Pacifico",
+    "category": "Cursiva",
+    "regular": "pacifico-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "parisienne",
+    "label": "Parisienne",
+    "category": "Cursiva",
+    "regular": "parisienne-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "satisfy",
+    "label": "Satisfy",
+    "category": "Cursiva",
+    "regular": "satisfy-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "abril-fatface",
+    "label": "Abril Fatface",
+    "category": "Título",
+    "regular": "abril-fatface-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "alfa-slab-one",
+    "label": "Alfa Slab One",
+    "category": "Título",
+    "regular": "alfa-slab-one-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "cinzel-decorative",
+    "label": "Cinzel Decorative",
+    "category": "Título",
+    "regular": "cinzel-decorative-regular.woff",
+    "bold": "cinzel-decorative-bold.woff"
+  },
+  {
+    "key": "lobster",
+    "label": "Lobster",
+    "category": "Título",
+    "regular": "lobster-regular.woff",
+    "bold": null
+  },
+  {
+    "key": "yeseva-one",
+    "label": "Yeseva One",
+    "category": "Título",
+    "regular": "yeseva-one-regular.woff",
+    "bold": null
+  }
+]

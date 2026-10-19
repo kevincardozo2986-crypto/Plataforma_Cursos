@@ -56,12 +56,7 @@
 
     <div class="panel-field">
       <label for="description">¿De qué trata el curso?</label>
-      <textarea
-        id="description"
-        class="panel-textarea tall"
-        formControlName="description"
-        placeholder="Cuéntales a los estudiantes qué van a aprender y por qué vale la pena."
-      ></textarea>
+      <app-rich-editor inputId="description" label="¿De qué trata el curso?" formControlName="description" [minHeight]="280" placeholder="Cuéntales a los estudiantes qué van a aprender y por qué vale la pena." />
     </div>
   </section>
 
@@ -231,7 +226,7 @@
       inputId="introVideoUrl"
       label="Video introductorio (opcional)"
       placeholder="Pega un enlace o sube un archivo"
-      hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace."
+      hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace de YouTube o Vimeo."
       [control]="form.controls.introVideoUrl"
       [error]="errorOf('introVideoUrl')"
     />

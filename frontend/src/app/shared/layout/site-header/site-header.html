@@ -73,6 +73,10 @@
       </button>
 
       @if (auth.user()) {
+        <app-notification-bell />
+      }
+
+      @if (auth.user()) {
         <button type="button" class="icon-button" (click)="logout()" aria-label="Cerrar sesión">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M10 17l5-5-5-5" />

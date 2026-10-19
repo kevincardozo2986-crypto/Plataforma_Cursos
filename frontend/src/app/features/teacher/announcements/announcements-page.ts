@@ -1,3 +1,4 @@
+import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,8 +9,8 @@ import {
   AnnouncementsService,
 } from '../../../core/announcements/announcements.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
-import { hasRichFormatting, htmlToText, textToHtml } from '../../../core/utils/html-text';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { RichEditor } from '../../../shared/ui/rich-editor/rich-editor';
 import { TeacherCourse } from '../courses/teacher-courses.models';
 import { TeacherCoursesService } from '../courses/teacher-courses.service';
 
@@ -18,7 +19,7 @@ const PAGE_SIZE = 20;
 /** Anuncios del docente a los inscritos de sus cursos. */
 @Component({
   selector: 'app-announcements-page',
-  imports: [ReactiveFormsModule, DatePipe, PageHeader],
+  imports: [ReactiveFormsModule, DatePipe, PageHeader, RichEditor, RichHtmlPipe],
   templateUrl: './announcements-page.html',
   styleUrl: './announcements-page.scss',
 })
@@ -59,7 +60,6 @@ export class AnnouncementsPage {
 
   // Edición y borrado de uno existente
   readonly editingId = signal<number | null>(null);
-  readonly editLosesFormat = signal(false);
   readonly saving = signal(false);
   readonly editor = new FormGroup({
     title: new FormControl('', {
@@ -118,16 +118,14 @@ export class AnnouncementsPage {
     this.error.set('');
 
     const { courseId, title, body, notify } = this.composer.getRawValue();
-    const html = textToHtml(body);
-
-    if (this.composer.invalid || courseId === null || !html) {
+    if (this.composer.invalid || courseId === null) {
       this.composer.markAllAsTouched();
       return;
     }
 
     this.publishing.set(true);
 
-    this.api.create(courseId, { title: title.trim(), body: html, notify }).subscribe({
+    this.api.create(courseId, { title: title.trim(), body, notify }).subscribe({
       next: (created) => {
         this.notice.set(
           notify
@@ -150,8 +148,7 @@ export class AnnouncementsPage {
 
   edit(item: Announcement): void {
     this.editingId.set(item.id);
-    this.editLosesFormat.set(hasRichFormatting(item.body));
-    this.editor.reset({ title: item.title, body: htmlToText(item.body) });
+    this.editor.reset({ title: item.title, body: item.body });
     this.confirmDeleteId.set(null);
   }
 
@@ -161,9 +158,7 @@ export class AnnouncementsPage {
 
   saveEdit(item: Announcement): void {
     const { title, body } = this.editor.getRawValue();
-    const html = textToHtml(body);
-
-    if (this.editor.invalid || !html) {
+    if (this.editor.invalid) {
       this.editor.markAllAsTouched();
       return;
     }
@@ -171,7 +166,7 @@ export class AnnouncementsPage {
     this.saving.set(true);
     this.error.set('');
 
-    this.api.update(item.id, { title: title.trim(), body: html }).subscribe({
+    this.api.update(item.id, { title: title.trim(), body }).subscribe({
       next: (updated) => {
         this.items.update((list) =>
           list.map((entry) => (entry.id === item.id ? { ...entry, ...updated } : entry)),

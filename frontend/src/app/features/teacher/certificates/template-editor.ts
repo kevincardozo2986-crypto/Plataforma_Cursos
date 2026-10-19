@@ -19,12 +19,14 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { openBlob } from '../../../core/utils/download';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { CertificatePreview } from './certificate-preview';
+import { FontPicker } from './font-picker';
 import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './certificate-text';
 
 /** Crear o editar una plantilla de certificado, con una vista previa que se actualiza al escribir. */
 @Component({
   selector: 'app-template-editor',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, CertificatePreview, FontPicker],
   templateUrl: './template-editor.html',
   styleUrl: './template-editor.scss',
 })
@@ -65,6 +67,10 @@ export class TemplateEditor {
       validators: [Validators.required, Validators.pattern(HEX_COLOR)],
     }),
     layout: new FormControl<CertificateLayout>('CLASSIC', { nonNullable: true }),
+    /** Tipografía de título y nombre. */
+    font: new FormControl('SANS', { nonNullable: true }),
+    /** Tipografía del texto. */
+    bodyFont: new FormControl('SANS', { nonNullable: true }),
   });
 
   private readonly value = toSignal(
@@ -83,21 +89,27 @@ export class TemplateEditor {
   });
 
   readonly preview = computed(() => {
-    const { title, body, accentColor, layout } = this.value();
+    const { title, body, accentColor, layout, font, bodyFont } = this.value();
     const values = sampleValues(this.instructor());
 
     return {
       title,
       body: fillSample(body, values),
       student: values['student'],
+      document: '1.234.567.890',
       instructor: values['instructor'],
       // Un color a medio escribir no debe romper la vista previa.
       color: HEX_COLOR.test(accentColor) ? accentColor : DEFAULT_COLOR,
       layout,
+      font,
+      bodyFont,
     };
   });
 
   readonly unknown = computed(() => unknownPlaceholders(this.value().body));
+
+  /** El nombre del curso solo sale si el texto lo incluye con {{course}}. */
+  readonly missingCourse = computed(() => !/\{\{\s*course\s*\}\}/.test(this.value().body));
 
   constructor() {
     if (this.id !== null) {
@@ -198,6 +210,8 @@ export class TemplateEditor {
       body: template.body,
       accentColor: template.accentColor,
       layout: template.layout,
+      font: template.font ?? 'SANS',
+      bodyFont: template.bodyFont ?? template.font ?? 'SANS',
     });
   }
 }

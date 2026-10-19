@@ -25,15 +25,27 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
   "title": "Certificado de finalización",
   "body": "Por haber completado satisfactoriamente el curso «{{course}}», impartido por {{instructor}}, el {{date}}.",
   "accentColor": "#1F3A8A",
-  "layout": "CLASSIC"
+  "layout": "CLASSIC",
+  "font": "playfair-display",
+  "bodyFont": "lora"
 }
 ```
 
 - Solo `name` es obligatorio; lo demás tiene valores por defecto (los de arriba).
-- `layout`: `CLASSIC` (doble borde, centrado) o `MODERN` (barra de color a la izquierda). `accentColor`: hexadecimal de 6 dígitos.
+- `layout` (12 diseños): `CLASSIC` (doble borde), `MODERN` (barra lateral), `ELEGANT` (papel crema con remates), `BOLD` (banda
+  de color arriba), `MINIMAL`, `SEAL` (con sello y cinta), `GEOMETRIC` (triángulos), `SIDEBAR` (panel lateral con sello),
+  `FRAME` (marco grueso), `DARK` (fondo oscuro), `WAVES` (olas) y `RIBBON` (cinta vertical). Por defecto `CLASSIC`.
+- `font` y `bodyFont`: la tipografía del **título y el nombre** y la del **texto** (se pueden combinar: nombre en cursiva y texto en serif).
+  Valen `"SANS"` (Helvetica, por defecto), `"SERIF"` (Times), la clave de una de la biblioteca (`"playfair-display"`, `"great-vibes"`…)
+  o `"custom:<id>"` (una que subió el propio docente). Son independientes del diseño y del color. Ver «Tipografías» abajo.
+- `accentColor`: hexadecimal de 6 dígitos. Los diseños derivan de él sus tonos claros y oscuros (el `DARK` lo usa para el fondo).
+- En el frontend, la geometría de cada diseño está duplicada para la vista previa (`certificate-art.ts`): si se cambia un diseño
+  en `certificate-pdf.ts`, hay que cambiarlo también allá.
 - **Marcadores** en `body`: `{{student}}` `{{course}}` `{{date}}` `{{hours}}` `{{instructor}}`. Uno mal escrito (`{{estudiante}}`) se
   rechaza con un `400` que lista los válidos. `{{hours}}` sale como "20 horas" (de la duración del curso) y queda vacío si el curso no la tiene.
-- El nombre del estudiante y el del curso se dibujan siempre, grandes; el texto va debajo. Los nombres muy largos se achican solos.
+- **Siempre se dibujan** el nombre del estudiante (grande) y, debajo, su **documento de identidad** («Documento de identidad: 1.234.567.890», con puntos de miles si es numérico). El texto va después. Los nombres muy largos se achican solos.
+- **Solo si están en el texto** aparecen el curso, la fecha, la duración y el docente. Si una plantilla no incluye `{{course}}`, el certificado no dice de qué curso es (el editor lo avisa).
+- El documento se guarda como copia fija en el certificado (`studentDocument`); los emitidos antes de que existiera no lo tienen y se imprimen sin esa línea. **No** se muestra en la verificación pública (`GET /certificates/verify/:code`): es un dato personal.
 - Cada docente solo ve y usa **sus** plantillas (`403` con las de otro). Máximo 50 por docente.
 - La vista previa trae **la firma y el nombre de quien la mira**. Requiere token: pedirla con `HttpClient` como `blob`.
 
@@ -61,7 +73,7 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
 - **Cuándo se emite:** al marcar la última lección del curso (y, retroactivamente, al asignar la plantilla a un curso que ya
   tenía estudiantes que lo terminaron). Se emite **una vez** por estudiante y curso; completar de nuevo no duplica nada.
   Al estudiante le llega la notificación `CERTIFICATE_ISSUED` (`courseId`, `refId` = id del certificado).
-- **Copia fija:** el certificado guarda el nombre, el curso, la firma y el diseño **tal como estaban al emitirlo**. Si luego se
+- **Copia fija:** el certificado guarda el nombre, el curso, la firma y el diseño (con su `layout` y `font`) **tal como estaban al emitirlo**. Los emitidos antes de que existiera `font` se dibujan con `SANS`. Si luego se
   renombra el curso o se edita o borra la plantilla, los certificados ya emitidos **no cambian**.
 - **Firma:** la del autor del curso (su `signatureUrl` del perfil, ver `API-PERFIL.md`) y su nombre público. Sin firma, el PDF sale con
   la línea y el nombre.
@@ -78,3 +90,31 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
 - `PATCH /courses/:id` acepta `certificateTemplateId` (id de **tu** plantilla; `null` quita el certificado del curso).
   Devuelve además `certificatesIssued`: cuántos certificados se emitieron en ese momento a quienes ya habían terminado.
 - `GET /courses/manage/:id` trae `certificateTemplate: { id, name }` (o `null`).
+
+## 4. Tipografías
+
+Cualquier tipografía: una biblioteca de **28** (más Helvetica y Times del PDF) y las que suba cada docente. Todas se **incrustan en el PDF**,
+así que el certificado se ve igual en cualquier computador.
+
+| Ruta | Quién | Para qué |
+|---|---|---|
+| `GET /certificate-fonts` | docente, admin | Catálogo: `standard`, `library` y `custom` (solo las propias), cada una con `key`, `label`, `category`, `hasBold` y `regularUrl`/`boldUrl` |
+| `GET /certificate-fonts/files/:name` | **público** | Archivo de una tipografía de la biblioteca (caché de un año; solo sirve los del manifiesto) |
+| `POST /certificate-fonts/custom` | docente, admin | Sube una propia (`multipart`, campo `file`, opcional `name`) |
+| `GET /certificate-fonts/custom/:id/file` | su dueño, admin | El archivo de una propia (para la vista previa; pide sesión) |
+| `DELETE /certificate-fonts/custom/:id` | su dueño, admin | La borra |
+
+- **Biblioteca** (`backend/assets/certificate-fonts/`, con `manifest.json` y `LICENSES.txt`): Sans (Anton, Bebas Neue, Lato, Montserrat, Nunito, Open Sans,
+  Oswald, Poppins, Raleway, Roboto), Serif (Cinzel, Cormorant Garamond, EB Garamond, Libre Baskerville, Lora, Merriweather, Playfair Display),
+  Cursivas (Allura, Dancing Script, Great Vibes, Pacifico, Parisienne, Satisfy) y Títulos (Abril Fatface, Alfa Slab One, Cinzel Decorative, Lobster,
+  Yeseva One). Todas con licencia SIL OFL (libres para incrustar y redistribuir) y comprobadas: dibujan todas las letras del español, «», ¿ y ¡.
+  Se leen desde `process.cwd()/assets/certificate-fonts`; se puede cambiar la carpeta con la variable `FONTS_DIR`.
+- **Propias:** `.ttf`, `.otf`, `.woff` o `.woff2`, hasta 2 MB, máximo 20 por docente. El formato se comprueba por el contenido (no por la extensión),
+  el archivo se abre de verdad (uno dañado se rechaza) y debe dibujar todas las letras del español (si le falta la `ñ` o una tilde, se rechaza
+  diciendo cuáles). Se guardan en `uploads/.fonts/` con nombre aleatorio y **solo las usa su dueño**.
+- **Borrado protegido:** no se puede borrar una propia que use una plantilla (`409`) ni una que esté en un certificado ya emitido (`409`), porque se
+  necesita para volver a generarlo. Si aun así faltara, el PDF se genera con Helvetica en vez de fallar.
+- Si una tipografía **no tiene negrita** (`hasBold: false`: las cursivas y las propias), el título usa la normal; la vista previa tampoco la falsea.
+- **Certificados antiguos:** los emitidos con una sola tipografía (`font` sin `bodyFont`) usan esa misma para todo; los que no traen ninguna, Helvetica.
+- **Frontend:** `app-font-picker` (lista con cada nombre en su letra y subida de la propia) y `FontLoader` (registra las tipografías en el navegador con
+  `FontFace`; las propias se bajan con el token). La vista previa mide el texto con la tipografía real, igual que el PDF, para achicar nombres largos.

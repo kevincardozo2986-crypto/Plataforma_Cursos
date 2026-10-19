@@ -3,6 +3,7 @@ import {
   DEFAULT_BODY,
   fillTemplate,
   findUnknownPlaceholders,
+  formatDocument,
   formatHours,
   formatLongDate,
   generateCode,
@@ -111,5 +112,19 @@ describe('pdfFileName', () => {
 
   it('un título sin letras usa un nombre genérico', () => {
     expect(pdfFileName('???')).toBe('certificado-curso.pdf');
+  });
+});
+
+describe('formatDocument', () => {
+  it('pone puntos de miles a los documentos numéricos', () => {
+    expect(formatDocument('1234567890')).toBe('1.234.567.890');
+    expect(formatDocument('52123456')).toBe('52.123.456');
+    expect(formatDocument(' 1000 ')).toBe('1.000');
+  });
+
+  it('deja tal cual lo que no es solo dígitos o es muy corto', () => {
+    expect(formatDocument('AB123456')).toBe('AB123456');
+    expect(formatDocument('12-345')).toBe('12-345');
+    expect(formatDocument('123')).toBe('123');
   });
 });

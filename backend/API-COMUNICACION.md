@@ -108,7 +108,7 @@ Las **respuestas** cuelgan de una raíz; no se responde a una respuesta.
   "_count": { "replies": 2 } }
 ```
 
-`GET /discussions/:id` devuelve la raíz con `replies` (de la más antigua a la más nueva, cada una con su `author`).
+`GET /discussions/:id` devuelve la raíz con su `course` y su `lesson` (si la tiene) y con `replies` (de la más antigua a la más nueva, cada una con su `author`).
 El campo `author.role` permite marcar las respuestas del **docente** con una insignia.
 
 ## 4. Reseñas

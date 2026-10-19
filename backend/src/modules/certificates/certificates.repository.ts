@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
-import type { CertificateStatus } from '../../generated/prisma/enums.js';
+import type {
+  CertificateLayout,
+  CertificateStatus,
+} from '../../generated/prisma/enums.js';
 import type { CertificateDesign } from './certificate-pdf.js';
 
 export interface TemplateData {
@@ -11,12 +14,15 @@ export interface TemplateData {
   title?: string;
   body?: string;
   accentColor?: string;
-  layout?: 'CLASSIC' | 'MODERN';
+  layout?: CertificateLayout;
+  font?: string;
+  bodyFont?: string;
 }
 
 export interface NewCertificate {
   code: string;
   studentName: string;
+  studentDocument: string | null;
   courseTitle: string;
   courseMinutes: number | null;
   instructorName: string;
@@ -33,6 +39,8 @@ const templateSelect = {
   body: true,
   accentColor: true,
   layout: true,
+  font: true,
+  bodyFont: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -114,7 +122,7 @@ export class CertificatesRepository {
         title: true,
         durationMinutes: true,
         certificateTemplate: {
-          select: { title: true, body: true, accentColor: true, layout: true },
+          select: { title: true, body: true, accentColor: true, layout: true, font: true, bodyFont: true },
         },
         teacher: {
           select: {

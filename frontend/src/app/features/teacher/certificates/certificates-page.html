@@ -59,12 +59,17 @@
         <ul class="list">
           @for (template of templates(); track template.id) {
             <li class="panel-card item" [class.busy]="busyId() === template.id">
-              <span
+              <app-certificate-preview
                 class="swatch"
-                [style.--accent]="template.accentColor"
-                [class.modern]="template.layout === 'MODERN'"
-                aria-hidden="true"
-              ></span>
+                [layout]="template.layout"
+                [color]="template.accentColor"
+                [font]="template.font"
+                [bodyFont]="template.bodyFont"
+                [title]="template.title"
+                [body]="''"
+                [student]="''"
+                [instructor]="''"
+              />
 
               <div class="main">
                 <a class="title" [routerLink]="['/teacher/certificates', template.id]">{{

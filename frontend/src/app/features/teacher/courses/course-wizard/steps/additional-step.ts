@@ -1,3 +1,4 @@
+import { RichEditor } from '../../../../../shared/ui/rich-editor/rich-editor';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,7 +20,7 @@ interface CandidateCourse {
 /** Paso 3: qué aprenderá el estudiante, a quién va dirigido, duración, requisitos y prerrequisitos. */
 @Component({
   selector: 'app-additional-step',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [RichEditor, ReactiveFormsModule, RouterLink],
   templateUrl: './additional-step.html',
   styleUrl: './additional-step.scss',
 })

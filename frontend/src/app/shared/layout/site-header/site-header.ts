@@ -4,11 +4,12 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AccessibilityService } from '../../../core/accessibility/accessibility.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { homeFor } from '../../../core/auth/role-home';
+import { NotificationBell } from '../notification-bell/notification-bell';
 import { headerLinksFor, ROLE_LABELS } from './header-links';
 
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './site-header.html',
   styleUrl: './site-header.scss',
 })

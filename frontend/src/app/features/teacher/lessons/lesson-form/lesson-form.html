@@ -45,12 +45,7 @@
 
           <div class="panel-field">
             <label for="content">Contenido</label>
-            <textarea
-              id="content"
-              class="panel-textarea tall"
-              formControlName="content"
-              placeholder="Explica el tema de la lección."
-            ></textarea>
+            <app-rich-editor inputId="content" label="Contenido de la lección" formControlName="content" [minHeight]="320" placeholder="Explica el tema de la lección." />
           </div>
 
           <app-media-field
@@ -58,7 +53,7 @@
             inputId="videoUrl"
             label="Video de la lección (opcional)"
             placeholder="Pega un enlace o sube un archivo"
-            hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace."
+            hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace de YouTube o Vimeo."
             [control]="form.controls.videoUrl"
             [error]="errorOf('videoUrl')"
           />

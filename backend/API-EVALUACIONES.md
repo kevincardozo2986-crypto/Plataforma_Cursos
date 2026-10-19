@@ -137,16 +137,31 @@ Se pueden escribir con HTML estos campos:
 - Lección: `content`
 
 El servidor **limpia el HTML al guardarlo**, así que lo que se lee de la API ya es seguro para mostrar
-(en Angular, `[innerHTML]`; no hace falta `bypassSecurityTrustHtml`).
+(pero ver abajo: en Angular hay que mostrarlo con la tubería `richHtml`, no con `[innerHTML]` a secas).
 
 **Se conserva:** `p br hr div span h2–h6 strong b em i u s sub sup mark small ul ol li blockquote pre code a img figure figcaption table thead tbody tfoot tr th td caption`.
 
-**Videos incrustados:** solo `<iframe>` de `www.youtube.com`, `www.youtube-nocookie.com` y `player.vimeo.com`.
+**Alineación:** el atributo `style` se elimina, salvo `text-align: left | center | right | justify`, que se conserva (así el editor
+puede centrar o justificar un párrafo). Cualquier otra propiedad (`color`, `position`…) se descarta.
 
-**Se elimina:** `<script>`, `<style>`, formularios, `<object>`/`<embed>`, iframes de otros sitios, atributos `style` y `on…` (onclick, onerror…), y enlaces `javascript:` o `data:`.
+**Videos y documentos incrustados:** solo `<iframe>` con `https://` de estos sitios: `www.youtube.com`, `www.youtube-nocookie.com`,
+`player.vimeo.com`, `www.loom.com`, `fast.wistia.net`, `www.dailymotion.com`, `drive.google.com`, `docs.google.com`,
+`www.canva.com`, `codepen.io` y `view.genial.ly`. Un iframe de cualquier otro sitio se elimina entero. A todo iframe el servidor le
+impone `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"`, `loading="lazy"` y
+`referrerpolicy="strict-origin-when-cross-origin"`, aunque el HTML traiga otros valores (no puede navegar la página que lo contiene).
+Se usa `www.youtube-nocookie.com` cuando se convierte un enlace de YouTube.
+
+**Mostrarlo en Angular:** `[innerHTML]` a secas **quita los iframes y los estilos**. Usa la tubería `richHtml` del frontend
+(`shared/pipes/rich-html.pipe.ts`), que limpia con el mismo criterio y lo marca como confiable:
+`<div class="rich-content" [innerHTML]="texto | richHtml"></div>`. La clase `rich-content` (en `panel.scss`) da estilo a títulos,
+listas, citas, tablas e iframes responsivos.
+
+**Se elimina:** `<script>`, `<style>`, formularios, `<object>`/`<embed>`, iframes de otros sitios, atributos `on…` (onclick, onerror…), `srcdoc` y los estilos distintos de la alineación, y enlaces `javascript:` o `data:`.
 Los enlaces con `target="_blank"` reciben `rel="noopener noreferrer"` automáticamente.
 
 Notas:
 - Las imágenes pueden apuntar a `https://…` o a un archivo subido (`/api/uploads/<id>.webp`).
 - Una descripción vacía (`<p></p>`, `<p><br></p>`) cuenta como vacía al publicar el curso.
-- El editor del frontend puede mostrar un editor enriquecido o una caja de código; el backend recibe en ambos casos un `string` con HTML.
+- El editor del frontend (`app-rich-editor`) tiene las pestañas **Visual** y **Código**; el backend recibe en ambos casos un `string` con HTML.
+- Campos con HTML hoy en el editor: descripción, «qué aprenderá», público, materiales y requisitos del curso; contenido de lección;
+  instrucciones de tarea; mensaje de anuncio.

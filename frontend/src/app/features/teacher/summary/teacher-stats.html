@@ -1,0 +1,296 @@
+<section class="stats" aria-labelledby="stats-title" [attr.aria-busy]="loading()">
+  <div class="head">
+    <div>
+      <span class="overline">RESUMEN</span>
+      <h1 id="stats-title">Cómo van tus cursos</h1>
+    </div>
+
+    <!-- Los filtros van en una sola fila, arriba, y aplican a todo lo de abajo. -->
+    <div class="filters">
+      <div class="periods" role="group" aria-label="Periodo">
+        @for (entry of periods; track entry.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="period() === entry.value"
+            [attr.aria-pressed]="period() === entry.value"
+            (click)="setPeriod(entry.value)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+
+      <label class="course">
+        <span class="sr-only">Curso</span>
+        <select class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="notice error" role="alert">
+      <span>{{ error() }}</span>
+      <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="retry()">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  @if (data(); as d) {
+    <!-- Se conserva lo anterior (más tenue) mientras se recarga: sin saltos. -->
+    <div class="body" [class.reloading]="loading()">
+      @if (pending() > 0) {
+        <div class="notice pending" role="status">
+          <strong>Tienes {{ fmt(pending()) }} por revisar</strong>
+          <span class="links">
+            @if (d.quizzes.pendingReview > 0) {
+              <a routerLink="/teacher/quiz-attempts"
+                >{{ fmt(d.quizzes.pendingReview) }}
+                {{ d.quizzes.pendingReview === 1 ? 'quiz' : 'quizzes' }}</a
+              >
+            }
+            @if (d.assignments.pendingGrading > 0) {
+              <a routerLink="/teacher/assignments"
+                >{{ fmt(d.assignments.pendingGrading) }}
+                {{ d.assignments.pendingGrading === 1 ? 'tarea' : 'tareas' }}</a
+              >
+            }
+          </span>
+        </div>
+      }
+
+      <ul class="tiles">
+        @for (tile of tiles(); track tile.label) {
+          <li class="tile">
+            <span class="label">{{ tile.label }}</span>
+            <strong class="value">{{ tile.value }}</strong>
+            <span class="note">{{ tile.note }}</span>
+          </li>
+        }
+      </ul>
+
+      <ul class="states" aria-label="Estado de las inscripciones">
+        @for (state of states(); track state.label) {
+          <li [attr.title]="state.hint ?? null">
+            <strong>{{ fmt(state.value) }}</strong> {{ state.label }}
+          </li>
+        }
+      </ul>
+
+      <!-- Gráfica -->
+      <figure class="chart panel-card">
+        <figcaption class="chart-head">
+          <div>
+            <h3>Inscripciones y finalizaciones</h3>
+            <p class="panel-muted">
+              Por {{ d.bucket === 'month' ? 'mes' : 'día' }}, dentro del periodo elegido.
+            </p>
+          </div>
+
+          <div class="view" role="group" aria-label="Forma de verlo">
+            <button
+              type="button"
+              class="chip"
+              [class.active]="view() === 'chart'"
+              [attr.aria-pressed]="view() === 'chart'"
+              (click)="view.set('chart')"
+            >
+              Gráfica
+            </button>
+            <button
+              type="button"
+              class="chip"
+              [class.active]="view() === 'table'"
+              [attr.aria-pressed]="view() === 'table'"
+              (click)="view.set('table')"
+            >
+              Tabla
+            </button>
+          </div>
+        </figcaption>
+
+        <ul class="legend" aria-label="Leyenda">
+          <li><span class="key s1" aria-hidden="true"></span> Inscripciones</li>
+          <li><span class="key s2" aria-hidden="true"></span> Finalizaciones</li>
+        </ul>
+
+        @if (!hasMovement()) {
+          <p class="empty panel-muted">
+            No hubo inscripciones ni finalizaciones en este periodo. Prueba con uno más largo.
+          </p>
+        } @else if (view() === 'chart') {
+          <div class="plot-wrap">
+            <svg
+              #svg
+              class="plot"
+              [attr.viewBox]="'0 0 ' + width + ' ' + height"
+              role="img"
+              tabindex="0"
+              [attr.aria-label]="summary() + ' Usa las flechas para recorrer las fechas.'"
+              (pointermove)="onMove($event)"
+              (pointerleave)="active.set(null)"
+              (keydown)="onKey($event)"
+              (blur)="active.set(null)"
+            >
+              @for (tick of yTicks(); track tick.y) {
+                <line
+                  class="grid"
+                  [attr.x1]="left"
+                  [attr.x2]="right"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                />
+                <text class="axis" text-anchor="end" [attr.x]="left - 8" [attr.y]="tick.y + 4">
+                  {{ tick.label }}
+                </text>
+              }
+
+              @for (label of xLabels(); track label.x) {
+                <text class="axis" text-anchor="middle" [attr.x]="label.x" [attr.y]="height - 10">
+                  {{ label.text }}
+                </text>
+              }
+
+              <path class="line s1" [attr.d]="enrollmentPath()" />
+              <path class="line s2" [attr.d]="completionPath()" />
+
+              @if (tooltip(); as tip) {
+                <line
+                  class="cross"
+                  [attr.x1]="tip.x"
+                  [attr.x2]="tip.x"
+                  [attr.y1]="top"
+                  [attr.y2]="bottom"
+                />
+              }
+
+              <!-- Un punto de 4 px de radio con un anillo de 2 px del color de la superficie. -->
+              @for (
+                point of [enrollmentPoints(), completionPoints()];
+                track $index;
+                let series = $index
+              ) {
+                @if (active() !== null && point[active()!]; as hot) {
+                  <circle
+                    class="dot"
+                    [class.s1]="series === 0"
+                    [class.s2]="series === 1"
+                    [attr.cx]="hot.x"
+                    [attr.cy]="hot.y"
+                    r="4"
+                  />
+                } @else if (active() === null && point.length > 0) {
+                  <circle
+                    class="dot"
+                    [class.s1]="series === 0"
+                    [class.s2]="series === 1"
+                    [attr.cx]="point[point.length - 1].x"
+                    [attr.cy]="point[point.length - 1].y"
+                    r="4"
+                  />
+                }
+              }
+            </svg>
+
+            @if (tooltip(); as tip) {
+              <div
+                class="tip"
+                [class.left]="tip.side === 'left'"
+                [style.left.%]="(tip.x / width) * 100"
+                role="status"
+              >
+                <span class="tip-date">{{ tip.title }}</span>
+                <span class="tip-row">
+                  <span class="key s1" aria-hidden="true"></span>
+                  <strong>{{ tip.enrollments }}</strong> Inscripciones
+                </span>
+                <span class="tip-row">
+                  <span class="key s2" aria-hidden="true"></span>
+                  <strong>{{ tip.completions }}</strong> Finalizaciones
+                </span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="data">
+              <caption class="sr-only">
+                {{
+                  summary()
+                }}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col" class="num">Inscripciones</th>
+                  <th scope="col" class="num">Finalizaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows(); track row.label) {
+                  <tr>
+                    <th scope="row">{{ row.label }}</th>
+                    <td class="num">{{ row.enrollments }}</td>
+                    <td class="num">{{ row.completions }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </figure>
+
+      <!-- Por curso -->
+      @if (d.courseBreakdown.length > 0) {
+        <section class="panel-card breakdown" aria-labelledby="breakdown-title">
+          <h3 id="breakdown-title">Por curso</h3>
+
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th scope="col">Curso</th>
+                  <th scope="col" class="num">Inscritos</th>
+                  <th scope="col" class="num">Terminaron</th>
+                  <th scope="col" class="num">Finalización</th>
+                  <th scope="col" class="num">Nota media</th>
+                  <th scope="col" class="num">Calificación</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (course of d.courseBreakdown; track course.id) {
+                  <tr>
+                    <th scope="row">
+                      <a [routerLink]="['/teacher/courses', course.id, 'edit']">{{
+                        course.title
+                      }}</a>
+                      <span class="status">{{ statusLabels[course.status] }}</span>
+                    </th>
+                    <td class="num">{{ fmt(course.enrolled) }}</td>
+                    <td class="num">{{ fmt(course.completed) }}</td>
+                    <td class="num">{{ course.completionRate }}%</td>
+                    <td class="num">{{ score(course.averageScore) }}</td>
+                    <td class="num">
+                      {{ stars(course.rating) }}
+                      @if (course.rating.count > 0) {
+                        <span class="panel-muted">({{ course.rating.count }})</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  } @else if (loading()) {
+    <p class="panel-muted loading" role="status">Cargando tus cifras…</p>
+  }
+</section>

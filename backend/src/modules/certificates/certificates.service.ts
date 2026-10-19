@@ -11,6 +11,7 @@ import sharp from 'sharp';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { CertificateFontsService } from '../certificate-fonts/certificate-fonts.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { uploadsDir } from '../uploads/upload-paths.js';
@@ -55,6 +56,7 @@ export class CertificatesService {
     private readonly access: CourseAccessService,
     private readonly users: UsersService,
     private readonly notifications: NotificationsService,
+    private readonly fonts: CertificateFontsService,
   ) {}
 
   // --- Plantillas (docente) ---
@@ -68,6 +70,7 @@ export class CertificatesService {
 
   async createTemplate(user: AuthenticatedUser, dto: CreateCertificateTemplateDto) {
     this.assertValidBody(dto.body);
+    await this.assertFonts(user, dto);
 
     if ((await this.repository.countTemplatesOf(user.id)) >= MAX_TEMPLATES) {
       throw new BadRequestException(
@@ -81,6 +84,8 @@ export class CertificatesService {
       body: dto.body ?? DEFAULT_BODY,
       accentColor: dto.accentColor ?? DEFAULT_COLOR,
       layout: dto.layout ?? 'CLASSIC',
+      font: dto.font ?? 'SANS',
+      bodyFont: dto.bodyFont ?? 'SANS',
     });
   }
 
@@ -95,6 +100,7 @@ export class CertificatesService {
   ) {
     await this.ownedTemplate(user, id);
     this.assertValidBody(dto.body);
+    await this.assertFonts(user, dto);
 
     return this.repository.updateTemplate(id, dto);
   }
@@ -129,14 +135,20 @@ export class CertificatesService {
       ? (person.profile?.publicName ?? `${person.firstName} ${person.lastName}`)
       : 'Docente';
 
-    const pdf = await renderCertificatePdf({
-      design: {
-        title: template.title,
-        body: template.body,
-        accentColor: template.accentColor,
-        layout: template.layout,
-      },
+    const design: CertificateDesign = {
+      title: template.title,
+      body: template.body,
+      accentColor: template.accentColor,
+      layout: template.layout,
+      font: template.font,
+      bodyFont: template.bodyFont,
+    };
+
+    const pdf = await renderCertificatePdf(
+      {
+      design,
       studentName: 'Nombre del Estudiante',
+      studentDocument: '1234567890',
       courseTitle: 'Nombre del curso',
       courseMinutes: 1200,
       instructorName: name,
@@ -145,7 +157,9 @@ export class CertificatesService {
       verifyUrl: this.verifyUrl('CC-XXXX-XXXX-XXXX'),
       signature: await this.signatureBuffer(person?.profile?.signatureUrl ?? null),
       preview: true,
-    });
+      },
+      await this.facesOf(design),
+    );
 
     return { pdf, fileName: `vista-previa-${pdfFileName(template.name)}` };
   }
@@ -181,10 +195,13 @@ export class CertificatesService {
       body: template.body,
       accentColor: template.accentColor,
       layout: template.layout,
+      font: template.font,
+      bodyFont: template.bodyFont,
     };
 
     const certificate = await this.createWithUniqueCode({
       studentName: `${student.firstName} ${student.lastName}`,
+      studentDocument: student.document,
       courseTitle: course.title,
       courseMinutes: course.durationMinutes,
       instructorName:
@@ -299,9 +316,13 @@ export class CertificatesService {
       throw new ForbiddenException('Este certificado fue revocado');
     }
 
-    const pdf = await renderCertificatePdf({
-      design: certificate.design as unknown as CertificateDesign,
+    const design = certificate.design as unknown as CertificateDesign;
+
+    const pdf = await renderCertificatePdf(
+      {
+      design,
       studentName: certificate.studentName,
+      studentDocument: certificate.studentDocument,
       courseTitle: certificate.courseTitle,
       courseMinutes: certificate.courseMinutes,
       instructorName: certificate.instructorName,
@@ -310,7 +331,9 @@ export class CertificatesService {
       verifyUrl: this.verifyUrl(certificate.code),
       signature: await this.signatureBuffer(certificate.signatureUrl),
       revoked: certificate.status === 'REVOKED',
-    });
+      },
+      await this.facesOf(design),
+    );
 
     return { pdf, fileName: pdfFileName(certificate.courseTitle) };
   }
@@ -346,6 +369,26 @@ export class CertificatesService {
     }
 
     return template;
+  }
+
+  /** Las tipografías elegidas deben existir y poder usarlas quien edita (las propias son de su dueño). */
+  private async assertFonts(
+    user: AuthenticatedUser,
+    dto: { font?: string; bodyFont?: string },
+  ) {
+    for (const key of [dto.font, dto.bodyFont]) {
+      if (key !== undefined) {
+        await this.fonts.assertUsable(user, key);
+      }
+    }
+  }
+
+  /** Las tipografías con las que se dibuja un diseño; los certificados antiguos tenían una sola para todo. */
+  private async facesOf(design: CertificateDesign) {
+    return {
+      heading: await this.fonts.resolve(design.font),
+      body: await this.fonts.resolve(design.bodyFont ?? design.font),
+    };
   }
 
   /** Rechaza marcadores mal escritos como {{estudiante}}, que saldrían tal cual en el certificado. */

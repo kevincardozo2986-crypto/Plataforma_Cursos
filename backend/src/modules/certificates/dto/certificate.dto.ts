@@ -14,7 +14,11 @@ import {
 
 import { Trim } from '../../../common/dto/trim.js';
 
-export const LAYOUTS = ['CLASSIC', 'MODERN'] as const;
+import { CERTIFICATE_LAYOUTS } from '../certificate-pdf.js';
+
+export const LAYOUTS = CERTIFICATE_LAYOUTS;
+/** Claves de tipografía: letras, números, guiones y «custom:12». Que exista se comprueba en el servicio. */
+export const FONT_KEY = /^[A-Za-z0-9:_-]{1,40}$/;
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 
 /**
@@ -53,6 +57,16 @@ export class CreateCertificateTemplateDto {
   @IsOptional()
   @IsEnum(LAYOUTS, { message: `El diseño debe ser uno de: ${LAYOUTS.join(', ')}` })
   layout?: (typeof LAYOUTS)[number];
+
+  /** Tipografía de título y nombre: "SANS", "SERIF", una de `GET /certificate-fonts` o "custom:<id>". */
+  @IsOptional()
+  @Matches(FONT_KEY, { message: 'La tipografía no es válida' })
+  font?: string;
+
+  /** Tipografía del texto (mismos valores). */
+  @IsOptional()
+  @Matches(FONT_KEY, { message: 'La tipografía del texto no es válida' })
+  bodyFont?: string;
 }
 
 export class UpdateCertificateTemplateDto {
@@ -84,6 +98,16 @@ export class UpdateCertificateTemplateDto {
   @IsOptional()
   @IsEnum(LAYOUTS, { message: `El diseño debe ser uno de: ${LAYOUTS.join(', ')}` })
   layout?: (typeof LAYOUTS)[number];
+
+  /** Tipografía de título y nombre: "SANS", "SERIF", una de `GET /certificate-fonts` o "custom:<id>". */
+  @IsOptional()
+  @Matches(FONT_KEY, { message: 'La tipografía no es válida' })
+  font?: string;
+
+  /** Tipografía del texto (mismos valores). */
+  @IsOptional()
+  @Matches(FONT_KEY, { message: 'La tipografía del texto no es válida' })
+  bodyFont?: string;
 }
 
 export const CERTIFICATE_STATUSES = ['VALID', 'REVOKED'] as const;

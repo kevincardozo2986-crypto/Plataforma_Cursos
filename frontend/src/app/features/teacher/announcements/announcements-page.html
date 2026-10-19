@@ -61,8 +61,13 @@
 
         <div class="panel-field">
           <label for="new-body">Mensaje</label>
-          <textarea id="new-body" class="panel-textarea" rows="6" formControlName="body"></textarea>
-          <p class="panel-hint">Una línea en blanco separa los párrafos.</p>
+          <app-rich-editor
+            inputId="new-body"
+            label="Mensaje del anuncio"
+            [minHeight]="200"
+            formControlName="body"
+            placeholder="Escribe el anuncio para tus estudiantes…"
+          />
           @if (composer.controls.body.touched && composer.controls.body.invalid) {
             <p class="panel-field-error">Escribe el mensaje.</p>
           }
@@ -120,19 +125,13 @@
                 </div>
                 <div class="panel-field">
                   <label [for]="'edit-body-' + item.id">Mensaje</label>
-                  <textarea
-                    [id]="'edit-body-' + item.id"
-                    class="panel-textarea"
-                    rows="6"
+                  <app-rich-editor
+                    [inputId]="'edit-body-' + item.id"
+                    label="Mensaje del anuncio"
+                    [minHeight]="200"
                     formControlName="body"
-                  ></textarea>
+                  />
                 </div>
-                @if (editLosesFormat()) {
-                  <p class="panel-alert panel-alert--error">
-                    Este anuncio tiene formato (negritas, enlaces o listas). Al editarlo aquí se
-                    guarda como texto simple y ese formato se pierde.
-                  </p>
-                }
                 <div class="buttons">
                   <button
                     type="submit"
@@ -162,7 +161,7 @@
                 </p>
               </header>
 
-              <div class="body" [innerHTML]="item.body"></div>
+              <div class="body rich-content" [innerHTML]="item.body | richHtml"></div>
 
               <div class="actions">
                 @if (confirmDeleteId() === item.id) {
