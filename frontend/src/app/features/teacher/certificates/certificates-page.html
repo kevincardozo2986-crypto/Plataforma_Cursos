@@ -1,20 +1,44 @@
 <section class="panel-page">
   <div class="panel-container">
-    <span class="eyebrow">ESPACIO DOCENTE / CERTIFICADOS</span>
-    <app-page-header
-      title="Certificados"
-      subtitle="Diseña tus plantillas, asígnalas a un curso y se emiten solas cuando un estudiante lo termina."
-    >
-      <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new"
-        ><span aria-hidden="true">＋</span> Nueva plantilla</a
-      >
-    </app-page-header>
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="award" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ESPACIO DOCENTE / CERTIFICADOS</span>
+        <h1>Certificados</h1>
+        <p>
+          Diseña tus plantillas, asígnalas a un curso y se emiten solas cuando un estudiante lo
+          termina.
+        </p>
+      </div>
+      <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new">
+        <app-icon name="plus" [size]="17" /> Nueva plantilla
+      </a>
+    </header>
+
+    <ol class="steps" aria-label="Cómo funcionan los certificados">
+      <li>
+        <span class="step-icon" aria-hidden="true"><app-icon name="palette" [size]="18" /></span>
+        <span><strong>1. Diseña</strong> una plantilla</span>
+      </li>
+      <li>
+        <span class="step-icon" aria-hidden="true"><app-icon name="book" [size]="18" /></span>
+        <span><strong>2. Asígnala</strong> a un curso</span>
+      </li>
+      <li>
+        <span class="step-icon" aria-hidden="true"><app-icon name="cap" [size]="18" /></span>
+        <span><strong>3. Se emite sola</strong> al terminar</span>
+      </li>
+    </ol>
 
     @if (error()) {
-      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
     }
     @if (notice()) {
-      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
     }
 
     <div class="tabs" role="tablist" aria-label="Certificados">
@@ -26,7 +50,8 @@
         [attr.aria-selected]="tab() === 'templates'"
         (click)="show('templates')"
       >
-        Plantillas <span class="count">{{ templates().length }}</span>
+        <app-icon name="layout" [size]="17" /> Plantillas
+        <span class="count">{{ templates().length }}</span>
       </button>
       <button
         type="button"
@@ -36,58 +61,86 @@
         [attr.aria-selected]="tab() === 'issued'"
         (click)="show('issued')"
       >
-        Emitidos
+        <app-icon name="cap" [size]="17" /> Emitidos
+        @if (tab() === 'issued' || total() > 0) {
+          <span class="count">{{ total() }}</span>
+        }
       </button>
     </div>
 
     @if (tab() === 'templates') {
       @if (loadingTemplates()) {
-        <div class="panel-card"><p class="panel-muted">Cargando plantillas…</p></div>
+        <div class="panel-card loading">
+          <app-icon name="refresh" [size]="18" />
+          <p class="panel-muted">Cargando plantillas…</p>
+        </div>
       } @else if (templates().length === 0) {
         <div class="panel-card empty">
-          <span class="empty-icon" aria-hidden="true">✦</span>
+          <span class="empty-icon" aria-hidden="true"
+            ><app-icon name="sparkles" [size]="32"
+          /></span>
           <h2>Crea tu primera plantilla</h2>
           <p>
-            Elige un diseño, un color y escribe el texto. Luego la asignas a un curso desde el paso
-            «Adicional» del asistente.
+            Elige un diseño, una tipografía y un color, y escribe el texto. Luego la asignas a un
+            curso desde el paso «Adicional» del asistente.
           </p>
-          <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new"
-            >Crear plantilla</a
-          >
+          <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new">
+            <app-icon name="plus" [size]="17" /> Crear plantilla
+          </a>
         </div>
       } @else {
-        <ul class="list">
+        <ul class="grid">
           @for (template of templates(); track template.id) {
-            <li class="panel-card item" [class.busy]="busyId() === template.id">
-              <app-certificate-preview
-                class="swatch"
-                [layout]="template.layout"
-                [color]="template.accentColor"
-                [font]="template.font"
-                [bodyFont]="template.bodyFont"
-                [title]="template.title"
-                [body]="''"
-                [student]="''"
-                [instructor]="''"
-              />
+            <li class="panel-card card" [class.busy]="busyId() === template.id">
+              <a
+                class="card-preview"
+                [routerLink]="['/teacher/certificates', template.id]"
+                [attr.aria-label]="'Editar ' + template.name"
+              >
+                <app-certificate-preview
+                  [layout]="template.layout"
+                  [color]="template.accentColor"
+                  [font]="template.font"
+                  [bodyFont]="template.bodyFont"
+                  [style]="template.style"
+                  [title]="template.title"
+                  [body]="''"
+                  [student]="''"
+                  [instructor]="''"
+                />
+              </a>
 
-              <div class="main">
+              <div class="card-body">
                 <a class="title" [routerLink]="['/teacher/certificates', template.id]">{{
                   template.name
                 }}</a>
+
+                <ul class="chips">
+                  <li class="chip-info">
+                    <app-icon name="layout" [size]="13" />
+                    {{ layoutLabels[template.layout].label }}
+                  </li>
+                  <li class="chip-info" [class.used]="template._count?.courses">
+                    <app-icon name="book" [size]="13" />
+                    @if (template._count?.courses) {
+                      {{ template._count?.courses }}
+                      {{ template._count?.courses === 1 ? 'curso' : 'cursos' }}
+                    } @else {
+                      Sin asignar
+                    }
+                  </li>
+                  <li class="chip-info">
+                    <span class="dot" [style.background]="template.accentColor"></span>
+                    {{ template.accentColor }}
+                  </li>
+                </ul>
                 <p class="meta panel-muted">
-                  Diseño {{ layoutLabels[template.layout].label }} ·
-                  @if (template._count?.courses) {
-                    Usada en {{ template._count?.courses }}
-                    {{ template._count?.courses === 1 ? 'curso' : 'cursos' }}
-                  } @else {
-                    Sin asignar a ningún curso
-                  }
-                  · Actualizada {{ template.updatedAt | date: 'dd/MM/yyyy' }}
+                  <app-icon name="clock" [size]="13" /> Actualizada
+                  {{ template.updatedAt | date: 'dd/MM/yyyy' }}
                 </p>
               </div>
 
-              <div class="actions">
+              <div class="card-actions">
                 @if (confirmDeleteId() === template.id) {
                   <span class="confirm-text">¿Eliminar esta plantilla?</span>
                   <button
@@ -96,7 +149,7 @@
                     [disabled]="busyId() === template.id"
                     (click)="remove(template)"
                   >
-                    Sí, eliminar
+                    <app-icon name="trash" [size]="15" /> Sí, eliminar
                   </button>
                   <button
                     type="button"
@@ -106,25 +159,29 @@
                     Cancelar
                   </button>
                 } @else {
-                  <button
-                    type="button"
-                    class="panel-btn panel-btn--ghost panel-btn--sm"
-                    [disabled]="busyId() === template.id"
-                    (click)="preview(template)"
-                  >
-                    Ver PDF
-                  </button>
                   <a
                     class="panel-btn panel-btn--primary panel-btn--sm"
                     [routerLink]="['/teacher/certificates', template.id]"
-                    >Editar</a
                   >
+                    <app-icon name="edit" [size]="15" /> Editar
+                  </a>
                   <button
                     type="button"
-                    class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                    class="panel-btn panel-btn--ghost panel-btn--sm"
+                    title="Ver el PDF de ejemplo"
+                    [disabled]="busyId() === template.id"
+                    (click)="preview(template)"
+                  >
+                    <app-icon name="file" [size]="15" /> Ver PDF
+                  </button>
+                  <button
+                    type="button"
+                    class="panel-btn panel-btn--ghost panel-btn--sm icon-only danger"
+                    aria-label="Eliminar plantilla"
+                    title="Eliminar plantilla"
                     (click)="askDelete(template.id)"
                   >
-                    Eliminar
+                    <app-icon name="trash" [size]="16" />
                   </button>
                 }
               </div>
@@ -133,7 +190,9 @@
         </ul>
       }
     } @else {
-      <div class="toolbar">
+      <div class="toolbar panel-card">
+        <span class="toolbar-icon" aria-hidden="true"><app-icon name="filter" [size]="18" /></span>
+
         <div class="panel-field">
           <label for="course-filter">Curso</label>
           <select id="course-filter" class="panel-select" (change)="setCourse($event)">
@@ -152,15 +211,25 @@
             <option value="REVOKED">Revocados</option>
           </select>
         </div>
+
+        <p class="toolbar-hint panel-muted">
+          <app-icon name="bulb" [size]="15" />
+          ¿Un nombre mal escrito? Usa «Corregir». ¿Mejoraste la plantilla? «Actualizar diseño».
+        </p>
       </div>
 
       @if (loadingIssued()) {
-        <div class="panel-card"><p class="panel-muted">Cargando certificados…</p></div>
+        <div class="panel-card loading">
+          <app-icon name="refresh" [size]="18" />
+          <p class="panel-muted">Cargando certificados…</p>
+        </div>
       } @else if (issued().length === 0) {
-        <div class="panel-card">
-          <p class="panel-muted">
-            Todavía no hay certificados emitidos con este filtro. Se emiten cuando un estudiante
-            termina un curso que tiene plantilla asignada.
+        <div class="panel-card empty">
+          <span class="empty-icon" aria-hidden="true"><app-icon name="award" [size]="32" /></span>
+          <h2>Aún no hay certificados emitidos</h2>
+          <p>
+            Cuando un estudiante termine un curso que tenga una plantilla asignada, su certificado
+            aparecerá aquí.
           </p>
         </div>
       } @else {
@@ -179,21 +248,59 @@
               </thead>
               <tbody>
                 @for (item of issued(); track item.id) {
-                  <tr [class.busy]="busyId() === item.id">
+                  <tr [class.busy]="busyId() === item.id" [class.is-editing]="editId() === item.id">
                     <td>
-                      <strong>{{ item.studentName }}</strong>
-                      <span class="sub panel-muted">{{ item.user.email }}</span>
+                      <div class="person">
+                        <span class="avatar" aria-hidden="true">{{
+                          initials(item.studentName)
+                        }}</span>
+                        <div>
+                          <strong>{{ item.studentName }}</strong>
+                          <span class="sub panel-muted">{{ item.user.email }}</span>
+                          <span class="sub doc" [class.missing]="!item.studentDocument">
+                            <app-icon name="hash" [size]="12" />
+                            {{
+                              item.studentDocument
+                                ? 'Doc. ' + item.studentDocument
+                                : 'Sin documento'
+                            }}
+                          </span>
+                        </div>
+                      </div>
                     </td>
                     <td>{{ item.courseTitle }}</td>
                     <td class="code">{{ item.code }}</td>
-                    <td>{{ item.issuedAt | date: 'dd/MM/yyyy' }}</td>
+                    <td class="nowrap">{{ item.issuedAt | date: 'dd/MM/yyyy' }}</td>
                     <td>
                       <span class="pill" [class.revoked]="item.status === 'REVOKED'">
+                        <app-icon
+                          [name]="item.status === 'VALID' ? 'check-circle' : 'ban'"
+                          [size]="13"
+                        />
                         {{ item.status === 'VALID' ? 'Vigente' : 'Revocado' }}
                       </span>
                     </td>
                     <td class="row-actions">
-                      @if (confirmRevokeId() === item.id) {
+                      @if (confirmRefreshId() === item.id) {
+                        <span class="confirm-text neutral"
+                          >¿Usar el diseño actual de la plantilla? Cambia su aspecto.</span
+                        >
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--primary panel-btn--sm"
+                          [disabled]="busyId() === item.id"
+                          (click)="refresh(item)"
+                        >
+                          <app-icon name="check" [size]="15" /> Sí
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          (click)="cancelRefresh()"
+                        >
+                          No
+                        </button>
+                      } @else if (confirmRevokeId() === item.id) {
                         <span class="confirm-text">¿Revocar?</span>
                         <button
                           type="button"
@@ -217,20 +324,90 @@
                           [disabled]="busyId() === item.id"
                           (click)="download(item)"
                         >
-                          PDF
+                          <app-icon name="download" [size]="15" /> PDF
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          title="Corregir el nombre o el documento"
+                          (click)="startEdit(item)"
+                        >
+                          <app-icon name="edit" [size]="15" /> Corregir
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          title="Aplicar la plantilla actual del curso a este certificado"
+                          (click)="askRefresh(item.id)"
+                        >
+                          <app-icon name="refresh" [size]="15" /> Actualizar diseño
                         </button>
                         @if (item.status === 'VALID') {
                           <button
                             type="button"
-                            class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                            class="panel-btn panel-btn--ghost panel-btn--sm icon-only danger"
+                            aria-label="Revocar certificado"
+                            title="Revocar certificado"
                             (click)="askRevoke(item.id)"
                           >
-                            Revocar
+                            <app-icon name="ban" [size]="16" />
                           </button>
                         }
                       }
                     </td>
                   </tr>
+                  @if (editId() === item.id) {
+                    <tr class="edit-row">
+                      <td colspan="6">
+                        <form class="edit-form" (submit)="$event.preventDefault(); saveEdit(item)">
+                          <label>
+                            <span
+                              ><app-icon name="user" [size]="14" /> Nombre en el certificado</span
+                            >
+                            <input
+                              class="panel-input"
+                              maxlength="120"
+                              [value]="editName()"
+                              (input)="editName.set($any($event.target).value)"
+                            />
+                          </label>
+                          <label>
+                            <span
+                              ><app-icon name="hash" [size]="14" /> Documento (vacío =
+                              quitarlo)</span
+                            >
+                            <input
+                              class="panel-input"
+                              maxlength="30"
+                              [value]="editDocument()"
+                              (input)="editDocument.set($any($event.target).value)"
+                            />
+                          </label>
+                          <button
+                            type="submit"
+                            class="panel-btn panel-btn--primary panel-btn--sm"
+                            [disabled]="busyId() === item.id"
+                          >
+                            <app-icon name="save" [size]="15" /> Guardar
+                          </button>
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm"
+                            (click)="cancelEdit()"
+                          >
+                            Cancelar
+                          </button>
+                        </form>
+                        @if (editError()) {
+                          <p class="panel-field-error" role="alert">{{ editError() }}</p>
+                        }
+                        <p class="panel-hint">
+                          <app-icon name="info" [size]="13" /> El código de verificación no cambia,
+                          así que el enlace sigue valiendo.
+                        </p>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -244,7 +421,7 @@
               [disabled]="!hasPrev()"
               (click)="page(-1)"
             >
-              ← Anterior
+              <app-icon name="arrow-left" [size]="15" /> Anterior
             </button>
             <button
               type="button"
@@ -252,7 +429,7 @@
               [disabled]="!hasNext()"
               (click)="page(1)"
             >
-              Siguiente →
+              Siguiente <app-icon name="chevron-right" [size]="15" />
             </button>
           </div>
         </div>

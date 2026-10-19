@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { moveItem } from '../../../../core/utils/reorder';
 import { PageHeader } from '../../../../shared/ui/page-header/page-header';
+import { Icon } from '../../../../shared/ui/icon/icon';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { ModuleCard } from '../../modules/module-card/module-card';
 import { TeacherModulesService } from '../../modules/modules.service';
@@ -19,7 +20,7 @@ import { CourseWizardService } from '../course-wizard/course-wizard.service';
  */
 @Component({
   selector: 'app-course-content',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, StatusBadge, ModuleCard],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, StatusBadge, ModuleCard, Icon],
   templateUrl: './course-content.html',
   styleUrl: './course-content.scss',
 })

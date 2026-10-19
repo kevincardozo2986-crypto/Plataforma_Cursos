@@ -1,165 +1,316 @@
 <section class="panel-page">
   <div class="panel-container">
-    <a class="back" routerLink="/teacher/certificates">← Volver a certificados</a>
+    <a class="back" routerLink="/teacher/certificates">
+      <app-icon name="arrow-left" [size]="16" /> Volver a certificados
+    </a>
 
-    <app-page-header
-      [title]="id === null ? 'Nueva plantilla' : 'Editar plantilla'"
-      subtitle="Lo que escribas se ve a la derecha al instante. El PDF final lo genera el servidor."
-    />
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="award" [size]="26" /></span>
+      <div class="hero-copy">
+        <h1>{{ id === null ? 'Nueva plantilla' : 'Editar plantilla' }}</h1>
+        <p>Lo que cambies se ve a la derecha al instante. El PDF final lo genera el servidor.</p>
+      </div>
+    </header>
 
     @if (error()) {
-      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
     }
     @if (notice()) {
-      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando plantilla…</p></div>
+      <div class="panel-card loading">
+        <app-icon name="refresh" [size]="18" />
+        <p class="panel-muted">Cargando plantilla…</p>
+      </div>
     } @else {
       <div class="layout">
-        <form class="panel-card form" [formGroup]="form" novalidate (ngSubmit)="save()">
-          <div class="panel-field">
-            <label for="name">Nombre de la plantilla</label>
-            <input
-              id="name"
-              class="panel-input"
-              formControlName="name"
-              placeholder="Ej. Certificado azul de cursos"
-              [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
-            />
-            <p class="panel-hint">Solo lo ves tú, para reconocerla en la lista.</p>
-            @if (form.controls.name.touched && form.controls.name.invalid) {
-              <p class="panel-field-error">Escribe un nombre de 2 a 100 caracteres.</p>
-            }
-          </div>
+        <form class="form" [formGroup]="form" novalidate (ngSubmit)="save()">
+          <!-- 1. Contenido -->
+          <section class="panel-card block" aria-labelledby="b-content">
+            <h2 id="b-content" class="block-title">
+              <span class="num">1</span>
+              <app-icon name="file" [size]="19" /> Contenido
+            </h2>
 
-          <div class="panel-field">
-            <label for="title">Título del certificado</label>
-            <input id="title" class="panel-input" formControlName="title" />
-            @if (form.controls.title.touched && form.controls.title.invalid) {
-              <p class="panel-field-error">El título debe tener de 2 a 80 caracteres.</p>
-            }
-          </div>
-
-          <div class="panel-field">
-            <label for="body">Texto</label>
-            <textarea
-              #bodyBox
-              id="body"
-              class="panel-textarea"
-              formControlName="body"
-              rows="5"
-            ></textarea>
-            <div class="tokens" role="group" aria-label="Insertar un dato automático">
-              <span class="panel-hint">Insertar:</span>
-              @for (item of placeholders; track item.token) {
-                <button type="button" class="token" (click)="insert(item.token)">
-                  {{ item.label }}
-                </button>
-              }
-            </div>
-            @if (unknown().length > 0) {
-              <p class="panel-field-error" role="alert">
-                Estos datos no existen: {{ unknown().join(', ') }}. Usa los botones de arriba.
-              </p>
-            }
-            @if (form.controls.body.touched && form.controls.body.invalid) {
-              <p class="panel-field-error">El texto debe tener de 10 a 600 caracteres.</p>
-            }
-            <p class="panel-hint">
-              El nombre y la cédula del estudiante salen siempre bajo «Se otorga a». El nombre del
-              curso, la fecha, la duración y el docente solo salen si los incluyes en este texto.
-            </p>
-            @if (missingCourse()) {
-              <p class="panel-field-error" role="status">
-                Tu texto no menciona el curso: el certificado no diría de qué curso es. Usa el botón
-                «Curso» para incluirlo.
-              </p>
-            }
-          </div>
-
-          <fieldset class="layouts">
-            <legend>Diseño</legend>
-            <div class="layout-options">
-              @for (option of layouts; track option) {
-                <label
-                  class="layout-option"
-                  [class.selected]="form.controls.layout.value === option"
-                >
-                  <input type="radio" formControlName="layout" [value]="option" />
-                  <app-certificate-preview
-                    class="thumb"
-                    [layout]="option"
-                    [color]="preview().color"
-                    [font]="preview().font"
-                    [bodyFont]="preview().bodyFont"
-                    [title]="preview().title"
-                    [body]="''"
-                    [student]="''"
-                    [instructor]="''"
-                  />
-                  <strong>{{ layoutLabels[option].label }}</strong>
-                </label>
-              }
-            </div>
-            <p class="panel-hint">{{ layoutLabels[form.controls.layout.value].hint }}</p>
-          </fieldset>
-
-          <div class="fonts">
-            <app-font-picker
-              inputId="font"
-              label="Tipografía de título y nombre"
-              [value]="form.controls.font.value"
-              (valueChange)="form.controls.font.setValue($event); form.controls.font.markAsDirty()"
-            />
-            <app-font-picker
-              inputId="bodyFont"
-              label="Tipografía del texto"
-              [value]="form.controls.bodyFont.value"
-              (valueChange)="
-                form.controls.bodyFont.setValue($event); form.controls.bodyFont.markAsDirty()
-              "
-            />
-          </div>
-          <p class="panel-hint fonts-hint">
-            Puedes combinarlas: por ejemplo, el nombre en cursiva y el texto en una serif. ¿No está
-            la tuya? Súbela desde la lista; solo la verás tú.
-          </p>
-
-          <div class="panel-field">
-            <label for="accentColor">Color principal</label>
-            <div class="color-row">
+            <div class="panel-field">
+              <label for="name">Nombre de la plantilla</label>
               <input
-                class="color-picker"
-                type="color"
-                aria-label="Elegir color"
-                [value]="preview().color"
-                (input)="
-                  form.controls.accentColor.setValue($any($event.target).value.toUpperCase());
-                  form.controls.accentColor.markAsDirty()
+                id="name"
+                class="panel-input"
+                formControlName="name"
+                placeholder="Ej. Certificado azul de cursos"
+                [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
+              />
+              <p class="panel-hint">Solo lo ves tú, para reconocerla en la lista.</p>
+              @if (form.controls.name.touched && form.controls.name.invalid) {
+                <p class="panel-field-error">Escribe un nombre de 2 a 100 caracteres.</p>
+              }
+            </div>
+
+            <div class="panel-field">
+              <label for="title">Título del certificado</label>
+              <input id="title" class="panel-input" formControlName="title" />
+              @if (form.controls.title.touched && form.controls.title.invalid) {
+                <p class="panel-field-error">El título debe tener de 2 a 80 caracteres.</p>
+              }
+            </div>
+
+            <div class="panel-field">
+              <label for="body">Texto</label>
+              <textarea
+                #bodyBox
+                id="body"
+                class="panel-textarea"
+                formControlName="body"
+                rows="5"
+              ></textarea>
+              <div class="tokens" role="group" aria-label="Insertar un dato automático">
+                <span class="panel-hint"><app-icon name="plus" [size]="13" /> Insertar:</span>
+                @for (item of placeholders; track item.token) {
+                  <button type="button" class="token" (click)="insert(item.token)">
+                    {{ item.label }}
+                  </button>
+                }
+              </div>
+              @if (unknown().length > 0) {
+                <p class="panel-field-error" role="alert">
+                  Estos datos no existen: {{ unknown().join(', ') }}. Usa los botones de arriba.
+                </p>
+              }
+              @if (form.controls.body.touched && form.controls.body.invalid) {
+                <p class="panel-field-error">El texto debe tener de 10 a 600 caracteres.</p>
+              }
+              <p class="tip">
+                <app-icon name="info" [size]="15" />
+                <span>
+                  El nombre y la cédula del estudiante salen siempre bajo «Se otorga a». El curso,
+                  la fecha, la duración y el docente solo salen si los incluyes en este texto.
+                </span>
+              </p>
+              @if (missingCourse()) {
+                <p class="tip warn" role="status">
+                  <app-icon name="warning" [size]="15" />
+                  <span>
+                    Tu texto no menciona el curso: el certificado no diría de qué curso es. Usa el
+                    botón «Curso» para incluirlo.
+                  </span>
+                </p>
+              }
+            </div>
+          </section>
+
+          <!-- 2. Diseño y color -->
+          <section class="panel-card block" aria-labelledby="b-design">
+            <h2 id="b-design" class="block-title">
+              <span class="num">2</span>
+              <app-icon name="palette" [size]="19" /> Diseño y color
+            </h2>
+
+            <fieldset class="layouts">
+              <legend>Elige un diseño</legend>
+              <div class="layout-options">
+                @for (option of layouts; track option) {
+                  <label
+                    class="layout-option"
+                    [class.selected]="form.controls.layout.value === option"
+                  >
+                    <input type="radio" formControlName="layout" [value]="option" />
+                    <app-certificate-preview
+                      class="thumb"
+                      [layout]="option"
+                      [color]="preview().color"
+                      [font]="preview().font"
+                      [bodyFont]="preview().bodyFont"
+                      [style]="preview().style"
+                      [title]="preview().title"
+                      [body]="''"
+                      [student]="''"
+                      [instructor]="''"
+                    />
+                    <strong>
+                      @if (form.controls.layout.value === option) {
+                        <app-icon name="check" [size]="13" />
+                      }
+                      {{ layoutLabels[option].label }}
+                    </strong>
+                  </label>
+                }
+              </div>
+              <p class="panel-hint">{{ layoutLabels[form.controls.layout.value].hint }}</p>
+            </fieldset>
+
+            <div class="panel-field">
+              <label for="accentColor">Color principal</label>
+              <div class="color-row">
+                <input
+                  class="color-picker"
+                  type="color"
+                  aria-label="Elegir color"
+                  [value]="preview().color"
+                  (input)="
+                    form.controls.accentColor.setValue($any($event.target).value.toUpperCase());
+                    form.controls.accentColor.markAsDirty()
+                  "
+                />
+                <input
+                  id="accentColor"
+                  class="panel-input hex"
+                  formControlName="accentColor"
+                  maxlength="7"
+                  placeholder="#1F3A8A"
+                />
+              </div>
+              @if (form.controls.accentColor.touched && form.controls.accentColor.invalid) {
+                <p class="panel-field-error">Escribe un color como #1F3A8A (6 dígitos).</p>
+              }
+            </div>
+          </section>
+
+          <!-- 3. Tipografía y estilo -->
+          <section class="panel-card block" aria-labelledby="b-type">
+            <h2 id="b-type" class="block-title">
+              <span class="num">3</span>
+              <app-icon name="type" [size]="19" /> Tipografía y estilo
+            </h2>
+
+            <div class="fonts">
+              <app-font-picker
+                inputId="font"
+                label="Título y nombre"
+                [value]="form.controls.font.value"
+                (valueChange)="
+                  form.controls.font.setValue($event); form.controls.font.markAsDirty()
                 "
               />
-              <input
-                id="accentColor"
-                class="panel-input hex"
-                formControlName="accentColor"
-                maxlength="7"
-                placeholder="#1F3A8A"
+              <app-font-picker
+                inputId="bodyFont"
+                label="Texto"
+                [value]="form.controls.bodyFont.value"
+                (valueChange)="
+                  form.controls.bodyFont.setValue($event); form.controls.bodyFont.markAsDirty()
+                "
               />
             </div>
-            @if (form.controls.accentColor.touched && form.controls.accentColor.invalid) {
-              <p class="panel-field-error">Escribe un color como #1F3A8A (6 dígitos).</p>
-            }
-          </div>
+            <p class="tip">
+              <app-icon name="bulb" [size]="15" />
+              <span>
+                Puedes combinarlas: por ejemplo, el nombre en cursiva y el texto en una serif. ¿No
+                está la tuya? Súbela desde la lista; solo la verás tú.
+              </span>
+            </p>
 
-          <p class="panel-hint">
-            La firma sale de tu perfil.
-            <a routerLink="/teacher/profile">Cambiar mi firma</a>
-          </p>
+            <fieldset class="styles">
+              <legend>Estilo de cada texto</legend>
+
+              @for (part of parts; track part.key) {
+                <div class="style-row">
+                  <strong class="style-name">{{ part.label }}</strong>
+
+                  <label class="mini">
+                    <span><app-icon name="bold" [size]="13" /> Negrita</span>
+                    <select
+                      class="panel-select"
+                      [value]="boldValue(part.key)"
+                      (change)="setBold(part.key, $any($event.target).value)"
+                    >
+                      <option value="auto">Automática</option>
+                      <option value="yes">Sí</option>
+                      <option value="no">No</option>
+                    </select>
+                  </label>
+
+                  <button
+                    type="button"
+                    class="toggle"
+                    [class.on]="text(part.key).italic === true"
+                    [attr.aria-pressed]="text(part.key).italic === true"
+                    (click)="setText(part.key, 'italic', text(part.key).italic ? undefined : true)"
+                  >
+                    <app-icon name="italic" [size]="15" /> Cursiva
+                  </button>
+
+                  <label class="mini grow">
+                    <span>Tamaño · {{ text(part.key).size ?? 100 }}%</span>
+                    <input
+                      type="range"
+                      min="60"
+                      max="140"
+                      step="5"
+                      [value]="text(part.key).size ?? 100"
+                      (input)="setText(part.key, 'size', +$any($event.target).value)"
+                    />
+                  </label>
+
+                  <div class="mini">
+                    <span>Color</span>
+                    <span class="color-cell">
+                      <input
+                        type="color"
+                        [attr.aria-label]="'Color de ' + part.label"
+                        [value]="text(part.key).color ?? '#1F3A8A'"
+                        (input)="
+                          setText(part.key, 'color', $any($event.target).value.toUpperCase())
+                        "
+                      />
+                      @if (text(part.key).color) {
+                        <button
+                          type="button"
+                          class="link"
+                          (click)="setText(part.key, 'color', undefined)"
+                        >
+                          Quitar
+                        </button>
+                      } @else {
+                        <small>del diseño</small>
+                      }
+                    </span>
+                  </div>
+                </div>
+              }
+
+              <label class="switch">
+                <input
+                  type="checkbox"
+                  [checked]="style().showDocument !== false"
+                  (change)="setShowDocument($any($event.target).checked)"
+                />
+                <span>Mostrar la cédula bajo el nombre</span>
+              </label>
+
+              <p class="tip">
+                <app-icon name="info" [size]="15" />
+                <span>
+                  «Automática» pone negrita en el título y el nombre si la tipografía la tiene. Si
+                  la fuerzas en una que no la tiene, se engrosa el trazo. Si el texto se agranda
+                  mucho, se achica solo para no tocar la firma.
+                </span>
+              </p>
+
+              @if (hasStyle()) {
+                <button type="button" class="link reset" (click)="resetStyle()">
+                  <app-icon name="refresh" [size]="13" /> Restablecer estilo
+                </button>
+              }
+            </fieldset>
+
+            <p class="tip">
+              <app-icon name="pen" [size]="15" />
+              <span>
+                La firma sale de tu perfil.
+                <a routerLink="/teacher/profile">Cambiar mi firma</a>
+              </span>
+            </p>
+          </section>
 
           <div class="buttons">
             <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+              <app-icon name="save" [size]="17" />
               {{ saving() ? 'Guardando…' : 'Guardar plantilla' }}
             </button>
             <button
@@ -168,19 +319,20 @@
               [disabled]="saving()"
               (click)="openPdf()"
             >
-              Guardar y ver PDF
+              <app-icon name="file" [size]="17" /> Guardar y ver PDF
             </button>
           </div>
         </form>
 
         <aside class="preview-col" aria-label="Vista previa">
-          <span class="preview-label">VISTA PREVIA</span>
+          <span class="preview-label"><app-icon name="eye" [size]="14" /> VISTA PREVIA</span>
 
           <app-certificate-preview
             [layout]="preview().layout"
             [color]="preview().color"
             [font]="preview().font"
             [bodyFont]="preview().bodyFont"
+            [style]="preview().style"
             [title]="preview().title"
             [body]="preview().body"
             [student]="preview().student"
@@ -188,7 +340,10 @@
             [instructor]="preview().instructor"
           />
 
-          <p class="panel-hint">Con «Guardar y ver PDF» ves el documento real, con tu firma.</p>
+          <p class="tip">
+            <app-icon name="file" [size]="15" />
+            <span>Con «Guardar y ver PDF» ves el documento real, con tu firma.</span>
+          </p>
         </aside>
       </div>
     }

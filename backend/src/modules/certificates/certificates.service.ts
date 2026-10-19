@@ -11,6 +11,7 @@ import sharp from 'sharp';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { sanitizeStyle } from './certificate-style.js';
 import { CertificateFontsService } from '../certificate-fonts/certificate-fonts.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -34,6 +35,7 @@ import type {
   CreateCertificateTemplateDto,
   ListCertificatesQueryDto,
   UpdateCertificateTemplateDto,
+  UpdateIssuedCertificateDto,
 } from './dto/certificate.dto.js';
 
 /** Máximo de plantillas por docente. */
@@ -86,6 +88,7 @@ export class CertificatesService {
       layout: dto.layout ?? 'CLASSIC',
       font: dto.font ?? 'SANS',
       bodyFont: dto.bodyFont ?? 'SANS',
+      style: sanitizeStyle(dto.style),
     });
   }
 
@@ -102,7 +105,13 @@ export class CertificatesService {
     this.assertValidBody(dto.body);
     await this.assertFonts(user, dto);
 
-    return this.repository.updateTemplate(id, dto);
+    const { style, ...rest } = dto;
+
+    return this.repository.updateTemplate(id, {
+      ...rest,
+      // El estilo, si se envía, reemplaza al anterior completo (y se limpia).
+      ...(style !== undefined ? { style: sanitizeStyle(style) } : {}),
+    });
   }
 
   /** No se borra una plantilla que algún curso usa: dejaría a ese curso sin certificado. */
@@ -142,6 +151,7 @@ export class CertificatesService {
       layout: template.layout,
       font: template.font,
       bodyFont: template.bodyFont,
+      style: sanitizeStyle(template.style),
     };
 
     const pdf = await renderCertificatePdf(
@@ -189,25 +199,10 @@ export class CertificatesService {
       return { certificate: null, created: false };
     }
 
-    const { teacher, certificateTemplate: template } = course;
-    const design: CertificateDesign = {
-      title: template.title,
-      body: template.body,
-      accentColor: template.accentColor,
-      layout: template.layout,
-      font: template.font,
-      bodyFont: template.bodyFont,
-    };
-
     const certificate = await this.createWithUniqueCode({
       studentName: `${student.firstName} ${student.lastName}`,
       studentDocument: student.document,
-      courseTitle: course.title,
-      courseMinutes: course.durationMinutes,
-      instructorName:
-        teacher.profile?.publicName ?? `${teacher.firstName} ${teacher.lastName}`,
-      signatureUrl: teacher.profile?.signatureUrl ?? null,
-      design,
+      ...this.snapshotOf(course),
       courseId,
       userId,
     });
@@ -221,6 +216,33 @@ export class CertificatesService {
     });
 
     return { certificate, created: true };
+  }
+
+  /**
+   * Lo que un certificado guarda del curso y del diseño al emitirse (o al actualizarse): el título,
+   * la duración, el nombre y la firma del docente, y una copia del diseño de la plantilla.
+   * Requiere que el curso tenga plantilla.
+   */
+  private snapshotOf(course: NonNullable<Awaited<ReturnType<CertificatesRepository['findCourseForCertificate']>>>) {
+    const { teacher } = course;
+    const template = course.certificateTemplate as NonNullable<typeof course.certificateTemplate>;
+    const design: CertificateDesign = {
+      title: template.title,
+      body: template.body,
+      accentColor: template.accentColor,
+      layout: template.layout,
+      font: template.font,
+      bodyFont: template.bodyFont,
+      style: sanitizeStyle(template.style),
+    };
+
+    return {
+      courseTitle: course.title,
+      courseMinutes: course.durationMinutes,
+      instructorName: teacher.profile?.publicName ?? `${teacher.firstName} ${teacher.lastName}`,
+      signatureUrl: teacher.profile?.signatureUrl ?? null,
+      design,
+    };
   }
 
   /** Igual que `issueFor`, pero un fallo se registra y no rompe lo que lo originó (completar una lección). */
@@ -336,6 +358,53 @@ export class CertificatesService {
     );
 
     return { pdf, fileName: pdfFileName(certificate.courseTitle) };
+  }
+
+  /**
+   * Corrige el nombre o el documento de un certificado ya emitido (un error de digitación). Lo hace
+   * quien gestiona el curso. El código no cambia, así que el enlace de verificación sigue valiendo.
+   */
+  async editIssued(user: AuthenticatedUser, id: number, dto: UpdateIssuedCertificateDto) {
+    const certificate = await this.repository.findById(id);
+
+    if (!certificate) {
+      throw new NotFoundException('El certificado no existe');
+    }
+
+    await this.access.assertCanManage(user, certificate.courseId);
+
+    if (dto.studentName === undefined && dto.studentDocument === undefined) {
+      throw new BadRequestException('No hay nada que cambiar: envía studentName o studentDocument');
+    }
+
+    return this.repository.updateCertificate(id, {
+      ...(dto.studentName !== undefined ? { studentName: dto.studentName } : {}),
+      ...(dto.studentDocument !== undefined ? { studentDocument: dto.studentDocument } : {}),
+    });
+  }
+
+  /**
+   * Vuelve a copiar en un certificado emitido el diseño actual de la plantilla del curso, el título
+   * del curso, su duración y el nombre y la firma del docente. Sirve cuando se mejoró la plantilla
+   * (otra tipografía, un texto corregido, la firma nueva) y se quiere que los ya emitidos la usen.
+   * No cambia el estudiante, el código ni la fecha de emisión.
+   */
+  async refreshDesign(user: AuthenticatedUser, id: number) {
+    const certificate = await this.repository.findById(id);
+
+    if (!certificate) {
+      throw new NotFoundException('El certificado no existe');
+    }
+
+    await this.access.assertCanManage(user, certificate.courseId);
+
+    const course = await this.repository.findCourseForCertificate(certificate.courseId);
+
+    if (!course?.certificateTemplate) {
+      throw new BadRequestException('El curso ya no tiene una plantilla de certificado asignada');
+    }
+
+    return this.repository.updateCertificate(id, this.snapshotOf(course));
   }
 
   /** Anula un certificado (por ejemplo, si se descubre un fraude). Lo hace quien gestiona el curso. */

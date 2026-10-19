@@ -6,7 +6,9 @@ import { map, startWith } from 'rxjs';
 
 import {
   CertificateLayout,
+  CertificateStyle,
   CertificateTemplate,
+  TextStyle,
   DEFAULT_BODY,
   DEFAULT_COLOR,
   DEFAULT_TITLE,
@@ -14,11 +16,12 @@ import {
   LAYOUTS,
   PLACEHOLDERS,
 } from '../../../core/certificates/certificates.models';
+import { cleanStyle, StyledPart } from '../../../core/certificates/certificate-style';
 import { CertificatesService } from '../../../core/certificates/certificates.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { openBlob } from '../../../core/utils/download';
-import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { Icon } from '../../../shared/ui/icon/icon';
 import { CertificatePreview } from './certificate-preview';
 import { FontPicker } from './font-picker';
 import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './certificate-text';
@@ -26,7 +29,7 @@ import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './cert
 /** Crear o editar una plantilla de certificado, con una vista previa que se actualiza al escribir. */
 @Component({
   selector: 'app-template-editor',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, CertificatePreview, FontPicker],
+  imports: [ReactiveFormsModule, RouterLink, Icon, CertificatePreview, FontPicker],
   templateUrl: './template-editor.html',
   styleUrl: './template-editor.scss',
 })
@@ -46,6 +49,16 @@ export class TemplateEditor {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
+
+  /** Qué textos se pueden estilizar, y cuál es su negrita "automática". */
+  readonly parts: { key: StyledPart; label: string; autoBold: boolean }[] = [
+    { key: 'title', label: 'Título', autoBold: true },
+    { key: 'name', label: 'Nombre del estudiante', autoBold: true },
+    { key: 'body', label: 'Texto', autoBold: false },
+  ];
+
+  /** Negrita, cursiva, tamaño y color de cada texto. */
+  readonly style = signal<CertificateStyle>({});
 
   readonly bodyBox = viewChild<ElementRef<HTMLTextAreaElement>>('bodyBox');
 
@@ -103,6 +116,7 @@ export class TemplateEditor {
       layout,
       font,
       bodyFont,
+      style: this.style(),
     };
   });
 
@@ -128,6 +142,42 @@ export class TemplateEditor {
         });
     }
   }
+
+  text(part: StyledPart): TextStyle {
+    return this.style()[part] ?? {};
+  }
+
+  /** Cambia una propiedad de un texto. `undefined` la devuelve al valor del diseño. */
+  setText<K extends keyof TextStyle>(
+    part: StyledPart,
+    key: K,
+    value: TextStyle[K] | undefined,
+  ): void {
+    this.style.update((style) => ({ ...style, [part]: { ...style[part], [key]: value } }));
+    this.form.markAsDirty();
+  }
+
+  setBold(part: StyledPart, value: string): void {
+    this.setText(part, 'bold', value === 'auto' ? undefined : value === 'yes');
+  }
+
+  boldValue(part: StyledPart): string {
+    const bold = this.text(part).bold;
+
+    return bold === undefined ? 'auto' : bold ? 'yes' : 'no';
+  }
+
+  setShowDocument(show: boolean): void {
+    this.style.update((style) => ({ ...style, showDocument: show ? undefined : false }));
+    this.form.markAsDirty();
+  }
+
+  resetStyle(): void {
+    this.style.set({});
+    this.form.markAsDirty();
+  }
+
+  readonly hasStyle = computed(() => Object.keys(cleanStyle(this.style())).length > 0);
 
   /** Inserta un marcador donde está el cursor del texto. */
   insert(token: string): void {
@@ -186,7 +236,7 @@ export class TemplateEditor {
 
     this.saving.set(true);
 
-    const input = this.form.getRawValue();
+    const input = { ...this.form.getRawValue(), style: cleanStyle(this.style()) };
     const request =
       this.id === null ? this.api.createTemplate(input) : this.api.updateTemplate(this.id, input);
 
@@ -204,6 +254,7 @@ export class TemplateEditor {
   }
 
   private fill(template: CertificateTemplate): void {
+    this.style.set(template.style ?? {});
     this.form.reset({
       name: template.name,
       title: template.title,

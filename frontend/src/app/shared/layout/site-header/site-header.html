@@ -45,7 +45,13 @@
           <small>{{ roleLabel() }}</small>
         </div>
 
-        <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+        <span class="avatar" aria-hidden="true">
+          @if (avatarUrl(); as photo) {
+            <img [src]="photo" alt="" />
+          } @else {
+            {{ initials() }}
+          }
+        </span>
       } @else {
         <a class="login-link" routerLink="/login">Iniciar sesión</a>
         <a class="register-button" routerLink="/register">Crear cuenta</a>

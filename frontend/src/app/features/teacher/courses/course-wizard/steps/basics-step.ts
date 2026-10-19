@@ -5,6 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Observable, tap } from 'rxjs';
 
 import { slugify, SLUG_PATTERN } from '../../../../../core/utils/slugify';
+import { Icon, IconName } from '../../../../../shared/ui/icon/icon';
 import { MediaField } from '../../../../../shared/ui/media-field/media-field';
 import {
   CategoryOption,
@@ -27,7 +28,7 @@ const URL_PATTERN = /^$|^(?:https?:\/\/\S+|\/api\/uploads\/[a-f0-9]{32}\.[a-z0-9
 /** Paso 1: título y dirección, descripción, opciones, precio, acceso, imagen y video. */
 @Component({
   selector: 'app-basics-step',
-  imports: [RichEditor, ReactiveFormsModule, MediaField],
+  imports: [RichEditor, ReactiveFormsModule, MediaField, Icon],
   templateUrl: './basics-step.html',
   styleUrl: './basics-step.scss',
 })
@@ -39,6 +40,11 @@ export class BasicsStep {
   readonly levelLabels = LEVEL_LABELS;
   readonly visibilities = VISIBILITIES;
   readonly visibilityInfo = VISIBILITY_LABELS;
+  readonly visibilityIcons: Record<CourseVisibility, IconName> = {
+    PUBLIC: 'globe',
+    PASSWORD: 'lock',
+    PRIVATE: 'eye',
+  };
 
   readonly course = this.wizard.course() as NonNullable<ReturnType<CourseWizardService['course']>>;
   readonly categories = signal<CategoryOption[]>([]);

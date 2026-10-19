@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 
 export interface SocialLinks {
   facebookUrl: string | null;
@@ -26,6 +26,7 @@ export interface ProfileData {
     publicName: string | null;
     bio: string | null;
     signatureUrl: string | null;
+    avatarUrl: string | null;
     social: SocialLinks;
   };
   preferences: {
@@ -54,6 +55,7 @@ export interface ProfileUpdate {
   publicName?: string | null;
   bio?: string | null;
   signatureUrl?: string | null;
+  avatarUrl?: string | null;
   facebookUrl?: string | null;
   xUrl?: string | null;
   linkedinUrl?: string | null;
@@ -65,12 +67,39 @@ export interface ProfileUpdate {
 export class ProfileService {
   private readonly http = inject(HttpClient);
 
+  /** La foto de perfil de quien tiene la sesión; la usa el encabezado y la actualiza esta página. */
+  readonly avatarUrl = signal<string | null>(null);
+  private avatarLoaded = false;
+
   get(): Observable<ProfileData> {
-    return this.http.get<ProfileData>('/api/profile');
+    return this.http.get<ProfileData>('/api/profile').pipe(tap((data) => this.remember(data)));
   }
 
   update(input: ProfileUpdate): Observable<ProfileData> {
-    return this.http.patch<ProfileData>('/api/profile', input);
+    return this.http
+      .patch<ProfileData>('/api/profile', input)
+      .pipe(tap((data) => this.remember(data)));
+  }
+
+  /** Carga la foto una sola vez por sesión (para el encabezado). */
+  ensureAvatar(): void {
+    if (this.avatarLoaded) {
+      return;
+    }
+
+    this.avatarLoaded = true;
+    this.get().subscribe({ error: () => (this.avatarLoaded = false) });
+  }
+
+  /** Al cerrar sesión. */
+  clearAvatar(): void {
+    this.avatarLoaded = false;
+    this.avatarUrl.set(null);
+  }
+
+  private remember(data: ProfileData): void {
+    this.avatarLoaded = true;
+    this.avatarUrl.set(data.profile.avatarUrl);
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<{ changed: boolean }> {

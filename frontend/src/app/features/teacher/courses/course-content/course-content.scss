@@ -31,11 +31,51 @@
 .empty {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 24px;
+  text-align: center;
+  background: var(--p-surface);
+  border: 2px dashed color-mix(in srgb, var(--p-accent) 40%, var(--p-border));
+  border-radius: 16px;
+}
+
+.empty h2 {
+  font-size: 1.1rem;
 }
 
 .empty p {
+  max-width: 460px;
   margin: 0;
+  color: var(--p-muted);
+  line-height: 1.6;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+  border-radius: 18px;
+}
+
+.panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-form {
+  border: 1.5px solid color-mix(in srgb, var(--p-ink) 16%, var(--p-border));
 }
 
 .add-form {

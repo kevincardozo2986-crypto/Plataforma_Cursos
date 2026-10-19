@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 
 import type { FontSource } from '../certificate-fonts/certificate-fonts.service.js';
+import { AUTO_BOLD, type CertificateStyle, type ResolvedText, resolveText } from './certificate-style.js';
 import {
   fillTemplate,
   formatDocument,
@@ -39,6 +40,8 @@ export interface CertificateDesign {
   font?: string;
   /** Tipografía del texto. Los certificados anteriores tenían una sola para todo: usan `font`. */
   bodyFont?: string;
+  /** Negrita, cursiva, tamaño y color de cada texto. Los certificados anteriores no lo traen. */
+  style?: CertificateStyle;
 }
 
 /** Las tipografías ya resueltas con las que se dibuja (ver CertificateFontsService.resolve). */
@@ -74,6 +77,23 @@ const WIDTH = 841.89;
 const HEIGHT = 595.28;
 
 const SIGNATURE_Y = 462;
+
+/** El texto del certificado no puede bajar de aquí: debajo están la firma y su línea. */
+export const BODY_LIMIT_Y = SIGNATURE_Y - 82;
+
+/**
+ * El mayor tamaño (hasta `start`, sin bajar de `min`) con el que un bloque de texto cabe sin pasar
+ * de `limit`. `heightAt` mide cuánto mide el bloque a un tamaño. Va de medio en medio punto.
+ */
+export function fitToHeight(start: number, min: number, top: number, limit: number, heightAt: (size: number) => number): number {
+  let size = start;
+
+  while (size > min && top + heightAt(size) > limit) {
+    size -= 0.5;
+  }
+
+  return size;
+}
 
 /** Dónde y con qué colores se escribe el texto del certificado en un diseño. */
 interface Box {
@@ -432,6 +452,82 @@ function bodyText(content: CertificateContent): string {
   return fillTemplate(content.design.body, values);
 }
 
+/** ¿La tipografía trae su negrita? Las del PDF sí; las de archivo, solo si el archivo de negrita es otro. */
+const hasRealBold = (source: FontSource): boolean =>
+  typeof source.regular === 'string' || source.bold !== source.regular;
+
+/** Cuánto se inclina la cursiva sintética (la tangente del ángulo, unos 11°). */
+const ITALIC_SKEW = 0.2;
+
+interface Look {
+  font: string;
+  size: number;
+  color: string;
+  syntheticBold: boolean;
+  italic: boolean;
+}
+
+type TextOptions = {
+  width: number;
+  align: 'center' | 'left';
+  lineBreak?: boolean;
+  lineGap?: number;
+  characterSpacing?: number;
+};
+
+/**
+ * Escribe un texto con su aspecto. La negrita sintética repasa las letras con un trazo fino del
+ * mismo color; la cursiva sintética inclina el texto alrededor de su línea base.
+ */
+function drawText(doc: Doc, text: string, x: number, y: number, options: TextOptions, look: Look) {
+  doc.fillColor(look.color).font(look.font).fontSize(look.size);
+
+  const write = () => {
+    if (look.syntheticBold) {
+      doc.lineWidth(Math.max(0.3, look.size * 0.028)).lineJoin('round').strokeColor(look.color);
+      doc.text(text, x, y, { ...options, fill: true, stroke: true });
+    } else {
+      doc.text(text, x, y, options);
+    }
+  };
+
+  if (!look.italic) {
+    write();
+    return;
+  }
+
+  const baseline = y + look.size * 0.8;
+
+  doc.save();
+  doc.transform(1, 0, -ITALIC_SKEW, 1, ITALIC_SKEW * baseline, 0);
+  write();
+  doc.restore();
+}
+
+/** Parte un texto en renglones que caben en `width` (para poder inclinar cada uno por separado). */
+function wrapLines(doc: Doc, text: string, width: number): string[] {
+  const lines: string[] = [];
+
+  for (const paragraph of text.split('\n')) {
+    let current = '';
+
+    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
+      const candidate = current ? `${current} ${word}` : word;
+
+      if (current && doc.widthOfString(candidate) > width) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+
+    lines.push(current);
+  }
+
+  return lines;
+}
+
 function writeContent(
   doc: Doc,
   content: CertificateContent,
@@ -442,17 +538,41 @@ function writeContent(
   const heading = registerFace(doc, 'heading', fonts.heading);
   const body = registerFace(doc, 'body', fonts.body);
   const { colors } = box;
+  const style = content.design.style ?? {};
+
+  const headingBold = hasRealBold(fonts.heading);
+  const titleStyle = resolveText(style.title, AUTO_BOLD.title, headingBold);
+  const nameStyle = resolveText(style.name, AUTO_BOLD.name, headingBold);
+  const bodyStyle = resolveText(style.body, AUTO_BOLD.body, hasRealBold(fonts.body));
+
+  const look = (
+    face: { regular: string; bold: string },
+    text: ResolvedText,
+    size: number,
+    fallback: string,
+  ): Look => ({
+    font: text.bold ? face.bold : face.regular,
+    size,
+    color: text.color ?? fallback,
+    syntheticBold: text.syntheticBold,
+    italic: text.italic,
+  });
+
   const title = box.upper ? content.design.title.toUpperCase() : content.design.title;
 
   // Título
-  const titleSize = fitFontSize(doc, title, heading.bold, box.titleSize, box.width, 16);
-  doc.fillColor(colors.title).font(heading.bold).fontSize(titleSize);
-  doc.text(title, box.x, box.titleY, {
-    width: box.width,
-    align: box.align,
-    lineBreak: false,
-    ...(box.upper ? { characterSpacing: 1.5 } : {}),
-  });
+  const titleFont = titleStyle.bold ? heading.bold : heading.regular;
+  const titleStart = box.titleSize * titleStyle.scale;
+  const titleSize = fitFontSize(doc, title, titleFont, titleStart, box.width, Math.min(16, titleStart));
+
+  drawText(
+    doc,
+    title,
+    box.x,
+    box.titleY,
+    { width: box.width, align: box.align, lineBreak: false, ...(box.upper ? { characterSpacing: 1.5 } : {}) },
+    look(heading, titleStyle, titleSize, colors.title),
+  );
 
   // "Se otorga a" y el nombre
   const nameY = box.contentY + 30;
@@ -460,14 +580,26 @@ function writeContent(
   doc.fillColor(colors.soft).font(body.regular).fontSize(14);
   doc.text('Se otorga a', box.x, box.contentY, { width: box.width, align: box.align, lineBreak: false });
 
-  const nameSize = fitFontSize(doc, content.studentName, heading.bold, 42, box.width, 18);
-  doc.fillColor(colors.name).font(heading.bold).fontSize(nameSize);
-  doc.text(content.studentName, box.x, nameY, { width: box.width, align: box.align, lineBreak: false });
+  const nameFont = nameStyle.bold ? heading.bold : heading.regular;
+  const nameStart = 42 * nameStyle.scale;
+  const nameSize = fitFontSize(doc, content.studentName, nameFont, nameStart, box.width, Math.min(18, nameStart));
+
+  drawText(
+    doc,
+    content.studentName,
+    box.x,
+    nameY,
+    { width: box.width, align: box.align, lineBreak: false },
+    look(heading, nameStyle, nameSize, colors.name),
+  );
+
+  // Si el nombre se agranda, la cédula, la línea y el texto bajan lo que haga falta.
+  const shift = Math.max(0, nameSize * 1.18 - 50);
 
   // Documento de identidad, en pequeño bajo el nombre
-  if (content.studentDocument) {
+  if (content.studentDocument && style.showDocument !== false) {
     doc.fillColor(colors.soft).font(body.regular).fontSize(11);
-    doc.text(`Documento de identidad: ${formatDocument(content.studentDocument)}`, box.x, nameY + 50, {
+    doc.text(`Documento de identidad: ${formatDocument(content.studentDocument)}`, box.x, nameY + 50 + shift, {
       width: box.width,
       align: box.align,
       lineBreak: false,
@@ -476,22 +608,45 @@ function writeContent(
 
   // Línea bajo el nombre
   if (box.rule !== 'none') {
-    const ruleY = box.contentY + 100;
+    const ruleY = box.contentY + 100 + shift;
     const ruleX = box.rule === 'center' ? WIDTH / 2 - 130 : box.x;
 
     doc.lineWidth(1.2).strokeColor(colors.accent).moveTo(ruleX, ruleY).lineTo(ruleX + 260, ruleY).stroke();
   }
 
   // Texto del certificado
-  const bodyY = box.contentY + (box.rule === 'none' ? 104 : 124);
+  const bodyY = box.contentY + (box.rule === 'none' ? 104 : 124) + shift;
   const inset = box.align === 'center' ? 20 : 0;
+  const bodyWidth = box.width - inset * 2;
+  const text = bodyText(content);
+  const bodyFace = bodyStyle.bold ? body.bold : body.regular;
 
-  doc.fillColor(colors.text).font(body.regular).fontSize(16);
-  doc.text(bodyText(content), box.x + inset, bodyY, {
-    width: box.width - inset * 2,
-    align: box.align,
-    lineGap: 5,
+  // Si el texto es largo (o se agrandó), se achica hasta quedar por encima de la firma.
+  const bodySize = fitToHeight(16 * bodyStyle.scale, 9, bodyY, BODY_LIMIT_Y, (size) => {
+    doc.font(bodyFace).fontSize(size);
+
+    return doc.heightOfString(text, { width: bodyWidth, lineGap: 5 });
   });
+  const bodyLook = look(body, bodyStyle, bodySize, colors.text);
+
+  if (bodyStyle.italic) {
+    // Cada renglón se inclina por separado (si no, los de abajo se correrían de lado).
+    doc.font(bodyLook.font).fontSize(bodySize);
+    const lineHeight = doc.currentLineHeight() + 5;
+
+    wrapLines(doc, text, bodyWidth).forEach((line, index) => {
+      drawText(
+        doc,
+        line,
+        box.x + inset,
+        bodyY + index * lineHeight,
+        { width: bodyWidth, align: box.align, lineBreak: false },
+        bodyLook,
+      );
+    });
+  } else {
+    drawText(doc, text, box.x + inset, bodyY, { width: bodyWidth, align: box.align, lineGap: 5 }, bodyLook);
+  }
 
   // Firma
   const { x, width } = box.signature;

@@ -7,6 +7,8 @@ import { loadLibrary } from '../certificate-fonts/font-library.js';
 import {
   CERTIFICATE_LAYOUTS,
   type CertificateContent,
+  BODY_LIMIT_Y,
+  fitToHeight,
   renderCertificatePdf,
   shade,
 } from './certificate-pdf.js';
@@ -229,5 +231,116 @@ describe('tipografías de la biblioteca', () => {
     });
 
     expect((pdf.toString('latin1').match(/\/FontFile/g) ?? []).length).toBe(1);
+  });
+});
+
+describe('estilo de los textos', () => {
+  const file = (name: string) => readFileSync(join(process.cwd(), 'assets', 'certificate-fonts', name));
+  const noBold = () => {
+    const regular = file('great-vibes-regular.woff');
+
+    return { regular, bold: regular };
+  };
+  const withStyle = (style: object, overrides: Partial<CertificateContent> = {}) =>
+    content({ ...overrides, design: { ...content().design, style } });
+
+  it('un diseño con estilo genera un PDF válido de una página en todos los diseños', async () => {
+    const style = {
+      title: { bold: false, italic: true, size: 120, color: '#B91C1C' },
+      name: { italic: true, size: 140 },
+      body: { bold: true, italic: true, size: 70, color: '#0F766E' },
+      showDocument: false,
+    };
+
+    for (const layout of CERTIFICATE_LAYOUTS) {
+      const pdf = await renderCertificatePdf(withStyle(style, { design: { ...content().design, layout, style } }));
+
+      expect(isPdf(pdf)).toBe(true);
+      expect(pages(pdf)).toBe(1);
+    }
+  });
+
+  it('la negrita sintética (en una tipografía sin negrita) cambia el dibujo', async () => {
+    const fonts = { heading: noBold(), body: noBold() };
+    const plain = await renderCertificatePdf(withStyle({}), fonts);
+    const bold = await renderCertificatePdf(withStyle({ title: { bold: true }, name: { bold: true }, body: { bold: true } }), fonts);
+
+    expect(isPdf(bold)).toBe(true);
+    expect(bold.equals(plain)).toBe(false);
+  });
+
+  it('en una tipografía sin negrita, la automática no finge nada: queda igual que sin estilo', async () => {
+    const fonts = { heading: noBold(), body: noBold() };
+
+    // `bold: null` = automática, y la automática solo usa la negrita si es real.
+    expect((await renderCertificatePdf(withStyle({ title: { bold: null } }), fonts)).length).toBe((await renderCertificatePdf(withStyle({}), fonts)).length);
+  });
+
+  it('la cursiva, el tamaño, el color y ocultar la cédula cambian el PDF', async () => {
+    const base = await renderCertificatePdf(withStyle({}));
+
+    for (const style of [{ title: { italic: true } }, { name: { size: 80 } }, { body: { size: 130 } }, { name: { color: '#FF0000' } }, { showDocument: false }]) {
+      const pdf = await renderCertificatePdf(withStyle(style));
+
+      expect(isPdf(pdf)).toBe(true);
+      expect(pdf.equals(base)).toBe(false);
+    }
+  });
+
+  it('con la cédula oculta no se dibuja esa línea (el PDF pesa menos)', async () => {
+    const shown = await renderCertificatePdf(withStyle({}));
+    const hidden = await renderCertificatePdf(withStyle({ showDocument: false }));
+
+    expect(hidden.length).toBeLessThan(shown.length);
+  });
+
+  it('un nombre larguísimo al 140% se achica sin salirse ni agregar páginas', async () => {
+    const pdf = await renderCertificatePdf(
+      withStyle({ name: { size: 140, italic: true, bold: true } }, { studentName: 'María de los Ángeles Fernanda del Rosario Villalobos Echeverría de la Torre' }),
+    );
+
+    expect(pages(pdf)).toBe(1);
+  });
+
+  it('un texto largo en cursiva (varios renglones) sigue en una página', async () => {
+    const body = 'Por haber completado satisfactoriamente el curso «{{course}}» con una duración de {{hours}}, '.repeat(4);
+    const pdf = await renderCertificatePdf(content({ design: { ...content().design, body, style: { body: { italic: true, size: 110 } } } }));
+
+    expect(pages(pdf)).toBe(1);
+  });
+
+  it('un estilo con valores inventados no rompe el certificado (el servicio los limpia, y aquí se ignoran)', async () => {
+    const pdf = await renderCertificatePdf(withStyle({ title: { color: 'rojo', size: 99999 }, name: { bold: 'si' } }));
+
+    expect(isPdf(pdf)).toBe(true);
+  });
+});
+
+describe('fitToHeight', () => {
+  const lines = (size: number) => 10 * size; // un bloque que mide 10 veces su tamaño
+
+  it('si cabe, deja el tamaño inicial', () => {
+    expect(fitToHeight(16, 9, 100, 400, lines)).toBe(16);
+  });
+
+  it('si no cabe, lo achica hasta que quepa, de medio en medio punto', () => {
+    const size = fitToHeight(16, 9, 300, 400, lines);
+
+    expect(size).toBeLessThan(16);
+    expect(300 + lines(size)).toBeLessThanOrEqual(400);
+    expect(300 + lines(size + 0.5)).toBeGreaterThan(400);
+  });
+
+  it('nunca baja del mínimo', () => {
+    expect(fitToHeight(16, 9, 300, 310, lines)).toBe(9);
+  });
+
+  it('un texto larguísimo o muy grande ya no se monta sobre la firma (sigue en una página)', async () => {
+    const long = 'Por haber completado satisfactoriamente el curso «{{course}}» con muy buen desempeño, '.repeat(12);
+    const pdf = await renderCertificatePdf(content({ design: { ...content().design, body: long, style: { body: { size: 140 }, name: { size: 140 } } } }));
+
+    expect(isPdf(pdf)).toBe(true);
+    expect(pages(pdf)).toBe(1);
+    expect(BODY_LIMIT_Y).toBeLessThan(462);
   });
 });

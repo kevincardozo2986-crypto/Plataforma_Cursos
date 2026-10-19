@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { Icon, IconName } from '../../../shared/ui/icon/icon';
 import { Subject, switchMap } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -45,6 +46,8 @@ const STATUS_LABELS: Record<CourseBreakdown['status'], string> = {
 };
 
 interface Tile {
+  icon: IconName;
+  tone: 'blue' | 'orange' | 'green' | 'amber' | 'violet' | 'teal';
   label: string;
   value: string;
   note: string;
@@ -55,7 +58,7 @@ const number = new Intl.NumberFormat('es-CO');
 /** Resumen del docente: cifras, gráfica de inscripciones y finalizaciones, y tabla por curso. */
 @Component({
   selector: 'app-teacher-stats',
-  imports: [RouterLink],
+  imports: [RouterLink, Icon],
   templateUrl: './teacher-stats.html',
   styleUrl: './teacher-stats.scss',
 })
@@ -107,26 +110,36 @@ export class TeacherStats {
 
     return [
       {
+        icon: 'users',
+        tone: 'blue',
         label: 'Estudiantes',
         value: number.format(data.students),
         note: 'con inscripción en el periodo',
       },
       {
+        icon: 'clipboard',
+        tone: 'orange',
         label: 'Inscripciones',
         value: number.format(completion.enrolled),
         note: `${number.format(completion.cancelled)} canceladas`,
       },
       {
+        icon: 'check-circle',
+        tone: 'green',
         label: 'Finalización',
         value: `${completion.rate}%`,
         note: `${number.format(completion.completed)} de ${number.format(active)} terminaron`,
       },
       {
+        icon: 'star',
+        tone: 'amber',
         label: 'Calificación',
         value: this.stars(rating),
         note: rating.count === 1 ? '1 reseña' : `${number.format(rating.count)} reseñas`,
       },
       {
+        icon: 'help',
+        tone: 'violet',
         label: 'Quizzes',
         value: quizzes.attempts > 0 ? `${quizzes.averageScore}%` : '—',
         note:
@@ -135,6 +148,8 @@ export class TeacherStats {
             : 'sin intentos calificados',
       },
       {
+        icon: 'book',
+        tone: 'teal',
         label: 'Cursos publicados',
         value: number.format(courses.published),
         note: `de ${number.format(courses.total)} (${number.format(courses.draft)} borradores)`,
@@ -142,19 +157,28 @@ export class TeacherStats {
     ];
   });
 
-  readonly states = computed(() => {
+  readonly states = computed<
+    { icon: IconName; tone: string; label: string; value: number; hint?: string }[]
+  >(() => {
     const completion = this.data()?.completion;
 
     return completion
       ? [
-          { label: 'Completadas', value: completion.completed },
-          { label: 'En progreso', value: completion.inProgress },
           {
+            icon: 'check-circle',
+            tone: 'green',
+            label: 'Completadas',
+            value: completion.completed,
+          },
+          { icon: 'trend', tone: 'blue', label: 'En progreso', value: completion.inProgress },
+          {
+            icon: 'clock',
+            tone: 'amber',
             label: 'Inactivas',
             value: completion.inactive,
             hint: `sin avanzar hace ${completion.inactiveAfterDays} días o más`,
           },
-          { label: 'Canceladas', value: completion.cancelled },
+          { icon: 'x-circle', tone: 'red', label: 'Canceladas', value: completion.cancelled },
         ]
       : [];
   });

@@ -46,7 +46,7 @@ describe('ProfileService', () => {
 
       const result = await service.get(teacher);
 
-      expect(result.profile).toMatchObject({ timezone: 'America/Bogota', bio: null, signatureUrl: null });
+      expect(result.profile).toMatchObject({ timezone: 'America/Bogota', bio: null, signatureUrl: null, avatarUrl: null });
       expect(result.preferences).toEqual({
         autoplayNext: true, reduceMotion: false, theme: 'SYSTEM', fontSize: 'MEDIUM', highContrast: false, colorFilter: 'NONE',
       });
@@ -133,6 +133,26 @@ describe('ProfileService', () => {
       await service.update(student, { theme: 'DARK', signatureUrl: null });
 
       expect(repository.upsertProfile).toHaveBeenCalledWith(5, { theme: 'DARK', signatureUrl: null });
+    });
+  });
+
+  describe('foto de perfil', () => {
+    const photo = '/api/uploads/a1b2c3d4e5f60718293a4b5c6d7e8f90.webp';
+
+    it('la puede tener cualquier cuenta, también un estudiante, y se devuelve en el perfil', async () => {
+      const { service, repository } = build();
+
+      await service.update(student, { avatarUrl: photo });
+
+      expect(repository.upsertProfile).toHaveBeenCalledWith(5, { avatarUrl: photo });
+    });
+
+    it('null la quita', async () => {
+      const { service, repository } = build();
+
+      await service.update(teacher, { avatarUrl: null });
+
+      expect(repository.upsertProfile).toHaveBeenCalledWith(7, { avatarUrl: null });
     });
   });
 

@@ -15,6 +15,7 @@ export interface ProfileData {
   publicName?: string | null;
   bio?: string | null;
   signatureUrl?: string | null;
+  avatarUrl?: string | null;
   facebookUrl?: string | null;
   xUrl?: string | null;
   linkedinUrl?: string | null;
@@ -59,6 +60,7 @@ export class ProfileRepository {
         profile: {
           select: {
             publicName: true,
+            avatarUrl: true,
             bio: true,
             occupation: true,
             facebookUrl: true,

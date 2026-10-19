@@ -223,3 +223,182 @@ h1 {
     text-align: center;
   }
 }
+
+/* ---------- Mejoras de forma ---------- */
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.title-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+  border-radius: 11px;
+}
+
+.bar {
+  background: color-mix(in srgb, var(--p-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* Pasos como tarjetas con borde */
+.stepper ol {
+  gap: 12px;
+  border-bottom: 0;
+}
+
+.step {
+  padding: 12px 14px;
+  background: var(--p-surface);
+  border: 1.5px solid var(--p-border);
+  border-radius: 14px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+
+.step::after {
+  display: none;
+}
+
+.step:hover {
+  border-color: color-mix(in srgb, var(--p-accent) 55%, var(--p-border));
+}
+
+.step.active {
+  background: var(--p-accent-soft);
+  border-color: var(--p-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-accent) 18%, transparent);
+}
+
+.step-number {
+  width: 38px;
+  height: 38px;
+  color: var(--p-muted);
+  background: var(--p-surface-2);
+  border: 0;
+  border-radius: 11px;
+}
+
+.step.active .step-number {
+  color: var(--p-accent-ink);
+  background: var(--p-accent);
+}
+
+.step-index {
+  display: block;
+  color: var(--p-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Lo que falta para enviar */
+.checklist {
+  display: block;
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  background: var(--p-surface);
+  border: 1.5px solid var(--p-border);
+  border-radius: 14px;
+}
+
+.checklist-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.checklist-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--p-ink);
+  font-weight: 700;
+}
+
+.checklist-count {
+  color: var(--p-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.bar-track {
+  height: 8px;
+  overflow: hidden;
+  background: var(--p-surface-2);
+  border-radius: 999px;
+}
+
+.bar-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--p-accent), var(--p-ok));
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 12px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  color: var(--p-muted);
+  font-size: 0.82rem;
+  background: var(--p-surface-2);
+  border-radius: 999px;
+}
+
+.check.done {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+.alert-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager {
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .stepper ol {
+    gap: 8px;
+  }
+
+  .step {
+    align-items: center;
+    padding: 10px 8px;
+  }
+
+  .step-index {
+    display: none;
+  }
+}

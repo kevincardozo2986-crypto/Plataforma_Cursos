@@ -5,6 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 
+import { Icon } from '../../../../../shared/ui/icon/icon';
 import { CertificateTemplate } from '../../../../../core/certificates/certificates.models';
 import { CertificatesService } from '../../../../../core/certificates/certificates.service';
 import { TeacherCourse } from '../../teacher-courses.models';
@@ -20,7 +21,7 @@ interface CandidateCourse {
 /** Paso 3: qué aprenderá el estudiante, a quién va dirigido, duración, requisitos y prerrequisitos. */
 @Component({
   selector: 'app-additional-step',
-  imports: [RichEditor, ReactiveFormsModule, RouterLink],
+  imports: [RichEditor, ReactiveFormsModule, RouterLink, Icon],
   templateUrl: './additional-step.html',
   styleUrl: './additional-step.scss',
 })

@@ -60,6 +60,7 @@ export class ProfileService {
         publicName: profile?.publicName ?? null,
         bio: profile?.bio ?? null,
         signatureUrl: profile?.signatureUrl ?? null,
+        avatarUrl: profile?.avatarUrl ?? null,
         social: {
           facebookUrl: profile?.facebookUrl ?? null,
           xUrl: profile?.xUrl ?? null,
@@ -148,6 +149,7 @@ export class ProfileService {
     return {
       id: teacher.id,
       name: profile?.publicName ?? `${teacher.firstName} ${teacher.lastName}`,
+      avatarUrl: profile?.avatarUrl ?? null,
       occupation: profile?.occupation ?? null,
       bio: profile?.bio ?? null,
       social: {

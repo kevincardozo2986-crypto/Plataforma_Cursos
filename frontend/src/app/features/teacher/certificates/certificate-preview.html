@@ -10,9 +10,10 @@
     [style.width.%]="x(b.width)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(titleSize())"
-    [style.color]="b.colors.title"
+    [style.color]="titleLook().color ?? b.colors.title"
     [style.font-family]="headingFamily()"
-    [style.font-weight]="headingWeight()"
+    [style.font-weight]="titleLook().bold ? 700 : 400"
+    [style.font-style]="titleLook().italic ? 'italic' : 'normal'"
     [style.letter-spacing.cqw]="b.upper ? size(1.5) : null"
   >
     {{ titleText() }}
@@ -39,18 +40,19 @@
     [style.width.%]="x(b.width)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(nameSize())"
-    [style.color]="b.colors.name"
+    [style.color]="nameLook().color ?? b.colors.name"
     [style.font-family]="headingFamily()"
-    [style.font-weight]="headingWeight()"
+    [style.font-weight]="nameLook().bold ? 700 : 400"
+    [style.font-style]="nameLook().italic ? 'italic' : 'normal'"
   >
     {{ student() }}
   </p>
 
-  @if (document()) {
+  @if (document() && showDocument()) {
     <p
       class="t"
       [style.left.%]="x(b.x)"
-      [style.top.%]="y(b.contentY + 80)"
+      [style.top.%]="y(b.contentY + 80 + shift())"
       [style.width.%]="x(b.width)"
       [style.text-align]="b.align"
       [style.font-size.cqw]="size(11)"
@@ -66,7 +68,7 @@
     <span
       class="rule"
       [style.left.%]="x(ruleLeft())"
-      [style.top.%]="y(b.contentY + 100)"
+      [style.top.%]="y(b.contentY + 100 + shift())"
       [style.width.%]="x(260)"
       [style.background]="b.colors.accent"
     ></span>
@@ -78,10 +80,11 @@
     [style.top.%]="y(bodyTop())"
     [style.width.%]="x(b.width - inset() * 2)"
     [style.text-align]="b.align"
-    [style.font-size.cqw]="size(16)"
-    [style.color]="b.colors.text"
+    [style.font-size.cqw]="size(bodySize())"
+    [style.color]="bodyLook().color ?? b.colors.text"
     [style.font-family]="bodyFamily()"
-    [style.font-weight]="400"
+    [style.font-weight]="bodyLook().bold ? 700 : 400"
+    [style.font-style]="bodyLook().italic ? 'italic' : 'normal'"
   >
     {{ body() }}
   </p>
@@ -102,7 +105,7 @@
     [style.font-size.cqw]="size(12)"
     [style.color]="b.colors.name"
     [style.font-family]="headingFamily()"
-    [style.font-weight]="headingWeight()"
+    [style.font-weight]="signWeight()"
   >
     {{ instructor() }}
   </p>

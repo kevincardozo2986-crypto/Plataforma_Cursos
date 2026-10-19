@@ -1,13 +1,15 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { map, startWith, Subscription } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ProfileData, ProfileService, ProfileUpdate } from '../../../core/profile/profile.service';
 import { validateFile } from '../../../core/uploads/upload-rules';
 import { UploadsService } from '../../../core/uploads/uploads.service';
-import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { Icon, IconName } from '../../../shared/ui/icon/icon';
+
+export type ProfileTab = 'account' | 'public' | 'signature' | 'security';
 
 const URL_PATTERN = /^https?:\/\/\S+$/i;
 
@@ -43,7 +45,7 @@ const optionalUrl = () =>
 /** Perfil del docente: cuenta, nombre público, redes, firma de los certificados y contraseña. */
 @Component({
   selector: 'app-profile-page',
-  imports: [ReactiveFormsModule, PageHeader],
+  imports: [ReactiveFormsModule, Icon],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })
@@ -59,6 +61,15 @@ export class ProfilePage {
   readonly notice = signal('');
   readonly data = signal<ProfileData | null>(null);
 
+  readonly tab = signal<ProfileTab>('account');
+
+  // Foto de perfil
+  readonly avatarUrl = signal<string | null>(null);
+  readonly avatarUploading = signal(false);
+  readonly avatarPercent = signal(0);
+  readonly avatarError = signal('');
+  private avatarUpload: Subscription | null = null;
+
   // Firma
   readonly signatureUrl = signal<string | null>(null);
   readonly uploading = signal(false);
@@ -72,6 +83,27 @@ export class ProfilePage {
   readonly passwordNotice = signal('');
 
   readonly isTeacher = computed(() => this.data()?.account.role !== 'STUDENT');
+
+  readonly tabs = computed<{ key: ProfileTab; label: string; icon: IconName }[]>(() => [
+    { key: 'account', label: 'Mis datos', icon: 'user' },
+    { key: 'public', label: 'Perfil público', icon: 'globe' },
+    ...(this.isTeacher()
+      ? [{ key: 'signature' as const, label: 'Firma', icon: 'pen' as const }]
+      : []),
+    { key: 'security', label: 'Seguridad', icon: 'lock' },
+  ]);
+
+  readonly roleLabel = computed(() => {
+    const role = this.data()?.account.role;
+
+    return role === 'ADMIN' ? 'Administrador' : role === 'STUDENT' ? 'Estudiante' : 'Docente';
+  });
+
+  readonly initials = computed(() => {
+    const account = this.data()?.account;
+
+    return account ? (account.firstName.charAt(0) + account.lastName.charAt(0)).toUpperCase() : '';
+  });
 
   readonly form = new FormGroup({
     firstName: new FormControl('', {
@@ -92,6 +124,21 @@ export class ProfilePage {
     linkedinUrl: optionalUrl(),
     githubUrl: optionalUrl(),
     websiteUrl: optionalUrl(),
+  });
+
+  /** Lo escrito en el formulario, para la tarjeta «Así te ven» mientras se edita. */
+  readonly draft = toSignal(
+    this.form.valueChanges.pipe(
+      startWith(null),
+      map(() => this.form.getRawValue()),
+    ),
+    { initialValue: this.form.getRawValue() },
+  );
+
+  readonly shownName = computed(() => {
+    const draft = this.draft();
+
+    return draft.publicName.trim() || `${draft.firstName} ${draft.lastName}`.trim();
   });
 
   readonly socials: {
@@ -120,7 +167,10 @@ export class ProfilePage {
   });
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.upload?.unsubscribe());
+    inject(DestroyRef).onDestroy(() => {
+      this.upload?.unsubscribe();
+      this.avatarUpload?.unsubscribe();
+    });
 
     this.api
       .get()
@@ -144,6 +194,7 @@ export class ProfilePage {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.error.set('Revisa los campos marcados.');
+      this.showTabWithError();
       return;
     }
 
@@ -166,6 +217,51 @@ export class ProfilePage {
       },
       'Perfil guardado.',
     );
+  }
+
+  // --- Foto de perfil ---
+
+  onAvatar(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    const problem = validateFile('image', file);
+
+    if (problem) {
+      this.avatarError.set(problem);
+      return;
+    }
+
+    this.avatarError.set('');
+    this.avatarUploading.set(true);
+    this.avatarPercent.set(0);
+
+    this.avatarUpload?.unsubscribe();
+    this.avatarUpload = this.uploads.upload('image', file).subscribe({
+      next: (event) => {
+        if (event.type === 'progress') {
+          this.avatarPercent.set(event.percent);
+          return;
+        }
+
+        this.avatarUploading.set(false);
+        this.send({ avatarUrl: event.url }, 'Foto actualizada.');
+      },
+      error: (error: Error) => {
+        this.avatarError.set(error.message);
+        this.avatarUploading.set(false);
+      },
+    });
+  }
+
+  removeAvatar(): void {
+    this.send({ avatarUrl: null }, 'Foto eliminada.');
   }
 
   // --- Firma ---
@@ -249,6 +345,17 @@ export class ProfilePage {
     });
   }
 
+  /** Si el error está en otra pestaña, se abre para que se vea. */
+  private showTabWithError(): void {
+    const { firstName, lastName, phone, occupation } = this.form.controls;
+
+    if ([firstName, lastName, phone, occupation].some((control) => control.invalid)) {
+      this.tab.set('account');
+    } else {
+      this.tab.set('public');
+    }
+  }
+
   fieldInvalid(name: keyof typeof this.form.controls): boolean {
     const control = this.form.controls[name];
 
@@ -277,6 +384,7 @@ export class ProfilePage {
 
     this.data.set(data);
     this.signatureUrl.set(profile.signatureUrl);
+    this.avatarUrl.set(profile.avatarUrl);
     this.form.reset({
       firstName: account.firstName,
       lastName: account.lastName,

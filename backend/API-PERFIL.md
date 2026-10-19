@@ -21,6 +21,7 @@ Para cualquier usuario con sesión. Las rutas van con `Authorization: Bearer <to
     "publicName": "Dra. Laura Gómez",
     "bio": "Docente de programación…",
     "signatureUrl": "/api/uploads/9f2c….webp",
+    "avatarUrl": "/api/uploads/41ab….webp",
     "social": { "facebookUrl": null, "xUrl": null, "linkedinUrl": "https://linkedin.com/in/laura",
                 "githubUrl": "https://github.com/laura", "websiteUrl": null }
   },
@@ -40,13 +41,15 @@ Todo es opcional; **lo que no se envía no se toca**. En los campos que se puede
 
 | Grupo | Campos |
 |---|---|
-| **Cuenta** (ajustes → Account) | `firstName`, `lastName`, `phone`, `occupation`, `timezone` (IANA, p. ej. `America/Bogota`), `publicName`, `bio` (texto plano, hasta 2000), `signatureUrl` |
+| **Cuenta** (ajustes → Account) | `firstName`, `lastName`, `phone`, `occupation`, `timezone` (IANA, p. ej. `America/Bogota`), `publicName`, `bio` (texto plano, hasta 2000), `signatureUrl`, `avatarUrl` |
 | **Redes** (Social) | `facebookUrl`, `xUrl`, `linkedinUrl`, `githubUrl`, `websiteUrl`: deben empezar con `http://` o `https://` |
 | **Preferencias** | `autoplayNext`, `reduceMotion`, `highContrast` (booleanos); `theme`: `LIGHT` \| `DARK` \| `SYSTEM`; `fontSize`: `SMALL` \| `MEDIUM` \| `LARGE`; `colorFilter`: `NONE` \| `PROTANOPIA` \| `DEUTERANOPIA` \| `TRITANOPIA` \| `GRAYSCALE` |
 
 - **Firma del docente** (`signatureUrl`, solo docentes y admin; un estudiante recibe `403`): se sube primero la imagen con
   `POST /uploads/images` y luego se guarda la URL que devuelve. Tiene que ser **una imagen subida a la plataforma**; una URL externa
   se rechaza (`400`). Recomendado: 700 × 430 px, fondo transparente (PNG). `null` la quita.
+- **Foto de perfil** (`avatarUrl`, cualquier cuenta): igual que la firma, se sube con `POST /uploads/images` y se guarda la URL que
+  devuelve (una URL externa da `400`); `null` la quita. Se muestra en el encabezado y en `GET /teachers/:id`.
 - Los **ajustes de accesibilidad y tema** (`theme`, `fontSize`, `highContrast`, `reduceMotion`, `colorFilter`, `autoplayNext`) los
   tiene cualquier usuario; el frontend los lee al iniciar sesión para aplicarlos.
 - Los errores llegan como `400` con un mensaje en español (zona horaria inválida, URL sin protocolo, etc.).
@@ -65,7 +68,7 @@ El correo no se cambia desde aquí. El **restablecimiento por correo** ("olvidé
 Para la sección "Sobre el docente" de la página del curso. Solo docentes activos (otro id responde `404`).
 
 ```json
-{ "id": 2, "name": "Dra. Laura Gómez", "occupation": "Ingeniera de software", "bio": "…",
+{ "id": 2, "name": "Dra. Laura Gómez", "avatarUrl": "/api/uploads/41ab….webp", "occupation": "Ingeniera de software", "bio": "…",
   "social": { "facebookUrl": null, "xUrl": null, "linkedinUrl": "…", "githubUrl": "…", "websiteUrl": null },
   "publishedCourses": 3 }
 ```

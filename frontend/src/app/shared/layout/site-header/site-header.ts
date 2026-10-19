@@ -1,9 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AccessibilityService } from '../../../core/accessibility/accessibility.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { homeFor } from '../../../core/auth/role-home';
+import { ProfileService } from '../../../core/profile/profile.service';
 import { NotificationBell } from '../notification-bell/notification-bell';
 import { headerLinksFor, ROLE_LABELS } from './header-links';
 
@@ -16,6 +17,7 @@ import { headerLinksFor, ROLE_LABELS } from './header-links';
 export class SiteHeader {
   readonly auth = inject(AuthService);
   readonly settings = inject(AccessibilityService);
+  private readonly profile = inject(ProfileService);
   private readonly router = inject(Router);
 
   readonly menuOpen = signal(false);
@@ -45,6 +47,8 @@ export class SiteHeader {
     return role ? ROLE_LABELS[role] : 'Usuario';
   });
 
+  readonly avatarUrl = this.profile.avatarUrl;
+
   readonly initials = computed(() => {
     const user = this.auth.user();
 
@@ -54,6 +58,17 @@ export class SiteHeader {
 
     return (user.firstName.charAt(0) + (user.lastName?.charAt(0) ?? '')).toUpperCase();
   });
+
+  constructor() {
+    // La foto de perfil: se carga al haber sesión y se limpia al salir.
+    effect(() => {
+      if (this.auth.user()) {
+        this.profile.ensureAvatar();
+      } else {
+        this.profile.clearAvatar();
+      }
+    });
+  }
 
   toggleMenu(): void {
     this.menuOpen.update((open) => !open);

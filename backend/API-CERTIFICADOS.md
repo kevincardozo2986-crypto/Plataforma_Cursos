@@ -27,7 +27,13 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
   "accentColor": "#1F3A8A",
   "layout": "CLASSIC",
   "font": "playfair-display",
-  "bodyFont": "lora"
+  "bodyFont": "lora",
+  "style": {
+    "title": { "bold": false, "italic": true, "size": 120, "color": "#B91C1C" },
+    "name": { "size": 130 },
+    "body": { "italic": true },
+    "showDocument": true
+  }
 }
 ```
 
@@ -38,6 +44,14 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
 - `font` y `bodyFont`: la tipografía del **título y el nombre** y la del **texto** (se pueden combinar: nombre en cursiva y texto en serif).
   Valen `"SANS"` (Helvetica, por defecto), `"SERIF"` (Times), la clave de una de la biblioteca (`"playfair-display"`, `"great-vibes"`…)
   o `"custom:<id>"` (una que subió el propio docente). Son independientes del diseño y del color. Ver «Tipografías» abajo.
+- `style` (opcional): negrita, cursiva, tamaño y color de cada texto (`title`, `name`, `body`) y si se muestra la cédula (`showDocument`, por defecto sí).
+  Todo es opcional y lo que falta toma el valor del diseño. Al editar, `style` **reemplaza** al anterior (`{}` lo restablece); si no se envía, se conserva.
+  - `bold`: `true` fuerza la negrita, `false` la quita, ausente = **automática** (negrita en título y nombre si la tipografía tiene negrita de verdad; en el texto, no).
+    Forzarla en una tipografía **sin** negrita (cursivas, propias) la dibuja con un trazo grueso (**negrita sintética**: relleno + contorno).
+  - `italic`: cursiva sintética (se inclina el texto 0,2), también en tipografías que no traen cursiva.
+  - `size`: porcentaje del tamaño normal, de 60 a 140. `color`: `#RRGGBB`.
+  - Un nombre grande empuja hacia abajo la cédula, la línea y el texto. El texto se **achica solo** hasta quedar por encima de la firma (mínimo 9 pt), así que un texto largo o agrandado nunca se monta sobre ella.
+  - Valores inválidos (`size: 500`, `color: "rojo"`, `bold: "si"`…) se rechazan con `400`.
 - `accentColor`: hexadecimal de 6 dígitos. Los diseños derivan de él sus tonos claros y oscuros (el `DARK` lo usa para el fondo).
 - En el frontend, la geometría de cada diseño está duplicada para la vista previa (`certificate-art.ts`): si se cambia un diseño
   en `certificate-pdf.ts`, hay que cambiarlo también allá.
@@ -57,7 +71,17 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
 | `GET /certificates/:id/pdf` | dueño, docente del curso, admin | Descarga el PDF (requiere token, como `blob`) |
 | `GET /certificates/verify/:code` | **público, sin sesión** | Comprueba un certificado |
 | `GET /certificates?courseId=&status=&limit=&offset=` | docente, admin | Certificados emitidos en mis cursos |
+| `PATCH /certificates/:id` | docente del curso, admin | **Corrige** el nombre o el documento del estudiante |
+| `POST /certificates/:id/refresh` | docente del curso, admin | **Actualiza** el diseño con el de la plantilla actual del curso |
 | `PATCH /certificates/:id/revoke` | docente del curso, admin | Anula un certificado |
+
+- **Corregir** (`PATCH /certificates/:id`, cuerpo `{ "studentName"?: "...", "studentDocument"?: "..." }`): para errores de digitación. Nombre de 2 a 120
+  caracteres y documento de 4 a 30; un documento vacío (`""`) o `null` lo quita del certificado. Sin ninguno de los dos, `400`. El **código y la fecha no cambian**,
+  así que el enlace de verificación sigue valiendo (y ya muestra el nombre corregido). Otro docente o un estudiante reciben `403`.
+- **Actualizar diseño** (`POST /certificates/:id/refresh`, sin cuerpo): un certificado guarda una **copia fija** del diseño con el que se emitió, así que mejorar la
+  plantilla no cambia los ya emitidos. Este endpoint vuelve a copiar la plantilla actual del curso (textos, diseño, color, tipografías, estilo), el título y la duración
+  del curso y el nombre y la firma del docente. **No** toca al estudiante, el código ni la fecha. `400` si el curso ya no tiene plantilla; `403` sin permiso.
+- La lista del docente (`GET /certificates`) incluye `studentDocument` para poder revisarlo antes de corregir.
 
 ```json
 // GET /certificates/mine

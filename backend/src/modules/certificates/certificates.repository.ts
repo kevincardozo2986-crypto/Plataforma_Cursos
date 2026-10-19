@@ -8,6 +8,7 @@ import type {
   CertificateStatus,
 } from '../../generated/prisma/enums.js';
 import type { CertificateDesign } from './certificate-pdf.js';
+import type { CertificateStyle } from './certificate-style.js';
 
 export interface TemplateData {
   name?: string;
@@ -17,6 +18,7 @@ export interface TemplateData {
   layout?: CertificateLayout;
   font?: string;
   bodyFont?: string;
+  style?: CertificateStyle;
 }
 
 export interface NewCertificate {
@@ -41,6 +43,7 @@ const templateSelect = {
   layout: true,
   font: true,
   bodyFont: true,
+  style: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -55,7 +58,7 @@ export class CertificatesRepository {
 
   createTemplate(ownerId: number, data: Required<TemplateData>) {
     return this.prisma.certificateTemplate.create({
-      data: { ...data, ownerId },
+      data: { ...data, style: data.style as Prisma.InputJsonValue, ownerId },
       select: { ...templateSelect, ownerId: true },
     });
   }
@@ -88,7 +91,7 @@ export class CertificatesRepository {
   updateTemplate(id: number, data: TemplateData) {
     return this.prisma.certificateTemplate.update({
       where: { id },
-      data,
+      data: { ...data, style: data.style as Prisma.InputJsonValue | undefined },
       select: { ...templateSelect, ownerId: true },
     });
   }
@@ -122,7 +125,7 @@ export class CertificatesRepository {
         title: true,
         durationMinutes: true,
         certificateTemplate: {
-          select: { title: true, body: true, accentColor: true, layout: true, font: true, bodyFont: true },
+          select: { title: true, body: true, accentColor: true, layout: true, font: true, bodyFont: true, style: true },
         },
         teacher: {
           select: {
@@ -223,6 +226,7 @@ export class CertificatesRepository {
           code: true,
           status: true,
           studentName: true,
+          studentDocument: true,
           courseId: true,
           courseTitle: true,
           issuedAt: true,
@@ -234,6 +238,25 @@ export class CertificatesRepository {
     ]);
 
     return { items, total };
+  }
+
+  /** Lo que se puede corregir de un certificado emitido, y la copia del diseño al actualizarlo. */
+  updateCertificate(
+    id: number,
+    data: {
+      studentName?: string;
+      studentDocument?: string | null;
+      courseTitle?: string;
+      courseMinutes?: number | null;
+      instructorName?: string;
+      signatureUrl?: string | null;
+      design?: CertificateDesign;
+    },
+  ) {
+    return this.prisma.certificate.update({
+      where: { id },
+      data: { ...data, design: data.design as unknown as Prisma.InputJsonValue | undefined },
+    });
   }
 
   revoke(id: number) {

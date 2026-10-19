@@ -102,6 +102,17 @@ export class UpdateProfileDto {
   })
   signatureUrl?: string | null;
 
+  /**
+   * Foto de perfil: una imagen subida con `POST /uploads/images`. `null` la quita.
+   * La puede tener cualquier cuenta.
+   */
+  @IsOptional()
+  @EmptyToNull()
+  @Matches(SIGNATURE_PATTERN, {
+    message: 'La foto debe ser una imagen subida con POST /uploads/images',
+  })
+  avatarUrl?: string | null;
+
   // --- Redes sociales ---
 
   @IsOptional()

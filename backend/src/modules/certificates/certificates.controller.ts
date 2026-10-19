@@ -24,6 +24,7 @@ import {
   CreateCertificateTemplateDto,
   ListCertificatesQueryDto,
   UpdateCertificateTemplateDto,
+  UpdateIssuedCertificateDto,
 } from './dto/certificate.dto.js';
 
 /** Envía un PDF. `inline` para mostrarlo en pantalla; `attachment` para descargarlo. */
@@ -141,6 +142,29 @@ export class CertificatesController {
     const { pdf, fileName } = await this.certificates.pdf(user, id);
 
     sendPdf(res, pdf, fileName, 'attachment');
+  }
+
+  /** Corrige el nombre o el documento de un certificado emitido (el código no cambia). */
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  edit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateIssuedCertificateDto,
+  ) {
+    return this.certificates.editIssued(user, id, dto);
+  }
+
+  /** Actualiza un certificado emitido con el diseño actual de la plantilla del curso. */
+  @Post(':id/refresh')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  refresh(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.certificates.refreshDesign(user, id);
   }
 
   @Patch(':id/revoke')

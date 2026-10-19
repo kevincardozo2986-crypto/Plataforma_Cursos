@@ -2,10 +2,18 @@ import { Component, computed, effect, inject, input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { CertificateFontsService } from '../../../core/certificates/certificate-fonts.service';
-import { FontOption, CertificateLayout } from '../../../core/certificates/certificates.models';
-import { cssFamily, cssWeight, fitToWidth } from '../../../core/certificates/font-css';
+import {
+  CertificateLayout,
+  CertificateStyle,
+  FontOption,
+} from '../../../core/certificates/certificates.models';
+import { AUTO_BOLD, resolveText } from '../../../core/certificates/certificate-style';
+import { cssFamily, fitToWidth } from '../../../core/certificates/font-css';
 import { FontLoader } from '../../../core/certificates/font-loader';
 import { certificateArt, fitSize, PAGE_HEIGHT, PAGE_WIDTH, textBox } from './certificate-art';
+
+/** Debajo de esta altura (puntos de página) están la firma y su línea. */
+const BODY_LIMIT_Y = 462 - 82;
 
 /** Helvetica y Times se conocen sin pedir el catálogo; las demás aparecen cuando este carga. */
 const STANDARD: Record<string, FontOption> = {
@@ -42,6 +50,8 @@ export class CertificatePreview {
   readonly document = input('');
   readonly instructor = input('Docente');
   readonly code = input('CC-XXXX-XXXX-XXXX');
+  /** Negrita, cursiva, tamaño y color de cada texto. */
+  readonly style = input<CertificateStyle>({});
 
   /** Las posiciones del texto, en puntos de página. */
   readonly box = computed(() => textBox(this.layout(), this.color()));
@@ -61,8 +71,22 @@ export class CertificatePreview {
   );
 
   readonly headingFamily = computed(() => cssFamily(this.headingOption()));
-  readonly headingWeight = computed(() => cssWeight(this.headingOption(), true));
   readonly bodyFamily = computed(() => cssFamily(this.bodyOption()));
+
+  // ---------- Estilo de cada texto ----------
+
+  readonly titleLook = computed(() =>
+    resolveText(this.style().title, AUTO_BOLD.title, this.headingOption()),
+  );
+  readonly nameLook = computed(() =>
+    resolveText(this.style().name, AUTO_BOLD.name, this.headingOption()),
+  );
+  readonly bodyLook = computed(() =>
+    resolveText(this.style().body, AUTO_BOLD.body, this.bodyOption()),
+  );
+  /** La firma lleva la tipografía del nombre, con su misma negrita. */
+  readonly signWeight = computed(() => (this.nameLook().bold ? 700 : 400));
+  readonly showDocument = computed(() => this.style().showDocument !== false);
 
   private readonly canvas =
     typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
@@ -71,11 +95,48 @@ export class CertificatePreview {
     this.box().upper ? this.title().toUpperCase() : this.title(),
   );
   readonly titleSize = computed(() =>
-    this.fit(this.titleText(), this.box().titleSize, this.box().width, 16),
+    this.fit(this.titleText(), this.box().titleSize * this.titleLook().scale, this.box().width, 16),
   );
-  readonly nameSize = computed(() => this.fit(this.student(), 42, this.box().width, 18));
+  readonly nameSize = computed(() =>
+    this.fit(this.student(), 42 * this.nameLook().scale, this.box().width, 18),
+  );
 
-  readonly bodyTop = computed(() => this.box().contentY + (this.box().rule === 'none' ? 104 : 124));
+  /** Un nombre grande empuja hacia abajo la cédula, la línea y el texto (como en el PDF). */
+  readonly shift = computed(() => Math.max(0, this.nameSize() * 1.18 - 50));
+
+  readonly bodyTop = computed(
+    () => this.box().contentY + (this.box().rule === 'none' ? 104 : 124) + this.shift(),
+  );
+
+  /** El texto se achica hasta quedar por encima de la firma, como en el PDF. */
+  readonly bodySize = computed(() => {
+    this.loader.version();
+
+    const context = this.canvas;
+    const text = this.body();
+    const start = 16 * this.bodyLook().scale;
+    const width = this.box().width - this.inset() * 2;
+
+    if (!context || !text) {
+      return start;
+    }
+
+    const family = this.bodyFamily();
+    const weight = this.bodyLook().bold ? 700 : 400;
+    const top = this.bodyTop();
+    let size = start;
+
+    while (
+      size > 9 &&
+      top + this.wrappedLines(context, text, width, size, weight, family) * size * 1.32 >
+        BODY_LIMIT_Y
+    ) {
+      size -= 0.5;
+    }
+
+    return size;
+  });
+
   readonly inset = computed(() => (this.box().align === 'center' ? 20 : 0));
   readonly ruleLeft = computed(() =>
     this.box().rule === 'center' ? PAGE_WIDTH / 2 - 130 : this.box().x,
@@ -97,6 +158,33 @@ export class CertificatePreview {
     });
   }
 
+  private wrappedLines(
+    context: CanvasRenderingContext2D,
+    text: string,
+    width: number,
+    size: number,
+    weight: number,
+    family: string,
+  ): number {
+    context.font = `${weight} ${size}px ${family}`;
+
+    let lines = 1;
+    let line = '';
+
+    for (const word of text.split(/\s+/)) {
+      const next = line ? `${line} ${word}` : word;
+
+      if (line && context.measureText(next).width > width) {
+        lines += 1;
+        line = word;
+      } else {
+        line = next;
+      }
+    }
+
+    return lines;
+  }
+
   /**
    * El tamaño que cabe, medido con la tipografía real (como hace el PDF). Sin canvas, o mientras
    * la tipografía carga, una aproximación; al terminar de cargar se vuelve a calcular.
@@ -112,7 +200,7 @@ export class CertificatePreview {
     }
 
     const family = this.headingFamily();
-    const weight = this.headingWeight();
+    const weight = this.nameLook().bold ? 700 : 400;
 
     return fitToWidth(start, maxWidth, min, (size) => {
       context.font = `${weight} ${size}px ${family}`;

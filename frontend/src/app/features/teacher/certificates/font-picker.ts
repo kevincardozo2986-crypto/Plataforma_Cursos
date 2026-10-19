@@ -67,7 +67,12 @@ export class FontPicker {
 
     // Helvetica y Times se conocen sin el catálogo; de las demás, hasta que cargue, no se sabe el nombre.
     if (key === 'SANS' || key === 'SERIF') {
-      return { key, label: key === 'SANS' ? 'Helvetica' : 'Times', category: key === 'SANS' ? 'Sans' : 'Serif', hasBold: true };
+      return {
+        key,
+        label: key === 'SANS' ? 'Helvetica' : 'Times',
+        category: key === 'SANS' ? 'Sans' : 'Serif',
+        hasBold: true,
+      };
     }
 
     return {

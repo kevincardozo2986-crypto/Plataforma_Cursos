@@ -1,0 +1,74 @@
+import 'reflect-metadata';
+
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+
+import {
+  CreateCertificateTemplateDto,
+  UpdateCertificateTemplateDto,
+  UpdateIssuedCertificateDto,
+} from './certificate.dto.js';
+
+const errorsOf = async (cls: typeof CreateCertificateTemplateDto | typeof UpdateCertificateTemplateDto, plain: object) =>
+  (await validate(plainToInstance(cls as never, plain) as object)).length;
+
+describe('estilo en el DTO de plantillas', () => {
+  it('acepta un estilo completo y válido', async () => {
+    const style = {
+      title: { bold: true, italic: true, size: 120, color: '#1F3A8A' },
+      name: { bold: null, size: 60 },
+      body: { size: 140 },
+      showDocument: false,
+    };
+
+    expect(await errorsOf(CreateCertificateTemplateDto, { name: 'Plantilla', style })).toBe(0);
+    expect(await errorsOf(UpdateCertificateTemplateDto, { style })).toBe(0);
+  });
+
+  it('no hace falta enviar nada del estilo', async () => {
+    expect(await errorsOf(CreateCertificateTemplateDto, { name: 'Plantilla' })).toBe(0);
+    expect(await errorsOf(UpdateCertificateTemplateDto, { style: {} })).toBe(0);
+  });
+
+  it.each([
+    ['tamaño bajo', { title: { size: 59 } }],
+    ['tamaño alto', { title: { size: 141 } }],
+    ['tamaño con decimales', { name: { size: 100.5 } }],
+    ['tamaño como texto', { name: { size: '120' } }],
+    ['color en palabras', { body: { color: 'rojo' } }],
+    ['color corto', { body: { color: '#123' } }],
+    ['negrita como texto', { title: { bold: 'si' } }],
+    ['cursiva como número', { title: { italic: 1 } }],
+    ['mostrar cédula como texto', { showDocument: 'no' }],
+  ])('rechaza %s', async (_name, style) => {
+    expect(await errorsOf(CreateCertificateTemplateDto, { name: 'Plantilla', style })).toBeGreaterThan(0);
+  });
+});
+
+
+describe('corrección de un certificado emitido (DTO)', () => {
+  const check = async (plain: object) => (await validate(plainToInstance(UpdateIssuedCertificateDto, plain) as object)).length;
+
+  it('acepta un nombre y/o un documento válidos', async () => {
+    expect(await check({ studentName: 'Ana María Ruiz' })).toBe(0);
+    expect(await check({ studentDocument: '1020304050' })).toBe(0);
+    expect(await check({ studentName: 'Ana', studentDocument: 'AB-12345' })).toBe(0);
+  });
+
+  it('un documento vacío se convierte en null (quitarlo)', async () => {
+    const dto = plainToInstance(UpdateIssuedCertificateDto, { studentDocument: '   ' });
+
+    expect(dto.studentDocument).toBeNull();
+    expect(await validate(dto)).toHaveLength(0);
+  });
+
+  it.each([
+    ['nombre muy corto', { studentName: 'A' }],
+    ['nombre larguísimo', { studentName: 'a'.repeat(121) }],
+    ['documento muy corto', { studentDocument: '12' }],
+    ['documento larguísimo', { studentDocument: '1'.repeat(31) }],
+    ['nombre que no es texto', { studentName: 123 }],
+  ])('rechaza %s', async (_name, plain) => {
+    expect(await check(plain)).toBeGreaterThan(0);
+  });
+});

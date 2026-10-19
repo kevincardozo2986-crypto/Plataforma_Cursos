@@ -70,6 +70,25 @@ export const DEFAULT_BODY =
   'Por haber completado satisfactoriamente el curso «{{course}}», impartido por {{instructor}}, el {{date}}.';
 export const DEFAULT_COLOR = '#1F3A8A';
 
+/** El estilo de un texto (título, nombre o texto). Lo que falta toma el valor del diseño. */
+export interface TextStyle {
+  /** true = negrita, false = sin ella, ausente = automática. */
+  bold?: boolean;
+  italic?: boolean;
+  /** Porcentaje del tamaño normal (60–140). */
+  size?: number;
+  /** #RRGGBB; ausente = el color del diseño. */
+  color?: string;
+}
+
+export interface CertificateStyle {
+  title?: TextStyle;
+  name?: TextStyle;
+  body?: TextStyle;
+  /** false = no mostrar la cédula bajo el nombre. */
+  showDocument?: boolean;
+}
+
 export interface CertificateTemplate {
   id: number;
   name: string;
@@ -81,6 +100,7 @@ export interface CertificateTemplate {
   font: string;
   /** Tipografía del texto. */
   bodyFont: string;
+  style: CertificateStyle;
   ownerId: number;
   createdAt: string;
   updatedAt: string;
@@ -97,6 +117,7 @@ export interface CertificateTemplateInput {
   layout: CertificateLayout;
   font: string;
   bodyFont: string;
+  style: CertificateStyle;
 }
 
 export interface IssuedCertificate {
@@ -104,6 +125,7 @@ export interface IssuedCertificate {
   code: string;
   status: CertificateStatus;
   studentName: string;
+  studentDocument: string | null;
   courseId: number;
   courseTitle: string;
   issuedAt: string;

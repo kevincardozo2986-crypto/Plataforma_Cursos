@@ -355,3 +355,239 @@ html.a11y-dark {
 .rich-content th {
   background: var(--p-surface-2);
 }
+
+/* ---------- Asistente de cursos: tarjetas con borde, encabezado con icono y opciones ---------- */
+
+.wz-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+.wz-main,
+.wz-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.wz-side {
+  position: sticky;
+  top: 190px;
+}
+
+.wz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px 22px;
+  background: var(--p-surface);
+  border: 1.5px solid color-mix(in srgb, var(--p-ink) 16%, var(--p-border));
+  border-radius: 16px;
+  box-shadow: var(--p-shadow);
+}
+
+.wz-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -2px 0 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--p-border);
+}
+
+.wz-head h2 {
+  margin: 0;
+  color: var(--p-ink);
+  font-size: 1.02rem;
+}
+
+.wz-head p {
+  margin: 2px 0 0;
+  color: var(--p-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.wz-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--tone, var(--p-accent));
+  background: color-mix(in srgb, var(--tone, var(--p-accent)) 14%, transparent);
+  border-radius: 11px;
+}
+
+.wz-card.tone-green {
+  --tone: var(--p-ok);
+}
+.wz-card.tone-orange {
+  --tone: #eb6834;
+}
+.wz-card.tone-violet {
+  --tone: #7c4dff;
+}
+.wz-card.tone-amber {
+  --tone: #d99a00;
+}
+.wz-card.tone-teal {
+  --tone: #0d9488;
+}
+
+/* Opciones que se eligen como tarjetas (precio, acceso) */
+.wz-choices {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wz-choices.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wz-choice {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--p-surface);
+  border: 1.5px solid var(--p-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.wz-choice:hover {
+  border-color: color-mix(in srgb, var(--p-accent) 55%, var(--p-border));
+}
+
+.wz-choice:has(input:checked) {
+  background: var(--p-accent-soft);
+  border-color: var(--p-accent);
+}
+
+.wz-choice:has(input:focus-visible) {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+.wz-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wz-choice .wz-choice-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--p-muted);
+  background: var(--p-surface-2);
+  border-radius: 9px;
+}
+
+.wz-choice:has(input:checked) .wz-choice-icon {
+  color: var(--p-accent-ink);
+  background: var(--p-accent);
+}
+
+.wz-choice strong {
+  display: block;
+  color: var(--p-ink);
+  font-size: 0.9rem;
+}
+
+.wz-choice small {
+  display: block;
+  margin-top: 1px;
+  color: var(--p-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* Interruptor (en lugar de una casilla) */
+.wz-switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--p-surface-2);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.wz-switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.wz-switch .track {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  margin-top: 2px;
+  background: color-mix(in srgb, var(--p-ink) 25%, transparent);
+  border-radius: 999px;
+  transition: background 0.15s;
+}
+
+.wz-switch .track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+
+.wz-switch:has(input:checked) .track {
+  background: var(--p-accent);
+}
+
+.wz-switch:has(input:checked) .track::after {
+  transform: translateX(16px);
+}
+
+.wz-switch:has(input:focus-visible) {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+.wz-switch strong {
+  display: block;
+  color: var(--p-ink);
+  font-size: 0.88rem;
+}
+
+.wz-switch small {
+  display: block;
+  color: var(--p-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 1080px) {
+  .wz-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wz-side {
+    position: static;
+  }
+}

@@ -76,18 +76,25 @@
               (move)="moveModule(i, $event)"
             />
           } @empty {
-            <div class="panel-card empty">
-              <p>Este curso todavía no tiene módulos.</p>
-              <p class="panel-muted">
+            <div class="empty">
+              <span class="empty-icon" aria-hidden="true"
+                ><app-icon name="book" [size]="30"
+              /></span>
+              <h2>Empieza por crear un módulo</h2>
+              <p>
                 Un módulo agrupa varias lecciones, por ejemplo «Introducción» o «Primeros pasos».
+                Dentro de cada módulo añadirás lecciones, tareas y evaluaciones.
               </p>
+              <button type="button" class="panel-btn panel-btn--primary" (click)="startAdding()">
+                <app-icon name="plus" [size]="17" /> Crear el primer módulo
+              </button>
             </div>
           }
         </div>
 
         @if (adding()) {
           <form class="panel-card add-form" [formGroup]="form" (ngSubmit)="addModule()" novalidate>
-            <h2>Nuevo módulo</h2>
+            <h2><app-icon name="plus" [size]="18" /> Nuevo módulo</h2>
 
             <div class="panel-field">
               <label for="new-module-title">Título</label>
@@ -118,17 +125,17 @@
                 Cancelar
               </button>
               <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
-                Crear módulo
+                <app-icon name="check" [size]="16" /> Crear módulo
               </button>
             </div>
           </form>
-        } @else {
+        } @else if (modules().length > 0) {
           <button
             type="button"
             class="panel-btn panel-btn--primary add-module"
             (click)="startAdding()"
           >
-            + Añadir módulo
+            <app-icon name="plus" [size]="17" /> Añadir módulo
           </button>
         }
       }

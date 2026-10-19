@@ -12,7 +12,7 @@ import {
 import { CertificatesService } from '../../../core/certificates/certificates.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { downloadBlob, openBlob } from '../../../core/utils/download';
-import { PageHeader } from '../../../shared/ui/page-header/page-header';
+import { Icon } from '../../../shared/ui/icon/icon';
 import { TeacherCourse } from '../courses/teacher-courses.models';
 import { CertificatePreview } from './certificate-preview';
 import { TeacherCoursesService } from '../courses/teacher-courses.service';
@@ -24,7 +24,7 @@ const PAGE_SIZE = 20;
 /** Certificados del docente: sus plantillas y los certificados ya emitidos en sus cursos. */
 @Component({
   selector: 'app-certificates-page',
-  imports: [RouterLink, DatePipe, PageHeader, CertificatePreview],
+  imports: [RouterLink, DatePipe, Icon, CertificatePreview],
   templateUrl: './certificates-page.html',
   styleUrl: './certificates-page.scss',
 })
@@ -53,6 +53,13 @@ export class CertificatesPage {
   readonly statusFilter = signal<CertificateStatus | null>(null);
   readonly offset = signal(0);
   readonly confirmRevokeId = signal<number | null>(null);
+  readonly confirmRefreshId = signal<number | null>(null);
+
+  /** Certificado cuyo nombre y cédula se están corrigiendo. */
+  readonly editId = signal<number | null>(null);
+  readonly editName = signal('');
+  readonly editDocument = signal('');
+  readonly editError = signal('');
 
   readonly from = computed(() => (this.total() === 0 ? 0 : this.offset() + 1));
   readonly to = computed(() => Math.min(this.offset() + PAGE_SIZE, this.total()));
@@ -194,6 +201,106 @@ export class CertificatesPage {
         this.fail(error, 'No pudimos revocar el certificado.');
       },
     });
+  }
+
+  /** Las iniciales para el círculo junto al nombre. */
+  initials(name: string): string {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+
+    return (
+      (words[0]?.[0] ?? '') + (words.length > 1 ? (words[words.length - 1][0] ?? '') : '')
+    ).toUpperCase();
+  }
+
+  startEdit(item: IssuedCertificate): void {
+    this.editId.set(item.id);
+    this.editName.set(item.studentName);
+    this.editDocument.set(item.studentDocument ?? '');
+    this.editError.set('');
+    this.confirmRevokeId.set(null);
+    this.confirmRefreshId.set(null);
+  }
+
+  cancelEdit(): void {
+    this.editId.set(null);
+  }
+
+  saveEdit(item: IssuedCertificate): void {
+    const name = this.editName().trim();
+    const document = this.editDocument().trim();
+
+    if (name.length < 2) {
+      this.editError.set('El nombre debe tener mínimo 2 caracteres.');
+      return;
+    }
+    if (document !== '' && document.length < 4) {
+      this.editError.set(
+        'El documento debe tener mínimo 4 caracteres (o déjalo vacío para quitarlo).',
+      );
+      return;
+    }
+
+    const changes: { studentName?: string; studentDocument?: string } = {};
+
+    if (name !== item.studentName) changes.studentName = name;
+    if (document !== (item.studentDocument ?? '')) changes.studentDocument = document;
+
+    if (Object.keys(changes).length === 0) {
+      this.editId.set(null);
+      return;
+    }
+
+    this.begin(item.id);
+
+    this.api.edit(item.id, changes).subscribe({
+      next: (updated) => {
+        this.replace(item.id, {
+          studentName: updated.studentName,
+          studentDocument: updated.studentDocument,
+        });
+        this.notice.set('Datos del certificado corregidos. El código sigue siendo el mismo.');
+        this.editId.set(null);
+        this.busyId.set(null);
+      },
+      error: (error: unknown) => {
+        this.editError.set(apiErrorMessage(error, 'No pudimos corregir el certificado.'));
+        this.busyId.set(null);
+      },
+    });
+  }
+
+  askRefresh(id: number): void {
+    this.confirmRefreshId.set(id);
+    this.confirmRevokeId.set(null);
+  }
+
+  cancelRefresh(): void {
+    this.confirmRefreshId.set(null);
+  }
+
+  refresh(item: IssuedCertificate): void {
+    this.begin(item.id);
+
+    this.api.refresh(item.id).subscribe({
+      next: (updated) => {
+        this.replace(item.id, { courseTitle: updated.courseTitle });
+        this.notice.set(
+          `El certificado de ${item.studentName} se actualizó con el diseño actual del curso.`,
+        );
+        this.confirmRefreshId.set(null);
+        this.busyId.set(null);
+      },
+      error: (error: unknown) => {
+        this.confirmRefreshId.set(null);
+        this.fail(error, 'No pudimos actualizar el certificado.');
+      },
+    });
+  }
+
+  private replace(id: number, changes: Partial<IssuedCertificate>): void {
+    this.issued.update((list) =>
+      list.map((item) => (item.id === id ? { ...item, ...changes } : item)),
+    );
   }
 
   private loadIssued(): void {

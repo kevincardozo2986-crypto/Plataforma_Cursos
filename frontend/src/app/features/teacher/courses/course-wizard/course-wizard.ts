@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 
+import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { DRAFT_TITLE } from '../teacher-courses.models';
 import { CourseWizardService } from './course-wizard.service';
@@ -26,7 +27,7 @@ export const WIZARD_STEPS: WizardStep[] = [
  */
 @Component({
   selector: 'app-course-wizard',
-  imports: [RouterOutlet, RouterLink, StatusBadge],
+  imports: [RouterOutlet, RouterLink, StatusBadge, Icon],
   providers: [CourseWizardService],
   templateUrl: './course-wizard.html',
   styleUrl: './course-wizard.scss',
@@ -57,6 +58,20 @@ export class CourseWizard {
     const title = this.wizard.course()?.title;
 
     return !title || title === DRAFT_TITLE ? 'Nuevo curso' : title;
+  });
+
+  readonly stepIcons: Record<WizardStep['path'], IconName> = {
+    basics: 'edit',
+    curriculum: 'list',
+    additional: 'sparkles',
+  };
+
+  /** Cuántos requisitos para enviar ya se cumplen, y qué parte es del total. */
+  readonly doneCount = computed(() => this.wizard.checklist().filter((item) => item.done).length);
+  readonly progress = computed(() => {
+    const total = this.wizard.checklist().length;
+
+    return total === 0 ? 0 : Math.round((this.doneCount() / total) * 100);
   });
 
   readonly missing = computed(() => this.wizard.checklist().filter((item) => !item.done));

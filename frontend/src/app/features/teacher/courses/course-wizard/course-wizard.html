@@ -12,8 +12,13 @@
         <!-- Barra con los botones permanentes -->
         <header class="bar">
           <div class="bar-title">
-            <a class="back" routerLink="/teacher/courses">← Mis cursos</a>
+            <a class="back" routerLink="/teacher/courses"
+              ><app-icon name="arrow-left" [size]="15" /> Mis cursos</a
+            >
             <div class="title-row">
+              <span class="title-icon" aria-hidden="true"
+                ><app-icon name="book" [size]="22"
+              /></span>
               <h1>{{ title() }}</h1>
               <app-status-badge [status]="course.status" />
             </div>
@@ -26,6 +31,7 @@
               [disabled]="wizard.saving()"
               (click)="wizard.saveDraft()"
             >
+              <app-icon name="save" [size]="16" />
               {{ wizard.isPublished() ? 'Guardar cambios' : 'Guardar borrador' }}
             </button>
 
@@ -36,7 +42,7 @@
                 [disabled]="wizard.saving()"
                 (click)="wizard.unpublish()"
               >
-                Pasar a borrador
+                <app-icon name="eye" [size]="16" /> Pasar a borrador
               </button>
             } @else {
               <button
@@ -45,7 +51,7 @@
                 [disabled]="wizard.saving()"
                 (click)="wizard.publish()"
               >
-                Enviar
+                <app-icon name="check-circle" [size]="16" /> Enviar
               </button>
             }
           </div>
@@ -63,9 +69,13 @@
                   [attr.aria-current]="i === currentIndex() ? 'step' : null"
                   (click)="goTo(i)"
                 >
-                  <span class="step-number" aria-hidden="true">{{ i + 1 }}</span>
+                  <span class="step-number" aria-hidden="true">
+                    <app-icon [name]="stepIcons[step.path]" [size]="17" />
+                  </span>
                   <span class="step-text">
-                    <strong>{{ step.label }}</strong>
+                    <strong
+                      ><span class="step-index">Paso {{ i + 1 }}</span> {{ step.label }}</strong
+                    >
                     <small>{{ step.hint }}</small>
                   </span>
                 </button>
@@ -75,23 +85,46 @@
         </nav>
 
         @if (!wizard.isPublished()) {
-          <p class="checklist" aria-label="Lo que falta para enviar">
-            <span class="checklist-title">Para enviar:</span>
-            @for (item of wizard.checklist(); track item.label) {
-              <span class="check" [class.done]="item.done">
-                <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span>
-                {{ item.label }}
-                <span class="visually-hidden">{{ item.done ? '(listo)' : '(falta)' }}</span>
+          <div class="checklist" aria-label="Lo que falta para enviar">
+            <div class="checklist-top">
+              <span class="checklist-title">
+                <app-icon name="clipboard" [size]="16" /> Para enviar el curso
               </span>
-            }
-          </p>
+              <span class="checklist-count"
+                >{{ doneCount() }} de {{ wizard.checklist().length }}</span
+              >
+            </div>
+            <div
+              class="bar-track"
+              role="progressbar"
+              aria-label="Avance para enviar"
+              [attr.aria-valuenow]="progress()"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <span [style.width.%]="progress()"></span>
+            </div>
+            <div class="checks">
+              @for (item of wizard.checklist(); track item.label) {
+                <span class="check" [class.done]="item.done">
+                  <app-icon [name]="item.done ? 'check-circle' : 'x-circle'" [size]="15" />
+                  {{ item.label }}
+                  <span class="visually-hidden">{{ item.done ? '(listo)' : '(falta)' }}</span>
+                </span>
+              }
+            </div>
+          </div>
         }
 
         @if (wizard.error()) {
-          <p class="panel-alert panel-alert--error" role="alert">{{ wizard.error() }}</p>
+          <p class="panel-alert panel-alert--error alert-icon" role="alert">
+            <app-icon name="warning" [size]="18" /> {{ wizard.error() }}
+          </p>
         }
         @if (wizard.notice()) {
-          <p class="panel-alert panel-alert--ok" role="status">{{ wizard.notice() }}</p>
+          <p class="panel-alert panel-alert--ok alert-icon" role="status">
+            <app-icon name="check-circle" [size]="18" /> {{ wizard.notice() }}
+          </p>
         }
 
         <router-outlet />
@@ -105,7 +138,7 @@
               [disabled]="wizard.saving()"
               (click)="previous()"
             >
-              ← {{ steps[currentIndex() - 1].label }}
+              <app-icon name="arrow-left" [size]="16" /> {{ steps[currentIndex() - 1].label }}
             </button>
           } @else {
             <span></span>
@@ -118,7 +151,7 @@
               [disabled]="wizard.saving()"
               (click)="next()"
             >
-              {{ steps[currentIndex() + 1].label }} →
+              {{ steps[currentIndex() + 1].label }} <app-icon name="chevron-right" [size]="16" />
             </button>
           }
         </footer>

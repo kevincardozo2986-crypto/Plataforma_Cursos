@@ -391,6 +391,8 @@ model UserProfile {
   bio        String?
   /// Firma del docente para los certificados (URL de una imagen subida).
   signatureUrl String?
+  /// Foto de perfil (URL de una imagen subida).
+  avatarUrl    String?
 
   facebookUrl String?
   xUrl        String?
@@ -439,6 +441,8 @@ model CertificateTemplate {
   font        String            @default("SANS")
   /// Tipografía del texto, con los mismos valores.
   bodyFont    String            @default("SANS")
+  /// Estilo de los textos (negrita, cursiva, tamaño, color) y si se muestra la cédula. Ver certificate-style.ts.
+  style       Json              @default("{}")
 
   ownerId Int
   owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)

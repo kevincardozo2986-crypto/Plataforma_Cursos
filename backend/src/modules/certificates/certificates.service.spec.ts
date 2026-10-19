@@ -49,6 +49,7 @@ function build() {
     findMine: vi.fn().mockResolvedValue([]),
     findForManagers: vi.fn().mockResolvedValue({ items: [], total: 0 }),
     revoke: vi.fn().mockResolvedValue({ ...stored, status: 'REVOKED' }),
+    updateCertificate: vi.fn().mockResolvedValue({}),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
   const users = { findById: vi.fn().mockResolvedValue({ id: 5, firstName: 'Ana', lastName: 'Ruiz', document: '1234567890' }) };
@@ -212,6 +213,60 @@ describe('CertificatesService', () => {
       expect(fonts.resolve).toHaveBeenCalledWith('SERIF');
       expect(fonts.resolve).toHaveBeenCalledTimes(2);
       expect(fonts.resolve.mock.calls.map(([key]) => key)).toEqual(['SERIF', 'SERIF']);
+    });
+  });
+
+
+  describe('estilo de los textos', () => {
+    it('una plantilla nueva sin estilo guarda uno vacío (todo por defecto)', async () => {
+      const { service, repository } = build();
+
+      await service.createTemplate(owner, { name: 'Básica' });
+
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({ style: {} }));
+    });
+
+    it('guarda el estilo limpio: lo inventado se descarta y los tamaños se acotan', async () => {
+      const { service, repository } = build();
+
+      await service.createTemplate(owner, {
+        name: 'Con estilo',
+        style: { title: { italic: true, size: 500, color: '#aabbcc' }, name: { size: 100 }, showDocument: false },
+      } as never);
+
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({
+        style: { title: { italic: true, size: 140, color: '#AABBCC' }, showDocument: false },
+      }));
+    });
+
+    it('editar el estilo lo reemplaza completo; editar otra cosa no lo toca', async () => {
+      const { service, repository } = build();
+
+      await service.updateTemplate(owner, 12, { style: { body: { bold: true } } } as never);
+      expect(repository.updateTemplate).toHaveBeenLastCalledWith(12, expect.objectContaining({ style: { body: { bold: true } } }));
+
+      await service.updateTemplate(owner, 12, { name: 'Otro nombre' });
+      expect(repository.updateTemplate.mock.calls.at(-1)?.[1]).not.toHaveProperty('style');
+    });
+
+    it('al emitir, el certificado guarda una copia del estilo de la plantilla', async () => {
+      const { service, repository } = build();
+      repository.findCourseForCertificate.mockResolvedValue({
+        ...course,
+        certificateTemplate: { ...course.certificateTemplate, style: { name: { italic: true }, showDocument: false } },
+      });
+
+      await service.issueFor(5, 3);
+
+      expect((repository.createCertificate.mock.calls[0][0] as unknown as { design: { style: object } }).design.style).toEqual({ name: { italic: true }, showDocument: false });
+    });
+
+    it('una plantilla antigua sin estilo emite con estilo vacío', async () => {
+      const { service, repository } = build();
+
+      await service.issueFor(5, 3);
+
+      expect((repository.createCertificate.mock.calls[0][0] as unknown as { design: { style: object } }).design.style).toEqual({});
     });
   });
 
@@ -398,6 +453,84 @@ describe('CertificatesService', () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(service.pdf(student, 99)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('corregir un certificado emitido', () => {
+    it('quien gestiona el curso corrige el nombre y el documento; el código no cambia', async () => {
+      const { service, repository, access } = build();
+
+      await service.editIssued(owner, 40, { studentName: 'Ana María Ruiz', studentDocument: '1020304050' });
+
+      expect(access.assertCanManage).toHaveBeenCalledWith(owner, 3);
+      expect(repository.updateCertificate).toHaveBeenCalledWith(40, { studentName: 'Ana María Ruiz', studentDocument: '1020304050' });
+    });
+
+    it('solo cambia lo que se envía', async () => {
+      const { service, repository } = build();
+
+      await service.editIssued(owner, 40, { studentName: 'Solo el nombre' });
+      expect(repository.updateCertificate).toHaveBeenLastCalledWith(40, { studentName: 'Solo el nombre' });
+
+      await service.editIssued(owner, 40, { studentDocument: null });
+      expect(repository.updateCertificate).toHaveBeenLastCalledWith(40, { studentDocument: null });
+    });
+
+    it('un cuerpo vacío se rechaza (400) y no escribe nada', async () => {
+      const { service, repository } = build();
+
+      await expect(service.editIssued(owner, 40, {})).rejects.toBeInstanceOf(BadRequestException);
+      expect(repository.updateCertificate).not.toHaveBeenCalled();
+    });
+
+    it('quien no gestiona el curso no puede (403) y uno que no existe da 404', async () => {
+      const { service, repository, access } = build();
+      access.assertCanManage.mockRejectedValue(new ForbiddenException());
+
+      await expect(service.editIssued(other, 40, { studentName: 'Robado' })).rejects.toBeInstanceOf(ForbiddenException);
+      expect(repository.updateCertificate).not.toHaveBeenCalled();
+
+      repository.findById.mockResolvedValue(null);
+      await expect(service.editIssued(owner, 99, { studentName: 'x y' })).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('actualizar el diseño vuelve a copiar la plantilla actual, el curso y el docente, sin tocar al estudiante', async () => {
+      const { service, repository } = build();
+      repository.findCourseForCertificate.mockResolvedValue({
+        ...course,
+        title: 'Angular 2.0',
+        certificateTemplate: { ...course.certificateTemplate, title: 'Nuevo título', font: 'lora', bodyFont: 'lora', style: { name: { italic: true } } },
+      });
+
+      await service.refreshDesign(owner, 40);
+
+      const [id, data] = repository.updateCertificate.mock.calls[0] as unknown as [number, Record<string, unknown>];
+
+      expect(id).toBe(40);
+      expect(data).toMatchObject({
+        courseTitle: 'Angular 2.0',
+        courseMinutes: 1200,
+        instructorName: 'Dra. Laura Gómez',
+        design: { title: 'Nuevo título', font: 'lora', bodyFont: 'lora', style: { name: { italic: true } } },
+      });
+      expect(data).not.toHaveProperty('studentName');
+      expect(data).not.toHaveProperty('studentDocument');
+      expect(data).not.toHaveProperty('code');
+    });
+
+    it('si el curso ya no tiene plantilla, no se puede actualizar (400)', async () => {
+      const { service, repository } = build();
+      repository.findCourseForCertificate.mockResolvedValue({ ...course, certificateTemplate: null });
+
+      await expect(service.refreshDesign(owner, 40)).rejects.toBeInstanceOf(BadRequestException);
+      expect(repository.updateCertificate).not.toHaveBeenCalled();
+    });
+
+    it('quien no gestiona el curso no puede actualizar el diseño (403)', async () => {
+      const { service, access } = build();
+      access.assertCanManage.mockRejectedValue(new ForbiddenException());
+
+      await expect(service.refreshDesign(other, 40)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

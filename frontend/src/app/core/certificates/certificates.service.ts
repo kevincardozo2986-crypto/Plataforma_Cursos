@@ -70,6 +70,19 @@ export class CertificatesService {
     return this.http.patch<IssuedCertificate>(`/api/certificates/${id}/revoke`, {});
   }
 
+  /** Corrige el nombre o la cédula. `studentDocument: ''` la quita del certificado. */
+  edit(
+    id: number,
+    changes: { studentName?: string; studentDocument?: string },
+  ): Observable<IssuedCertificate> {
+    return this.http.patch<IssuedCertificate>(`/api/certificates/${id}`, changes);
+  }
+
+  /** Vuelve a copiar la plantilla actual del curso (diseño, tipografías, firma) en el certificado. */
+  refresh(id: number): Observable<IssuedCertificate> {
+    return this.http.post<IssuedCertificate>(`/api/certificates/${id}/refresh`, {});
+  }
+
   pdf(id: number): Observable<Blob> {
     return this.http.get(`/api/certificates/${id}/pdf`, { responseType: 'blob' });
   }
