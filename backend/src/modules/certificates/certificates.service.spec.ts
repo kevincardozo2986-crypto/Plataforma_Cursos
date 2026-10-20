@@ -270,6 +270,63 @@ describe('CertificatesService', () => {
     });
   });
 
+  describe('plantilla con imagen propia', () => {
+    const url = '/api/uploads/a1b2c3d4e5f60718293a4b5c6d7e8f90.png';
+
+    it('el diseño IMAGE necesita la imagen de fondo (400 si falta) y con ella se guarda', async () => {
+      const { service, repository } = build();
+
+      await expect(service.createTemplate(owner, { name: 'Mía', layout: 'IMAGE' })).rejects.toBeInstanceOf(BadRequestException);
+      expect(repository.createTemplate).not.toHaveBeenCalled();
+
+      await service.createTemplate(owner, { name: 'Mía', layout: 'IMAGE', backgroundUrl: url });
+
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({ layout: 'IMAGE', backgroundUrl: url }));
+    });
+
+    it('con otro diseño no se guarda imagen de fondo aunque se envíe', async () => {
+      const { service, repository } = build();
+
+      await service.createTemplate(owner, { name: 'Normal', layout: 'CLASSIC', backgroundUrl: url });
+
+      expect(repository.createTemplate).toHaveBeenCalledWith(7, expect.objectContaining({ backgroundUrl: null }));
+    });
+
+    it('pasar a IMAGE una plantilla sin imagen se rechaza; si ya tenía imagen, vale', async () => {
+      const { service, repository } = build();
+
+      await expect(service.updateTemplate(owner, 12, { layout: 'IMAGE' })).rejects.toBeInstanceOf(BadRequestException);
+
+      repository.findTemplate.mockResolvedValue({ ...template, layout: 'IMAGE', backgroundUrl: url });
+      await expect(service.updateTemplate(owner, 12, { name: 'Otro nombre' })).resolves.toBeDefined();
+      await expect(service.updateTemplate(owner, 12, { backgroundUrl: null })).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('cambiar a otro diseño borra la imagen de fondo', async () => {
+      const { service, repository } = build();
+
+      repository.findTemplate.mockResolvedValue({ ...template, layout: 'IMAGE', backgroundUrl: url });
+      await service.updateTemplate(owner, 12, { layout: 'CLASSIC' });
+
+      expect(repository.updateTemplate).toHaveBeenCalledWith(12, expect.objectContaining({ layout: 'CLASSIC', backgroundUrl: null }));
+    });
+
+    it('al emitir, el certificado guarda la imagen de fondo de la plantilla', async () => {
+      const { service, repository } = build();
+
+      repository.findCourseForCertificate.mockResolvedValue({
+        ...course,
+        certificateTemplate: { ...course.certificateTemplate, layout: 'IMAGE', backgroundUrl: url },
+      });
+
+      await service.issueFor(5, 3);
+
+      const [data] = repository.createCertificate.mock.calls[0] as unknown as [{ design: { layout: string; backgroundUrl: string } }];
+
+      expect(data.design).toMatchObject({ layout: 'IMAGE', backgroundUrl: url });
+    });
+  });
+
   describe('emisión', () => {
     it('emite el certificado con una copia de todo, un código válido, y avisa al estudiante', async () => {
       const { service, repository, notifications } = build();

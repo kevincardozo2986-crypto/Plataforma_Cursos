@@ -23,10 +23,16 @@ export interface CertificateStyle {
   body?: TextStyle;
   /** Mostrar la cédula bajo el nombre (por defecto sí). */
   showDocument?: boolean;
+  /**
+   * Velo blanco semitransparente detrás del texto, en porcentaje (0–80). Sirve cuando el fondo es una
+   * imagen propia y el texto no se lee bien. Por defecto, sin velo.
+   */
+  veil?: number;
 }
 
 export const SIZE_MIN = 60;
 export const SIZE_MAX = 140;
+export const VEIL_MAX = 80;
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 
 /** Qué es la negrita "automática" de cada texto: título y nombre sí, el texto no. */
@@ -100,7 +106,7 @@ export function sanitizeStyle(raw: unknown): CertificateStyle {
     return {};
   }
 
-  const { title, name, body, showDocument } = raw as Record<string, unknown>;
+  const { title, name, body, showDocument, veil } = raw as Record<string, unknown>;
   const clean: CertificateStyle = {};
 
   for (const [key, value] of [['title', title], ['name', name], ['body', body]] as const) {
@@ -113,6 +119,10 @@ export function sanitizeStyle(raw: unknown): CertificateStyle {
 
   if (showDocument === false) {
     clean.showDocument = false;
+  }
+
+  if (typeof veil === 'number' && Number.isFinite(veil) && Math.round(veil) > 0) {
+    clean.veil = Math.min(VEIL_MAX, Math.round(veil));
   }
 
   return clean;

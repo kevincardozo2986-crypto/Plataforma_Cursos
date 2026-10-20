@@ -344,3 +344,45 @@ describe('fitToHeight', () => {
     expect(BODY_LIMIT_Y).toBeLessThan(462);
   });
 });
+
+
+describe('diseño con imagen propia', () => {
+  const background = () =>
+    sharp({ create: { width: 800, height: 566, channels: 3, background: { r: 30, g: 90, b: 160 } } })
+      .jpeg()
+      .toBuffer();
+
+  it('IMAGE es uno de los diseños', () => {
+    expect(CERTIFICATE_LAYOUTS).toContain('IMAGE');
+  });
+
+  it('dibuja la imagen a página completa y sigue siendo de una sola página', async () => {
+    const withImage = await renderCertificatePdf(
+      content({ design: { ...content().design, layout: 'IMAGE', backgroundUrl: '/api/uploads/x.png' }, background: await background() }),
+    );
+    const without = await renderCertificatePdf(content({ design: { ...content().design, layout: 'IMAGE' } }));
+
+    expect(isPdf(withImage)).toBe(true);
+    expect(pages(withImage)).toBe(1);
+    expect(withImage.length).toBeGreaterThan(without.length);
+    expect(withImage.toString('latin1')).toContain('/Subtype /Image');
+    expect(without.toString('latin1')).not.toContain('/Subtype /Image');
+  });
+
+  it('sin imagen (no se pudo leer) sale igual, sobre fondo blanco', async () => {
+    const pdf = await renderCertificatePdf(content({ design: { ...content().design, layout: 'IMAGE' }, background: null }));
+
+    expect(isPdf(pdf)).toBe(true);
+    expect(pages(pdf)).toBe(1);
+  });
+
+  it('el velo agrega una capa semitransparente detrás del texto', async () => {
+    const design = { ...content().design, layout: 'IMAGE' as const };
+    const plain = await renderCertificatePdf(content({ design, background: await background() }));
+    const veiled = await renderCertificatePdf(content({ design: { ...design, style: { veil: 60 } }, background: await background() }));
+
+    expect(veiled.toString('latin1')).toMatch(/\/ca 0\.6/);
+    expect(plain.toString('latin1')).not.toMatch(/\/ca 0\.6/);
+    expect(pages(veiled)).toBe(1);
+  });
+});

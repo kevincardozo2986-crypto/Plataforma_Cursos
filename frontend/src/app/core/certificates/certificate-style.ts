@@ -2,6 +2,7 @@ import { CertificateStyle, FontOption, TextStyle } from './certificates.models';
 
 export const SIZE_MIN = 60;
 export const SIZE_MAX = 140;
+export const VEIL_MAX = 80;
 
 /** Qué es la negrita "automática" de cada texto: título y nombre sí, el texto no (igual que el PDF). */
 export const AUTO_BOLD = { title: true, name: true, body: false } as const;
@@ -56,6 +57,9 @@ export function cleanStyle(style: CertificateStyle): CertificateStyle {
   }
 
   if (style.showDocument === false) clean.showDocument = false;
+  if (typeof style.veil === 'number' && Math.round(style.veil) > 0) {
+    clean.veil = Math.min(VEIL_MAX, Math.round(style.veil));
+  }
 
   return clean;
 }

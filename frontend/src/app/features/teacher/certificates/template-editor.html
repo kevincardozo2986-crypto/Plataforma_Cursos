@@ -128,6 +128,7 @@
                       [font]="preview().font"
                       [bodyFont]="preview().bodyFont"
                       [style]="preview().style"
+                      [background]="preview().background"
                       [title]="preview().title"
                       [body]="''"
                       [student]="''"
@@ -144,6 +145,84 @@
               </div>
               <p class="panel-hint">{{ layoutLabels[form.controls.layout.value].hint }}</p>
             </fieldset>
+
+            @if (isImage()) {
+              <div class="bg-box">
+                <h3 class="bg-title"><app-icon name="eye" [size]="16" /> Tu imagen de fondo</h3>
+
+                @if (backgroundUrl(); as image) {
+                  <div class="bg-current">
+                    <img [src]="image" alt="Tu imagen de fondo" />
+                    <div class="bg-actions">
+                      <label class="panel-btn panel-btn--ghost panel-btn--sm file">
+                        <app-icon name="refresh" [size]="15" /> Cambiar imagen
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          [disabled]="uploading()"
+                          (change)="onBackground($event)"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                        (click)="removeBackground()"
+                      >
+                        <app-icon name="trash" [size]="15" /> Quitar
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <label class="bg-drop file" [class.busy]="uploading()">
+                    <app-icon name="download" [size]="26" />
+                    <strong>Sube tu plantilla</strong>
+                    <span
+                      >JPG, PNG o WebP. Mejor apaisada (A4: 297 × 210 mm, p. ej. 3508 × 2480
+                      px).</span
+                    >
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      [disabled]="uploading()"
+                      (change)="onBackground($event)"
+                    />
+                  </label>
+                }
+
+                @if (uploading()) {
+                  <div class="progress" role="progressbar" [attr.aria-valuenow]="percent()">
+                    <span [style.width.%]="percent()"></span>
+                  </div>
+                }
+                @if (backgroundError()) {
+                  <p class="panel-field-error" role="alert">{{ backgroundError() }}</p>
+                }
+
+                <label class="bg-veil">
+                  <span>
+                    <app-icon name="sparkles" [size]="14" /> Velo blanco detrás del texto ·
+                    {{ style().veil ?? 0 }}%
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="80"
+                    step="5"
+                    [value]="style().veil ?? 0"
+                    (input)="setVeil(+$any($event.target).value)"
+                  />
+                </label>
+
+                <p class="tip">
+                  <app-icon name="bulb" [size]="15" />
+                  <span>
+                    El texto va en el centro de la hoja, así que deja libre esa zona (y un hueco
+                    abajo para la firma). Si tu imagen es muy recargada, sube el velo o cambia el
+                    color del texto en «Tipografía y estilo».
+                  </span>
+                </p>
+              </div>
+            }
 
             <div class="panel-field">
               <label for="accentColor">Color principal</label>
@@ -333,6 +412,7 @@
             [font]="preview().font"
             [bodyFont]="preview().bodyFont"
             [style]="preview().style"
+            [background]="preview().background"
             [title]="preview().title"
             [body]="preview().body"
             [student]="preview().student"

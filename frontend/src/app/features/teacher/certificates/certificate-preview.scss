@@ -58,3 +58,17 @@
   position: absolute;
   height: 0.15cqw;
 }
+
+/* Imagen propia: cubre toda la hoja, como en el PDF. */
+.bg {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+}
+
+.veil {
+  position: absolute;
+  background: #fff;
+  border-radius: 1.6cqw;
+}

@@ -23,6 +23,7 @@ export const CERTIFICATE_LAYOUTS = [
   'DARK',
   'WAVES',
   'RIBBON',
+  'IMAGE',
 ] as const;
 
 export type CertificateLayout = (typeof CERTIFICATE_LAYOUTS)[number];
@@ -42,6 +43,8 @@ export interface CertificateDesign {
   bodyFont?: string;
   /** Negrita, cursiva, tamaño y color de cada texto. Los certificados anteriores no lo traen. */
   style?: CertificateStyle;
+  /** Imagen de fondo propia (solo con el diseño IMAGE): /api/uploads/<nombre>. */
+  backgroundUrl?: string | null;
 }
 
 /** Las tipografías ya resueltas con las que se dibuja (ver CertificateFontsService.resolve). */
@@ -66,6 +69,8 @@ export interface CertificateContent {
   verifyUrl: string;
   /** Imagen de la firma (PNG o JPG) ya leída, o null si el docente no la tiene. */
   signature: Buffer | null;
+  /** Imagen de fondo ya leída (diseño IMAGE), o null si no hay o no se pudo leer. */
+  background?: Buffer | null;
   /** Marca "VISTA PREVIA": el certificado de ejemplo que ve el docente al diseñar la plantilla. */
   preview?: boolean;
   /** Marca "REVOCADO". */
@@ -226,6 +231,11 @@ const centered = (x: number, titleY: number, accent: string): Box => ({
 });
 
 const LAYOUT_DRAWERS: Record<CertificateLayout, (doc: Doc, accent: string) => Box> = {
+  /** El fondo (imagen y velo) lo pone renderCertificatePdf; aquí solo se dice dónde va el texto. */
+  IMAGE(_doc, accent) {
+    return centered(70, 84, accent);
+  },
+
   CLASSIC(doc, accent) {
     doc.lineWidth(7).strokeColor(accent).rect(22, 22, WIDTH - 44, HEIGHT - 44).stroke();
     doc.lineWidth(1).strokeColor(accent).rect(36, 36, WIDTH - 72, HEIGHT - 72).stroke();
@@ -684,6 +694,22 @@ function writeContent(
 }
 
 /** Dibuja el certificado como un PDF de una página (A4 horizontal) y devuelve sus bytes. */
+/** La imagen propia a página completa y, si se pidió, un velo blanco detrás del texto. */
+function drawBackground(doc: Doc, content: CertificateContent) {
+  if (content.background) {
+    doc.image(content.background, 0, 0, { width: WIDTH, height: HEIGHT });
+  }
+
+  const veil = content.design.style?.veil ?? 0;
+
+  if (veil > 0) {
+    doc.save();
+    doc.fillOpacity(veil / 100).fillColor('#FFFFFF');
+    doc.roundedRect(46, 46, WIDTH - 92, HEIGHT - 92, 14).fill();
+    doc.restore();
+  }
+}
+
 export function renderCertificatePdf(
   content: CertificateContent,
   fonts: CertificateFonts = { heading: HELVETICA, body: HELVETICA },
@@ -707,6 +733,10 @@ export function renderCertificatePdf(
     try {
       const draw = LAYOUT_DRAWERS[content.design.layout] ?? LAYOUT_DRAWERS.CLASSIC;
       const box = draw(doc, content.design.accentColor);
+
+      if (content.design.layout === 'IMAGE') {
+        drawBackground(doc, content);
+      }
 
       writeContent(doc, content, box, fonts);
 

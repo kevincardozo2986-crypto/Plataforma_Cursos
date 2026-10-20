@@ -425,6 +425,8 @@ enum CertificateLayout {
   DARK
   WAVES
   RIBBON
+  /// El docente sube su propia imagen de fondo (backgroundUrl).
+  IMAGE
 }
 
 /// Diseño de certificado de un docente. Se asigna a cursos (`Course.certificateTemplateId`).
@@ -443,6 +445,8 @@ model CertificateTemplate {
   bodyFont    String            @default("SANS")
   /// Estilo de los textos (negrita, cursiva, tamaño, color) y si se muestra la cédula. Ver certificate-style.ts.
   style       Json              @default("{}")
+  /// Imagen de fondo subida por el docente (solo con el diseño IMAGE): /api/uploads/<32 hex>.<ext>.
+  backgroundUrl String?
 
   ownerId Int
   owner   User @relation(fields: [ownerId], references: [id], onDelete: Cascade)

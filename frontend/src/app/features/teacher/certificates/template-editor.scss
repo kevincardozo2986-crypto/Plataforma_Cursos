@@ -504,3 +504,119 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ---------- Imagen propia ---------- */
+
+.bg-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--p-surface-2);
+  border: 1.5px dashed color-mix(in srgb, var(--p-accent) 45%, var(--p-border));
+  border-radius: 12px;
+}
+
+.bg-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.bg-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.bg-current img {
+  width: 170px;
+  aspect-ratio: 841.89 / 595.28;
+  object-fit: cover;
+  border: 1px solid var(--p-border);
+  border-radius: 8px;
+}
+
+.bg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 22px 16px;
+  color: var(--p-muted);
+  font-size: 0.82rem;
+  text-align: center;
+  background: var(--p-surface);
+  border: 1.5px dashed var(--p-border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.bg-drop:hover {
+  border-color: var(--p-accent);
+}
+
+.bg-drop strong {
+  color: var(--p-ink);
+}
+
+.bg-drop.busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.file {
+  position: relative;
+  cursor: pointer;
+}
+
+.file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file:has(input:focus-visible) {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 3px;
+}
+
+.progress {
+  height: 8px;
+  overflow: hidden;
+  background: var(--p-surface);
+  border-radius: 999px;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--p-accent);
+  transition: width 0.2s;
+}
+
+.bg-veil {
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+
+.bg-veil span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.danger {
+  color: var(--p-danger);
+}

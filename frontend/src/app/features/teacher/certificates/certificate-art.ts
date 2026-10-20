@@ -155,6 +155,8 @@ export function textBox(layout: CertificateLayout, color: string): TextBox {
     }
     case 'RIBBON':
       return { ...centered(70, 86, accent), width: W - 70 - 190 };
+    case 'IMAGE':
+      return centered(70, 84, accent);
     default:
       return centered(70, 84, accent);
   }
@@ -269,6 +271,17 @@ const ART: Record<CertificateLayout, (a: string, dark: string) => string> = {
     rect(0, 0, W, 165, `fill="${a}"`) +
     rect(0, 165, W, 6, `fill="${dark}"`) +
     rect(0, H - 14, W, 14, `fill="${a}"`),
+
+  /** Sin imagen aún: un marco punteado que invita a subirla. */
+  IMAGE: (a) =>
+    rect(0, 0, W, H, 'fill="#F3F6FB"') +
+    rect(
+      26,
+      26,
+      W - 52,
+      H - 52,
+      `fill="none" stroke="${a}" stroke-width="2" stroke-dasharray="10 8"`,
+    ),
 
   MINIMAL: (a) =>
     rect(70, 58, 64, 5, `fill="${a}"`) + line(70, H - 60, W - 70, H - 60, '#D1D5DB', 0.6),

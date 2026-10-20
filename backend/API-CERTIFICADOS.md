@@ -28,6 +28,7 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
   "layout": "CLASSIC",
   "font": "playfair-display",
   "bodyFont": "lora",
+  "backgroundUrl": "/api/uploads/9f2c….webp",
   "style": {
     "title": { "bold": false, "italic": true, "size": 120, "color": "#B91C1C" },
     "name": { "size": 130 },
@@ -38,7 +39,7 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
 ```
 
 - Solo `name` es obligatorio; lo demás tiene valores por defecto (los de arriba).
-- `layout` (12 diseños): `CLASSIC` (doble borde), `MODERN` (barra lateral), `ELEGANT` (papel crema con remates), `BOLD` (banda
+- `layout` (13 diseños; el último es `IMAGE`, ver «Plantilla con tu propia imagen»): `CLASSIC` (doble borde), `MODERN` (barra lateral), `ELEGANT` (papel crema con remates), `BOLD` (banda
   de color arriba), `MINIMAL`, `SEAL` (con sello y cinta), `GEOMETRIC` (triángulos), `SIDEBAR` (panel lateral con sello),
   `FRAME` (marco grueso), `DARK` (fondo oscuro), `WAVES` (olas) y `RIBBON` (cinta vertical). Por defecto `CLASSIC`.
 - `font` y `bodyFont`: la tipografía del **título y el nombre** y la del **texto** (se pueden combinar: nombre en cursiva y texto en serif).
@@ -52,6 +53,12 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
   - `size`: porcentaje del tamaño normal, de 60 a 140. `color`: `#RRGGBB`.
   - Un nombre grande empuja hacia abajo la cédula, la línea y el texto. El texto se **achica solo** hasta quedar por encima de la firma (mínimo 9 pt), así que un texto largo o agrandado nunca se monta sobre ella.
   - Valores inválidos (`size: 500`, `color: "rojo"`, `bold: "si"`…) se rechazan con `400`.
+- **Plantilla con tu propia imagen** (`layout: "IMAGE"` + `backgroundUrl`): el docente sube su diseño (hecho en Canva, Word, Photoshop…) con
+  `POST /uploads/images` y se usa como fondo de la hoja completa; el texto se escribe encima, centrado. Es **obligatoria** con `IMAGE` (`400` si falta) y
+  tiene que ser una imagen subida a la plataforma (una URL externa da `400`); con cualquier otro diseño no se guarda (se borra al cambiar de diseño).
+  Mejor apaisada (A4 horizontal, 297 × 210 mm, p. ej. 3508 × 2480 px): se ajusta a la hoja recortando (`cover`). El texto va en el centro, con la firma abajo;
+  `style.veil` (0–80, porcentaje) pone un **velo blanco** semitransparente detrás del texto para que se lea sobre imágenes recargadas, y los colores del
+  texto se cambian con `style.title/name/body.color`. La imagen se guarda en el certificado al emitirlo (como el resto del diseño).
 - `accentColor`: hexadecimal de 6 dígitos. Los diseños derivan de él sus tonos claros y oscuros (el `DARK` lo usa para el fondo).
 - En el frontend, la geometría de cada diseño está duplicada para la vista previa (`certificate-art.ts`): si se cambia un diseño
   en `certificate-pdf.ts`, hay que cambiarlo también allá.

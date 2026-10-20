@@ -52,6 +52,11 @@ export class CertificatePreview {
   readonly code = input('CC-XXXX-XXXX-XXXX');
   /** Negrita, cursiva, tamaño y color de cada texto. */
   readonly style = input<CertificateStyle>({});
+  /** Imagen de fondo propia (solo con el diseño IMAGE). */
+  readonly background = input<string | null>(null);
+
+  protected readonly PAGE_W = PAGE_WIDTH;
+  protected readonly PAGE_H = PAGE_HEIGHT;
 
   /** Las posiciones del texto, en puntos de página. */
   readonly box = computed(() => textBox(this.layout(), this.color()));
@@ -60,6 +65,17 @@ export class CertificatePreview {
   readonly art = computed(() =>
     this.sanitizer.bypassSecurityTrustHtml(certificateArt(this.layout(), this.color())),
   );
+
+  /** Solo una imagen ya subida a la plataforma; cualquier otra cosa no se pinta. */
+  readonly backgroundCss = computed(() => {
+    const url = this.background();
+
+    return this.layout() === 'IMAGE' && url && /^\/api\/uploads\/[a-f0-9]{32}\.\w+$/.test(url)
+      ? `url("${url}")`
+      : null;
+  });
+
+  readonly veil = computed(() => (this.layout() === 'IMAGE' ? (this.style().veil ?? 0) / 100 : 0));
 
   // ---------- Tipografías ----------
 

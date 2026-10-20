@@ -19,6 +19,7 @@ export interface TemplateData {
   font?: string;
   bodyFont?: string;
   style?: CertificateStyle;
+  backgroundUrl?: string | null;
 }
 
 export interface NewCertificate {
@@ -44,6 +45,7 @@ const templateSelect = {
   font: true,
   bodyFont: true,
   style: true,
+  backgroundUrl: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -56,7 +58,7 @@ export class CertificatesRepository {
 
   // --- Plantillas ---
 
-  createTemplate(ownerId: number, data: Required<TemplateData>) {
+  createTemplate(ownerId: number, data: Required<Omit<TemplateData, 'backgroundUrl'>> & { backgroundUrl: string | null }) {
     return this.prisma.certificateTemplate.create({
       data: { ...data, style: data.style as Prisma.InputJsonValue, ownerId },
       select: { ...templateSelect, ownerId: true },
@@ -125,7 +127,7 @@ export class CertificatesRepository {
         title: true,
         durationMinutes: true,
         certificateTemplate: {
-          select: { title: true, body: true, accentColor: true, layout: true, font: true, bodyFont: true, style: true },
+          select: { title: true, body: true, accentColor: true, layout: true, font: true, bodyFont: true, style: true, backgroundUrl: true },
         },
         teacher: {
           select: {

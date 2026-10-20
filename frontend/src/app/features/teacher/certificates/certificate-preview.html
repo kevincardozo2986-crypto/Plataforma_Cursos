@@ -1,5 +1,19 @@
 <div class="cert" role="img" [attr.aria-label]="'Vista previa del certificado: ' + title()">
-  <div class="art" [innerHTML]="art()"></div>
+  @if (backgroundCss(); as image) {
+    <div class="bg" [style.background-image]="image"></div>
+  } @else {
+    <div class="art" [innerHTML]="art()"></div>
+  }
+  @if (veil() > 0) {
+    <div
+      class="veil"
+      [style.left.%]="x(46)"
+      [style.top.%]="y(46)"
+      [style.width.%]="x(PAGE_W - 92)"
+      [style.height.%]="y(PAGE_H - 92)"
+      [style.opacity]="veil()"
+    ></div>
+  }
 
   @let b = box();
 

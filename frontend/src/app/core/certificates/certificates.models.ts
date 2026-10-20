@@ -10,7 +10,8 @@ export type CertificateLayout =
   | 'FRAME'
   | 'DARK'
   | 'WAVES'
-  | 'RIBBON';
+  | 'RIBBON'
+  | 'IMAGE';
 export type CertificateStatus = 'VALID' | 'REVOKED';
 
 export const LAYOUT_LABELS: Record<CertificateLayout, { label: string; hint: string }> = {
@@ -26,6 +27,10 @@ export const LAYOUT_LABELS: Record<CertificateLayout, { label: string; hint: str
   DARK: { label: 'Oscuro', hint: 'Fondo oscuro con texto claro.' },
   WAVES: { label: 'Olas', hint: 'Olas de color arriba y abajo.' },
   RIBBON: { label: 'Cinta', hint: 'Cinta vertical con un sello.' },
+  IMAGE: {
+    label: 'Mi imagen',
+    hint: 'Sube tu propia imagen de fondo y el texto se escribe encima.',
+  },
 };
 
 export const LAYOUTS = Object.keys(LAYOUT_LABELS) as CertificateLayout[];
@@ -87,6 +92,8 @@ export interface CertificateStyle {
   body?: TextStyle;
   /** false = no mostrar la cédula bajo el nombre. */
   showDocument?: boolean;
+  /** Velo blanco detrás del texto, en porcentaje (0–80): ayuda a leerlo sobre una imagen. */
+  veil?: number;
 }
 
 export interface CertificateTemplate {
@@ -101,6 +108,8 @@ export interface CertificateTemplate {
   /** Tipografía del texto. */
   bodyFont: string;
   style: CertificateStyle;
+  /** Imagen de fondo propia (solo con el diseño IMAGE). */
+  backgroundUrl: string | null;
   ownerId: number;
   createdAt: string;
   updatedAt: string;
@@ -118,6 +127,7 @@ export interface CertificateTemplateInput {
   font: string;
   bodyFont: string;
   style: CertificateStyle;
+  backgroundUrl: string | null;
 }
 
 export interface IssuedCertificate {

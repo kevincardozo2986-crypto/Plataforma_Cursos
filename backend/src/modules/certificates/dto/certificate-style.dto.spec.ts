@@ -72,3 +72,23 @@ describe('corrección de un certificado emitido (DTO)', () => {
     expect(await check(plain)).toBeGreaterThan(0);
   });
 });
+
+
+describe('imagen de fondo y velo (DTO)', () => {
+  const check = async (plain: object) => (await validate(plainToInstance(CreateCertificateTemplateDto, { name: 'Mi plantilla', ...plain }))).length;
+
+  it('acepta una imagen subida a la plataforma y null/vacío para quitarla', async () => {
+    expect(await check({ layout: 'IMAGE', backgroundUrl: '/api/uploads/a1b2c3d4e5f60718293a4b5c6d7e8f90.jpg' })).toBe(0);
+    expect(plainToInstance(CreateCertificateTemplateDto, { name: 'x y', backgroundUrl: '' }).backgroundUrl).toBeNull();
+  });
+
+  it.each(['https://otra-web.com/f.png', '/api/uploads/corta.png', '/api/uploads/a1b2c3d4e5f60718293a4b5c6d7e8f90.exe'])('rechaza %s', async (backgroundUrl) => {
+    expect(await check({ backgroundUrl })).toBeGreaterThan(0);
+  });
+
+  it('el velo va de 0 a 80', async () => {
+    expect(await check({ style: { veil: 40 } })).toBe(0);
+    expect(await check({ style: { veil: 81 } })).toBeGreaterThan(0);
+    expect(await check({ style: { veil: 2.5 } })).toBeGreaterThan(0);
+  });
+});

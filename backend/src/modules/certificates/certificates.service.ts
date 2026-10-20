@@ -73,6 +73,7 @@ export class CertificatesService {
   async createTemplate(user: AuthenticatedUser, dto: CreateCertificateTemplateDto) {
     this.assertValidBody(dto.body);
     await this.assertFonts(user, dto);
+    this.assertBackground(dto.layout ?? 'CLASSIC', dto.backgroundUrl ?? null);
 
     if ((await this.repository.countTemplatesOf(user.id)) >= MAX_TEMPLATES) {
       throw new BadRequestException(
@@ -89,6 +90,7 @@ export class CertificatesService {
       font: dto.font ?? 'SANS',
       bodyFont: dto.bodyFont ?? 'SANS',
       style: sanitizeStyle(dto.style),
+      backgroundUrl: dto.layout === 'IMAGE' ? (dto.backgroundUrl ?? null) : null,
     });
   }
 
@@ -101,14 +103,22 @@ export class CertificatesService {
     id: number,
     dto: UpdateCertificateTemplateDto,
   ) {
-    await this.ownedTemplate(user, id);
+    const current = await this.ownedTemplate(user, id);
     this.assertValidBody(dto.body);
     await this.assertFonts(user, dto);
+
+    // El diseño y la imagen resultantes (lo enviado o, si no se envía, lo que ya había).
+    const layout = dto.layout ?? current.layout;
+    const backgroundUrl = dto.backgroundUrl !== undefined ? dto.backgroundUrl : current.backgroundUrl;
+
+    this.assertBackground(layout, backgroundUrl);
 
     const { style, ...rest } = dto;
 
     return this.repository.updateTemplate(id, {
       ...rest,
+      // Fuera del diseño IMAGE no se guarda imagen de fondo.
+      ...(layout !== 'IMAGE' ? { backgroundUrl: null } : {}),
       // El estilo, si se envía, reemplaza al anterior completo (y se limpia).
       ...(style !== undefined ? { style: sanitizeStyle(style) } : {}),
     });
@@ -152,11 +162,13 @@ export class CertificatesService {
       font: template.font,
       bodyFont: template.bodyFont,
       style: sanitizeStyle(template.style),
+      backgroundUrl: template.backgroundUrl,
     };
 
     const pdf = await renderCertificatePdf(
       {
       design,
+      background: await this.backgroundBuffer(design),
       studentName: 'Nombre del Estudiante',
       studentDocument: '1234567890',
       courseTitle: 'Nombre del curso',
@@ -234,6 +246,7 @@ export class CertificatesService {
       font: template.font,
       bodyFont: template.bodyFont,
       style: sanitizeStyle(template.style),
+      backgroundUrl: template.layout === 'IMAGE' ? template.backgroundUrl : null,
     };
 
     return {
@@ -352,6 +365,7 @@ export class CertificatesService {
       code: certificate.code,
       verifyUrl: this.verifyUrl(certificate.code),
       signature: await this.signatureBuffer(certificate.signatureUrl),
+      background: await this.backgroundBuffer(design),
       revoked: certificate.status === 'REVOKED',
       },
       await this.facesOf(design),
@@ -500,6 +514,32 @@ export class CertificatesService {
 
   private verifyUrl(code: string): string {
     return `${process.env.APP_URL ?? 'http://localhost:4200'}/verificar/${code}`;
+  }
+
+  /** El diseño IMAGE necesita su imagen de fondo. */
+  private assertBackground(layout: string, backgroundUrl: string | null) {
+    if (layout === 'IMAGE' && !backgroundUrl) {
+      throw new BadRequestException('El diseño con tu propia imagen necesita que subas la imagen de fondo');
+    }
+  }
+
+  /** La imagen de fondo (diseño IMAGE) como JPG a tamaño A4 de pantalla, o null si no hay o no se puede leer. */
+  private async backgroundBuffer(design: CertificateDesign): Promise<Buffer | null> {
+    const match = design.layout === 'IMAGE' && design.backgroundUrl ? SIGNATURE_FILE.exec(design.backgroundUrl) : null;
+
+    if (!match) {
+      return null;
+    }
+
+    try {
+      return await sharp(join(uploadsDir(), match[1]))
+        .resize({ width: 1684, height: 1190, fit: 'cover' })
+        .flatten({ background: '#FFFFFF' })
+        .jpeg({ quality: 88 })
+        .toBuffer();
+    } catch {
+      return null;
+    }
   }
 
   /** La imagen de la firma como PNG, o null si no hay o no se puede leer. */

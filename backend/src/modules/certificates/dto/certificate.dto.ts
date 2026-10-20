@@ -17,7 +17,7 @@ import {
 import { Trim } from '../../../common/dto/trim.js';
 
 import { CERTIFICATE_LAYOUTS } from '../certificate-pdf.js';
-import { SIZE_MAX, SIZE_MIN } from '../certificate-style.js';
+import { SIZE_MAX, SIZE_MIN, VEIL_MAX } from '../certificate-style.js';
 
 export const LAYOUTS = CERTIFICATE_LAYOUTS;
 /** Claves de tipografía: letras, números, guiones y «custom:12». Que exista se comprueba en el servicio. */
@@ -63,9 +63,20 @@ export class CertificateStyleDto {
   @IsOptional()
   @IsBoolean()
   showDocument?: boolean;
+
+  /** Velo blanco detrás del texto, en porcentaje (0–80). */
+  @IsOptional()
+  @IsInt({ message: 'El velo debe ser un número entero (porcentaje)' })
+  @Min(0)
+  @Max(VEIL_MAX, { message: `El velo máximo es ${VEIL_MAX}%` })
+  veil?: number;
 }
 
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+
+/** Una imagen ya subida a la plataforma: /api/uploads/<32 hex>.<extensión de imagen>. */
+export const UPLOADED_IMAGE = /^\/api\/uploads\/[a-f0-9]{32}\.(?:png|jpe?g|webp|gif)$/;
+const UPLOADED_IMAGE_MESSAGE = 'La imagen de fondo debe ser una imagen subida con POST /uploads/images';
 
 /**
  * Plantilla de certificado. En `body` se pueden usar los marcadores `{{student}}`, `{{course}}`,
@@ -113,6 +124,15 @@ export class CreateCertificateTemplateDto {
   @IsOptional()
   @Matches(FONT_KEY, { message: 'La tipografía del texto no es válida' })
   bodyFont?: string;
+
+  /**
+   * Imagen de fondo propia (diseño `IMAGE`): una imagen subida con `POST /uploads/images`,
+   * idealmente apaisada (A4, 297 × 210 mm). `null` la quita.
+   */
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' && value.trim() === '' ? null : value))
+  @Matches(UPLOADED_IMAGE, { message: UPLOADED_IMAGE_MESSAGE })
+  backgroundUrl?: string | null;
 
   /** Negrita, cursiva, tamaño y color de cada texto. Reemplaza el estilo anterior completo. */
   @IsOptional()
@@ -162,6 +182,15 @@ export class UpdateCertificateTemplateDto {
   bodyFont?: string;
 
   /** Negrita, cursiva, tamaño y color de cada texto. Reemplaza el estilo anterior completo. */
+  /**
+   * Imagen de fondo propia (diseño `IMAGE`): una imagen subida con `POST /uploads/images`,
+   * idealmente apaisada (A4, 297 × 210 mm). `null` la quita.
+   */
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' && value.trim() === '' ? null : value))
+  @Matches(UPLOADED_IMAGE, { message: UPLOADED_IMAGE_MESSAGE })
+  backgroundUrl?: string | null;
+
   @IsOptional()
   @ValidateNested()
   @Type(() => CertificateStyleDto)

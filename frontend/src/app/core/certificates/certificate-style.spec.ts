@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AUTO_BOLD, cleanStyle, resolveText } from './certificate-style';
+import { AUTO_BOLD, cleanStyle, resolveText, VEIL_MAX } from './certificate-style';
 
 describe('resolveText', () => {
   it('automática: negrita en título y nombre solo si la tipografía la tiene', () => {
@@ -43,5 +43,14 @@ describe('cleanStyle', () => {
       title: { bold: false, italic: true, size: 120, color: '#B91C1C' },
       showDocument: false,
     });
+  });
+});
+
+describe('velo', () => {
+  it('se guarda entero y acotado; 0 no se guarda', () => {
+    expect(cleanStyle({ veil: 60 })).toEqual({ veil: 60 });
+    expect(cleanStyle({ veil: 999 })).toEqual({ veil: VEIL_MAX });
+    expect(cleanStyle({ veil: 0 })).toEqual({});
+    expect(cleanStyle({ veil: undefined })).toEqual({});
   });
 });

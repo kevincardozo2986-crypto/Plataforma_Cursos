@@ -2,7 +2,7 @@ import { Component, computed, ElementRef, inject, signal, viewChild } from '@ang
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { map, startWith } from 'rxjs';
+import { map, startWith, Subscription } from 'rxjs';
 
 import {
   CertificateLayout,
@@ -22,6 +22,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { openBlob } from '../../../core/utils/download';
 import { Icon } from '../../../shared/ui/icon/icon';
+import { validateFile } from '../../../core/uploads/upload-rules';
+import { UploadsService } from '../../../core/uploads/uploads.service';
 import { CertificatePreview } from './certificate-preview';
 import { FontPicker } from './font-picker';
 import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './certificate-text';
@@ -37,6 +39,8 @@ export class TemplateEditor {
   private readonly api = inject(CertificatesService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly uploads = inject(UploadsService);
+  private upload: Subscription | null = null;
 
   /** Sin id = plantilla nueva. */
   readonly id: number | null = Number(inject(ActivatedRoute).snapshot.paramMap.get('id')) || null;
@@ -56,6 +60,12 @@ export class TemplateEditor {
     { key: 'name', label: 'Nombre del estudiante', autoBold: true },
     { key: 'body', label: 'Texto', autoBold: false },
   ];
+
+  // Imagen de fondo propia (diseño «Mi imagen»)
+  readonly backgroundUrl = signal<string | null>(null);
+  readonly uploading = signal(false);
+  readonly percent = signal(0);
+  readonly backgroundError = signal('');
 
   /** Negrita, cursiva, tamaño y color de cada texto. */
   readonly style = signal<CertificateStyle>({});
@@ -117,8 +127,11 @@ export class TemplateEditor {
       font,
       bodyFont,
       style: this.style(),
+      background: this.backgroundUrl(),
     };
   });
+
+  readonly isImage = computed(() => this.value().layout === 'IMAGE');
 
   readonly unknown = computed(() => unknownPlaceholders(this.value().body));
 
@@ -165,6 +178,57 @@ export class TemplateEditor {
     const bold = this.text(part).bold;
 
     return bold === undefined ? 'auto' : bold ? 'yes' : 'no';
+  }
+
+  /** Sube la imagen de fondo y la deja puesta en la plantilla (se guarda con «Guardar»). */
+  onBackground(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    const problem = validateFile('image', file);
+
+    if (problem) {
+      this.backgroundError.set(problem);
+      return;
+    }
+
+    this.backgroundError.set('');
+    this.uploading.set(true);
+    this.percent.set(0);
+
+    this.upload?.unsubscribe();
+    this.upload = this.uploads.upload('image', file).subscribe({
+      next: (event) => {
+        if (event.type === 'progress') {
+          this.percent.set(event.percent);
+          return;
+        }
+
+        this.backgroundUrl.set(event.url);
+        this.uploading.set(false);
+        this.form.markAsDirty();
+      },
+      error: (error: Error) => {
+        this.backgroundError.set(error.message);
+        this.uploading.set(false);
+      },
+    });
+  }
+
+  removeBackground(): void {
+    this.backgroundUrl.set(null);
+    this.form.markAsDirty();
+  }
+
+  setVeil(value: number): void {
+    this.style.update((style) => ({ ...style, veil: value > 0 ? value : undefined }));
+    this.form.markAsDirty();
   }
 
   setShowDocument(show: boolean): void {
@@ -234,9 +298,18 @@ export class TemplateEditor {
       return;
     }
 
+    if (this.isImage() && !this.backgroundUrl()) {
+      this.backgroundError.set('Sube la imagen de fondo para usar este diseño.');
+      return;
+    }
+
     this.saving.set(true);
 
-    const input = { ...this.form.getRawValue(), style: cleanStyle(this.style()) };
+    const input = {
+      ...this.form.getRawValue(),
+      style: cleanStyle(this.style()),
+      backgroundUrl: this.isImage() ? this.backgroundUrl() : null,
+    };
     const request =
       this.id === null ? this.api.createTemplate(input) : this.api.updateTemplate(this.id, input);
 
@@ -255,6 +328,7 @@ export class TemplateEditor {
 
   private fill(template: CertificateTemplate): void {
     this.style.set(template.style ?? {});
+    this.backgroundUrl.set(template.backgroundUrl ?? null);
     this.form.reset({
       name: template.name,
       title: template.title,

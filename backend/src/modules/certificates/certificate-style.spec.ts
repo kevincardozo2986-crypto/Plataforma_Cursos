@@ -1,4 +1,4 @@
-import { AUTO_BOLD, resolveText, sanitizeStyle, SIZE_MAX, SIZE_MIN } from './certificate-style.js';
+import { AUTO_BOLD, resolveText, sanitizeStyle, SIZE_MAX, SIZE_MIN, VEIL_MAX } from './certificate-style.js';
 
 describe('resolveText', () => {
   it('sin estilo: título y nombre en negrita si la tipografía la tiene; el texto, no', () => {
@@ -77,5 +77,17 @@ describe('sanitizeStyle', () => {
 
   it('lo que es igual al valor por defecto no se guarda', () => {
     expect(sanitizeStyle({ title: { italic: false, size: 100, color: null } })).toEqual({});
+  });
+});
+
+
+describe('velo', () => {
+  it('se guarda entero y acotado a 80; 0 o inválido no se guarda', () => {
+    expect(sanitizeStyle({ veil: 60 })).toEqual({ veil: 60 });
+    expect(sanitizeStyle({ veil: 59.6 })).toEqual({ veil: 60 });
+    expect(sanitizeStyle({ veil: 500 })).toEqual({ veil: VEIL_MAX });
+    expect(sanitizeStyle({ veil: 0 })).toEqual({});
+    expect(sanitizeStyle({ veil: -5 })).toEqual({});
+    expect(sanitizeStyle({ veil: 'mucho' })).toEqual({});
   });
 });
