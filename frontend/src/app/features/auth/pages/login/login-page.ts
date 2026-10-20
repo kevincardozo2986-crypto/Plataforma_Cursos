@@ -1,3 +1,4 @@
+import { PasswordRecovery } from '../../components/password-recovery/password-recovery';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -25,7 +26,7 @@ import { LoginHeader } from '../../components/login-header/login-header';
 @Component({
   selector: 'app-login-page',
 
-  imports: [TranslatePipe, LoginHeader, LoginForm, LoginLinks],
+  imports: [TranslatePipe, LoginHeader, LoginForm, LoginLinks, PasswordRecovery],
 
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
@@ -42,6 +43,7 @@ export class LoginPage {
   readonly error = signal('');
 
   readonly notice = signal('');
+  readonly recovering = signal(false);
 
   /* =====================================
      LOGIN

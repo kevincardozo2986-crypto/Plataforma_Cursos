@@ -1,0 +1,88 @@
+<section class="streak-card" aria-labelledby="streak-title">
+  <div class="streak-main">
+    <div class="flame" [class.idle]="!streak()?.days" aria-hidden="true">
+      <svg viewBox="0 0 64 80" fill="none">
+        <defs>
+          <linearGradient
+            id="streak-fire"
+            x1="32"
+            y1="4"
+            x2="32"
+            y2="76"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#ffd56a" />
+            <stop offset=".5" stop-color="#ff9d24" />
+            <stop offset="1" stop-color="#f25b20" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M35 3c5 19-5 25-3 34 6-3 10-9 11-17 13 13 20 27 14 42-4 11-14 16-25 16C14 78 4 66 6 51c1-10 7-18 13-24-1 12 1 17 5 20C20 29 35 21 35 3Z"
+          fill="url(#streak-fire)"
+        />
+        <path
+          d="M34 44c2 9-6 12-5 19 4-1 7-5 8-9 8 8 7 20-5 22-14-1-16-15-8-25 0 5 1 7 3 8-1-6 4-10 7-15Z"
+          fill="#ffe9a3"
+        />
+      </svg>
+    </div>
+    <div>
+      <h2 id="streak-title">Racha de estudio</h2>
+      @if (loading()) {
+        <p class="hint" role="status">Cargando tu racha…</p>
+      } @else if (error()) {
+        <button class="retry" (click)="load()">Reintentar cargar la racha</button>
+      } @else if (streak(); as data) {
+        <p class="days">
+          {{ data.days }} <span>{{ data.days === 1 ? 'día' : 'días' }}</span>
+        </p>
+        <p class="hint">
+          {{
+            data.studiedToday
+              ? '¡Hoy también sumaste! Sigue así.'
+              : data.days
+                ? 'Completa una lección hoy y sigue sumando.'
+                : 'Completa una lección y enciende tu racha.'
+          }}
+        </p>
+      }
+    </div>
+  </div>
+  <div class="week-heading"><span>Esta semana</span><span>Lunes a domingo</span></div>
+  <div class="week" aria-label="Actividad de esta semana, de lunes a domingo">
+    @for (day of week(); track day.date) {
+      <div
+        class="day"
+        [class.done]="day.completed"
+        [class.today]="day.today"
+        [attr.aria-label]="
+          dayLabel(day.date) +
+          ', ' +
+          day.date +
+          (loading() || error()
+            ? ': actividad no disponible'
+            : day.completed
+              ? ': lección completada'
+              : ': sin lecciones completadas')
+        "
+        [attr.aria-current]="day.today ? 'date' : null"
+      >
+        <span class="day-label">{{ dayLabel(day.date) }}</span>
+        <span class="day-fire" aria-hidden="true">
+          <svg viewBox="0 0 64 80" fill="none">
+            <path
+              class="fire-outer"
+              d="M35 3c5 19-5 25-3 34 6-3 10-9 11-17 13 13 20 27 14 42-4 11-14 16-25 16C14 78 4 66 6 51c1-10 7-18 13-24-1 12 1 17 5 20C20 29 35 21 35 3Z"
+            />
+            <path
+              class="fire-inner"
+              d="M34 44c2 9-6 12-5 19 4-1 7-5 8-9 8 8 7 20-5 22-14-1-16-15-8-25 0 5 1 7 3 8-1-6 4-10 7-15Z"
+            />
+          </svg>
+        </span>
+        <span class="day-date">{{ day.today ? 'Hoy' : day.date.slice(8) }}</span>
+      </div>
+    }
+  </div>
+  <p class="rule">Suma un día al completar una lección · Hora de Colombia</p>
+</section>

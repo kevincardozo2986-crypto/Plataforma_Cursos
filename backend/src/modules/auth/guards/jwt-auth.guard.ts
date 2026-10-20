@@ -15,10 +15,10 @@ import type { AuthenticatedRequest } from '../../../common/interfaces/authentica
 
 interface JwtPayload {
   sub: number;
+  version?: number;
   email: string;
   role: string;
 }
-
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -28,47 +28,35 @@ export class JwtAuthGuard implements CanActivate {
     private readonly usersService: UsersService,
   ) {}
 
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
-    const request =
-      context.switchToHttp().getRequest<AuthenticatedRequest>();
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
     const token = this.extractToken(request);
 
     if (!token) {
-      throw new UnauthorizedException(
-        'Token no proporcionado',
-      );
+      throw new UnauthorizedException('Token no proporcionado');
     }
 
     try {
-      const payload =
-        await this.jwtService.verifyAsync<JwtPayload>(
-          token,
-          {
-            secret:
-              this.configService.getOrThrow<string>(
-                'JWT_SECRET',
-              ),
-          },
-        );
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      });
 
-      const user =
-        await this.usersService.findById(payload.sub);
+      const user = await this.usersService.findById(payload.sub);
 
       if (!user) {
-        throw new UnauthorizedException(
-          'Usuario no encontrado',
-        );
+        throw new UnauthorizedException('Usuario no encontrado');
       }
 
       if (user.status === UserStatus.INACTIVE) {
-        throw new UnauthorizedException(
-          'La cuenta se encuentra inactiva',
-        );
+        throw new UnauthorizedException('La cuenta se encuentra inactiva');
       }
 
+      if ((payload.version ?? 0) !== user.sessionVersion) {
+        throw new UnauthorizedException(
+          'La contrasena cambio. Inicia sesion nuevamente.',
+        );
+      }
       request.user = user;
 
       return true;
@@ -77,20 +65,13 @@ export class JwtAuthGuard implements CanActivate {
         throw error;
       }
 
-      throw new UnauthorizedException(
-        'Token inválido o expirado',
-      );
+      throw new UnauthorizedException('Token inválido o expirado');
     }
   }
 
-  private extractToken(
-    request: Request,
-  ): string | undefined {
-    const [type, token] =
-      request.headers.authorization?.split(' ') ?? [];
+  private extractToken(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
 
-    return type === 'Bearer'
-      ? token
-      : undefined;
+    return type === 'Bearer' ? token : undefined;
   }
 }

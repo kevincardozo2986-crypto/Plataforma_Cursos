@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsEmail,
   IsEnum,
   IsOptional,
   IsString,
@@ -40,6 +41,17 @@ const URL_MESSAGE = 'Debe ser una dirección web válida que empiece con http://
  * `null` (o un texto vacío) los quita.
  */
 export class UpdateProfileDto {
+  @IsOptional()
+  @Trim()
+  @IsEmail()
+  @MaxLength(254)
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(72)
+  currentPassword?: string;
+
   // --- Cuenta ---
 
   @IsOptional()

@@ -7,7 +7,7 @@ import {
 
 /** Archivos subidos a este servidor: /api/uploads/<32 hex>.<extensión>. */
 export const UPLOAD_URL_PATTERN =
-  /^\/api\/uploads\/[a-f0-9]{32}\.(?:png|jpe?g|gif|webp|mp4|mov|webm|ogv|ogg)$/;
+  /^\/api\/uploads\/[a-f0-9]{32}\.(?:png|jpe?g|gif|webp|mp4|mov|webm|ogv|ogg|mp3|m4a|wav|aac|flac|pdf)$/;
 
 /** ¿Es una URL externa (http/https) o un archivo ya subido a la plataforma? */
 export function isMediaUrl(value: unknown): boolean {

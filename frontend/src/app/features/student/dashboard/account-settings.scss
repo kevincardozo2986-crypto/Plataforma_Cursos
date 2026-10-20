@@ -1,0 +1,222 @@
+:host {
+  display: block;
+  color: var(--ink, #10264c);
+}
+.photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  border: 1px solid var(--border, #e3ecfa);
+  border-radius: 20px;
+  background: linear-gradient(155deg, #0eb5c609, #2478f509);
+  text-align: center;
+}
+.profile-photo {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 4px solid var(--surface, #fff);
+  box-shadow:
+    0 0 0 1px var(--border, #e3ecfa),
+    0 6px 16px #10264c10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #e3f5f8;
+  color: #0795ba;
+  font-size: 1.5rem;
+  font-weight: 750;
+}
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+p {
+  font-size: 0.78rem;
+  color: var(--muted, #647a9d);
+  line-height: 1.5;
+  margin: 6px 0 12px;
+}
+h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+form {
+  border-top: 1px solid var(--border, #e3ecfa);
+  padding-top: 22px;
+  margin-top: 20px;
+}
+label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 16px;
+}
+small {
+  font-weight: 400;
+  color: var(--muted, #647a9d);
+}
+input:not([type='file']) {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #dce6f3);
+  border-radius: 12px;
+  color: inherit;
+  background: var(--surface, #fff);
+  font: inherit;
+}
+input:focus-visible,
+button:focus-visible,
+.upload-button:focus-within {
+  outline: 2px solid #2279ff;
+  outline-offset: 3px;
+}
+.name-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+button,
+.upload-button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.primary {
+  width: 100%;
+  margin-top: 22px;
+  background: #1265ed;
+  color: #fff;
+}
+.secondary {
+  width: 100%;
+  margin-top: 16px;
+  background: #eaf2ff;
+  color: #1554b3;
+}
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  background: #eaf2ff;
+  color: #1554b3;
+  padding: 9px 12px;
+}
+.upload-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.text-button {
+  background: transparent;
+  color: var(--muted, #647a9d);
+  padding: 9px;
+}
+button:disabled,
+.disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+p.error {
+  color: #bd3347;
+  background: #dc456510;
+  padding: 12px;
+  border-radius: 10px;
+}
+p.success {
+  color: #18805f;
+  background: #1fa67c12;
+  padding: 12px;
+  border-radius: 10px;
+}
+@media (max-width: 420px) {
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .photo-section {
+    gap: 12px;
+  }
+}
+
+.security-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--border, #e3ecfa);
+  padding-top: 24px;
+}
+.security-section form {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+.verification-code {
+  font-size: 1.4rem !important;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+.login-again {
+  display: block;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.photo-details {
+  width: 100%;
+  min-width: 0;
+}
+.photo-details strong {
+  display: block;
+  font-size: 0.95rem;
+}
+.photo-details p {
+  margin: 6px 0 18px;
+  font-size: 0.72rem;
+}
+.photo-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.photo-actions .text-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid var(--border, #e3ecfa);
+  border-radius: 12px;
+  color: var(--muted, #647a9d);
+}
+.photo-actions .upload-button {
+  background: #1265ed;
+  color: #fff;
+  padding: 10px 16px;
+}
+.photo-actions .upload-button:hover {
+  background: #0c54ce;
+}
+.photo-actions .text-button:hover {
+  background: #db566910;
+  color: #b9364a;
+  border-color: #db566940;
+}

@@ -39,7 +39,7 @@ export class NotificationsRepository {
         orderBy: { createdAt: 'desc' },
         take: options.take,
         skip: options.skip,
-        omit: { userId: true },
+        omit: { userId: true, eventKey: true },
       }),
       this.prisma.notification.count({ where }),
     ]);

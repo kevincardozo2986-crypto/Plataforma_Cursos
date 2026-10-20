@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AccessibilityService } from '../../../core/accessibility/accessibility.service';
@@ -21,6 +21,23 @@ export class SiteHeader {
   private readonly router = inject(Router);
 
   readonly menuOpen = signal(false);
+  readonly accountOpen = signal(false);
+  private readonly element = inject(ElementRef);
+
+  @HostListener('document:click', ['$event'])
+  closeOutside(event: MouseEvent): void {
+    if (!this.element.nativeElement.contains(event.target)) this.accountOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeAccount(): void {
+    this.accountOpen.set(false);
+  }
+
+  openStudentPanel(panel: 'account' | 'notifications'): void {
+    this.accountOpen.set(false);
+    void this.router.navigate(['/student/dashboard'], { queryParams: { panel } });
+  }
 
   /** "Inicio" solo se marca activo sin fragmento; "Cursos", solo con #courses. */
   readonly matchOptions = {

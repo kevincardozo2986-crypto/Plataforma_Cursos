@@ -47,6 +47,8 @@ export interface ProfileData {
 
 /** Cuerpo de PATCH /profile: lo que no se envía no se toca; null borra los datos opcionales. */
 export interface ProfileUpdate {
+  email?: string;
+  currentPassword?: string;
   firstName?: string;
   lastName?: string;
   phone?: string | null;

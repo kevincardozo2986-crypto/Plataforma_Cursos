@@ -1,0 +1,420 @@
+<main class="classroom">
+  <header class="classroom-heading">
+    <a class="breadcrumb" routerLink="/student/dashboard" fragment="my-courses"
+      >Mis cursos <span aria-hidden="true">&#8250;</span>
+      <span>{{ course().title || course().name }}</span></a
+    >
+    <div class="heading-title">
+      <div>
+        <span class="course-eyebrow">TU ESPACIO DE APRENDIZAJE</span>
+        <h1>{{ course().title || course().name }}</h1>
+      </div>
+      <span class="course-status"
+        ><span aria-hidden="true"></span
+        >{{
+          progress().percent === 100 && progress().totalLessons ? 'Curso completado' : 'En curso'
+        }}</span
+      >
+    </div>
+    <div class="course-facts">
+      @if (course().teacher; as teacher) {
+        <div class="teacher">
+          <span class="teacher-avatar" aria-hidden="true"
+            >{{ teacher.firstName.charAt(0) }}{{ teacher.lastName.charAt(0) }}</span
+          ><span
+            ><strong>{{ teacher.firstName }} {{ teacher.lastName }}</strong
+            ><small>Docente</small></span
+          >
+        </div>
+      }
+      <span><app-student-icon />{{ course().modules?.length ?? 0 }} m&#243;dulos</span>
+      <span><app-student-icon name="play" />{{ lessons().length }} lecciones</span>
+      @if (course().durationMinutes) {
+        <span>{{ formatDuration(course().durationMinutes!) }}</span>
+      }
+      <span class="level">{{ level() }}</span>
+    </div>
+    <div class="quick-tools" aria-label="Herramientas del curso">
+      <button (click)="openTool('resources')"><app-student-icon />Ver materiales</button>
+      @if (programmingEnabled()) {
+        <button (click)="openTool('practice')">
+          <app-student-icon name="menu" />Practicar c&#243;digo
+        </button>
+      }
+      @if (course()['qaEnabled'] !== false) {
+        <button (click)="openTool('questions')">
+          <app-student-icon name="user" />Hacer una pregunta
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="lesson-workspace">
+    <section
+      class="lesson-stage"
+      aria-label="Lección actual"
+      [attr.aria-busy]="loading() || initializing()"
+    >
+      @if (initializing() && !lesson()) {
+        <div class="stage-state" role="status">Preparando tu espacio de aprendizaje...</div>
+      } @else if (initError()) {
+        <div class="stage-state">
+          <p role="alert">{{ initError() }}</p>
+          <button class="primary" (click)="initialize()">Reintentar</button>
+        </div>
+      } @else if (loading()) {
+        <div class="stage-state" role="status">Cargando la lecci&#243;n...</div>
+      } @else if (error()) {
+        <div class="stage-state">
+          <p role="alert">{{ error() }}</p>
+          <button class="primary" (click)="select(selectedId()!)">Reintentar lecci&#243;n</button>
+        </div>
+      } @else if (lesson(); as current) {
+        <div class="lesson-caption">
+          <span>M&#243;dulo {{ (selected()?.moduleIndex ?? 0) + 1 }}</span
+          ><span>Lecci&#243;n {{ selectedIndex() + 1 }} de {{ lessons().length }}</span>
+        </div>
+        @if (activeResource(); as material) {
+          <app-lesson-resource [resource]="material" />
+          @if (current.videoUrl) {
+            <button class="back-to-video" (click)="activeResource.set(null)">
+              &#8592; Volver al video de la lecci&#243;n
+            </button>
+          }
+        } @else if (current.videoUrl && playable(current.videoUrl)) {
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            [src]="current.videoUrl"
+            [poster]="course().imageUrl || course().image || course().thumbnail || ''"
+            [attr.aria-label]="current.title"
+            (error)="videoError.set(true)"
+          >
+            Tu navegador no puede reproducir este video.
+          </video>
+          @if (videoError()) {
+            <p class="stage-message" role="alert">
+              No pudimos reproducir el video. Intenta abrir otra lecci&#243;n o vuelve m&#225;s
+              tarde.
+            </p>
+          }
+        } @else {
+          <div
+            class="lesson-cover"
+            [class.has-image]="course().imageUrl || course().image || course().thumbnail"
+          >
+            @if (course().imageUrl || course().image || course().thumbnail; as image) {
+              <img [src]="image" alt="" />
+            }
+            <div class="cover-content">
+              <span class="eyebrow">{{ selected()?.moduleTitle }}</span>
+              <h2>{{ current.title }}</h2>
+              @if (current.videoUrl) {
+                <a
+                  class="external-video"
+                  [href]="current.videoUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ><app-student-icon name="play" />Abrir video de la lecci&#243;n &#8599;</a
+                >
+              } @else {
+                <p>Encontrar&#225;s el contenido de esta lecci&#243;n en la descripci&#243;n.</p>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="stage-state">
+          <app-student-icon />
+          <h2>Tu pr&#243;xima lecci&#243;n te espera</h2>
+          <p>
+            {{
+              lessons().length
+                ? 'Los módulos aún no están disponibles. Consulta los requisitos del temario.'
+                : 'El docente aún no ha agregado lecciones a este curso.'
+            }}
+          </p>
+        </div>
+      }
+    </section>
+
+    <section id="course-tools" class="lesson-details" aria-label="Información de la lección">
+      <div class="lesson-toolbar">
+        <div>
+          <span class="eyebrow">EST&#193;S APRENDIENDO</span>
+          <h2>{{ selected()?.title || 'Contenido de la lección' }}</h2>
+        </div>
+        @if (lesson()) {
+          <button
+            class="complete-button"
+            [class.completed]="completed().has(lesson()!.id)"
+            [disabled]="saving() || completed().has(lesson()!.id)"
+            (click)="complete()"
+          >
+            {{
+              saving()
+                ? 'Guardando...'
+                : completed().has(lesson()!.id)
+                  ? '✓ Completada'
+                  : 'Marcar como completada'
+            }}
+          </button>
+        }
+      </div>
+      @if (progressError()) {
+        <p class="error" role="alert">{{ progressError() }}</p>
+      }
+      <nav class="lesson-tabs" aria-label="Secciones de la lección">
+        @for (item of tabs(); track item.id) {
+          <button
+            type="button"
+            [class.active]="tab() === item.id"
+            [attr.aria-pressed]="tab() === item.id"
+            (click)="selectTab(item.id)"
+          >
+            <app-student-icon
+              [name]="
+                item.id === 'description'
+                  ? 'book'
+                  : item.id === 'questions'
+                    ? 'user'
+                    : item.id === 'announcements'
+                      ? 'bell'
+                      : 'menu'
+              "
+            />{{ item.label }}
+          </button>
+        }
+      </nav>
+      <div class="tab-content">
+        @switch (tab()) {
+          @case ('description') {
+            <h3>Sobre esta lecci&#243;n</h3>
+            @if (lesson()?.content) {
+              <div class="rich-text" [innerHTML]="lesson()!.content"></div>
+            } @else {
+              <p class="empty-message">
+                {{
+                  loading()
+                    ? 'Cargando contenido...'
+                    : 'El docente aún no ha agregado una descripción para esta lección.'
+                }}
+              </p>
+            }
+          }
+          @case ('resources') {
+            <h3>Explora los materiales de la lecci&#243;n</h3>
+            <p class="empty-message">
+              Selecciona un recurso para verlo en el espacio principal sin salir del curso.
+            </p>
+            @for (resource of lesson()?.resources ?? []; track resource.id) {
+              <button
+                class="resource resource-button"
+                [class.resource-active]="activeResource()?.id === resource.id"
+                (click)="openResource(resource)"
+              >
+                <app-student-icon /><span
+                  >{{ resource.title }}<small>{{ resourceLabel(resource) }}</small></span
+                ><span>Ver material &#8593;</span>
+              </button>
+            } @empty {
+              <p class="empty-message">Esta lecci&#243;n a&#250;n no tiene recursos adjuntos.</p>
+            }
+          }
+          @case ('practice') {
+            @if (programmingEnabled()) {
+              <app-code-practice [scope]="practiceKey()" />
+            }
+          }
+          @case ('notes') {
+            <h3>Tus apuntes</h3>
+            <p class="empty-message">
+              Notas personales para esta lecci&#243;n. Se guardan solo en este navegador.
+            </p>
+            <label class="sr-only" for="lesson-notes">Mis apuntes de la lecci&#243;n</label
+            ><textarea
+              id="lesson-notes"
+              rows="6"
+              maxlength="20000"
+              [ngModel]="note"
+              (ngModelChange)="note = $event; saveNote(false)"
+              [disabled]="!lesson()"
+              placeholder="Escribe las ideas que quieres recordar..."
+            ></textarea>
+            <button class="secondary" [disabled]="!lesson()" (click)="saveNote()">
+              Guardar notas
+            </button>
+            @if (noteNotice()) {
+              <p role="status">{{ noteNotice() }}</p>
+            }
+          }
+          @case ('questions') {
+            <h3>Preguntas del curso</h3>
+            @if (course()['qaEnabled'] !== false) {
+              <form #question="ngForm" (ngSubmit)="ask()">
+                <label for="question-title">&#191;Qu&#233; te gustar&#237;a preguntar?</label
+                ><input
+                  id="question-title"
+                  name="title"
+                  [(ngModel)]="questionTitle"
+                  required
+                  minlength="5"
+                  maxlength="150"
+                  placeholder="Título de tu pregunta"
+                /><label class="sr-only" for="question-body">Detalles de la pregunta</label
+                ><textarea
+                  id="question-body"
+                  name="body"
+                  [(ngModel)]="questionBody"
+                  required
+                  maxlength="5000"
+                  rows="3"
+                  placeholder="Cuéntale al docente tu duda..."
+                ></textarea
+                ><button
+                  class="primary"
+                  [disabled]="question.invalid || questionSaving()"
+                  type="submit"
+                >
+                  {{ questionSaving() ? 'Enviando...' : 'Enviar pregunta' }}
+                </button>
+              </form>
+            } @else if (course()['qaEnabled'] === false) {
+              <p class="empty-message">El docente desactiv&#243; las preguntas para este curso.</p>
+            }
+            @if (questionNotice()) {
+              <p class="success" role="status">{{ questionNotice() }}</p>
+            }
+            @for (post of posts(); track post.id) {
+              <article class="post">
+                <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.body }}</p>
+                <app-question-thread [postId]="post.id" />
+              </article>
+            } @empty {
+              @if (!panelLoading() && !panelError()) {
+                <p class="empty-message">A&#250;n no hay preguntas en este curso.</p>
+              }
+            }
+          }
+          @case ('announcements') {
+            <h3>Anuncios del docente</h3>
+            @for (post of posts(); track post.id) {
+              <article class="post">
+                <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
+                <h4>{{ post.title }}</h4>
+                <div class="rich-text" [innerHTML]="post.body"></div>
+              </article>
+            } @empty {
+              @if (!panelLoading() && !panelError()) {
+                <p class="empty-message">No hay anuncios por ahora.</p>
+              }
+            }
+          }
+        }
+        @if (panelLoading()) {
+          <p role="status">Cargando...</p>
+        }
+        @if (panelError()) {
+          <p class="error" role="alert">{{ panelError() }}</p>
+          <button class="secondary" (click)="selectTab(tab())">Volver a cargar</button>
+        }
+      </div>
+    </section>
+  </div>
+  <aside class="classroom-sidebar" aria-label="Progreso y temario">
+    <section class="progress-card">
+      <span class="card-label">CADA PASO CUENTA</span>
+      <h2>Tu progreso</h2>
+      <div class="progress-summary">
+        <div
+          class="progress-ring"
+          [style.--progress]="progress().percent + '%'"
+          role="img"
+          [attr.aria-label]="'Progreso: ' + progress().percent + '%'"
+        >
+          <strong>{{ progress().percent }}%</strong>
+        </div>
+        <div>
+          <strong>{{ progress().completedLessons }} de {{ progress().totalLessons }}</strong>
+          <p>lecciones completadas</p>
+        </div>
+      </div>
+      @if (progress().percent === 100 && progress().totalLessons) {
+        <p class="finished">&#10003; Completaste todas las lecciones.</p>
+      }
+    </section>
+    <section class="curriculum-card" aria-labelledby="curriculum-title">
+      <div class="curriculum-heading">
+        <h2 id="curriculum-title">Tu ruta de aprendizaje</h2>
+        <span>{{ course().modules?.length ?? 0 }} m&#243;dulos</span>
+      </div>
+      @for (module of course().modules ?? []; track module.id; let index = $index) {
+        <details
+          class="module"
+          [open]="selected()?.moduleId === module.id || (!selectedId() && index === 0)"
+        >
+          <summary>
+            <span class="chevron" aria-hidden="true">&#8964;</span
+            ><span>M&#243;dulo {{ index + 1 }}: {{ module.title }}</span
+            ><small>{{ moduleCompleted(module.id) }}/{{ module.lessons.length }}</small>
+          </summary>
+          @if (locked(module.id) && !initializing()) {
+            <p class="lock-reason">{{ lockReason(module.id) }}</p>
+          }
+          @for (item of module.lessons; track item.id; let lessonIndex = $index) {
+            <button
+              class="lesson-row"
+              [class.selected]="selectedId() === item.id"
+              [class.done]="completed().has(item.id)"
+              [attr.aria-current]="selectedId() === item.id ? 'step' : null"
+              [disabled]="locked(module.id) || saving() || questionSaving()"
+              (click)="select(item.id)"
+            >
+              <span class="lesson-check" aria-hidden="true">{{
+                completed().has(item.id) ? '✓' : ''
+              }}</span
+              ><span class="lesson-name">{{ lessonIndex + 1 }}. {{ item.title }}</span>
+              @if (item.durationMinutes) {
+                <small>{{ formatDuration(item.durationMinutes) }}</small>
+              }
+              <app-student-icon name="play" />
+            </button>
+          } @empty {
+            <p class="lock-reason">Este m&#243;dulo a&#250;n no tiene lecciones.</p>
+          }
+        </details>
+      } @empty {
+        <p class="empty-message">El temario aparecer&#225; cuando el docente agregue contenido.</p>
+      }
+    </section>
+  </aside>
+
+  <nav class="lesson-navigation" aria-label="Navegar entre lecciones">
+    <button
+      class="previous"
+      [disabled]="
+        !previous() || locked(previous()!.moduleId) || loading() || saving() || questionSaving()
+      "
+      (click)="select(previous()!.id)"
+    >
+      <span class="navigation-arrow" aria-hidden="true">&#8592;</span
+      ><span
+        ><small>Lecci&#243;n anterior</small
+        ><strong>{{ previous()?.title || 'Inicio del curso' }}</strong></span
+      >
+    </button>
+    <button
+      class="next"
+      [disabled]="!next() || locked(next()!.moduleId) || loading() || saving() || questionSaving()"
+      (click)="select(next()!.id)"
+    >
+      <span
+        ><small>Siguiente lecci&#243;n</small
+        ><strong>{{ next()?.title || 'Fin del contenido' }}</strong></span
+      ><span class="navigation-arrow" aria-hidden="true">&#8594;</span>
+    </button>
+  </nav>
+</main>

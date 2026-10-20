@@ -79,11 +79,12 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      version: user.sessionVersion,
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
 
-    const { passwordHash: _passwordHash, ...safeUser } = user;
+    const safeUser = await this.usersService.findById(user.id);
 
     return {
       accessToken,

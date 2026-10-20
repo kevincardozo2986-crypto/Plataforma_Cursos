@@ -30,6 +30,9 @@ import {
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export class CreateCourseDto {
+  @IsOptional()
+  @IsBoolean()
+  programmingEnabled?: boolean;
   @Trim()
   @IsString()
   @MinLength(3, { message: 'El título debe tener mínimo 3 caracteres' })
@@ -67,6 +70,9 @@ export class CreateCourseDto {
  * En los campos que aceptan `null`, null borra el valor.
  */
 export class UpdateCourseDto {
+  @IsOptional()
+  @IsBoolean()
+  programmingEnabled?: boolean;
   @IsOptional()
   @Trim()
   @IsString()

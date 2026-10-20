@@ -1,3 +1,4 @@
+import { ActivityNotificationsModule } from '../notifications/activity-notifications.module.js';
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module.js';
@@ -8,7 +9,12 @@ import { ProfileRepository } from './profile.repository.js';
 import { ProfileService } from './profile.service.js';
 
 @Module({
-  imports: [AuthModule, UsersModule, DashboardModule],
+  imports: [
+    ActivityNotificationsModule,
+    AuthModule,
+    UsersModule,
+    DashboardModule,
+  ],
   controllers: [ProfileController],
   providers: [ProfileService, ProfileRepository],
 })

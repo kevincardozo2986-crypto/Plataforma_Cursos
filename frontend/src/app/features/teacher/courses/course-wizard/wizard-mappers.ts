@@ -23,6 +23,7 @@ export interface BasicsValue {
   maxStudents: number | null;
   publicContent: boolean;
   qaEnabled: boolean;
+  programmingEnabled?: boolean;
   imageUrl: string;
   introVideoUrl: string;
 }
@@ -62,6 +63,9 @@ export function toBasicsUpdate(value: BasicsValue): CourseUpdate {
     maxStudents: value.maxStudents ? Number(value.maxStudents) : null,
     publicContent: value.publicContent,
     qaEnabled: value.qaEnabled,
+    ...(value.programmingEnabled !== undefined
+      ? { programmingEnabled: value.programmingEnabled }
+      : {}),
     imageUrl: value.imageUrl.trim() || null,
     introVideoUrl: value.introVideoUrl.trim() || null,
   };

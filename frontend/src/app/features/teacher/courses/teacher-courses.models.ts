@@ -50,6 +50,7 @@ export interface TeacherCourse {
   maxStudents: number | null;
   publicContent: boolean;
   qaEnabled: boolean;
+  programmingEnabled?: boolean;
 
   // Resumen del curso
   whatYouWillLearn: string | null;
@@ -102,6 +103,7 @@ export interface CourseUpdate {
   maxStudents?: number | null;
   publicContent?: boolean;
   qaEnabled?: boolean;
+  programmingEnabled?: boolean;
   whatYouWillLearn?: string | null;
   audience?: string | null;
   durationMinutes?: number | null;

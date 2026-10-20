@@ -1,4 +1,5 @@
 export interface Course {
+  programmingEnabled?: boolean;
   id: string;
   title?: string;
   name?: string;
