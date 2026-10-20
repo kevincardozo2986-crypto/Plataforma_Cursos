@@ -7,6 +7,13 @@ import { EnrollmentStatus } from '../../generated/prisma/enums.js';
 export class ProgressRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  studyDates(userId: number) {
+    return this.prisma.lessonProgress.findMany({
+      where: { enrollment: { userId } },
+      select: { completedAt: true },
+    });
+  }
+
   findEnrollment(userId: number, courseId: number) {
     return this.prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
@@ -45,7 +52,10 @@ export class ProgressRepository {
   }
 
   /** De esos cursos, ids de los que el usuario ya completó. */
-  async completedCourseIds(userId: number, courseIds: number[]): Promise<number[]> {
+  async completedCourseIds(
+    userId: number,
+    courseIds: number[],
+  ): Promise<number[]> {
     const completed = await this.prisma.enrollment.findMany({
       where: {
         userId,

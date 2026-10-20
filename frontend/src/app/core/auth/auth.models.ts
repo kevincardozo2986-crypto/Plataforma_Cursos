@@ -10,6 +10,7 @@ export interface LoginSubmission extends LoginCredentials {
 export type UserRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
 
 export interface AuthUser {
+  avatarUrl?: string | null;
   firstName: string;
   lastName?: string;
   email: string;

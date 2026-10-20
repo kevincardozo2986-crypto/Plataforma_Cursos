@@ -1,7 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthService } from '../../../../core/auth/auth.service';
 import { Course as ApiCourse } from '../../../../core/courses/courses.models';
 import { CourseCard } from '../course-card/course-card';
 import { toCardCourse } from './course-mapper';
@@ -15,7 +14,6 @@ import { toCardCourse } from './course-mapper';
 })
 export class CoursesSection {
   private readonly router = inject(Router);
-  private readonly auth = inject(AuthService);
 
   readonly courses = input.required<ApiCourse[]>();
   readonly loading = input(false);
@@ -43,13 +41,7 @@ export class CoursesSection {
     this.category.set(category);
   }
 
-  /** Sin sesión, invita a entrar; con sesión aún no hay página de detalle. */
-  view(): void {
-    if (!this.auth.user()) {
-      void this.router.navigate(['/login']);
-      return;
-    }
-
-    this.notice.set('El detalle de cada curso estará disponible muy pronto.');
+  view(id: string): void {
+    void this.router.navigate(['/courses', id]);
   }
 }

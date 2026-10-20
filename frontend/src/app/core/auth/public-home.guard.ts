@@ -5,7 +5,5 @@ import { homeFor } from './role-home';
 
 export const publicHomeGuard: CanActivateFn = () => {
   const user = inject(AuthService).user();
-  return user?.role === 'TEACHER' || user?.role === 'ADMIN'
-    ? inject(Router).createUrlTree(homeFor(user.role))
-    : true;
+  return user?.role ? inject(Router).createUrlTree(homeFor(user.role)) : true;
 };

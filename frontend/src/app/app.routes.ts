@@ -5,7 +5,7 @@ import { publicHomeGuard } from './core/auth/public-home.guard';
 
 export const routes: Routes = [
   {
-    // Todas las páginas comparten el mismo encabezado (MainLayout).
+    // Las páginas públicas y de gestión comparten MainLayout.
     path: '',
     loadComponent: () =>
       import('./shared/layout/main-layout/main-layout').then((m) => m.MainLayout),
@@ -75,6 +75,14 @@ export const routes: Routes = [
         loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },
     ],
+  },
+
+  {
+    path: 'student/dashboard',
+    title: 'Mi aprendizaje',
+    canActivate: [roleGuard('STUDENT')],
+    loadComponent: () =>
+      import('./features/student/dashboard/student-dashboard').then((m) => m.StudentDashboard),
   },
 
   {

@@ -45,7 +45,7 @@
     } @else {
       <div class="grid">
         @for (card of visible(); track card.id) {
-          <app-course-card [course]="card" (selected)="view()" />
+          <app-course-card [course]="card" (selected)="view($event)" />
         }
       </div>
     }

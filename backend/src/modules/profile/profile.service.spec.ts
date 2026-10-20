@@ -22,6 +22,7 @@ function build() {
     countPublishedCourses: vi.fn().mockResolvedValue(3),
   };
   const users = {
+    findByEmail: vi.fn().mockResolvedValue(null),
     findById: vi.fn().mockResolvedValue(account),
     updateBasics: vi.fn().mockResolvedValue({}),
     findWithPasswordHash: vi.fn(),
@@ -212,5 +213,36 @@ describe('ProfileService', () => {
 
       await expect(service.publicTeacher(5)).rejects.toBeInstanceOf(NotFoundException);
     });
+  });
+});
+
+describe('Student account updates', () => {
+  it('rejects an email change without the current password before writing', async () => {
+    const { service, users } = build();
+    users.findWithPasswordHash.mockResolvedValue({ passwordHash: await bcrypt.hash('current-pass', 4) });
+    await expect(service.update({ ...student, email: 'old@example.com' }, { email: 'new@example.com' })).rejects.toThrow(BadRequestException);
+    expect(users.updateBasics).not.toHaveBeenCalled();
+  });
+  it('rejects an email already used by another account', async () => {
+    const { service, users } = build();
+    users.findWithPasswordHash.mockResolvedValue({ passwordHash: await bcrypt.hash('current-pass', 4) });
+    users.findByEmail.mockResolvedValue({ id: 99 });
+    await expect(service.update({ ...student, email: 'old@example.com' }, { email: 'used@example.com', currentPassword: 'current-pass' })).rejects.toThrow('El correo ya esta registrado');
+    expect(users.updateBasics).not.toHaveBeenCalled();
+  });
+  it('normalizes email and never stores the confirmation password in the profile', async () => {
+    const { service, users, repository } = build();
+    users.findWithPasswordHash.mockResolvedValue({ passwordHash: await bcrypt.hash('current-pass', 4) });
+    await service.update({ ...student, email: 'old@example.com' }, { email: ' NEW@EXAMPLE.COM ', currentPassword: 'current-pass' });
+    expect(users.updateBasics).toHaveBeenCalledWith(5, expect.objectContaining({ email: 'new@example.com' }));
+    expect(repository.upsertProfile).not.toHaveBeenCalled();
+  });
+  it('allows a student to save and remove a profile photo', async () => {
+    const { service, repository } = build();
+    const avatarUrl = '/api/uploads/' + 'a'.repeat(32) + '.webp';
+    await service.update(student, { avatarUrl });
+    expect(repository.upsertProfile).toHaveBeenCalledWith(5, { avatarUrl });
+    await service.update(student, { avatarUrl: null });
+    expect(repository.upsertProfile).toHaveBeenLastCalledWith(5, { avatarUrl: null });
   });
 });

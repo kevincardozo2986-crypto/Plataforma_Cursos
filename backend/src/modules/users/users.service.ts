@@ -27,12 +27,21 @@ export class UsersService {
     });
   }
   async findById(id: number) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
+      include: { profile: { select: { avatarUrl: true } } },
       where: { id },
       omit: {
         passwordHash: true,
+        passwordResetHash: true,
+        passwordRecoveryChallengeHash: true,
+        passwordResetExpiresAt: true,
+        passwordResetRequestedAt: true,
+        passwordResetAttempts: true,
       },
     });
+    if (!user) return null;
+    const { profile, ...account } = user;
+    return { ...account, avatarUrl: profile?.avatarUrl ?? null };
   }
 
   /** Para el cambio de contraseña: el usuario con su hash. Nunca se devuelve al cliente. */
@@ -43,12 +52,24 @@ export class UsersService {
   /** Edición de los datos básicos desde el perfil. `phone: null` borra el teléfono. */
   async updateBasics(
     id: number,
-    data: { firstName?: string; lastName?: string; phone?: string | null },
+    data: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string | null;
+      email?: string;
+    },
   ) {
     return this.prisma.user.update({
       where: { id },
       data,
-      omit: { passwordHash: true },
+      omit: {
+        passwordHash: true,
+        passwordResetHash: true,
+        passwordRecoveryChallengeHash: true,
+        passwordResetExpiresAt: true,
+        passwordResetRequestedAt: true,
+        passwordResetAttempts: true,
+      },
     });
   }
 
@@ -64,6 +85,11 @@ export class UsersService {
       },
       omit: {
         passwordHash: true,
+        passwordResetHash: true,
+        passwordRecoveryChallengeHash: true,
+        passwordResetExpiresAt: true,
+        passwordResetRequestedAt: true,
+        passwordResetAttempts: true,
       },
     });
   }

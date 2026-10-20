@@ -433,4 +433,3 @@ h2 {
 :host-context(.a11y-dark) .learning-copy a:hover { color: #fff; background: linear-gradient(135deg, #2279ff, #0646d4); border-color: #1d62ec; }
 @media (max-width: 600px) { .learning-copy a { padding: 14px 20px; font-size: .68rem; } }
 @media (prefers-reduced-motion: reduce) { .learning-copy a { transition: none; } .learning-copy a:hover, .learning-copy a:active { transform: none; } }
-

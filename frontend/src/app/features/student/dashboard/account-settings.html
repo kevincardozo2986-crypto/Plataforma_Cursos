@@ -1,0 +1,189 @@
+@if (passwordChanged()) {
+  <p class="success" role="status">
+    Tu contrase&#241;a se actualiz&#243;. Cerramos las sesiones anteriores para proteger tu cuenta.
+  </p>
+  <a class="primary login-again" routerLink="/login">Volver a iniciar sesi&#243;n</a>
+} @else if (loading()) {
+  <p role="status">Cargando tu cuenta...</p>
+} @else {
+  <section class="photo-section" aria-label="Foto de perfil">
+    <span class="profile-photo">
+      @if (auth.user()?.avatarUrl; as photo) {
+        <img [src]="photo" alt="Tu foto de perfil" />
+      } @else {
+        {{ auth.user()?.firstName?.charAt(0) }}{{ auth.user()?.lastName?.charAt(0) }}
+      }
+    </span>
+    <div class="photo-details">
+      <strong>Tu foto de perfil</strong>
+      <p>JPG, PNG, WebP o GIF. Hasta 5 MB.</p>
+      <div class="photo-actions">
+        <label class="upload-button" [class.disabled]="uploading() || saving()">
+          {{ uploading() ? 'Actualizando...' : 'Cambiar foto' }}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            [disabled]="uploading() || saving()"
+            (change)="upload($event)"
+          />
+        </label>
+        @if (auth.user()?.avatarUrl) {
+          <button
+            class="text-button"
+            type="button"
+            [disabled]="uploading() || saving()"
+            (click)="removePhoto()"
+          >
+            Quitar foto
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p class="success" role="status">{{ message() }}</p>
+  }
+  <form #details="ngForm" (ngSubmit)="save()">
+    <h3>Informaci&#243;n personal</h3>
+    <p class="description">Mant&#233;n tus datos al d&#237;a.</p>
+    <div class="name-fields">
+      <label
+        >Nombre<input
+          name="firstName"
+          [(ngModel)]="firstName"
+          required
+          minlength="2"
+          maxlength="50"
+          autocomplete="given-name"
+      /></label>
+      <label
+        >Apellido<input
+          name="lastName"
+          [(ngModel)]="lastName"
+          required
+          minlength="2"
+          maxlength="50"
+          autocomplete="family-name"
+      /></label>
+    </div>
+    <label
+      >Correo electr&#243;nico<input
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        required
+        email
+        maxlength="254"
+        autocomplete="email"
+    /></label>
+    @if (email.trim().toLowerCase() !== originalEmail) {
+      <label
+        >Confirma tu contrase&#241;a actual<input
+          type="password"
+          name="emailPassword"
+          [(ngModel)]="emailPassword"
+          required
+          maxlength="72"
+          autocomplete="current-password"
+      /></label>
+      <p class="description">La necesitas para cambiar tu correo de acceso.</p>
+    }
+    <label
+      >Tel&#233;fono <small>(opcional)</small
+      ><input type="tel" name="phone" [(ngModel)]="phone" maxlength="30" autocomplete="tel"
+    /></label>
+    <button class="primary" type="submit" [disabled]="details.invalid || saving() || uploading()">
+      {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+    </button>
+  </form>
+  <section class="security-section">
+    <h3>Cambiar contrase&#241;a</h3>
+    <p class="description">
+      Verifica que eres t&#250; con un c&#243;digo enviado al correo registrado en tu cuenta.
+    </p>
+    <form #identity="ngForm" (ngSubmit)="requestCode()">
+      <label
+        >Correo electr&#243;nico o c&#233;dula
+        <input
+          name="identifier"
+          [(ngModel)]="identifier"
+          required
+          maxlength="254"
+          autocomplete="username"
+          [readonly]="codeSent()"
+        />
+      </label>
+      <button
+        type="submit"
+        class="secondary"
+        [disabled]="identity.invalid || requestingCode() || passwordSaving()"
+      >
+        {{
+          requestingCode()
+            ? 'Enviando...'
+            : codeSent()
+              ? 'Reenviar código'
+              : 'Enviar código a mi correo'
+        }}
+      </button>
+    </form>
+    @if (codeSent()) {
+      <p class="success" role="status">
+        Enviamos un c&#243;digo a {{ destination() }}. Revisa tambi&#233;n la carpeta de spam.
+      </p>
+      <form #security="ngForm" (ngSubmit)="changePassword()">
+        <label
+          >C&#243;digo de verificaci&#243;n
+          <input
+            name="code"
+            [(ngModel)]="code"
+            required
+            pattern="[0-9]{6}"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            class="verification-code"
+          />
+        </label>
+        <p class="description">
+          Vence en 10 minutos. Puedes solicitar otro despu&#233;s de un minuto.
+        </p>
+        <label
+          >Nueva contrase&#241;a<input
+            type="password"
+            name="newPassword"
+            [(ngModel)]="newPassword"
+            required
+            minlength="8"
+            maxlength="72"
+            autocomplete="new-password"
+        /></label>
+        <label
+          >Repetir nueva contrase&#241;a<input
+            type="password"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            required
+            minlength="8"
+            maxlength="72"
+            autocomplete="new-password"
+        /></label>
+        <p class="description">Usa entre 8 y 72 caracteres.</p>
+        <button
+          type="submit"
+          class="primary"
+          [disabled]="security.invalid || passwordSaving() || requestingCode()"
+        >
+          {{ passwordSaving() ? 'Actualizando...' : 'Verificar y cambiar contraseña' }}
+        </button>
+      </form>
+    }
+    @if (passwordError()) {
+      <p class="error" role="alert">{{ passwordError() }}</p>
+    }
+  </section>
+}

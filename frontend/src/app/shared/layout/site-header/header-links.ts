@@ -29,7 +29,11 @@ const common: HeaderLink[] = [
 export function headerLinksFor(role: UserRole | null): HeaderLink[] {
   switch (role) {
     case 'STUDENT':
-      return [...common, { label: 'Mis cursos', soon: true }];
+      return [
+        { label: 'Inicio', route: '/student/dashboard' },
+        { label: 'Mis cursos', route: '/student/dashboard', fragment: 'my-courses' },
+        { label: 'Explorar cursos', route: '/courses' },
+      ];
     case 'TEACHER':
       return [
         { label: 'Panel', route: '/teacher/dashboard', prefix: true },

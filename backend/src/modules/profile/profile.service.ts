@@ -1,8 +1,11 @@
+import { ActivityNotificationsService } from '../notifications/activity-notifications.service.js';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
@@ -32,6 +35,7 @@ export class ProfileService {
     private readonly repository: ProfileRepository,
     private readonly users: UsersService,
     private readonly dashboard: DashboardService,
+    @Optional() private readonly activity?: ActivityNotificationsService,
   ) {}
 
   /** Mi cuenta, mi perfil, mis preferencias y (si soy docente) mis estadísticas. */
@@ -83,7 +87,24 @@ export class ProfileService {
 
   /** Guarda lo que llegue; lo que no se envía no se toca. Devuelve el perfil ya actualizado. */
   async update(user: AuthenticatedUser, dto: UpdateProfileDto) {
-    const { firstName, lastName, phone, ...profile } = dto;
+    const { firstName, lastName, phone, email, currentPassword, ...profile } =
+      dto;
+    const normalizedEmail = email?.trim().toLowerCase();
+    if (normalizedEmail !== undefined && normalizedEmail !== user.email) {
+      const account = await this.users.findWithPasswordHash(user.id);
+      if (
+        !currentPassword ||
+        !account ||
+        !(await bcrypt.compare(currentPassword, account.passwordHash))
+      ) {
+        throw new BadRequestException(
+          'Confirma tu contrasena actual para cambiar el correo',
+        );
+      }
+      const existing = await this.users.findByEmail(normalizedEmail);
+      if (existing && existing.id !== user.id)
+        throw new ConflictException('El correo ya esta registrado');
+    }
 
     if (
       profile.signatureUrl &&
@@ -96,9 +117,21 @@ export class ProfileService {
     if (
       firstName !== undefined ||
       lastName !== undefined ||
-      phone !== undefined
+      phone !== undefined ||
+      normalizedEmail !== undefined
     ) {
-      await this.users.updateBasics(user.id, { firstName, lastName, phone });
+      try {
+        await this.users.updateBasics(user.id, {
+          firstName,
+          lastName,
+          phone,
+          ...(normalizedEmail !== undefined ? { email: normalizedEmail } : {}),
+        });
+      } catch (error) {
+        if ((error as { code?: string }).code === 'P2002')
+          throw new ConflictException('El correo ya esta registrado');
+        throw error;
+      }
     }
 
     const data = Object.fromEntries(
@@ -133,6 +166,7 @@ export class ProfileService {
       await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS),
     );
 
+    await this.activity?.passwordChanged(user.id);
     return { changed: true };
   }
 

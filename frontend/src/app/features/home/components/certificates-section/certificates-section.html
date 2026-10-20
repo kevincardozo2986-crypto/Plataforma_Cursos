@@ -1,0 +1,91 @@
+<section class="certificates" aria-labelledby="home-certificates-title">
+  <div class="intro" [class.is-visible]="introVisible()">
+    <span class="eyebrow">CERTIFICADOS</span>
+    <h2 id="home-certificates-title">Tu aprendizaje<br /><span>merece un respaldo.</span></h2>
+    <p class="description">
+      Convierte lo que aprendes en un logro que puedes compartir. Al completar un curso que incluye
+      certificaci&#243;n, obt&#233;n un certificado a tu nombre.
+    </p>
+    <a class="verify-link" routerLink="/verificar">Verificar un certificado</a>
+  </div>
+
+  <div class="certificate-gallery" aria-hidden="true">
+    @for (row of rows; track $index) {
+      <div class="marquee-row">
+        <div class="marquee-track">
+          @for (copy of copies; track copy) {
+            <div class="marquee-group">
+              @for (model of row; track $index) {
+                <div
+                  class="certificate"
+                  [class.teal]="model.variant === 'teal'"
+                  [class.classic]="model.variant === 'classic'"
+                >
+                  <div class="document-inner">
+                    <div class="document-header">
+                      <img
+                        src="/images/campus-virtual-logo.png"
+                        alt=""
+                        width="2560"
+                        height="743"
+                        loading="lazy"
+                        decoding="async"
+                      /><span>EDUCACI&#211;N<br />CONTINUA</span>
+                    </div>
+                    <div class="document-body">
+                      <span class="document-kicker">{{ model.field }}</span>
+                      <div class="document-title">Certificado<span>de finalizaci&#243;n</span></div>
+                      <p>Se reconoce el aprendizaje de</p>
+                      <div class="student-name">Nombre del estudiante</div>
+                      <div class="document-rule"></div>
+                      <p>por completar el curso de</p>
+                      <strong class="course-name">{{ model.course }}</strong>
+                    </div>
+                    <div class="document-footer">
+                      <div class="signature">
+                        <span></span><small>Formaci&#243;n y aprendizaje</small>
+                      </div>
+                      <svg class="seal" viewBox="0 0 48 56" fill="none" aria-hidden="true">
+                        <circle cx="24" cy="22" r="17" />
+                        <circle cx="24" cy="22" r="12" />
+                        <path d="m16 37-3 15 11-5 11 5-3-15M18 22l4 4 9-10" />
+                      </svg>
+                      <div class="sample-code">C&#211;DIGO<br /><span>SOLO MUESTRA</span></div>
+                    </div>
+                    <span class="sample-label">MODELO ILUSTRATIVO &#183; SIN VALIDEZ</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="gallery-caption">
+    <p>
+      Modelos ilustrativos. Cada certificado emitido identifica al estudiante, el curso y su
+      c&#243;digo de verificaci&#243;n.
+    </p>
+    <button
+      class="motion-toggle"
+      type="button"
+      (click)="toggleMotion()"
+      [attr.aria-pressed]="motionPaused()"
+      [attr.aria-label]="
+        motionPaused()
+          ? 'Reanudar el movimiento de los certificados'
+          : 'Pausar el movimiento de los certificados'
+      "
+    >
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        @if (motionPaused()) {
+          <path d="m7 4 9 6-9 6V4Z" />
+        } @else {
+          <path d="M7 4v12M13 4v12" />
+        }</svg
+      >{{ motionPaused() ? 'Reanudar movimiento' : 'Pausar movimiento' }}
+    </button>
+  </div>
+</section>

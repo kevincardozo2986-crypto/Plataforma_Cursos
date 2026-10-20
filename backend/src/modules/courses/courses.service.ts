@@ -1,8 +1,10 @@
+import { ActivityNotificationsService } from '../notifications/activity-notifications.service.js';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
@@ -42,6 +44,7 @@ export class CoursesService {
     private readonly progress: ProgressService,
     private readonly reviews: ReviewsService,
     private readonly certificates: CertificatesService,
+    @Optional() private readonly activity?: ActivityNotificationsService,
   ) {}
 
   async listPublished(query: ListCoursesQueryDto) {
@@ -59,10 +62,15 @@ export class CoursesService {
     );
 
     // Cada curso del catálogo trae su calificación promedio (null si aún no tiene reseñas).
-    const ratings = await this.reviews.ratingsOf(data.map((course) => course.id));
+    const ratings = await this.reviews.ratingsOf(
+      data.map((course) => course.id),
+    );
 
     return {
-      data: data.map((course) => ({ ...course, rating: ratings.get(course.id) })),
+      data: data.map((course) => ({
+        ...course,
+        rating: ratings.get(course.id),
+      })),
       total,
       page,
       limit,
@@ -120,6 +128,7 @@ export class CoursesService {
     await this.assertCategoryExists(dto.categoryId);
 
     return this.repository.create({
+      programmingEnabled: dto.programmingEnabled,
       title: dto.title,
       description: dto.description,
       imageUrl: dto.imageUrl,
@@ -166,7 +175,10 @@ export class CoursesService {
     }
 
     await this.assertSlugFree(dto.slug, id);
-    const prerequisiteIds = await this.checkPrerequisites(dto.prerequisiteIds, id);
+    const prerequisiteIds = await this.checkPrerequisites(
+      dto.prerequisiteIds,
+      id,
+    );
 
     // Solo se puede asignar una plantilla propia.
     if (dto.certificateTemplateId) {
@@ -192,6 +204,7 @@ export class CoursesService {
         visibility: dto.visibility ?? undefined,
         publicContent: dto.publicContent ?? undefined,
         qaEnabled: dto.qaEnabled ?? undefined,
+        programmingEnabled: dto.programmingEnabled ?? undefined,
         dripType: dto.dripType ?? undefined,
         // Estos sí: null los borra.
         certificateTemplateId: dto.certificateTemplateId,
@@ -208,6 +221,14 @@ export class CoursesService {
       },
       prerequisiteIds,
     );
+
+    if (
+      current.visibility !== CourseVisibility.PUBLIC &&
+      updated.visibility === CourseVisibility.PUBLIC &&
+      updated.status === CourseStatus.PUBLISHED
+    ) {
+      await this.activity?.coursePublished(id);
+    }
 
     // Quienes ya habían completado el curso antes de que tuviera plantilla reciben su certificado.
     const retroactive = dto.certificateTemplateId
@@ -228,7 +249,10 @@ export class CoursesService {
       await this.assertReadyToPublish(id);
     }
 
-    return this.repository.updateStatus(id, status);
+    const updated = await this.repository.updateStatus(id, status);
+    if (status === CourseStatus.PUBLISHED)
+      await this.activity?.coursePublished(id);
+    return updated;
   }
 
   /** Borrar un curso es solo del autor (o un admin); un instructor no puede. */
@@ -262,7 +286,9 @@ export class CoursesService {
     }
 
     if (missing.length > 0) {
-      throw new BadRequestException(`Para publicar falta: ${missing.join(', ')}`);
+      throw new BadRequestException(
+        `Para publicar falta: ${missing.join(', ')}`,
+      );
     }
   }
 
@@ -337,7 +363,10 @@ export class CoursesService {
       );
     }
 
-    if (unique.length > 0 && (await this.repository.countByIds(unique)) !== unique.length) {
+    if (
+      unique.length > 0 &&
+      (await this.repository.countByIds(unique)) !== unique.length
+    ) {
       throw new BadRequestException('Alguno de los prerrequisitos no existe');
     }
 

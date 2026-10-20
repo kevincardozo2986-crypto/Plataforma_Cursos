@@ -1,32 +1,241 @@
-﻿<main class="course-detail">
-  <a class="back" routerLink="/courses">← Volver al catálogo</a>
-  @if (error()) {
-    <p role="alert">No pudimos cargar este curso. Puede que ya no esté disponible.</p>
-  } @else if (course(); as item) {
-    <span class="category">{{ item.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
-    <h1>{{ item.title || item.name }}</h1>
-    @if (item.introVideoUrl; as video) {
-      <section class="intro-video" aria-labelledby="intro-title">
-        <h2 id="intro-title">Conoce el curso</h2>
-        @if (isPlayableVideoUrl(video)) {
-          <video controls playsinline preload="metadata" [src]="video" [poster]="item.imageUrl || item.image || item.thumbnail || ''" [attr.aria-label]="'Video introductorio de ' + (item.title || item.name)" (error)="videoError.set(true)">
-            Tu navegador no puede reproducir este video.
-          </video>
-          @if (videoError()) { <p role="status">No pudimos reproducir la introducción. Intenta de nuevo más tarde.</p> }
-        } @else {
-          <a class="login" [href]="video" target="_blank" rel="noopener noreferrer">Ver video introductorio ↗</a>
+@if (auth.user()?.role === 'STUDENT' && course() && progress()) {
+  <app-course-player [course]="course()!" [initialProgress]="progress()!" />
+} @else {
+  <main class="course-detail">
+    <div class="course-breadcrumb">
+      <a
+        class="back"
+        [routerLink]="auth.user()?.role === 'STUDENT' ? '/student/dashboard' : '/courses'"
+        >&#8592; {{ auth.user()?.role === 'STUDENT' ? 'Mi aprendizaje' : 'Explorar cursos' }}</a
+      >
+      <span aria-hidden="true">/</span><span>Detalle del curso</span>
+    </div>
+    @if (error()) {
+      <p role="alert">No pudimos cargar este curso. Puede que ya no esté disponible.</p>
+    } @else if (course(); as item) {
+      <header class="course-heading">
+        <span class="category">{{ item.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
+        <h1>{{ item.title || item.name }}</h1>
+        <div class="course-meta">
+          <span>{{ levelLabels[item.level || ''] || 'Todos los niveles' }}</span>
+          <span>{{ item.modules?.length ?? 0 }} m&#243;dulos</span>
+          <span>{{ lessonCount() }} lecciones</span>
+          @if (item.durationMinutes) {
+            <span>{{ formatDuration(item.durationMinutes) }}</span>
+          }
+        </div>
+        @if (item.teacher) {
+          <p class="heading-teacher">
+            Con <strong>{{ item.teacher.firstName }} {{ item.teacher.lastName }}</strong>
+          </p>
         }
-      </section>
-    } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
-      <img [src]="image" [alt]="item.title || item.name || 'Imagen del curso'" />
-    }
-    @if (item.description) {
-      <div class="description rich-content" [innerHTML]="item.description | richHtml"></div>
+      </header>
+      <nav class="course-navigation" aria-label="Secciones del curso">
+        <a [routerLink]="[]" fragment="course-content">Contenido del curso</a>
+        <a [routerLink]="[]" fragment="course-about">Acerca del curso</a>
+        @if (item.teacher) {
+          <a [routerLink]="[]" fragment="course-teachers">Equipo docente</a>
+        }
+      </nav>
+      <div class="detail-layout">
+        <div class="course-information">
+          @if (item.introVideoUrl; as video) {
+            <section class="intro-video" aria-labelledby="intro-title">
+              <h2 id="intro-title">Conoce el curso</h2>
+              @if (isPlayableVideoUrl(video)) {
+                <video
+                  controls
+                  playsinline
+                  preload="metadata"
+                  [src]="video"
+                  [poster]="item.imageUrl || item.image || item.thumbnail || ''"
+                  [attr.aria-label]="'Video introductorio de ' + (item.title || item.name)"
+                  (error)="videoError.set(true)"
+                >
+                  Tu navegador no puede reproducir este video.
+                </video>
+                @if (videoError()) {
+                  <p role="status">
+                    No pudimos reproducir la introducción. Intenta de nuevo más tarde.
+                  </p>
+                }
+              } @else {
+                <a class="login" [href]="video" target="_blank" rel="noopener noreferrer"
+                  >Ver video introductorio ↗</a
+                >
+              }
+            </section>
+          } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
+            <img [src]="image" [alt]="item.title || item.name || 'Imagen del curso'" />
+          }
+          <section class="information-section curriculum-section" id="course-content">
+            <div class="section-title">
+              <h2>Contenido del curso</h2>
+              <span>{{ lessonCount() }} lecciones</span>
+            </div>
+            @for (module of item.modules ?? []; track module.id; let index = $index) {
+              <details class="module" [open]="index === 0">
+                <summary>
+                  <span class="module-number">{{ index + 1 < 10 ? '0' : '' }}{{ index + 1 }}</span>
+                  <span class="module-title"
+                    >{{ module.title }}<small>{{ module.lessons.length }} lecciones</small></span
+                  >
+                  <span class="module-chevron" aria-hidden="true">&#8964;</span>
+                </summary>
+                @if (module.description) {
+                  <div class="rich-text" [innerHTML]="module.description | richHtml"></div>
+                }
+                <ol>
+                  @for (lesson of module.lessons; track lesson.id) {
+                    <li>
+                      {{ lesson.title }}
+                      @if (lesson.durationMinutes) {
+                        <small>{{ formatDuration(lesson.durationMinutes) }}</small>
+                      }
+                    </li>
+                  }
+                </ol>
+                @if (!module.lessons.length) {
+                  <p>Este módulo aún no tiene lecciones.</p>
+                }
+              </details>
+            } @empty {
+              <p>El docente aún no ha agregado el temario.</p>
+            }
+          </section>
+          <section class="information-section" id="course-about">
+            <h2>Acerca de este curso</h2>
+            <div
+              class="rich-text"
+              [innerHTML]="item.description || 'El docente aún no ha agregado una descripción.'"
+            ></div>
+          </section>
+          @if (item.whatYouWillLearn) {
+            <section class="information-section">
+              <h2>Qué aprenderás</h2>
+              <div class="rich-text" [innerHTML]="item.whatYouWillLearn | richHtml"></div>
+            </section>
+          }
+          @if (item.audience) {
+            <section class="information-section">
+              <h2>A quién está dirigido</h2>
+              <div class="rich-text" [innerHTML]="item.audience | richHtml"></div>
+            </section>
+          }
+          @if (item.requirements) {
+            <section class="information-section">
+              <h2>Requisitos</h2>
+              <div class="rich-text" [innerHTML]="item.requirements | richHtml"></div>
+            </section>
+          }
+          @if (item.materials) {
+            <section class="information-section">
+              <h2>Materiales incluidos</h2>
+              <div class="rich-text" [innerHTML]="item.materials | richHtml"></div>
+            </section>
+          }
+          @if (item.teacher) {
+            <section class="information-section" id="course-teachers">
+              <h2>Equipo docente</h2>
+              <p>{{ item.teacher.firstName }} {{ item.teacher.lastName }}</p>
+              @for (instructor of item.instructors ?? []; track instructor.id) {
+                <p>{{ instructor.firstName }} {{ instructor.lastName }}</p>
+              }
+            </section>
+          }
+        </div>
+        <aside class="enrollment-card" aria-labelledby="enroll-title">
+          <span class="card-eyebrow">{{
+            progress() ? 'MI APRENDIZAJE' : 'DA EL SIGUIENTE PASO'
+          }}</span>
+          <h2 id="enroll-title">
+            {{ progress() ? 'Tu progreso en este curso' : 'Aprende a tu ritmo' }}
+          </h2>
+          @if (!progress()) {
+            <strong class="course-price">{{ price(item.price) }}</strong>
+          }
+          <dl>
+            <div>
+              <dt>Nivel</dt>
+              <dd>{{ levelLabels[item.level || ''] || 'No especificado' }}</dd>
+            </div>
+            <div>
+              <dt>Módulos</dt>
+              <dd>{{ item.modules?.length ?? 0 }}</dd>
+            </div>
+            @if (item.durationMinutes) {
+              <div>
+                <dt>Duración estimada</dt>
+                <dd>{{ formatDuration(item.durationMinutes) }}</dd>
+              </div>
+            }
+            @if (item.maxStudents) {
+              <div>
+                <dt>Capacidad del curso</dt>
+                <dd>{{ item.maxStudents }} estudiantes</dd>
+              </div>
+            }
+          </dl>
+          @if (!auth.user()) {
+            <p>Inicia sesión como estudiante para inscribirte.</p>
+            <a class="login" routerLink="/login">Iniciar sesión →</a>
+          } @else if (auth.user()?.role === 'STUDENT') {
+            @if (checking()) {
+              <p role="status">Comprobando tu inscripción…</p>
+            } @else if (progress(); as current) {
+              <p class="enrolled">
+                {{
+                  current.status === 'COMPLETED'
+                    ? 'Ya completaste este curso'
+                    : 'Ya estás inscrito en este curso'
+                }}
+              </p>
+              <label for="course-progress">Tu progreso: {{ current.percent }}%</label
+              ><progress id="course-progress" [value]="current.percent" max="100"></progress
+              ><a class="login" [routerLink]="[]" fragment="course-content"
+                >Ver contenido del curso &#8594;</a
+              >
+            } @else if (enrollmentKnown()) {
+              <form (ngSubmit)="enroll()">
+                @if (item.visibility === 'PASSWORD') {
+                  <label for="course-password">Contraseña del curso</label
+                  ><input
+                    id="course-password"
+                    name="password"
+                    type="password"
+                    [(ngModel)]="password"
+                    required
+                    maxlength="100"
+                    autocomplete="off"
+                    [disabled]="submitting()"
+                  />
+                }
+                <button
+                  class="login"
+                  type="submit"
+                  [disabled]="submitting() || (item.visibility === 'PASSWORD' && !password)"
+                >
+                  {{ submitting() ? 'Inscribiendo…' : 'Inscribirme en este curso' }}
+                </button>
+              </form>
+            } @else {
+              <button class="login" type="button" (click)="checkEnrollment()">
+                Reintentar comprobación
+              </button>
+            }
+            @if (enrollmentError()) {
+              <p class="enrollment-error" role="alert">{{ enrollmentError() }}</p>
+            }
+            @if (enrollmentNotice()) {
+              <p class="enrolled" role="status">{{ enrollmentNotice() }}</p>
+            }
+          } @else {
+            <p>Las inscripciones están disponibles para cuentas de estudiante.</p>
+          }
+        </aside>
+      </div>
     } @else {
-      <p class="description">Consulta la información disponible del curso al iniciar sesión.</p>
+      <p role="status">Cargando el curso…</p>
     }
-    <a class="login" routerLink="/login">Iniciar sesión →</a>
-  } @else {
-    <p role="status">Cargando el curso…</p>
-  }
-</main>
+  </main>
+}

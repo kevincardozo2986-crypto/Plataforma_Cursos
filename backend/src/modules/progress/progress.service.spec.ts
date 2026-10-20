@@ -166,26 +166,35 @@ describe('ProgressService', () => {
       });
     });
 
-    describe('prerrequisitos', () => {
+    describe('cursos recomendados', () => {
       const prerequisites = [
         { id: 2, title: 'Fundamentos' },
-        { id: 3, title: 'Álgebra' },
+        { id: 3, title: 'Curso sin título' },
       ];
 
-      it('pide completar los que faltan, por nombre', async () => {
-        const { service, repository } = setup({ prerequisites });
-        repository.completedCourseIds.mockResolvedValue([2]);
+      it.each([[[]], [[2]], [[2, 3]]])(
+        'permite inscribirse sin depender de los cursos completados: %j',
+        async (completedIds: number[]) => {
+          const { service, repository } = setup({ prerequisites });
+          repository.completedCourseIds.mockResolvedValue(completedIds);
 
-        await expect(service.enroll(student, 10)).rejects.toThrow('Antes debes completar: Álgebra');
-      });
+          await service.enroll(student, 10);
 
-      it('deja inscribirse cuando están todos completados', async () => {
+          expect(repository.createEnrollment).toHaveBeenCalledWith(5, 10);
+          expect(repository.completedCourseIds).not.toHaveBeenCalled();
+        },
+      );
+
+      it('permite varias inscripciones con otros cursos activos', async () => {
         const { service, repository } = setup({ prerequisites });
-        repository.completedCourseIds.mockResolvedValue([2, 3]);
+        repository.findEnrollment.mockImplementation(async (_userId: number, courseId: number) =>
+          courseId === 2 ? { id: 12, status: EnrollmentStatus.ACTIVE } : null,
+        );
 
         await service.enroll(student, 10);
+        await service.enroll(student, 11);
 
-        expect(repository.createEnrollment).toHaveBeenCalled();
+        expect(repository.createEnrollment.mock.calls).toEqual([[5, 10], [5, 11]]);
       });
     });
 

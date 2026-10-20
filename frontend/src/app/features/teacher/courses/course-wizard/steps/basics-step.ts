@@ -78,6 +78,9 @@ export class BasicsStep {
       validators: [Validators.min(1)],
     }),
     publicContent: new FormControl(this.course.publicContent, { nonNullable: true }),
+    programmingEnabled: new FormControl(this.course.programmingEnabled ?? false, {
+      nonNullable: true,
+    }),
     qaEnabled: new FormControl(this.course.qaEnabled, { nonNullable: true }),
     imageUrl: new FormControl(this.course.imageUrl ?? '', {
       nonNullable: true,

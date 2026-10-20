@@ -121,6 +121,13 @@ export class UploadsController {
     return this.uploads.finishDocument(file, user.id);
   }
 
+  @Post('avatars')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file', { ...uploadOptions('image'), limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  uploadAvatar(@UploadedFile() file?: StoredFile) {
+    return this.uploads.finish(file, 'image');
+  }
+
   @Post('images')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.ADMIN)

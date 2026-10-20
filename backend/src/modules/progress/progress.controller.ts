@@ -42,6 +42,12 @@ export class ProgressController {
     return this.progress.cancel(user, courseId);
   }
 
+  @Get('enrollments/streak')
+  @Roles(Role.STUDENT)
+  streak(@CurrentUser() user: AuthenticatedUser) {
+    return this.progress.studyStreak(user);
+  }
+
   @Get('enrollments/mine')
   @Roles(Role.STUDENT)
   mine(@CurrentUser() user: AuthenticatedUser) {

@@ -27,8 +27,18 @@ describe('headerLinksFor', () => {
   });
 
   it('marca como próximamente las páginas que aún no existen', () => {
-    const pending = headerLinksFor('STUDENT').filter((link) => link.soon);
+    const pending = headerLinksFor('ADMIN').filter((link) => link.soon);
 
-    expect(pending.map((link) => link.label)).toEqual(['Mis cursos']);
+    expect(pending.map((link) => link.label)).toEqual(['Usuarios']);
+  });
+
+  it('lleva al estudiante a su panel y a sus inscripciones', () => {
+    const links = headerLinksFor('STUDENT');
+    expect(links.find((link) => link.label === 'Inicio')?.route).toBe('/student/dashboard');
+    expect(links.find((link) => link.label === 'Mis cursos')).toMatchObject({
+      route: '/student/dashboard',
+      fragment: 'my-courses',
+    });
+    expect(links.every((link) => !link.soon)).toBe(true);
   });
 });

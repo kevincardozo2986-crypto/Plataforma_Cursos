@@ -42,6 +42,7 @@ export interface PublishedFilter {
 
 /** Valores que se pueden escribir en un curso. null borra los campos opcionales. */
 export interface CourseData {
+  programmingEnabled?: boolean;
   title?: string;
   slug?: string;
   description?: string;

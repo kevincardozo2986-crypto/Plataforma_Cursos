@@ -1,0 +1,52 @@
+<footer class="site-footer" aria-label="Pie de página">
+  <div class="footer-inner">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a class="brand-link" [routerLink]="homeRoute()" aria-label="Campus Virtual, ir al inicio"
+          ><img
+            src="/images/campus-virtual-logo-white.png"
+            alt="Campus Virtual Universidad Santo Tomás"
+            width="1285"
+            height="352"
+            loading="lazy"
+            decoding="async"
+        /></a>
+        <div class="account-links">
+          @if (auth.user()) {
+            <a class="account-outline" [routerLink]="homeRoute()">Ir a mi espacio</a>
+            @if (auth.user()?.role === 'STUDENT') {
+              <a class="account-primary" routerLink="/student/dashboard" fragment="my-courses"
+                >Mis cursos</a
+              >
+            } @else {
+              <a class="account-primary" routerLink="/teacher/courses">Mis cursos</a>
+            }
+          } @else {
+            <a class="account-outline" routerLink="/login">Iniciar sesi&#243;n</a>
+            <a class="account-primary" routerLink="/register">Crear una cuenta</a>
+          }
+        </div>
+        <p>
+          Aprende a tu ritmo. <strong>Construye lo que viene.</strong><br />Un espacio para seguir
+          creciendo.
+        </p>
+      </div>
+      <nav aria-label="Explorar Campus Virtual">
+        <a routerLink="/">Inicio</a>
+        <a routerLink="/courses">Nuestros cursos</a>
+        <a routerLink="/verificar">Verificar un certificado</a>
+        <span class="learning-note"><span aria-hidden="true"></span>Educaci&#243;n continua</span>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>
+        <strong>Universidad Santo Tom&#225;s</strong><span>&#169; {{ year }} Campus Virtual</span>
+      </p>
+      <button type="button" (click)="backToTop()" aria-label="Volver arriba" title="Volver arriba">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="m5 11 5-5 5 5M10 6v10" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>

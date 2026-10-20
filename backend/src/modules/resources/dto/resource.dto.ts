@@ -1,8 +1,8 @@
+import { IsMediaUrl } from '../../../common/dto/is-media-url.js';
 import {
   IsEnum,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -21,7 +21,7 @@ export class CreateResourceDto {
   @IsEnum(ResourceType)
   type?: ResourceType;
 
-  @IsUrl({}, { message: 'El recurso debe ser una URL válida' })
+  @IsMediaUrl('El recurso debe ser una URL http(s) o un archivo de la plataforma')
   url: string;
 }
 
@@ -38,6 +38,6 @@ export class UpdateResourceDto {
   type?: ResourceType;
 
   @IsOptional()
-  @IsUrl({}, { message: 'El recurso debe ser una URL válida' })
+  @IsMediaUrl('El recurso debe ser una URL http(s) o un archivo de la plataforma')
   url?: string;
 }

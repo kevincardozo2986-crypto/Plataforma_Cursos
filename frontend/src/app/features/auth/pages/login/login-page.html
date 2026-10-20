@@ -15,12 +15,14 @@
 
         <button type="button" (click)="auth.logout()">{{ 'Cerrar sesión' | t }}</button>
       </section>
+    } @else if (recovering()) {
+      <app-password-recovery (closed)="recovering.set(false)" />
     } @else {
       <app-login-form
         [loading]="loading()"
         [error]="error()"
         (submitted)="login($event)"
-        (recoveryRequested)="unavailable('La recuperación de contraseña')"
+        (recoveryRequested)="notice.set(''); recovering.set(true)"
       />
 
       <app-login-links (requested)="unavailable($event)" />

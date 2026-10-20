@@ -153,8 +153,8 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="book" [size]="19" /></span>
         <div>
-          <h2>Prerrequisitos</h2>
-          <p>Cursos que se deben completar antes de inscribirse.</p>
+          <h2>Cursos recomendados</h2>
+          <p>Cursos sugeridos para complementar el aprendizaje. No es necesario completarlos para inscribirse.</p>
         </div>
       </header>
 
@@ -162,8 +162,7 @@
         <p class="panel-muted">Cargando tus cursos…</p>
       } @else if (candidates().length === 0) {
         <p class="empty-note">
-          <app-icon name="info" [size]="16" /> Aún no tienes otros cursos que puedan ser
-          prerrequisito.
+          <app-icon name="info" [size]="16" /> Aún no tienes otros cursos para recomendar.
         </p>
       } @else {
         <ul class="candidates">

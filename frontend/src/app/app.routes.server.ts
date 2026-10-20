@@ -9,6 +9,10 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'verificar/:code', renderMode: RenderMode.Client },
   // Áreas autenticadas: la sesión vive en el navegador, no se pre-renderizan.
   {
+    path: 'student/**',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: 'teacher/**',
     renderMode: RenderMode.Client,
   },
