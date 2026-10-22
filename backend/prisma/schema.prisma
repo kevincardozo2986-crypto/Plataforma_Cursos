@@ -644,6 +644,8 @@ model Assignment {
   /// false: pasada la fecha límite ya no se aceptan entregas.
   allowLate   Boolean   @default(true)
   maxScore    Int       @default(100)
+  /// [{ name, originalName, size }]: documentos que el docente adjunta a la tarea (PDF, Word, Excel…), privados.
+  attachments Json      @default("[]")
 
   moduleId Int
   module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)

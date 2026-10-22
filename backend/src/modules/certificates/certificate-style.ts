@@ -17,6 +17,19 @@ export interface TextStyle {
   color?: string | null;
 }
 
+/** Los bloques de texto que se pueden mover. «recipient» es «Se otorga a», el nombre, la cédula y la línea. */
+export const OFFSET_PARTS = ['title', 'recipient', 'body', 'signature'] as const;
+export type OffsetPart = (typeof OFFSET_PARTS)[number];
+
+/** Cuánto se corrió un bloque desde su sitio, en puntos de página (A4 horizontal: 841,89 × 595,28). */
+export interface Offset {
+  x: number;
+  y: number;
+}
+
+export const OFFSET_MAX_X = 400;
+export const OFFSET_MAX_Y = 300;
+
 export interface CertificateStyle {
   title?: TextStyle;
   name?: TextStyle;
@@ -28,6 +41,8 @@ export interface CertificateStyle {
    * imagen propia y el texto no se lee bien. Por defecto, sin velo.
    */
   veil?: number;
+  /** Dónde está cada bloque de texto respecto a su sitio original; lo que falta, no se movió. */
+  offsets?: Partial<Record<OffsetPart, Offset>>;
 }
 
 export const SIZE_MIN = 60;
@@ -73,6 +88,29 @@ function clampSize(size: unknown): number {
   return Math.min(SIZE_MAX, Math.max(SIZE_MIN, value));
 }
 
+const clampOffset = (value: unknown, max: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? Math.min(max, Math.max(-max, Math.round(value))) : 0;
+
+/** Solo los bloques conocidos, con números enteros acotados; un bloque sin mover no se guarda. */
+function cleanOffsets(raw: unknown): CertificateStyle['offsets'] | undefined {
+  if (!raw || typeof raw !== 'object') {
+    return undefined;
+  }
+
+  const clean: Partial<Record<OffsetPart, Offset>> = {};
+
+  for (const part of OFFSET_PARTS) {
+    const { x, y } = ((raw as Record<string, unknown>)[part] ?? {}) as Record<string, unknown>;
+    const offset = { x: clampOffset(x, OFFSET_MAX_X), y: clampOffset(y, OFFSET_MAX_Y) };
+
+    if (offset.x !== 0 || offset.y !== 0) {
+      clean[part] = offset;
+    }
+  }
+
+  return Object.keys(clean).length > 0 ? clean : undefined;
+}
+
 function cleanText(raw: unknown): TextStyle | undefined {
   if (!raw || typeof raw !== 'object') {
     return undefined;
@@ -106,7 +144,7 @@ export function sanitizeStyle(raw: unknown): CertificateStyle {
     return {};
   }
 
-  const { title, name, body, showDocument, veil } = raw as Record<string, unknown>;
+  const { title, name, body, showDocument, veil, offsets } = raw as Record<string, unknown>;
   const clean: CertificateStyle = {};
 
   for (const [key, value] of [['title', title], ['name', name], ['body', body]] as const) {
@@ -119,6 +157,12 @@ export function sanitizeStyle(raw: unknown): CertificateStyle {
 
   if (showDocument === false) {
     clean.showDocument = false;
+  }
+
+  const moved = cleanOffsets(offsets);
+
+  if (moved) {
+    clean.offsets = moved;
   }
 
   if (typeof veil === 'number' && Number.isFinite(veil) && Math.round(veil) > 0) {

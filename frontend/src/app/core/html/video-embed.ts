@@ -121,8 +121,8 @@ export function embedFromInput(input: string): { html: string } | { error: strin
       ? { html: clean }
       : {
           error:
-            'Ese sitio no está permitido para incrustar. Usa YouTube, Vimeo, Loom, Dailymotion, ' +
-            'Google Drive o Docs, Canva, CodePen o Genially.',
+            'Ese marco no se puede incrustar: la dirección debe empezar con https:// y no ser ' +
+            'de esta misma plataforma.',
         };
   }
 

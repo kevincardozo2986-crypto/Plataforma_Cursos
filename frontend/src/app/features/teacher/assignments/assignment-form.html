@@ -51,6 +51,19 @@
           />
         </div>
 
+        <div class="panel-field">
+          <label for="attachments">Documentos para los estudiantes (opcional)</label>
+          <app-document-field
+            inputId="attachments"
+            [(files)]="attachments"
+            (filesChange)="form.markAsDirty()"
+          />
+          <p class="panel-hint">
+            Guías, plantillas o formatos para que los descarguen y los trabajen. Cuando el
+            estudiante los devuelva, los verás y los calificarás en «Tareas».
+          </p>
+        </div>
+
         <div class="row">
           <div class="panel-field">
             <label for="dueAt">Fecha límite (opcional)</label>

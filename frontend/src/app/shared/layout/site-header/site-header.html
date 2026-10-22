@@ -103,7 +103,18 @@
             }
           </div>
         } @else {
-          <span class="avatar" aria-hidden="true">@if (avatarUrl(); as photo) { <img [src]="photo" alt="" /> } @else { {{ initials() }} }</span>
+          <a
+            class="avatar avatar-link"
+            routerLink="/teacher/profile"
+            aria-label="Ir a mi perfil"
+            title="Mi perfil"
+          >
+            @if (avatarUrl(); as photo) {
+              <img [src]="photo" alt="" />
+            } @else {
+              {{ initials() }}
+            }
+          </a>
         }
       } @else {
         <a class="login-link" routerLink="/login">Iniciar sesión</a>
@@ -131,7 +142,9 @@
         }
       </button>
 
-      @if (auth.user()) { <app-notification-bell /> }
+      @if (auth.user()) {
+        <app-notification-bell />
+      }
       @if (auth.user() && auth.user()?.role !== 'STUDENT') {
         <button type="button" class="icon-button" (click)="logout()" aria-label="Cerrar sesión">
           <svg viewBox="0 0 24 24" aria-hidden="true">

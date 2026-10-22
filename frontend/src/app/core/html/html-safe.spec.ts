@@ -1,10 +1,4 @@
-import {
-  countIframes,
-  hasVisibleContent,
-  IFRAME_HOSTS,
-  isSafeUrl,
-  sanitizeHtml,
-} from './html-safe';
+import { countIframes, hasVisibleContent, isSafeUrl, sanitizeHtml } from './html-safe';
 
 describe('sanitizeHtml', () => {
   it('conserva el formato normal', () => {
@@ -73,7 +67,7 @@ describe('sanitizeHtml', () => {
     expect(sanitizeHtml('<style>body{display:none}</style><p>ok</p>')).toBe('<p>ok</p>');
   });
 
-  it('los iframes: solo los sitios de la lista, siempre con sandbox', () => {
+  it('los iframes: cualquier https ajeno, siempre con sandbox', () => {
     const youtube = sanitizeHtml(
       '<iframe src="https://www.youtube.com/embed/abc" sandbox="allow-top-navigation" width="560"></iframe>',
     );
@@ -85,17 +79,14 @@ describe('sanitizeHtml', () => {
     expect(youtube).not.toContain('allow-top-navigation');
     expect(youtube).toContain('loading="lazy"');
 
-    expect(sanitizeHtml('<iframe src="https://malo.com/login"></iframe>')).toBe('');
+    expect(
+      sanitizeHtml('<iframe src="https://sitio-cualquiera.com/pagina.html"></iframe>'),
+    ).toContain('src="https://sitio-cualquiera.com/pagina.html"');
+    expect(sanitizeHtml('<iframe src="https://localhost:4200/"></iframe>')).toBe('');
+    expect(sanitizeHtml('<iframe src="/api/uploads/x.html"></iframe>')).toBe('');
     expect(sanitizeHtml('<iframe src="http://www.youtube.com/embed/x"></iframe>')).toBe('');
-    expect(sanitizeHtml('<iframe src="https://www.youtube.com.malo.com/x"></iframe>')).toBe('');
     expect(sanitizeHtml('<iframe src="javascript:alert(1)"></iframe>')).toBe('');
     expect(sanitizeHtml('<iframe srcdoc="<script>alert(1)</script>"></iframe>')).toBe('');
-  });
-
-  it('acepta todos los sitios de la lista', () => {
-    for (const host of IFRAME_HOSTS) {
-      expect(sanitizeHtml(`<iframe src="https://${host}/embed/x"></iframe>`)).toContain(host);
-    }
   });
 
   it('un texto vacío da vacío', () => {
@@ -136,5 +127,22 @@ describe('countIframes', () => {
   it('cuenta los marcos', () => {
     expect(countIframes('<iframe></iframe><p>x</p><IFRAME src="a"></IFRAME>')).toBe(2);
     expect(countIframes('<p>sin marcos</p>')).toBe(0);
+  });
+});
+
+describe('iframes de la propia institución', () => {
+  it('el iframe de una sección del campus se conserva con su tamaño', () => {
+    const html =
+      '<iframe src="https://campusvirtual.santototunja.edu.co/Web_Secciones_Entrega/01_Hero_Induccion.html" width="100%" height="900" allowfullscreen></iframe>';
+
+    expect(sanitizeHtml(html)).toContain('campusvirtual.santototunja.edu.co');
+    expect(sanitizeHtml(html)).toContain('height="900"');
+    expect(
+      sanitizeHtml('<iframe src="http://campusvirtual.santototunja.edu.co/x.html"></iframe>'),
+    ).toBe('');
+  });
+
+  it('un nombre sin punto no es un sitio', () => {
+    expect(sanitizeHtml('<iframe src="https://hola/x"></iframe>')).toBe('');
   });
 });

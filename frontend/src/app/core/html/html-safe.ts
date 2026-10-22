@@ -6,21 +6,6 @@
  * ejecute en su propia pantalla antes de guardarse, y para mostrarle ya lo que quedará.
  */
 
-/** Sitios que se pueden incrustar con <iframe>. */
-export const IFRAME_HOSTS = [
-  'www.youtube.com',
-  'www.youtube-nocookie.com',
-  'player.vimeo.com',
-  'www.loom.com',
-  'fast.wistia.net',
-  'www.dailymotion.com',
-  'drive.google.com',
-  'docs.google.com',
-  'www.canva.com',
-  'codepen.io',
-  'view.genial.ly',
-];
-
 export const IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-presentation allow-popups';
 
 const ALLOWED_TAGS = new Set([
@@ -110,12 +95,23 @@ export function isSafeUrl(
   return !!scheme && protocols.includes(`${scheme[1].toLowerCase()}:`);
 }
 
-/** ¿Es un https:// de uno de los sitios permitidos para incrustar? */
+/** Direcciones de esta misma plataforma: un marco no puede cargarla dentro de sí misma. */
+const OWN_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+
+/**
+ * ¿Se puede incrustar esta dirección? Cualquier sitio con https://, salvo esta misma plataforma
+ * (con `allow-same-origin`, un marco suyo podría leer la sesión).
+ */
 export function isAllowedEmbedUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
+    const host = url.hostname.toLowerCase();
+    const own = typeof location !== 'undefined' ? location.hostname.toLowerCase() : '';
 
-    return url.protocol === 'https:' && IFRAME_HOSTS.includes(url.hostname.toLowerCase());
+    // Un nombre sin punto («hola») no es un sitio de internet.
+    return (
+      url.protocol === 'https:' && host.includes('.') && !OWN_HOSTS.includes(host) && host !== own
+    );
   } catch {
     return false;
   }
@@ -151,7 +147,7 @@ function copyAttributes(source: Element, target: Element, tag: string): boolean 
         target.setAttribute('href', value);
       }
     } else if (key === 'src') {
-      // Los marcos solo admiten los sitios de la lista; las imágenes, http(s) o una ruta propia.
+      // Los marcos admiten cualquier https:// ajeno a esta plataforma; las imágenes, http(s) o una ruta propia.
       if (tag === 'iframe' ? isAllowedEmbedUrl(value) : isSafeUrl(value, ['http:', 'https:'])) {
         target.setAttribute('src', value);
       }
@@ -166,7 +162,7 @@ function copyAttributes(source: Element, target: Element, tag: string): boolean 
   }
 
   if (tag === 'iframe') {
-    // Un marco sin dirección permitida no se conserva; los que quedan, aislados.
+    // Un marco sin dirección válida no se conserva; los que quedan, aislados.
     if (!target.getAttribute('src')) {
       return false;
     }
@@ -214,7 +210,7 @@ function walk(source: Node, target: Node, doc: Document): void {
   }
 }
 
-/** Deja solo el HTML seguro. Un <script>, un onclick o un marco de un sitio no permitido desaparecen. */
+/** Deja solo el HTML seguro. Un <script>, un onclick o un marco sin dirección https válida desaparecen. */
 export function sanitizeHtml(html: string): string {
   // Sin DOM (prerenderizado en el servidor) no se puede analizar: mejor nada que algo inseguro.
   if (typeof DOMParser === 'undefined' || !html) {

@@ -471,3 +471,17 @@ button:focus-visible {
   object-fit: cover;
   display: block;
 }
+
+/* La foto del docente es un enlace a «Mi perfil». */
+.avatar-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.avatar-link:hover {
+  box-shadow: 0 0 0 3px rgba(18, 181, 203, 0.35);
+  transform: translateY(-1px);
+}

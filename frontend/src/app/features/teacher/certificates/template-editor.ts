@@ -8,6 +8,9 @@ import {
   CertificateLayout,
   CertificateStyle,
   CertificateTemplate,
+  Offset,
+  OffsetPart,
+  Offsets,
   TextStyle,
   DEFAULT_BODY,
   DEFAULT_COLOR,
@@ -16,7 +19,15 @@ import {
   LAYOUTS,
   PLACEHOLDERS,
 } from '../../../core/certificates/certificates.models';
-import { cleanStyle, StyledPart } from '../../../core/certificates/certificate-style';
+import {
+  cleanStyle,
+  clampOffset,
+  NO_OFFSET,
+  OFFSET_MAX_X,
+  OFFSET_MAX_Y,
+  OFFSET_PARTS,
+  StyledPart,
+} from '../../../core/certificates/certificate-style';
 import { CertificatesService } from '../../../core/certificates/certificates.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -230,6 +241,46 @@ export class TemplateEditor {
     this.style.update((style) => ({ ...style, veil: value > 0 ? value : undefined }));
     this.form.markAsDirty();
   }
+
+  // ---------- Posición de los textos ----------
+
+  readonly offsetParts = OFFSET_PARTS;
+  readonly offsetMaxX = OFFSET_MAX_X;
+  readonly offsetMaxY = OFFSET_MAX_Y;
+
+  offsetOf(part: OffsetPart): Offset {
+    return this.style().offsets?.[part] ?? NO_OFFSET;
+  }
+
+  /** Los desplazamientos que llegan de arrastrar los textos en la vista previa. */
+  setOffsets(offsets: Offsets): void {
+    this.style.update((style) => ({ ...style, offsets }));
+    this.form.markAsDirty();
+  }
+
+  setOffset(part: OffsetPart, axis: 'x' | 'y', value: string): void {
+    const now = this.offsetOf(part);
+    const number = Number(value);
+
+    this.setOffsets({
+      ...(this.style().offsets ?? {}),
+      [part]: clampOffset({ ...now, [axis]: Number.isFinite(number) ? number : 0 }),
+    });
+  }
+
+  resetOffset(part: OffsetPart): void {
+    const { [part]: _removed, ...rest } = this.style().offsets ?? {};
+
+    this.setOffsets(rest);
+  }
+
+  resetOffsets(): void {
+    this.setOffsets({});
+  }
+
+  readonly hasOffsets = computed(
+    () => Object.values(cleanStyle(this.style()).offsets ?? {}).length > 0,
+  );
 
   setShowDocument(show: boolean): void {
     this.style.update((style) => ({ ...style, showDocument: show ? undefined : false }));

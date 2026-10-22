@@ -19,7 +19,8 @@ Una tarea es un ítem calificable de un módulo, igual que las lecciones y los q
   "description": "<p>Entrega un <b>PDF</b> de máximo 5 páginas.</p>",
   "dueAt": "2026-11-30T23:59:00-05:00",
   "allowLate": true,
-  "maxScore": 100
+  "maxScore": 100,
+  "attachments": [ { "name": "5fa0….pdf" }, { "name": "77c1….docx" } ]
 }
 ```
 
@@ -27,6 +28,10 @@ Una tarea es un ítem calificable de un módulo, igual que las lecciones y los q
 - `dueAt` es opcional (ISO 8601). En el `PATCH`, `"dueAt": null` **quita** la fecha límite.
 - `allowLate` (por defecto `true`): con `false`, pasada la fecha ya no se aceptan entregas.
 - `maxScore` (por defecto 100, máximo 1000). No se puede bajar por debajo de una nota ya puesta.
+- `attachments` (opcional, hasta 10): **documentos del docente para los estudiantes** (guías, plantillas, formatos en PDF, Word, Excel, PowerPoint, ZIP o TXT).
+  Se suben primero con `POST /uploads/documents` (igual que las entregas) y aquí se manda el `name` que devuelve. En el `PATCH` la lista **reemplaza** a la anterior
+  (`[]` quita todos; sin enviarla no se tocan) y los que ya no están se borran del servidor. Solo se adjuntan archivos que subió quien edita y que no se usan en otra
+  tarea ni entrega (`400`). La tarea los devuelve como `attachments: [{ name, originalName, size, url }]`.
 
 **Lista del módulo:** cada tarea trae `submissionCount` (cuántas entregas tiene) y `mySubmission`
 (`{ status, score, late, submittedAt }` del usuario que consulta, o `null`). Sirve para mostrar el estado de cada tarea
@@ -79,7 +84,7 @@ Respuesta (igual que `GET /assignments/:id/submission/mine`, que da `404` mientr
 `GET /submission-files/:name` · **requiere el token**, así que no sirve un `<a href>` directo: pedirlo con `HttpClient`
 como `blob` y descargarlo en el navegador (`URL.createObjectURL`). El nombre para guardar está en `originalName`.
 
-- Lo descarga quien lo entregó y el docente del curso (o un admin).
+- Lo descarga quien lo entregó y el docente del curso (o un admin). Un **documento que el docente adjuntó a la tarea** lo descargan también los estudiantes que pueden ver el curso.
 - Para cualquier otra persona responde `404`, como si no existiera.
 - Siempre llega como descarga (`Content-Disposition: attachment`), nunca se muestra dentro de la página.
 

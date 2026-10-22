@@ -59,9 +59,13 @@ describe('toEmbed: otros', () => {
     expect(toEmbed(url)).toEqual({ src: url, provider: 'other' });
   });
 
-  it('sitios no permitidos, texto suelto o con espacios no sirven', () => {
-    expect(toEmbed('https://malo.com/video')).toBeNull();
+  it('cualquier sitio https sirve; texto suelto, http, esta plataforma o con espacios no', () => {
+    expect(toEmbed('https://cualquier-sitio.com/video')).toEqual({
+      src: 'https://cualquier-sitio.com/video',
+      provider: 'other',
+    });
     expect(toEmbed('http://docs.google.com/x')).toBeNull();
+    expect(toEmbed('https://localhost:4200/x')).toBeNull();
     expect(toEmbed('hola mundo')).toBeNull();
     expect(toEmbed('')).toBeNull();
     expect(toEmbed('javascript:alert(1)')).toBeNull();
@@ -94,10 +98,22 @@ describe('embedFromInput', () => {
     expect('html' in result && result.html).not.toContain('onload');
   });
 
-  it('el código iframe de un sitio no permitido se rechaza con un motivo', () => {
-    const result = embedFromInput('<iframe src="https://malo.com/login"></iframe>');
+  it('el código iframe de cualquier sitio https se acepta', () => {
+    const result = embedFromInput(
+      '<iframe src="https://sitio-cualquiera.com/pagina.html" width="100%" height="900"></iframe>',
+    );
 
-    expect('error' in result && result.error).toContain('no está permitido');
+    expect('html' in result && result.html).toContain(
+      'src="https://sitio-cualquiera.com/pagina.html"',
+    );
+  });
+
+  it('un iframe que no es https o es de esta plataforma se rechaza con un motivo', () => {
+    const http = embedFromInput('<iframe src="http://sitio.com/x"></iframe>');
+    const own = embedFromInput('<iframe src="https://localhost:4200/"></iframe>');
+
+    expect('error' in http && http.error).toContain('https://');
+    expect('error' in own && own.error).toContain('https://');
   });
 
   it('algo que no es un video da un mensaje claro', () => {

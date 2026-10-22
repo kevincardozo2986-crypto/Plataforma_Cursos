@@ -378,6 +378,62 @@
               }
             </fieldset>
 
+            <fieldset class="moves">
+              <legend>Posición de los textos</legend>
+
+              <p class="tip">
+                <app-icon name="info" [size]="15" />
+                <span>
+                  <strong>Arrastra</strong> cada texto en la vista previa para moverlo. Con el
+                  teclado: selecciónalo y usa las flechas (con Mayús, de 10 en 10).
+                </span>
+              </p>
+
+              @for (part of offsetParts; track part.key) {
+                <div class="move-row">
+                  <strong>{{ part.label }}</strong>
+                  <label>
+                    <span>← →</span>
+                    <input
+                      type="number"
+                      class="panel-input"
+                      step="1"
+                      [min]="-offsetMaxX"
+                      [max]="offsetMaxX"
+                      [value]="offsetOf(part.key).x"
+                      (change)="setOffset(part.key, 'x', $any($event.target).value)"
+                    />
+                  </label>
+                  <label>
+                    <span>↑ ↓</span>
+                    <input
+                      type="number"
+                      class="panel-input"
+                      step="1"
+                      [min]="-offsetMaxY"
+                      [max]="offsetMaxY"
+                      [value]="offsetOf(part.key).y"
+                      (change)="setOffset(part.key, 'y', $any($event.target).value)"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="link"
+                    [disabled]="offsetOf(part.key).x === 0 && offsetOf(part.key).y === 0"
+                    (click)="resetOffset(part.key)"
+                  >
+                    Volver
+                  </button>
+                </div>
+              }
+
+              @if (hasOffsets()) {
+                <button type="button" class="link reset" (click)="resetOffsets()">
+                  <app-icon name="refresh" [size]="13" /> Poner todos en su sitio
+                </button>
+              }
+            </fieldset>
+
             <p class="tip">
               <app-icon name="pen" [size]="15" />
               <span>
@@ -407,6 +463,8 @@
           <span class="preview-label"><app-icon name="eye" [size]="14" /> VISTA PREVIA</span>
 
           <app-certificate-preview
+            [editable]="true"
+            (offsetsChange)="setOffsets($event)"
             [layout]="preview().layout"
             [color]="preview().color"
             [font]="preview().font"

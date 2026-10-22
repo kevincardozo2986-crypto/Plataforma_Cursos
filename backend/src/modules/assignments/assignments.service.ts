@@ -49,7 +49,7 @@ export class AssignmentsService {
     const assignments = await this.repository.findByModule(moduleId, user.id);
 
     return assignments.map(({ submissions, _count, ...assignment }) => ({
-      ...assignment,
+      ...this.present(assignment),
       submissionCount: _count.submissions,
       mySubmission: submissions[0] ?? null,
     }));
@@ -60,7 +60,7 @@ export class AssignmentsService {
     await this.access.assertCanView(user, courseId);
     await this.access.assertContentAccess(user, { assignmentId: id });
 
-    return this.getOrThrow(id);
+    return this.present(await this.getOrThrow(id));
   }
 
   async create(
@@ -71,14 +71,19 @@ export class AssignmentsService {
     const courseId = await this.access.courseIdOfModule(moduleId);
     await this.access.assertCanManage(user, courseId);
 
-    return this.repository.create({
-      moduleId,
-      title: dto.title,
-      description: dto.description,
-      dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
-      allowLate: dto.allowLate,
-      maxScore: dto.maxScore,
-    });
+    const attachments = await this.resolveAttachments(user, dto.attachments, null);
+
+    return this.present(
+      await this.repository.create({
+        moduleId,
+        title: dto.title,
+        description: dto.description,
+        dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
+        allowLate: dto.allowLate,
+        maxScore: dto.maxScore,
+        attachments,
+      }),
+    );
   }
 
   async update(user: AuthenticatedUser, id: number, dto: UpdateAssignmentDto) {
@@ -94,7 +99,11 @@ export class AssignmentsService {
       );
     }
 
-    return this.repository.update(id, {
+    // Si se envían, los documentos reemplazan a los anteriores; los que ya no están se borran.
+    const before = dto.attachments === undefined ? [] : this.repository.namesOf((await this.getOrThrow(id)).attachments);
+    const attachments = await this.resolveAttachments(user, dto.attachments, id);
+
+    const updated = await this.repository.update(id, {
       title: dto.title,
       description: dto.description,
       dueAt:
@@ -105,7 +114,14 @@ export class AssignmentsService {
             : new Date(dto.dueAt),
       allowLate: dto.allowLate,
       maxScore: dto.maxScore,
+      attachments,
     });
+
+    const kept = new Set((attachments ?? []).map((file) => file.name));
+
+    await this.uploads.removePrivate(before.filter((name) => !kept.has(name)));
+
+    return this.present(updated);
   }
 
   async remove(user: AuthenticatedUser, id: number) {
@@ -264,7 +280,7 @@ export class AssignmentsService {
     const submission = await this.repository.findByFileName(name);
 
     if (!submission) {
-      throw new NotFoundException('El archivo no existe');
+      return this.attachmentForDownload(user, name);
     }
 
     if (submission.userId !== user.id) {
@@ -280,6 +296,34 @@ export class AssignmentsService {
 
     const path = await this.uploads.resolvePrivate(name);
     const entry = this.filesOf(submission.files).find((f) => f.name === name);
+
+    if (!path || !entry) {
+      throw new NotFoundException('El archivo no existe');
+    }
+
+    return { path, originalName: entry.originalName };
+  }
+
+  /**
+   * Un documento que el docente adjuntó a la tarea lo descargan quienes pueden ver el curso
+   * (estudiantes inscritos incluidos) y quienes lo gestionan. Para los demás, no existe.
+   */
+  private async attachmentForDownload(user: AuthenticatedUser, name: string) {
+    const assignment = await this.repository.findByAttachmentName(name);
+
+    if (!assignment) {
+      throw new NotFoundException('El archivo no existe');
+    }
+
+    try {
+      await this.access.assertCanView(user, assignment.module.courseId);
+      await this.access.assertContentAccess(user, { assignmentId: assignment.id });
+    } catch {
+      throw new NotFoundException('El archivo no existe');
+    }
+
+    const path = await this.uploads.resolvePrivate(name);
+    const entry = this.filesOf(assignment.attachments).find((f) => f.name === name);
 
     if (!path || !entry) {
       throw new NotFoundException('El archivo no existe');
@@ -352,6 +396,46 @@ export class AssignmentsService {
     }
 
     return files;
+  }
+
+  /**
+   * Los documentos que se adjuntan a una tarea: deben existir, haberlos subido quien los adjunta y
+   * no estar ya en otra entrega ni en otra tarea. `undefined` = no se tocan los que ya tiene.
+   */
+  private async resolveAttachments(
+    user: AuthenticatedUser,
+    refs: { name: string }[] | undefined,
+    assignmentId: number | null,
+  ): Promise<SubmissionFile[] | undefined> {
+    if (refs === undefined) {
+      return undefined;
+    }
+
+    const files: SubmissionFile[] = [];
+
+    for (const name of [...new Set(refs.map((ref) => ref.name))]) {
+      const info = await this.uploads.privateInfo(name);
+
+      if (!info || info.uploadedBy !== user.id || !(await this.uploads.resolvePrivate(name))) {
+        throw new BadRequestException(`El archivo ${name} no existe o no lo subiste tú`);
+      }
+
+      const inSubmission = await this.repository.findByFileName(name);
+      const inAssignment = await this.repository.findByAttachmentName(name);
+
+      if (inSubmission || (inAssignment && inAssignment.id !== assignmentId)) {
+        throw new BadRequestException(`El archivo ${name} ya se usó en otro lugar`);
+      }
+
+      files.push({ name, originalName: info.originalName, size: info.size });
+    }
+
+    return files;
+  }
+
+  /** La tarea tal como se devuelve: los documentos adjuntos con su dirección de descarga. */
+  private present<T extends { attachments?: unknown }>(assignment: T) {
+    return { ...assignment, attachments: this.withUrls(assignment.attachments) };
   }
 
   private filesOf(files: unknown): SubmissionFile[] {

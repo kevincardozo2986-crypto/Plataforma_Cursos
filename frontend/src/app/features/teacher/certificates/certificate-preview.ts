@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, output } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { CertificateFontsService } from '../../../core/certificates/certificate-fonts.service';
@@ -6,8 +6,17 @@ import {
   CertificateLayout,
   CertificateStyle,
   FontOption,
+  Offset,
+  OffsetPart,
+  Offsets,
 } from '../../../core/certificates/certificates.models';
-import { AUTO_BOLD, resolveText } from '../../../core/certificates/certificate-style';
+import {
+  AUTO_BOLD,
+  clampOffset,
+  NO_OFFSET,
+  OFFSET_PARTS,
+  resolveText,
+} from '../../../core/certificates/certificate-style';
 import { cssFamily, fitToWidth } from '../../../core/certificates/font-css';
 import { FontLoader } from '../../../core/certificates/font-loader';
 import { certificateArt, fitSize, PAGE_HEIGHT, PAGE_WIDTH, textBox } from './certificate-art';
@@ -35,6 +44,7 @@ export class CertificatePreview {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly fonts = inject(CertificateFontsService);
   private readonly loader = inject(FontLoader);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly layout = input.required<CertificateLayout>();
   readonly color = input('#1F3A8A');
@@ -54,6 +64,19 @@ export class CertificatePreview {
   readonly style = input<CertificateStyle>({});
   /** Imagen de fondo propia (solo con el diseño IMAGE). */
   readonly background = input<string | null>(null);
+
+  /** Con true se pueden arrastrar los textos (o moverlos con las flechas del teclado). */
+  readonly editable = input(false);
+  /** Los desplazamientos nuevos, cuando se arrastra o se usan las flechas. */
+  readonly offsetsChange = output<Offsets>();
+
+  readonly offsetParts = OFFSET_PARTS;
+
+  private readonly offsets = computed<Offsets>(() => this.style().offsets ?? {});
+  readonly offTitle = computed<Offset>(() => this.offsets().title ?? NO_OFFSET);
+  readonly offRecipient = computed<Offset>(() => this.offsets().recipient ?? NO_OFFSET);
+  readonly offBody = computed<Offset>(() => this.offsets().body ?? NO_OFFSET);
+  readonly offSignature = computed<Offset>(() => this.offsets().signature ?? NO_OFFSET);
 
   protected readonly PAGE_W = PAGE_WIDTH;
   protected readonly PAGE_H = PAGE_HEIGHT;
@@ -139,19 +162,176 @@ export class CertificatePreview {
 
     const family = this.bodyFamily();
     const weight = this.bodyLook().bold ? 700 : 400;
-    const top = this.bodyTop();
+    const top = this.bodyTop() + this.offBody().y;
     let size = start;
 
     while (
       size > 9 &&
       top + this.wrappedLines(context, text, width, size, weight, family) * size * 1.32 >
-        BODY_LIMIT_Y
+        BODY_LIMIT_Y + this.offSignature().y
     ) {
       size -= 0.5;
     }
 
     return size;
   });
+
+  /** Alto que ocupa el texto, para el área que se arrastra. */
+  readonly bodyHeight = computed(() => {
+    this.loader.version();
+
+    const context = this.canvas;
+    const text = this.body();
+
+    if (!context || !text) {
+      return 60;
+    }
+
+    const lines = this.wrappedLines(
+      context,
+      text,
+      this.box().width - this.inset() * 2,
+      this.bodySize(),
+      this.bodyLook().bold ? 700 : 400,
+      this.bodyFamily(),
+    );
+
+    return lines * this.bodySize() * 1.32;
+  });
+
+  /** Las áreas que se pueden arrastrar, en puntos de página (ya con su desplazamiento). */
+  readonly handles = computed<
+    { part: OffsetPart; label: string; x: number; y: number; w: number; h: number }[]
+  >(() => {
+    const b = this.box();
+    const t = this.offTitle();
+    const r = this.offRecipient();
+    const o = this.offBody();
+    const s = this.offSignature();
+
+    return [
+      {
+        part: 'title',
+        label: 'Mover el título',
+        x: b.x + t.x,
+        y: b.titleY + t.y - 4,
+        w: b.width,
+        h: this.titleSize() * 1.35 + 8,
+      },
+      {
+        part: 'recipient',
+        label: 'Mover el nombre y la cédula',
+        x: b.x + r.x,
+        y: b.contentY + r.y - 4,
+        w: b.width,
+        h: 108 + this.shift(),
+      },
+      {
+        part: 'body',
+        label: 'Mover el texto',
+        x: b.x + this.inset() + o.x,
+        y: this.bodyTop() + o.y - 4,
+        w: b.width - this.inset() * 2,
+        h: this.bodyHeight() + 8,
+      },
+      {
+        part: 'signature',
+        label: 'Mover la firma',
+        x: b.signature.x + s.x,
+        y: 462 + s.y - 74,
+        w: b.signature.width,
+        h: 116,
+      },
+    ];
+  });
+
+  // ---------- Mover con el ratón o el teclado ----------
+
+  private drag: {
+    part: OffsetPart;
+    pointerX: number;
+    pointerY: number;
+    start: Offset;
+    scale: number;
+  } | null = null;
+
+  /** Los puntos de página que vale un píxel de pantalla. */
+  private pointsPerPixel(): number {
+    const width =
+      this.host.nativeElement.querySelector('.cert')?.getBoundingClientRect().width ?? 0;
+
+    return width > 0 ? PAGE_WIDTH / width : 1;
+  }
+
+  /**
+   * Lo último que se emitió y el padre aún no devolvió. Varias teclas o movimientos seguidos
+   * llegan antes de que `style` se actualice, y cada uno debe partir del anterior.
+   */
+  private pending: Offsets | null = null;
+
+  private current(part: OffsetPart): Offset {
+    return (this.pending ?? this.offsets())[part] ?? NO_OFFSET;
+  }
+
+  private move(part: OffsetPart, offset: Offset): void {
+    this.pending = { ...(this.pending ?? this.offsets()), [part]: clampOffset(offset) };
+    this.offsetsChange.emit(this.pending);
+  }
+
+  startDrag(part: OffsetPart, event: PointerEvent): void {
+    if (!this.editable() || event.button > 0) {
+      return;
+    }
+
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    this.drag = {
+      part,
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      start: this.current(part),
+      scale: this.pointsPerPixel(),
+    };
+    event.preventDefault();
+  }
+
+  dragging(event: PointerEvent): void {
+    const drag = this.drag;
+
+    if (!drag) {
+      return;
+    }
+
+    this.move(drag.part, {
+      x: drag.start.x + (event.clientX - drag.pointerX) * drag.scale,
+      y: drag.start.y + (event.clientY - drag.pointerY) * drag.scale,
+    });
+  }
+
+  endDrag(): void {
+    this.drag = null;
+  }
+
+  /** Con las flechas se mueve de a 1 punto; con Mayús, de a 10. */
+  nudge(part: OffsetPart, event: KeyboardEvent): void {
+    const step = event.shiftKey ? 10 : 1;
+    const delta: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step],
+    };
+    const move = delta[event.key];
+
+    if (!this.editable() || !move) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const now = this.current(part);
+
+    this.move(part, { x: now.x + move[0], y: now.y + move[1] });
+  }
 
   readonly inset = computed(() => (this.box().align === 'center' ? 20 : 0));
   readonly ruleLeft = computed(() =>
@@ -166,6 +346,12 @@ export class CertificatePreview {
 
   constructor() {
     this.fonts.load();
+
+    // Cuando el padre ya devolvió los desplazamientos, se parte de ellos otra vez.
+    effect(() => {
+      this.offsets();
+      this.pending = null;
+    });
 
     // Al elegir otra tipografía se carga en el navegador.
     effect(() => {

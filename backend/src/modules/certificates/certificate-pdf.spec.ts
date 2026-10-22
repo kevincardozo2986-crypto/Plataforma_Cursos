@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
@@ -384,5 +385,66 @@ describe('diseño con imagen propia', () => {
     expect(veiled.toString('latin1')).toMatch(/\/ca 0\.6/);
     expect(plain.toString('latin1')).not.toMatch(/\/ca 0\.6/);
     expect(pages(veiled)).toBe(1);
+  });
+});
+
+
+/** Lo que dibuja la página (los flujos comprimidos del PDF, ya abiertos): sirve para comparar sin las fechas. */
+const drawn = (pdf: Buffer): string => {
+  const text = pdf.toString('latin1');
+  const out: string[] = [];
+
+  for (const match of text.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    try {
+      out.push(inflateSync(Buffer.from(match[1], 'latin1')).toString('latin1'));
+    } catch {
+      /* Fuentes e imágenes no son flujos de dibujo. */
+    }
+  }
+
+  return out.join('\n');
+};
+
+describe('mover los textos', () => {
+  const withOffsets = (offsets: object) => content({ design: { ...content().design, style: { offsets } } });
+
+  it('sin mover (o con ceros) el PDF es idéntico al de siempre', async () => {
+    const plain = await renderCertificatePdf(content());
+    const zero = await renderCertificatePdf(withOffsets({}));
+
+    expect(drawn(zero)).toBe(drawn(plain));
+  });
+
+  it.each(['title', 'recipient', 'body', 'signature'])('mover «%s» cambia el PDF y sigue en una página', async (part) => {
+    const plain = await renderCertificatePdf(content());
+    const moved = await renderCertificatePdf(withOffsets({ [part]: { x: 40, y: 25 } }));
+
+    expect(isPdf(moved)).toBe(true);
+    expect(pages(moved)).toBe(1);
+    expect(drawn(moved)).not.toBe(drawn(plain));
+  });
+
+  it('funciona con la firma, un nombre largo y el texto inclinado', async () => {
+    const signature = await sharp({ create: { width: 200, height: 80, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.6 } } }).png().toBuffer();
+    const pdf = await renderCertificatePdf(
+      content({
+        signature,
+        studentName: 'María de los Ángeles Fernanda del Rosario Villalobos',
+        design: { ...content().design, style: { body: { italic: true }, offsets: { body: { x: -30, y: 40 }, signature: { x: 60, y: -20 }, title: { x: 0, y: -10 } } } },
+      }),
+    );
+
+    expect(isPdf(pdf)).toBe(true);
+    expect(pages(pdf)).toBe(1);
+  });
+
+  it('un texto movido hacia abajo se achica para no pasar de la firma (que se corre con él)', async () => {
+    const long = 'Por haber completado satisfactoriamente el curso «{{course}}» con muy buen desempeño, '.repeat(6);
+    const pdf = await renderCertificatePdf(
+      content({ design: { ...content().design, body: long, style: { offsets: { body: { x: 0, y: 60 }, signature: { x: 0, y: 20 } } } } }),
+    );
+
+    expect(isPdf(pdf)).toBe(true);
+    expect(pages(pdf)).toBe(1);
   });
 });

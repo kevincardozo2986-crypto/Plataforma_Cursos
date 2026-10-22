@@ -144,9 +144,7 @@ El servidor **limpia el HTML al guardarlo**, así que lo que se lee de la API ya
 **Alineación:** el atributo `style` se elimina, salvo `text-align: left | center | right | justify`, que se conserva (así el editor
 puede centrar o justificar un párrafo). Cualquier otra propiedad (`color`, `position`…) se descarta.
 
-**Videos y documentos incrustados:** solo `<iframe>` con `https://` de estos sitios: `www.youtube.com`, `www.youtube-nocookie.com`,
-`player.vimeo.com`, `www.loom.com`, `fast.wistia.net`, `www.dailymotion.com`, `drive.google.com`, `docs.google.com`,
-`www.canva.com`, `codepen.io` y `view.genial.ly`. Un iframe de cualquier otro sitio se elimina entero. A todo iframe el servidor le
+**Contenido incrustado (`<iframe>`):** se admite **cualquier sitio**, siempre que la dirección sea una `https://` absoluta (videos, presentaciones, páginas de la institución, aplicaciones…). Se elimina el iframe entero si la dirección es `http://`, relativa (`/api/…`), `//sitio`, `javascript:` o `data:`, si es un nombre sin punto (`intranet`) o si apunta a **esta misma plataforma** (`localhost` o las direcciones de `APP_URL`/`API_URL`/`PUBLIC_URL`): con `allow-same-origin` podría leer la sesión de quien lo ve. A todo iframe el servidor le
 impone `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"`, `loading="lazy"` y
 `referrerpolicy="strict-origin-when-cross-origin"`, aunque el HTML traiga otros valores (no puede navegar la página que lo contiene).
 Se usa `www.youtube-nocookie.com` cuando se convierte un enlace de YouTube.

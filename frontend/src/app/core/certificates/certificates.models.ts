@@ -86,6 +86,17 @@ export interface TextStyle {
   color?: string;
 }
 
+/** Los bloques de texto que se pueden mover. «recipient» es «Se otorga a», el nombre, la cédula y la línea. */
+export type OffsetPart = 'title' | 'recipient' | 'body' | 'signature';
+
+/** Cuánto se corrió un bloque desde su sitio, en puntos de página (A4 horizontal: 842 × 595). */
+export interface Offset {
+  x: number;
+  y: number;
+}
+
+export type Offsets = Partial<Record<OffsetPart, Offset>>;
+
 export interface CertificateStyle {
   title?: TextStyle;
   name?: TextStyle;
@@ -94,6 +105,8 @@ export interface CertificateStyle {
   showDocument?: boolean;
   /** Velo blanco detrás del texto, en porcentaje (0–80): ayuda a leerlo sobre una imagen. */
   veil?: number;
+  /** Dónde está cada bloque de texto respecto a su sitio original. */
+  offsets?: Offsets;
 }
 
 export interface CertificateTemplate {

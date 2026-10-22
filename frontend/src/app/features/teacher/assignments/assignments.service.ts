@@ -11,6 +11,8 @@ export interface Assignment {
   allowLate: boolean;
   maxScore: number;
   moduleId: number;
+  /** Documentos que el docente adjuntó (con su dirección de descarga). */
+  attachments: { name: string; originalName: string; size: number; url: string }[];
   /** Solo en la lista del módulo. */
   submissionCount?: number;
 }
@@ -22,6 +24,8 @@ export interface AssignmentInput {
   dueAt?: string | null;
   allowLate?: boolean;
   maxScore?: number;
+  /** Los documentos que debe tener la tarea (reemplazan a los anteriores). */
+  attachments?: { name: string }[];
 }
 
 @Injectable({ providedIn: 'root' })

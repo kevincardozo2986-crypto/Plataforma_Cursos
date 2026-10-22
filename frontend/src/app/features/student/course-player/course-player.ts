@@ -1,6 +1,8 @@
 import { LessonResource, LearningResource, materialKind } from './lesson-resource';
 import { CodePractice } from './code-practice';
 import { QuestionThread } from './question-thread';
+import { StudentAssignments } from './student-assignments';
+import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import {
   Component,
   DestroyRef,
@@ -49,10 +51,26 @@ interface Post {
   body: string;
   author?: { firstName: string; lastName: string };
 }
-type Tab = 'practice' | 'description' | 'resources' | 'notes' | 'questions' | 'announcements';
+type Tab =
+  | 'practice'
+  | 'description'
+  | 'resources'
+  | 'assignments'
+  | 'notes'
+  | 'questions'
+  | 'announcements';
 @Component({
   selector: 'app-course-player',
-  imports: [RouterLink, FormsModule, StudentIcon, LessonResource, CodePractice, QuestionThread],
+  imports: [
+    RouterLink,
+    FormsModule,
+    StudentIcon,
+    LessonResource,
+    CodePractice,
+    QuestionThread,
+    StudentAssignments,
+    RichHtmlPipe,
+  ],
   templateUrl: './course-player.html',
   styleUrl: './course-player.scss',
 })
@@ -97,6 +115,7 @@ export class CoursePlayer {
   private readonly allTabs: { id: Tab; label: string }[] = [
     { id: 'description', label: 'Descripción' },
     { id: 'resources', label: 'Recursos' },
+    { id: 'assignments', label: 'Tareas' },
     { id: 'practice', label: 'Practicar código' },
     { id: 'notes', label: 'Mis notas' },
     { id: 'questions', label: 'Preguntas' },

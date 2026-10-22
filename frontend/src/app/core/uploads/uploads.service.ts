@@ -6,9 +6,11 @@ import { UploadKind } from './upload-rules';
 export type UploadEvent =
   { type: 'progress'; percent: number } | { type: 'done'; url: string; name: string; size: number };
 
-const ENDPOINTS: Record<UploadKind, string> = {
+/** `document`: documentos privados (PDF, Word, Excel…) para tareas y entregas. */
+const ENDPOINTS: Record<UploadKind | 'document', string> = {
   image: '/api/uploads/images',
   video: '/api/uploads/videos',
+  document: '/api/uploads/documents',
 };
 
 /** El mismo token que usa el interceptor de autenticación. */
@@ -30,7 +32,7 @@ function readToken(): string | null {
  */
 @Injectable({ providedIn: 'root' })
 export class UploadsService {
-  upload(kind: UploadKind, file: File): Observable<UploadEvent> {
+  upload(kind: UploadKind | 'document', file: File): Observable<UploadEvent> {
     return new Observable<UploadEvent>((subscriber) => {
       const xhr = new XMLHttpRequest();
       const form = new FormData();
@@ -55,12 +57,15 @@ export class UploadsService {
       xhr.onload = () => {
         const body = this.parse(xhr.responseText);
 
-        if (xhr.status >= 200 && xhr.status < 300 && typeof body?.['url'] === 'string') {
+        // Los documentos privados no tienen dirección pública: se identifican por su nombre guardado.
+        const stored = kind === 'document' ? body?.['name'] : body?.['url'];
+
+        if (xhr.status >= 200 && xhr.status < 300 && typeof stored === 'string') {
           subscriber.next({
             type: 'done',
-            url: body['url'],
-            name: String(body['name'] ?? file.name),
-            size: Number(body['size'] ?? file.size),
+            url: kind === 'document' ? '' : stored,
+            name: String(body?.['name'] ?? file.name),
+            size: Number(body?.['size'] ?? file.size),
           });
           subscriber.complete();
           return;

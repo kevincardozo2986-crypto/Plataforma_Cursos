@@ -1,8 +1,49 @@
-import { CertificateStyle, FontOption, TextStyle } from './certificates.models';
+import {
+  CertificateStyle,
+  FontOption,
+  Offset,
+  OffsetPart,
+  Offsets,
+  TextStyle,
+} from './certificates.models';
 
 export const SIZE_MIN = 60;
 export const SIZE_MAX = 140;
 export const VEIL_MAX = 80;
+export const OFFSET_MAX_X = 400;
+export const OFFSET_MAX_Y = 300;
+
+export const OFFSET_PARTS: { key: OffsetPart; label: string }[] = [
+  { key: 'title', label: 'Título' },
+  { key: 'recipient', label: 'Nombre y cédula' },
+  { key: 'body', label: 'Texto' },
+  { key: 'signature', label: 'Firma' },
+];
+
+export const NO_OFFSET: Offset = { x: 0, y: 0 };
+
+/** Un desplazamiento entero y dentro de los límites. */
+export function clampOffset(offset: Offset): Offset {
+  const clamp = (value: number, max: number) =>
+    Math.min(max, Math.max(-max, Number.isFinite(value) ? Math.round(value) : 0));
+
+  return { x: clamp(offset.x, OFFSET_MAX_X), y: clamp(offset.y, OFFSET_MAX_Y) };
+}
+
+/** Solo lo que se movió (igual que el servidor). */
+export function cleanOffsets(offsets: Offsets | undefined): Offsets | undefined {
+  const clean: Offsets = {};
+
+  for (const { key } of OFFSET_PARTS) {
+    const offset = offsets?.[key] ? clampOffset(offsets[key]) : NO_OFFSET;
+
+    if (offset.x !== 0 || offset.y !== 0) {
+      clean[key] = offset;
+    }
+  }
+
+  return Object.keys(clean).length > 0 ? clean : undefined;
+}
 
 /** Qué es la negrita "automática" de cada texto: título y nombre sí, el texto no (igual que el PDF). */
 export const AUTO_BOLD = { title: true, name: true, body: false } as const;
@@ -57,6 +98,9 @@ export function cleanStyle(style: CertificateStyle): CertificateStyle {
   }
 
   if (style.showDocument === false) clean.showDocument = false;
+  const moved = cleanOffsets(style.offsets);
+
+  if (moved) clean.offsets = moved;
   if (typeof style.veil === 'number' && Math.round(style.veil) > 0) {
     clean.veil = Math.min(VEIL_MAX, Math.round(style.veil));
   }

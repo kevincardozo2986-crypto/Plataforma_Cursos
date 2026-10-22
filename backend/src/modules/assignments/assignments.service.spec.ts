@@ -34,6 +34,8 @@ function build() {
       Promise.resolve({ id: 9, status: 'SUBMITTED', score: null, feedback: null, submittedAt: NOW, gradedAt: null, ...data }),
     ),
     findByFileName: vi.fn().mockResolvedValue(null),
+    findByAttachmentName: vi.fn().mockResolvedValue(null),
+    create: vi.fn((data: Record<string, unknown>) => Promise.resolve({ id: 1, ...data })),
     highestScore: vi.fn().mockResolvedValue(0),
     update: vi.fn((_id: number, data: unknown) => Promise.resolve(data)),
     findDetail: vi.fn(),
@@ -245,6 +247,105 @@ describe('AssignmentsService', () => {
     });
 
     it('un archivo que no está en ninguna entrega no se descarga', async () => {
+      const { service } = build();
+
+      await expect(service.fileForDownload(student, FILE)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('documentos adjuntos a la tarea', () => {
+    const teacherInfo = { originalName: 'guia.docx', size: 4321, uploadedBy: 7 };
+
+    it('el docente adjunta documentos al crear la tarea y se devuelven con su descarga', async () => {
+      const { service, repository, uploads } = build();
+      uploads.privateInfo.mockResolvedValue(teacherInfo);
+
+      const result = await service.create(teacher, 3, { title: 'Informe', attachments: [{ name: FILE }] });
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ attachments: [{ name: FILE, originalName: 'guia.docx', size: 4321 }] }),
+      );
+      expect(result.attachments).toEqual([
+        { name: FILE, originalName: 'guia.docx', size: 4321, url: `/api/submission-files/${FILE}` },
+      ]);
+    });
+
+    it('sin adjuntos, la tarea sale con una lista vacía', async () => {
+      const { service } = build();
+
+      expect((await service.create(teacher, 3, { title: 'Sin archivos' })).attachments).toEqual([]);
+    });
+
+    it('rechaza un archivo que no subió quien lo adjunta, o que ya se usó en una entrega u otra tarea', async () => {
+      const { service, repository, uploads } = build();
+
+      await expect(service.create(teacher, 3, { title: 'x y', attachments: [{ name: FILE }] })).rejects.toBeInstanceOf(BadRequestException);
+
+      uploads.privateInfo.mockResolvedValue(teacherInfo);
+      repository.findByFileName.mockResolvedValue({ userId: 5, assignmentId: 2, files: [] });
+      await expect(service.create(teacher, 3, { title: 'x y', attachments: [{ name: FILE }] })).rejects.toBeInstanceOf(BadRequestException);
+
+      repository.findByFileName.mockResolvedValue(null);
+      repository.findByAttachmentName.mockResolvedValue({ id: 99, attachments: [], module: { courseId: 10 } });
+      await expect(service.create(teacher, 3, { title: 'x y', attachments: [{ name: FILE }] })).rejects.toBeInstanceOf(BadRequestException);
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('al editar, los documentos nuevos reemplazan a los anteriores y los que sobran se borran', async () => {
+      const { service, repository, uploads } = build();
+      uploads.privateInfo.mockResolvedValue(teacherInfo);
+      repository.findById.mockResolvedValue(assignment({ attachments: [{ name: OTHER_FILE, originalName: 'vieja.pdf', size: 1 }] }));
+
+      await service.update(teacher, 1, { attachments: [{ name: FILE }] });
+
+      expect(repository.update).toHaveBeenCalledWith(1, expect.objectContaining({ attachments: [expect.objectContaining({ name: FILE })] }));
+      expect(uploads.removePrivate).toHaveBeenCalledWith([OTHER_FILE]);
+    });
+
+    it('conservar un documento que la tarea ya tenía no lo borra ni lo rechaza', async () => {
+      const { service, repository, uploads } = build();
+      uploads.privateInfo.mockResolvedValue(teacherInfo);
+      repository.findById.mockResolvedValue(assignment({ attachments: [{ name: FILE, originalName: 'guia.docx', size: 4321 }] }));
+      repository.findByAttachmentName.mockResolvedValue({ id: 1, attachments: [], module: { courseId: 10 } });
+
+      await service.update(teacher, 1, { attachments: [{ name: FILE }] });
+
+      expect(uploads.removePrivate).toHaveBeenCalledWith([]);
+    });
+
+    it('editar sin enviar documentos no toca los que hay', async () => {
+      const { service, repository, uploads } = build();
+
+      await service.update(teacher, 1, { title: 'Nuevo título' });
+
+      expect(repository.update).toHaveBeenCalledWith(1, expect.objectContaining({ attachments: undefined }));
+      expect(uploads.removePrivate).toHaveBeenCalledWith([]);
+    });
+
+    it('un estudiante que puede ver el curso descarga el documento con su nombre original', async () => {
+      const { service, repository } = build();
+      repository.findByAttachmentName.mockResolvedValue({
+        id: 1,
+        attachments: [{ name: FILE, originalName: 'guia.docx', size: 4321 }],
+        module: { courseId: 10 },
+      });
+
+      await expect(service.fileForDownload(student, FILE)).resolves.toEqual({ path: '/ruta/privada/archivo.pdf', originalName: 'guia.docx' });
+    });
+
+    it('quien no puede ver el curso recibe «no existe»', async () => {
+      const { service, repository, access } = build();
+      repository.findByAttachmentName.mockResolvedValue({
+        id: 1,
+        attachments: [{ name: FILE, originalName: 'guia.docx', size: 4321 }],
+        module: { courseId: 10 },
+      });
+      access.assertCanView.mockRejectedValue(new ForbiddenException());
+
+      await expect(service.fileForDownload(otherStudent, FILE)).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('un archivo que no está en ninguna entrega ni tarea no existe', async () => {
       const { service } = build();
 
       await expect(service.fileForDownload(student, FILE)).rejects.toBeInstanceOf(NotFoundException);

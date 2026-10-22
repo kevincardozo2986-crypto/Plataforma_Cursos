@@ -11,6 +11,7 @@ export interface AssignmentData {
   dueAt?: Date | null;
   allowLate?: boolean;
   maxScore?: number;
+  attachments?: SubmissionFile[];
 }
 
 /** Archivo adjunto de una entrega, tal como se guarda. */
@@ -51,11 +52,20 @@ export class AssignmentsRepository {
   }
 
   create(data: AssignmentData & { moduleId: number; title: string }) {
-    return this.prisma.assignment.create({ data });
+    return this.prisma.assignment.create({ data: this.toData(data) as Prisma.AssignmentUncheckedCreateInput });
   }
 
   update(id: number, data: AssignmentData) {
-    return this.prisma.assignment.update({ where: { id }, data });
+    return this.prisma.assignment.update({ where: { id }, data: this.toData(data) });
+  }
+
+  private toData(data: AssignmentData & { moduleId?: number; title?: string }) {
+    const { attachments, ...rest } = data;
+
+    return {
+      ...rest,
+      ...(attachments !== undefined ? { attachments: attachments as unknown as Prisma.InputJsonValue } : {}),
+    };
   }
 
   delete(id: number) {
@@ -72,13 +82,18 @@ export class AssignmentsRepository {
     return result._max.score ?? 0;
   }
 
+  /** Los documentos de todas las entregas de una tarea y los que el docente le adjuntó. */
   async fileNamesOfAssignment(assignmentId: number): Promise<string[]> {
     const rows = await this.prisma.assignmentSubmission.findMany({
       where: { assignmentId },
       select: { files: true },
     });
+    const own = await this.prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      select: { attachments: true },
+    });
 
-    return rows.flatMap((row) => this.namesOf(row.files));
+    return [...rows.flatMap((row) => this.namesOf(row.files)), ...this.namesOf(own?.attachments)];
   }
 
   findSubmission(assignmentId: number, userId: number) {
@@ -191,6 +206,14 @@ export class AssignmentsRepository {
     return this.prisma.assignmentSubmission.update({
       where: { id },
       data: { ...data, status: 'GRADED', gradedAt: new Date() },
+    });
+  }
+
+  /** La tarea que tiene adjunto un documento, para decidir quién puede descargarlo. */
+  findByAttachmentName(name: string) {
+    return this.prisma.assignment.findFirst({
+      where: { attachments: { array_contains: [{ name }] } },
+      select: { id: true, attachments: true, module: { select: { courseId: true } } },
     });
   }
 

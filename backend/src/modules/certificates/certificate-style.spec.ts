@@ -1,4 +1,4 @@
-import { AUTO_BOLD, resolveText, sanitizeStyle, SIZE_MAX, SIZE_MIN, VEIL_MAX } from './certificate-style.js';
+import { AUTO_BOLD, resolveText, sanitizeStyle, OFFSET_MAX_X, OFFSET_MAX_Y, SIZE_MAX, SIZE_MIN, VEIL_MAX } from './certificate-style.js';
 
 describe('resolveText', () => {
   it('sin estilo: título y nombre en negrita si la tipografía la tiene; el texto, no', () => {
@@ -89,5 +89,27 @@ describe('velo', () => {
     expect(sanitizeStyle({ veil: 0 })).toEqual({});
     expect(sanitizeStyle({ veil: -5 })).toEqual({});
     expect(sanitizeStyle({ veil: 'mucho' })).toEqual({});
+  });
+});
+
+
+describe('posición de los textos', () => {
+  it('se guardan enteros, acotados, solo de los bloques conocidos y sin los que no se movieron', () => {
+    expect(sanitizeStyle({ offsets: { title: { x: 10.4, y: -20 }, body: { x: 0, y: 0 }, inventado: { x: 5, y: 5 } } })).toEqual({
+      offsets: { title: { x: 10, y: -20 } },
+    });
+    expect(sanitizeStyle({ offsets: { signature: { x: 9999, y: -9999 } } })).toEqual({
+      offsets: { signature: { x: OFFSET_MAX_X, y: -OFFSET_MAX_Y } },
+    });
+  });
+
+  it('valores inválidos o sin ningún movimiento no dejan nada', () => {
+    expect(sanitizeStyle({ offsets: { title: { x: 'mucho', y: NaN } } })).toEqual({});
+    expect(sanitizeStyle({ offsets: {} })).toEqual({});
+    expect(sanitizeStyle({ offsets: 5 })).toEqual({});
+  });
+
+  it('solo mueve en un eje si solo se manda ese', () => {
+    expect(sanitizeStyle({ offsets: { recipient: { y: 30 } } })).toEqual({ offsets: { recipient: { x: 0, y: 30 } } });
   });
 });

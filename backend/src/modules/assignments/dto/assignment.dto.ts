@@ -20,6 +20,12 @@ import { SanitizeHtml } from '../../../common/dto/sanitize-html.js';
 import { Trim } from '../../../common/dto/trim.js';
 import { PRIVATE_NAME } from '../../uploads/upload-paths.js';
 
+export class FileRefDto {
+  /** Nombre que devolvió `POST /uploads/documents`. */
+  @Matches(PRIVATE_NAME, { message: 'El nombre del archivo no es válido' })
+  name: string;
+}
+
 export class CreateAssignmentDto {
   @Trim()
   @IsString()
@@ -51,6 +57,14 @@ export class CreateAssignmentDto {
   @Min(1)
   @Max(1000)
   maxScore?: number;
+
+  /** Documentos para los estudiantes (PDF, Word, Excel…), subidos antes con `POST /uploads/documents`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10, { message: 'Puedes adjuntar hasta 10 archivos' })
+  @ValidateNested({ each: true })
+  @Type(() => FileRefDto)
+  attachments?: FileRefDto[];
 }
 
 export class UpdateAssignmentDto {
@@ -82,12 +96,14 @@ export class UpdateAssignmentDto {
   @Min(1)
   @Max(1000)
   maxScore?: number;
-}
 
-export class FileRefDto {
-  /** Nombre que devolvió `POST /uploads/documents`. */
-  @Matches(PRIVATE_NAME, { message: 'El nombre del archivo no es válido' })
-  name: string;
+  /** Reemplaza los documentos adjuntos (`[]` los quita todos); sin enviarlo, no se tocan. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10, { message: 'Puedes adjuntar hasta 10 archivos' })
+  @ValidateNested({ each: true })
+  @Type(() => FileRefDto)
+  attachments?: FileRefDto[];
 }
 
 /** Entrega del estudiante: un texto, archivos, o ambos (al menos uno). */

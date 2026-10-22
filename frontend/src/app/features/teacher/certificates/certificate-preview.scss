@@ -72,3 +72,49 @@
   background: #fff;
   border-radius: 1.6cqw;
 }
+
+/* Áreas que se arrastran (solo en el editor). */
+.hit {
+  position: absolute;
+  border: 1px dashed transparent;
+  border-radius: 0.6cqw;
+  cursor: grab;
+  touch-action: none;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+
+.hit:hover,
+.hit:focus-visible {
+  background: rgba(18, 103, 216, 0.08);
+  border-color: #1267d8;
+  outline: none;
+}
+
+.hit:active {
+  cursor: grabbing;
+  background: rgba(18, 103, 216, 0.14);
+}
+
+.hit-label {
+  position: absolute;
+  top: -1.5cqw;
+  left: 0;
+  display: none;
+  padding: 0.1cqw 0.8cqw;
+  color: #fff;
+  font:
+    700 1.3cqw/1.6 system-ui,
+    sans-serif;
+  white-space: nowrap;
+  background: #1267d8;
+  border-radius: 0.5cqw;
+  pointer-events: none;
+}
+
+.hit:hover .hit-label,
+.hit:focus-visible .hit-label,
+.hit:active .hit-label {
+  display: block;
+}

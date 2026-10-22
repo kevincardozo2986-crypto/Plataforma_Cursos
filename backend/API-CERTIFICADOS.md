@@ -51,6 +51,7 @@ Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis)
     Forzarla en una tipografía **sin** negrita (cursivas, propias) la dibuja con un trazo grueso (**negrita sintética**: relleno + contorno).
   - `italic`: cursiva sintética (se inclina el texto 0,2), también en tipografías que no traen cursiva.
   - `size`: porcentaje del tamaño normal, de 60 a 140. `color`: `#RRGGBB`.
+  - `offsets`: **mover los textos**. Un objeto con cuatro bloques posibles —`title`, `recipient` («Se otorga a», nombre, cédula y línea), `body` (el texto) y `signature` (línea, nombre y firma)— y para cada uno `{ "x": 12, "y": -8 }`: cuánto se corrió desde su sitio, en **puntos de página** (A4 horizontal: 841,89 × 595,28; `x` positivo = a la derecha, `y` positivo = hacia abajo). Enteros de −400 a 400 (`x`) y de −300 a 300 (`y`); lo que está en 0 no se guarda. El texto sigue achicándose solo para no pasar de la firma (el límite se mueve con ella). El editor los cambia arrastrando en la vista previa, con las flechas del teclado o escribiendo los números.
   - Un nombre grande empuja hacia abajo la cédula, la línea y el texto. El texto se **achica solo** hasta quedar por encima de la firma (mínimo 9 pt), así que un texto largo o agrandado nunca se monta sobre ella.
   - Valores inválidos (`size: 500`, `color: "rojo"`, `bold: "si"`…) se rechazan con `400`.
 - **Plantilla con tu propia imagen** (`layout: "IMAGE"` + `backgroundUrl`): el docente sube su diseño (hecho en Canva, Word, Photoshop…) con

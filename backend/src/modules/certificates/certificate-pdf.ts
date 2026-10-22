@@ -1,7 +1,14 @@
 import PDFDocument from 'pdfkit';
 
 import type { FontSource } from '../certificate-fonts/certificate-fonts.service.js';
-import { AUTO_BOLD, type CertificateStyle, type ResolvedText, resolveText } from './certificate-style.js';
+import {
+  AUTO_BOLD,
+  type CertificateStyle,
+  type Offset,
+  type OffsetPart,
+  type ResolvedText,
+  resolveText,
+} from './certificate-style.js';
 import {
   fillTemplate,
   formatDocument,
@@ -549,6 +556,11 @@ function writeContent(
   const body = registerFace(doc, 'body', fonts.body);
   const { colors } = box;
   const style = content.design.style ?? {};
+  const at = (part: OffsetPart): Offset => style.offsets?.[part] ?? { x: 0, y: 0 };
+  const titleAt = at('title');
+  const recipientAt = at('recipient');
+  const bodyAt = at('body');
+  const signatureAt = at('signature');
 
   const headingBold = hasRealBold(fonts.heading);
   const titleStyle = resolveText(style.title, AUTO_BOLD.title, headingBold);
@@ -578,8 +590,8 @@ function writeContent(
   drawText(
     doc,
     title,
-    box.x,
-    box.titleY,
+    box.x + titleAt.x,
+    box.titleY + titleAt.y,
     { width: box.width, align: box.align, lineBreak: false, ...(box.upper ? { characterSpacing: 1.5 } : {}) },
     look(heading, titleStyle, titleSize, colors.title),
   );
@@ -588,7 +600,11 @@ function writeContent(
   const nameY = box.contentY + 30;
 
   doc.fillColor(colors.soft).font(body.regular).fontSize(14);
-  doc.text('Se otorga a', box.x, box.contentY, { width: box.width, align: box.align, lineBreak: false });
+  doc.text('Se otorga a', box.x + recipientAt.x, box.contentY + recipientAt.y, {
+    width: box.width,
+    align: box.align,
+    lineBreak: false,
+  });
 
   const nameFont = nameStyle.bold ? heading.bold : heading.regular;
   const nameStart = 42 * nameStyle.scale;
@@ -597,8 +613,8 @@ function writeContent(
   drawText(
     doc,
     content.studentName,
-    box.x,
-    nameY,
+    box.x + recipientAt.x,
+    nameY + recipientAt.y,
     { width: box.width, align: box.align, lineBreak: false },
     look(heading, nameStyle, nameSize, colors.name),
   );
@@ -609,7 +625,7 @@ function writeContent(
   // Documento de identidad, en pequeño bajo el nombre
   if (content.studentDocument && style.showDocument !== false) {
     doc.fillColor(colors.soft).font(body.regular).fontSize(11);
-    doc.text(`Documento de identidad: ${formatDocument(content.studentDocument)}`, box.x, nameY + 50 + shift, {
+    doc.text(`Documento de identidad: ${formatDocument(content.studentDocument)}`, box.x + recipientAt.x, nameY + 50 + shift + recipientAt.y, {
       width: box.width,
       align: box.align,
       lineBreak: false,
@@ -618,21 +634,23 @@ function writeContent(
 
   // Línea bajo el nombre
   if (box.rule !== 'none') {
-    const ruleY = box.contentY + 100 + shift;
-    const ruleX = box.rule === 'center' ? WIDTH / 2 - 130 : box.x;
+    const ruleY = box.contentY + 100 + shift + recipientAt.y;
+    const ruleX = (box.rule === 'center' ? WIDTH / 2 - 130 : box.x) + recipientAt.x;
 
     doc.lineWidth(1.2).strokeColor(colors.accent).moveTo(ruleX, ruleY).lineTo(ruleX + 260, ruleY).stroke();
   }
 
   // Texto del certificado
-  const bodyY = box.contentY + (box.rule === 'none' ? 104 : 124) + shift;
+  const bodyY = box.contentY + (box.rule === 'none' ? 104 : 124) + shift + bodyAt.y;
+  const bodyX = box.x + bodyAt.x;
   const inset = box.align === 'center' ? 20 : 0;
   const bodyWidth = box.width - inset * 2;
   const text = bodyText(content);
   const bodyFace = bodyStyle.bold ? body.bold : body.regular;
 
   // Si el texto es largo (o se agrandó), se achica hasta quedar por encima de la firma.
-  const bodySize = fitToHeight(16 * bodyStyle.scale, 9, bodyY, BODY_LIMIT_Y, (size) => {
+  // El límite baja o sube con la firma si se movió.
+  const bodySize = fitToHeight(16 * bodyStyle.scale, 9, bodyY, BODY_LIMIT_Y + signatureAt.y, (size) => {
     doc.font(bodyFace).fontSize(size);
 
     return doc.heightOfString(text, { width: bodyWidth, lineGap: 5 });
@@ -648,26 +666,28 @@ function writeContent(
       drawText(
         doc,
         line,
-        box.x + inset,
+        bodyX + inset,
         bodyY + index * lineHeight,
         { width: bodyWidth, align: box.align, lineBreak: false },
         bodyLook,
       );
     });
   } else {
-    drawText(doc, text, box.x + inset, bodyY, { width: bodyWidth, align: box.align, lineGap: 5 }, bodyLook);
+    drawText(doc, text, bodyX + inset, bodyY, { width: bodyWidth, align: box.align, lineGap: 5 }, bodyLook);
   }
 
   // Firma
-  const { x, width } = box.signature;
+  const { width } = box.signature;
+  const x = box.signature.x + signatureAt.x;
+  const lineY = SIGNATURE_Y + signatureAt.y;
 
   if (box.signaturePlate && content.signature) {
-    doc.roundedRect(x + width / 2 - 95, SIGNATURE_Y - 78, 190, 74, 8).fill('#F8FAFC');
+    doc.roundedRect(x + width / 2 - 95, lineY - 78, 190, 74, 8).fill('#F8FAFC');
   }
 
   if (content.signature) {
     try {
-      doc.image(content.signature, x + width / 2 - 85, SIGNATURE_Y - 72, {
+      doc.image(content.signature, x + width / 2 - 85, lineY - 72, {
         fit: [170, 66],
         align: 'center',
         valign: 'bottom',
@@ -677,11 +697,11 @@ function writeContent(
     }
   }
 
-  doc.lineWidth(0.8).strokeColor(colors.line).moveTo(x, SIGNATURE_Y).lineTo(x + width, SIGNATURE_Y).stroke();
+  doc.lineWidth(0.8).strokeColor(colors.line).moveTo(x, lineY).lineTo(x + width, lineY).stroke();
   doc.fillColor(colors.name).font(heading.bold).fontSize(12);
-  doc.text(content.instructorName, x, SIGNATURE_Y + 6, { width, align: 'center', lineBreak: false });
+  doc.text(content.instructorName, x, lineY + 6, { width, align: 'center', lineBreak: false });
   doc.fillColor(colors.soft).font(body.regular).fontSize(9.5);
-  doc.text('Docente', x, SIGNATURE_Y + 22, { width, align: 'center', lineBreak: false });
+  doc.text('Docente', x, lineY + 22, { width, align: 'center', lineBreak: false });
 
   // Código de verificación
   doc.fillColor(colors.footer).font('Helvetica').fontSize(8.5);

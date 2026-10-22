@@ -92,3 +92,21 @@ describe('imagen de fondo y velo (DTO)', () => {
     expect(await check({ style: { veil: 2.5 } })).toBeGreaterThan(0);
   });
 });
+
+
+describe('posición de los textos (DTO)', () => {
+  const check = async (plain: object) => (await validate(plainToInstance(CreateCertificateTemplateDto, { name: 'Mi plantilla', ...plain }))).length;
+
+  it('acepta desplazamientos enteros dentro de los límites', async () => {
+    expect(await check({ style: { offsets: { title: { x: 10, y: -20 }, recipient: { y: 5 }, body: { x: -400 }, signature: { x: 400, y: 300 } } } })).toBe(0);
+  });
+
+  it.each([
+    { title: { x: 401 } },
+    { body: { y: -301 } },
+    { signature: { x: 1.5 } },
+    { recipient: { y: 'abajo' } },
+  ])('rechaza %j', async (offsets) => {
+    expect(await check({ style: { offsets } })).toBeGreaterThan(0);
+  });
+});

@@ -1,4 +1,4 @@
-import { IFRAME_HOSTS, cleanHtml, hasVisibleText } from './sanitize-html.js';
+import { cleanHtml, hasVisibleText } from './sanitize-html.js';
 
 describe('hasVisibleText', () => {
   it('un HTML sin texto cuenta como vacío', () => {
@@ -48,11 +48,10 @@ describe('cleanHtml', () => {
     expect(cleanHtml('<img src="data:image/svg+xml;base64,AAAA">')).toBe('<img />');
   });
 
-  it('elimina formularios, estilos, objetos y marcos de otros sitios', () => {
+  it('elimina formularios, estilos y objetos', () => {
     expect(cleanHtml('<form action="https://malo.com"><input name="clave"></form>')).toBe('');
     expect(cleanHtml('<style>body{display:none}</style><p>ok</p>')).toBe('<p>ok</p>');
     expect(cleanHtml('<object data="x.swf"></object><embed src="x.swf">')).toBe('');
-    expect(cleanHtml('<iframe src="https://malo.com/login"></iframe>')).toBe('');
   });
 
   it('permite incrustar videos de YouTube y Vimeo', () => {
@@ -82,14 +81,46 @@ describe('cleanHtml: editor enriquecido', () => {
     expect(cleanHtml('<p style="text-align:expression(alert(1))">Hola</p>')).toBe('<p>Hola</p>');
   });
 
-  it('admite los sitios de la lista y rechaza los demás', () => {
-    for (const host of IFRAME_HOSTS) {
-      expect(cleanHtml(`<iframe src="https://${host}/embed/x"></iframe>`)).toContain(host);
+  it('admite iframes de cualquier sitio con https', () => {
+    for (const url of [
+      'https://www.youtube.com/embed/x',
+      'https://sitio-cualquiera.com/pagina.html',
+      'https://app.ejemplo.edu.co:8443/ruta/index.html?a=1&b=2',
+      'https://campusvirtual.santototunja.edu.co/Web_Secciones_Entrega/01_Hero_Induccion.html',
+    ]) {
+      expect(cleanHtml(`<iframe src="${url}"></iframe>`)).toContain('<iframe src="https://');
     }
+  });
 
-    expect(cleanHtml('<iframe src="https://www.youtube.com.malo.com/embed/x"></iframe>')).toBe('');
-    expect(cleanHtml('<iframe src="http://localhost:3000/"></iframe>')).toBe('');
-    expect(cleanHtml('<iframe src="//malo.com/x"></iframe>')).toBe('');
+  it('rechaza lo que no es una dirección https absoluta', () => {
+    expect(cleanHtml('<iframe src="http://sitio.com/x.html"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="//sitio.com/x"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="/api/uploads/x.html"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="x.html"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="ftp://sitio.com/x"></iframe>')).toBe('');
+  });
+
+  it('no deja que un marco cargue esta misma plataforma', () => {
+    expect(cleanHtml('<iframe src="https://localhost/x"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="https://127.0.0.1/x"></iframe>')).toBe('');
+    expect(cleanHtml('<iframe src="https://[::1]/x"></iframe>')).toBe('');
+  });
+
+  it('ni un nombre sin punto', () => {
+    expect(cleanHtml('<iframe src="https://intranet/x.html"></iframe>')).toBe('');
+  });
+
+  it('tampoco la dirección configurada en APP_URL', () => {
+    const before = process.env.APP_URL;
+
+    process.env.APP_URL = 'https://campus.miuniversidad.edu.co';
+    try {
+      expect(cleanHtml('<iframe src="https://campus.miuniversidad.edu.co/inicio"></iframe>')).toBe('');
+      expect(cleanHtml('<iframe src="https://otro.miuniversidad.edu.co/inicio"></iframe>')).toContain('otro.miuniversidad');
+    } finally {
+      if (before === undefined) delete process.env.APP_URL;
+      else process.env.APP_URL = before;
+    }
   });
 
   it('todo marco queda con sandbox y carga diferida, aunque pidan otra cosa', () => {
@@ -109,5 +140,32 @@ describe('cleanHtml: editor enriquecido', () => {
 
   it('un iframe con srcdoc no puede colar HTML propio', () => {
     expect(cleanHtml('<iframe srcdoc="<script>alert(1)</script>"></iframe>')).toBe('');
+  });
+});
+
+describe('páginas del propio campus virtual', () => {
+  const pasted = `<iframe
+  src="https://campusvirtual.santototunja.edu.co/Web_Secciones_Entrega/01_Hero_Induccion.html"
+  width="100%"
+  height="900"
+  style="border: 0; display: block;"
+  allow="fullscreen"
+  allowfullscreen>
+</iframe>`;
+
+  it('el iframe de una sección del campus se conserva con su tamaño, aislado y sin estilos arbitrarios', () => {
+    const clean = cleanHtml(pasted);
+
+    expect(clean).toContain('src="https://campusvirtual.santototunja.edu.co/Web_Secciones_Entrega/01_Hero_Induccion.html"');
+    expect(clean).toContain('width="100%"');
+    expect(clean).toContain('height="900"');
+    expect(clean).toContain('allowfullscreen');
+    expect(clean).toContain('sandbox="');
+    expect(clean).not.toContain('style=');
+    expect(clean).not.toContain('allow="');
+  });
+
+  it('sigue siendo solo https', () => {
+    expect(cleanHtml('<iframe src="http://campusvirtual.santototunja.edu.co/x.html"></iframe>')).toBe('');
   });
 });

@@ -192,7 +192,7 @@
           @case ('description') {
             <h3>Sobre esta lecci&#243;n</h3>
             @if (lesson()?.content) {
-              <div class="rich-text" [innerHTML]="lesson()!.content"></div>
+              <div class="rich-text" [innerHTML]="lesson()!.content | richHtml"></div>
             } @else {
               <p class="empty-message">
                 {{
@@ -299,13 +299,18 @@
               }
             }
           }
+          @case ('assignments') {
+            @if (selected(); as current) {
+              <app-student-assignments [moduleId]="current.moduleId" />
+            }
+          }
           @case ('announcements') {
             <h3>Anuncios del docente</h3>
             @for (post of posts(); track post.id) {
               <article class="post">
                 <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
                 <h4>{{ post.title }}</h4>
-                <div class="rich-text" [innerHTML]="post.body"></div>
+                <div class="rich-text" [innerHTML]="post.body | richHtml"></div>
               </article>
             } @empty {
               @if (!panelLoading() && !panelError()) {

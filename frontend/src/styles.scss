@@ -96,3 +96,11 @@ html:is(.a11y-dark, .a11y-contrast) .login-card .error-message {
   font-weight: 400;
   font-display: swap;
 }
+
+/* Marcos incrustados dentro del contenido que escribe el docente (el estilo del HTML original se descarta). */
+.rich-text iframe,
+.rich-editor iframe {
+  display: block;
+  max-width: 100%;
+  border: 0;
+}

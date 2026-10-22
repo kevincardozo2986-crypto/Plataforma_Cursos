@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { AUTO_BOLD, cleanStyle, resolveText, VEIL_MAX } from './certificate-style';
+import {
+  AUTO_BOLD,
+  cleanOffsets,
+  cleanStyle,
+  clampOffset,
+  OFFSET_MAX_X,
+  OFFSET_MAX_Y,
+  resolveText,
+  VEIL_MAX,
+} from './certificate-style';
 
 describe('resolveText', () => {
   it('automática: negrita en título y nombre solo si la tipografía la tiene', () => {
@@ -52,5 +61,28 @@ describe('velo', () => {
     expect(cleanStyle({ veil: 999 })).toEqual({ veil: VEIL_MAX });
     expect(cleanStyle({ veil: 0 })).toEqual({});
     expect(cleanStyle({ veil: undefined })).toEqual({});
+  });
+});
+
+describe('posición de los textos', () => {
+  it('clampOffset deja enteros y dentro de los límites', () => {
+    expect(clampOffset({ x: 10.6, y: -3.2 })).toEqual({ x: 11, y: -3 });
+    expect(clampOffset({ x: 9999, y: -9999 })).toEqual({ x: OFFSET_MAX_X, y: -OFFSET_MAX_Y });
+    expect(clampOffset({ x: NaN, y: 5 })).toEqual({ x: 0, y: 5 });
+  });
+
+  it('cleanOffsets guarda solo lo que se movió', () => {
+    expect(cleanOffsets({ title: { x: 0, y: 0 }, body: { x: 5, y: 0 } })).toEqual({
+      body: { x: 5, y: 0 },
+    });
+    expect(cleanOffsets({ title: { x: 0, y: 0 } })).toBeUndefined();
+    expect(cleanOffsets(undefined)).toBeUndefined();
+  });
+
+  it('cleanStyle incluye las posiciones', () => {
+    expect(cleanStyle({ offsets: { signature: { x: -20, y: 10 } } })).toEqual({
+      offsets: { signature: { x: -20, y: 10 } },
+    });
+    expect(cleanStyle({ offsets: {} })).toEqual({});
   });
 });

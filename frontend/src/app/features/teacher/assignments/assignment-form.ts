@@ -3,6 +3,8 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
+import { DocumentFile } from '../../../core/uploads/document-rules';
+import { DocumentField } from '../../../shared/ui/document-field/document-field';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { RichEditor } from '../../../shared/ui/rich-editor/rich-editor';
 import { AssignmentInput, TeacherAssignmentsService } from './assignments.service';
@@ -11,7 +13,7 @@ import { isoToLocalInput, localInputToIso } from './due-date';
 /** Crear (desde un módulo) o editar una tarea. */
 @Component({
   selector: 'app-assignment-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor, DocumentField],
   templateUrl: './assignment-form.html',
   styleUrl: './assignment-form.scss',
 })
@@ -32,6 +34,10 @@ export class AssignmentForm {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
+
+  /** Los documentos adjuntos a la tarea (PDF, Word, Excel…). */
+  readonly attachments = signal<DocumentFile[]>([]);
+
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,
@@ -64,6 +70,13 @@ export class AssignmentForm {
           allowLate: assignment.allowLate,
           maxScore: assignment.maxScore,
         });
+        this.attachments.set(
+          (assignment.attachments ?? []).map(({ name, originalName, size }) => ({
+            name,
+            originalName,
+            size,
+          })),
+        );
         this.loading.set(false);
         this.loaded.set(true);
       },
@@ -110,6 +123,10 @@ export class AssignmentForm {
       maxScore: Number(value.maxScore),
       // Al crear la fecha se omite si no hay; al editar, null la quita.
       dueAt: dueAt ?? (this.isEdit ? null : undefined),
+      // Al editar siempre se envía la lista (vacía = quitar todos); al crear, solo si hay.
+      ...(this.isEdit || this.attachments().length > 0
+        ? { attachments: this.attachments().map(({ name }) => ({ name })) }
+        : {}),
     };
 
     this.saving.set(true);

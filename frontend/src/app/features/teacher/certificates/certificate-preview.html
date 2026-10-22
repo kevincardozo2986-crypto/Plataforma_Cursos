@@ -19,8 +19,8 @@
 
   <p
     class="t title"
-    [style.left.%]="x(b.x)"
-    [style.top.%]="y(b.titleY)"
+    [style.left.%]="x(b.x + offTitle().x)"
+    [style.top.%]="y(b.titleY + offTitle().y)"
     [style.width.%]="x(b.width)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(titleSize())"
@@ -35,8 +35,8 @@
 
   <p
     class="t"
-    [style.left.%]="x(b.x)"
-    [style.top.%]="y(b.contentY)"
+    [style.left.%]="x(b.x + offRecipient().x)"
+    [style.top.%]="y(b.contentY + offRecipient().y)"
     [style.width.%]="x(b.width)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(14)"
@@ -49,8 +49,8 @@
 
   <p
     class="t strong"
-    [style.left.%]="x(b.x)"
-    [style.top.%]="y(b.contentY + 30)"
+    [style.left.%]="x(b.x + offRecipient().x)"
+    [style.top.%]="y(b.contentY + 30 + offRecipient().y)"
     [style.width.%]="x(b.width)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(nameSize())"
@@ -65,8 +65,8 @@
   @if (document() && showDocument()) {
     <p
       class="t"
-      [style.left.%]="x(b.x)"
-      [style.top.%]="y(b.contentY + 80 + shift())"
+      [style.left.%]="x(b.x + offRecipient().x)"
+      [style.top.%]="y(b.contentY + 80 + shift() + offRecipient().y)"
       [style.width.%]="x(b.width)"
       [style.text-align]="b.align"
       [style.font-size.cqw]="size(11)"
@@ -81,8 +81,8 @@
   @if (b.rule !== 'none') {
     <span
       class="rule"
-      [style.left.%]="x(ruleLeft())"
-      [style.top.%]="y(b.contentY + 100 + shift())"
+      [style.left.%]="x(ruleLeft() + offRecipient().x)"
+      [style.top.%]="y(b.contentY + 100 + shift() + offRecipient().y)"
       [style.width.%]="x(260)"
       [style.background]="b.colors.accent"
     ></span>
@@ -90,8 +90,8 @@
 
   <p
     class="t wrap"
-    [style.left.%]="x(b.x + inset())"
-    [style.top.%]="y(bodyTop())"
+    [style.left.%]="x(b.x + inset() + offBody().x)"
+    [style.top.%]="y(bodyTop() + offBody().y)"
     [style.width.%]="x(b.width - inset() * 2)"
     [style.text-align]="b.align"
     [style.font-size.cqw]="size(bodySize())"
@@ -105,15 +105,15 @@
 
   <span
     class="sign-line"
-    [style.left.%]="x(b.signature.x)"
-    [style.top.%]="y(462)"
+    [style.left.%]="x(b.signature.x + offSignature().x)"
+    [style.top.%]="y(462 + offSignature().y)"
     [style.width.%]="x(b.signature.width)"
     [style.background]="b.colors.line"
   ></span>
   <p
     class="t strong"
-    [style.left.%]="x(b.signature.x)"
-    [style.top.%]="y(468)"
+    [style.left.%]="x(b.signature.x + offSignature().x)"
+    [style.top.%]="y(468 + offSignature().y)"
     [style.width.%]="x(b.signature.width)"
     [style.text-align]="'center'"
     [style.font-size.cqw]="size(12)"
@@ -125,8 +125,8 @@
   </p>
   <p
     class="t"
-    [style.left.%]="x(b.signature.x)"
-    [style.top.%]="y(484)"
+    [style.left.%]="x(b.signature.x + offSignature().x)"
+    [style.top.%]="y(484 + offSignature().y)"
     [style.width.%]="x(b.signature.width)"
     [style.text-align]="'center'"
     [style.font-size.cqw]="size(9.5)"
@@ -136,6 +136,29 @@
   >
     Docente
   </p>
+
+  @if (editable()) {
+    @for (handle of handles(); track handle.part) {
+      <div
+        class="hit"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="handle.label + '. Arrastra o usa las flechas del teclado.'"
+        [attr.data-part]="handle.part"
+        [style.left.%]="x(handle.x)"
+        [style.top.%]="y(handle.y)"
+        [style.width.%]="x(handle.w)"
+        [style.height.%]="y(handle.h)"
+        (pointerdown)="startDrag(handle.part, $event)"
+        (pointermove)="dragging($event)"
+        (pointerup)="endDrag()"
+        (pointercancel)="endDrag()"
+        (keydown)="nudge(handle.part, $event)"
+      >
+        <span class="hit-label">{{ handle.label.replace('Mover ', '') }}</span>
+      </div>
+    }
+  }
 
   <p
     class="t footer"

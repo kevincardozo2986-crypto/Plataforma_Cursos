@@ -17,7 +17,7 @@ import {
 import { Trim } from '../../../common/dto/trim.js';
 
 import { CERTIFICATE_LAYOUTS } from '../certificate-pdf.js';
-import { SIZE_MAX, SIZE_MIN, VEIL_MAX } from '../certificate-style.js';
+import { OFFSET_MAX_X, OFFSET_MAX_Y, SIZE_MAX, SIZE_MIN, VEIL_MAX } from '../certificate-style.js';
 
 export const LAYOUTS = CERTIFICATE_LAYOUTS;
 /** Claves de tipografía: letras, números, guiones y «custom:12». Que exista se comprueba en el servicio. */
@@ -41,6 +41,44 @@ export class TextStyleDto {
   @IsOptional()
   @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'El color debe ser hexadecimal, por ejemplo #1F3A8A' })
   color?: string | null;
+}
+
+/** Cuánto se corrió un bloque de texto, en puntos de página. */
+export class OffsetDto {
+  @IsOptional()
+  @IsInt({ message: 'El desplazamiento horizontal debe ser un número entero' })
+  @Min(-OFFSET_MAX_X)
+  @Max(OFFSET_MAX_X, { message: `El desplazamiento horizontal máximo es ${OFFSET_MAX_X}` })
+  x?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El desplazamiento vertical debe ser un número entero' })
+  @Min(-OFFSET_MAX_Y)
+  @Max(OFFSET_MAX_Y, { message: `El desplazamiento vertical máximo es ${OFFSET_MAX_Y}` })
+  y?: number;
+}
+
+/** Posición de cada bloque de texto: el título, el destinatario (nombre y cédula), el texto y la firma. */
+export class OffsetsDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OffsetDto)
+  title?: OffsetDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OffsetDto)
+  recipient?: OffsetDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OffsetDto)
+  body?: OffsetDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OffsetDto)
+  signature?: OffsetDto;
 }
 
 export class CertificateStyleDto {
@@ -70,6 +108,12 @@ export class CertificateStyleDto {
   @Min(0)
   @Max(VEIL_MAX, { message: `El velo máximo es ${VEIL_MAX}%` })
   veil?: number;
+
+  /** Dónde está cada bloque de texto respecto a su sitio original (en puntos de página). */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OffsetsDto)
+  offsets?: OffsetsDto;
 }
 
 export const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;

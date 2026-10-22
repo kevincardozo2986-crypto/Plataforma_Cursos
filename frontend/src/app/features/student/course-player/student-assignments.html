@@ -1,0 +1,178 @@
+<h3>Tareas de este módulo</h3>
+
+@if (loading()) {
+  <p class="empty" role="status"><app-icon name="refresh" [size]="16" /> Cargando tareas…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+} @else if (items().length === 0) {
+  <p class="empty">
+    <app-icon name="clipboard" [size]="18" /> Este módulo no tiene tareas por ahora.
+  </p>
+} @else {
+  <ul class="tasks">
+    @for (item of items(); track item.id) {
+      @let state = stateOf(item);
+      <li class="task" [class.open]="openId() === item.id">
+        <button
+          type="button"
+          class="task-head"
+          [attr.aria-expanded]="openId() === item.id"
+          (click)="toggle(item.id)"
+        >
+          <span class="task-icon" aria-hidden="true"><app-icon name="clipboard" [size]="20" /></span>
+          <span class="task-title">
+            <strong>{{ item.title }}</strong>
+            @if (item.dueAt) {
+              <small [class.overdue]="pastDue(item) && !item.mySubmission">
+                <app-icon name="calendar" [size]="13" />
+                Entrega hasta el {{ item.dueAt | date: "d 'de' MMMM, h:mm a" }}
+              </small>
+            } @else {
+              <small>Sin fecha límite</small>
+            }
+          </span>
+          <span class="pill" [attr.data-tone]="state.tone">{{ state.label }}</span>
+          <app-icon class="chev" name="chevron-right" [size]="18" />
+        </button>
+
+        @if (openId() === item.id) {
+          <div class="task-body">
+            @if (item.description) {
+              <div class="rich-text" [innerHTML]="item.description | richHtml"></div>
+            }
+
+            @if (item.attachments.length > 0) {
+              <section class="block" aria-label="Documentos de la tarea">
+                <h4><app-icon name="download" [size]="16" /> Documentos del docente</h4>
+                <ul class="files">
+                  @for (file of item.attachments; track file.name) {
+                    <li>
+                      <button
+                        type="button"
+                        class="file"
+                        [disabled]="downloading() === file.name"
+                        (click)="download(file)"
+                      >
+                        <app-icon name="file" [size]="18" />
+                        <span>{{ file.originalName }}</span>
+                        <small>{{ size(file.size) }}</small>
+                        <app-icon name="download" [size]="16" />
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+
+            <p class="score-info">
+              <app-icon name="award" [size]="15" /> Vale {{ item.maxScore }} puntos.
+              @if (!item.allowLate) {
+                Pasada la fecha límite ya no se reciben entregas.
+              }
+            </p>
+
+            @if (detailLoading()) {
+              <p class="empty" role="status">Cargando tu entrega…</p>
+            } @else {
+              @if (mine(); as sent) {
+                @if (sent.status === 'GRADED') {
+                  <section class="grade" aria-label="Tu calificación">
+                    <div class="grade-score">
+                      <strong>{{ sent.score }}</strong>
+                      <span>de {{ item.maxScore }}</span>
+                    </div>
+                    <div class="grade-text">
+                      <h4><app-icon name="check-circle" [size]="16" /> Tu tarea fue calificada</h4>
+                      @if (sent.feedback) {
+                        <p class="feedback">{{ sent.feedback }}</p>
+                      } @else {
+                        <p class="muted">El docente no dejó comentarios.</p>
+                      }
+                      @if (sent.gradedAt) {
+                        <small class="muted">
+                          Calificada el {{ sent.gradedAt | date: "d 'de' MMMM" }}
+                        </small>
+                      }
+                    </div>
+                  </section>
+                } @else {
+                  <p class="status-line">
+                    <app-icon name="clock" [size]="15" />
+                    Entregaste el {{ sent.submittedAt | date: "d 'de' MMMM, h:mm a" }}@if (sent.late) {
+                      <span class="late"> · fuera de plazo</span>
+                    }. Mientras no la califiquen, puedes cambiarla y volver a enviarla.
+                  </p>
+                }
+              }
+
+              @if (canSubmit(item)) {
+                <form class="submit" (ngSubmit)="submit(item)">
+                  <h4><app-icon name="pen" [size]="16" /> {{ mine() ? 'Tu entrega' : 'Devuelve tu tarea' }}</h4>
+
+                  <label class="field">
+                    <span>Tu respuesta (opcional si adjuntas documentos)</span>
+                    <textarea
+                      name="text"
+                      rows="5"
+                      maxlength="20000"
+                      [ngModel]="text()"
+                      (ngModelChange)="text.set($event)"
+                      placeholder="Escribe aquí tu respuesta…"
+                    ></textarea>
+                  </label>
+
+                  <div class="field">
+                    <span>Tus documentos (PDF, Word, Excel…)</span>
+                    <app-document-field [inputId]="'doc-' + item.id" [(files)]="files" />
+                  </div>
+
+                  @if (formError()) {
+                    <p class="error" role="alert">{{ formError() }}</p>
+                  }
+                  @if (notice()) {
+                    <p class="success" role="status">
+                      <app-icon name="check-circle" [size]="16" /> {{ notice() }}
+                    </p>
+                  }
+
+                  <button type="submit" class="primary" [disabled]="saving()">
+                    <app-icon name="check" [size]="17" />
+                    {{ saving() ? 'Enviando…' : mine() ? 'Volver a enviar' : 'Entregar tarea' }}
+                  </button>
+                </form>
+              } @else if (mine()?.status !== 'GRADED') {
+                <p class="error" role="status">
+                  El plazo terminó y esta tarea ya no recibe entregas.
+                </p>
+              } @else if (mine()?.files?.length) {
+                <section class="block" aria-label="Lo que entregaste">
+                  <h4><app-icon name="file" [size]="16" /> Lo que entregaste</h4>
+                  @if (mine()?.text) {
+                    <p class="sent-text">{{ mine()?.text }}</p>
+                  }
+                  <ul class="files">
+                    @for (file of mine()!.files; track file.name) {
+                      <li>
+                        <button type="button" class="file" (click)="download(file)">
+                          <app-icon name="file" [size]="18" />
+                          <span>{{ file.originalName }}</span>
+                          <small>{{ size(file.size) }}</small>
+                          <app-icon name="download" [size]="16" />
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                </section>
+              } @else if (mine()?.text) {
+                <section class="block" aria-label="Lo que entregaste">
+                  <h4><app-icon name="file" [size]="16" /> Lo que entregaste</h4>
+                  <p class="sent-text">{{ mine()?.text }}</p>
+                </section>
+              }
+            }
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}
