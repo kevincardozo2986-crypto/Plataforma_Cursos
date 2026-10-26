@@ -107,3 +107,20 @@ todo abierto. Úsalo para pintar candados en el temario sin pedir lección por l
 - El avance cuenta por alumno: que un compañero termine un módulo no abre nada a los demás.
 - Con liberación gradual, `publicContent` deja de abrir contenido a quien no está inscrito (si no, bastaría con no inscribirse
   para saltarse el calendario).
+
+## 4. Archivos descargables del curso
+
+Material a nivel de **curso** (guías, plantillas, lecturas): lo adjunta el docente y lo descargan los estudiantes inscritos. Los archivos son
+**privados** (PDF, Word, Excel, PowerPoint, ZIP o TXT, hasta 20 MB): se suben primero con `POST /uploads/documents`, igual que las entregas de tareas.
+
+| Ruta | Quién | Para qué |
+|---|---|---|
+| `GET /courses/:id/files` | quien gestiona el curso; un estudiante **inscrito** (`403` si no lo está) | Lista: `[{ id, originalName, size, createdAt, url }]` |
+| `POST /courses/:id/files` `{ "name": "<nombre de la subida>" }` | autor, instructor, admin | Adjunta un documento ya subido (`201`) |
+| `DELETE /courses/:id/files/:fileId` | autor, instructor, admin | Lo quita del curso **y del disco** |
+| `GET /course-files/:fileId/download` | igual que la lista | Descarga (requiere el token: pedirlo con `HttpClient` como `blob`; llega como adjunto) |
+
+- Al adjuntar: el archivo debe existir y haberlo subido quien lo adjunta, no estar ya en otra entrega, tarea o curso (`400`), y el curso admite hasta **20** archivos (`400`).
+- Para quien no tiene acceso, la descarga responde `404` (como si no existiera); sin sesión, `401`.
+- Al **borrar el curso** se borran también sus archivos del servidor.
+- Para las **descripciones de módulos y evaluaciones** (`description`): aceptan HTML, igual que las de los cursos y las tareas (se limpia al guardar; hasta 5000 caracteres).

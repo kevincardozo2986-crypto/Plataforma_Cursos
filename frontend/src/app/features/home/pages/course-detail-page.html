@@ -195,6 +195,11 @@
               ><a class="login" [routerLink]="[]" fragment="course-content"
                 >Ver contenido del curso &#8594;</a
               >
+            } @else if (enrollmentKnown() && coursePrice(item) > 0) {
+              <button class="login" type="button" (click)="checkoutOpen.set(true)">
+                Comprar curso · {{ price(item.price) }}
+              </button>
+              <p class="sim-note">Pago simulado con tarjeta de prueba: no se cobra dinero real.</p>
             } @else if (enrollmentKnown()) {
               <form (ngSubmit)="enroll()">
                 @if (item.visibility === 'PASSWORD') {
@@ -233,6 +238,17 @@
             <p>Las inscripciones están disponibles para cuentas de estudiante.</p>
           }
         </aside>
+        <!-- Fuera de la tarjeta: sigue abierto mostrando el comprobante aunque la tarjeta pase a «inscrito». -->
+        @if (checkoutOpen()) {
+          <app-checkout-dialog
+            [courseId]="item.id ?? ''"
+            [title]="item.title ?? ''"
+            [amount]="coursePrice(item)"
+            [needsPassword]="item.visibility === 'PASSWORD'"
+            (paid)="onPaid()"
+            (closed)="checkoutOpen.set(false)"
+          />
+        }
       </div>
     } @else {
       <p role="status">Cargando el curso…</p>

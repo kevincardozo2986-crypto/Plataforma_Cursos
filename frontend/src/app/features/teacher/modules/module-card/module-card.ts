@@ -11,7 +11,11 @@ import { EvaluationSummary } from '../../evaluations/evaluations.models';
 import { TeacherEvaluationsService } from '../../evaluations/evaluations.service';
 import { Lesson } from '../../lessons/lessons.models';
 import { TeacherLessonsService } from '../../lessons/lessons.service';
-import { CourseModule } from '../modules.models';
+import { hasVisibleContent } from '../../../../core/html/html-safe';
+import { RichHtmlPipe } from '../../../../shared/pipes/rich-html.pipe';
+import { RichEditor } from '../../../../shared/ui/rich-editor/rich-editor';
+import { CourseModule, DripType } from '../modules.models';
+import { ModuleUnlock } from './module-unlock';
 import { TeacherModulesService } from '../modules.service';
 
 /**
@@ -20,7 +24,7 @@ import { TeacherModulesService } from '../modules.service';
  */
 @Component({
   selector: 'app-module-card',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, ModuleUnlock, RichEditor, RichHtmlPipe],
   templateUrl: './module-card.html',
   styleUrl: './module-card.scss',
 })
@@ -34,6 +38,9 @@ export class ModuleCard {
   readonly courseId = input.required<number>();
   readonly index = input.required<number>();
   readonly total = input.required<number>();
+  /** Cómo se abre el contenido del curso y todos sus módulos (para los ajustes de apertura). */
+  readonly dripType = input<DripType>('NONE');
+  readonly siblings = input<CourseModule[]>([]);
 
   readonly changed = output<void>();
   /** -1 sube el módulo, 1 lo baja; la reordenación la hace la página. */
@@ -56,7 +63,7 @@ export class ModuleCard {
     }),
     description: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.maxLength(1000)],
+      validators: [Validators.maxLength(5000)],
     }),
   });
 
@@ -159,7 +166,8 @@ export class ModuleCard {
     this.run(
       this.modulesApi.update(this.courseModule().id, {
         title: value.title.trim(),
-        description: value.description.trim() || null,
+        // Un editor vacío deja «<p><br></p>»: eso no es una descripción.
+        description: hasVisibleContent(value.description) ? value.description : null,
       }),
       'No pudimos guardar el módulo.',
       () => this.editing.set(false),

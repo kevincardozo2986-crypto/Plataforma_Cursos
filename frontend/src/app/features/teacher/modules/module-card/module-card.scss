@@ -228,3 +228,20 @@ h3 {
 .eval-meta {
   font-size: 0.82rem;
 }
+
+.rich-desc {
+  margin-top: 4px;
+  color: var(--p-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.rich-desc :is(p, ul, ol) {
+  margin: 0 0 6px;
+}
+
+.rich-desc ::ng-deep iframe {
+  max-width: 100%;
+  border: 0;
+}

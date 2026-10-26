@@ -13,6 +13,7 @@ import {
   sinceOf,
 } from './dashboard-calc.js';
 import { DashboardRepository, type Scope } from './dashboard.repository.js';
+import type { StudentState } from './dto/dashboard-query.dto.js';
 import { weightedAverage } from '../reviews/reviews-calc.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -158,6 +159,99 @@ export class DashboardService {
           },
         };
       }),
+    };
+  }
+
+  /**
+   * Quiénes están inscritos en los cursos del docente, con su avance y notas. Sirve para ver quién
+   * va bien y quién se quedó atrás, y para exportarlo. Respeta los mismos filtros que `teacher()`.
+   */
+  async students(
+    user: AuthenticatedUser,
+    options: {
+      period?: Period;
+      courseId?: number;
+      state?: StudentState;
+      q?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+    now = new Date(),
+  ) {
+    if (options.courseId !== undefined) {
+      await this.access.assertCanManage(user, options.courseId);
+    }
+
+    const scope: Scope = {
+      teacherId: user.role === Role.ADMIN ? undefined : user.id,
+      courseId: options.courseId,
+    };
+
+    const { items, total } = await this.repository.students(scope, {
+      since: sinceOf(options.period ?? 'all', now),
+      cutoff: new Date(now.getTime() - INACTIVE_DAYS * DAY_MS),
+      state: options.state,
+      q: options.q,
+      take: options.limit ?? 50,
+      skip: options.offset ?? 0,
+    });
+
+    return {
+      total,
+      inactiveAfterDays: INACTIVE_DAYS,
+      items: items.map((row) => ({
+        enrollmentId: row.enrollmentId,
+        student: { id: row.userId, firstName: row.firstName, lastName: row.lastName, email: row.email },
+        course: { id: row.courseId, title: row.courseTitle },
+        state: row.state,
+        enrolledAt: row.enrolledAt,
+        completedAt: row.completedAt,
+        lastActivityAt: row.lastActivityAt,
+        progress: {
+          completed: row.doneLessons,
+          total: row.totalLessons,
+          percent: row.totalLessons === 0 ? 0 : Math.min(100, Math.round((row.doneLessons / row.totalLessons) * 100)),
+        },
+        quizAverage: row.quizAverage,
+        taskAverage: row.taskAverage,
+      })),
+    };
+  }
+
+  /** Reparto de las reseñas por estrellas (de 5 a 1) y las más recientes. */
+  async ratings(
+    user: AuthenticatedUser,
+    options: { period?: Period; courseId?: number } = {},
+    now = new Date(),
+  ) {
+    if (options.courseId !== undefined) {
+      await this.access.assertCanManage(user, options.courseId);
+    }
+
+    const scope: Scope = {
+      teacherId: user.role === Role.ADMIN ? undefined : user.id,
+      courseId: options.courseId,
+    };
+    const { groups, recent } = await this.repository.ratingBreakdown(scope, sinceOf(options.period ?? 'all', now));
+    const count = groups.reduce((sum, group) => sum + group.count, 0);
+    const total = groups.reduce((sum, group) => sum + group.rating * group.count, 0);
+
+    return {
+      count,
+      average: count === 0 ? null : Math.round((total / count) * 10) / 10,
+      distribution: [5, 4, 3, 2, 1].map((stars) => {
+        const found = groups.find((group) => group.rating === stars)?.count ?? 0;
+
+        return { stars, count: found, percent: count === 0 ? 0 : Math.round((found / count) * 100) };
+      }),
+      recent: recent.map((review) => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.createdAt,
+        student: `${review.user.firstName} ${review.user.lastName}`.trim(),
+        course: review.course,
+      })),
     };
   }
 }

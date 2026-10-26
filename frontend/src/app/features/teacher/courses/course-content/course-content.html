@@ -65,6 +65,14 @@
           <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
         }
 
+        @if (modules().length > 0) {
+          <app-drip-settings
+            [courseId]="current.id"
+            [mode]="current.dripType ?? 'NONE'"
+            (changed)="load()"
+          />
+        }
+
         <div class="modules">
           @for (module of modules(); track module.id; let i = $index) {
             <app-module-card
@@ -72,6 +80,8 @@
               [courseId]="current.id"
               [index]="i"
               [total]="modules().length"
+              [dripType]="current.dripType ?? 'NONE'"
+              [siblings]="modules()"
               (changed)="load()"
               (move)="moveModule(i, $event)"
             />
@@ -113,11 +123,13 @@
 
             <div class="panel-field">
               <label for="new-module-description">Descripción (opcional)</label>
-              <textarea
-                id="new-module-description"
-                class="panel-textarea short"
+              <app-rich-editor
+                inputId="new-module-description"
+                label="Descripción del módulo"
+                [minHeight]="130"
                 formControlName="description"
-              ></textarea>
+                placeholder="De qué trata este módulo y qué se logra al terminarlo."
+              />
             </div>
 
             <div class="form-actions">

@@ -1,0 +1,89 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <button
+    type="button"
+    class="mobile-toggle"
+    [attr.aria-expanded]="open()"
+    aria-controls="admin-sidebar"
+    (click)="toggle()"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      @if (open()) {
+        <path d="M6 6l12 12M18 6 6 18" />
+      } @else {
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      }
+    </svg>
+    Menú del administrador
+  </button>
+
+  <aside id="admin-sidebar" class="sidebar" [class.open]="open()">
+    <div class="sidebar-head">
+      <button
+        type="button"
+        class="collapse"
+        [attr.aria-expanded]="!collapsed()"
+        [attr.aria-label]="collapsed() ? 'Expandir el menú' : 'Contraer el menú'"
+        [attr.title]="collapsed() ? 'Expandir el menú' : 'Contraer el menú'"
+        aria-controls="admin-sidebar"
+        (click)="toggleCollapsed()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          @if (collapsed()) {
+            <path d="m13 6 6 6-6 6M5 6l6 6-6 6" />
+          } @else {
+            <path d="m11 6-6 6 6 6M19 6l-6 6 6 6" />
+          }
+        </svg>
+      </button>
+    </div>
+
+    <nav aria-label="Panel del administrador">
+      <ul class="menu">
+        @for (item of items; track item.path) {
+          <li>
+            <a
+              class="link"
+              [routerLink]="'/admin/' + item.path"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              [attr.aria-label]="collapsed() ? item.label : null"
+              [attr.title]="collapsed() ? item.label : item.description"
+              (click)="close()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                @for (d of item.icon; track d) {
+                  <path [attr.d]="d" />
+                }
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+
+      <p id="docente-title" class="group-title">Cursos y estudiantes</p>
+
+      <ul class="menu" aria-labelledby="docente-title">
+        <li>
+          <a
+            class="link"
+            routerLink="/teacher/dashboard"
+            [attr.aria-label]="collapsed() ? 'Ir al panel docente' : null"
+            [attr.title]="collapsed() ? 'Ir al panel docente' : null"
+            (click)="close()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 12 12 3l9 9" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+            <span>Panel docente</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="content">
+    <router-outlet />
+  </div>
+</div>

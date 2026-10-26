@@ -140,7 +140,7 @@ export const TEACHER_NAV: NavItem[] = [
   {
     label: 'Analíticas',
     path: 'analytics',
-    ready: false,
+    ready: true,
     description:
       'Reportes de tus cursos, estudiantes y reseñas, con gráficas por día, mes o año y opción de exportar.',
     icon: ['M4 20V10', 'M10 20V4', 'M16 20v-7', 'M22 20H2'],

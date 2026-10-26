@@ -1,6 +1,7 @@
 import { LessonResource, LearningResource, materialKind } from './lesson-resource';
 import { CodePractice } from './code-practice';
 import { QuestionThread } from './question-thread';
+import { CourseFiles } from './course-files';
 import { StudentAssignments } from './student-assignments';
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import {
@@ -69,6 +70,7 @@ type Tab =
     CodePractice,
     QuestionThread,
     StudentAssignments,
+    CourseFiles,
     RichHtmlPipe,
   ],
   templateUrl: './course-player.html',

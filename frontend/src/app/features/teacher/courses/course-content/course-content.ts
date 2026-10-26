@@ -5,9 +5,12 @@ import { forkJoin } from 'rxjs';
 
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { moveItem } from '../../../../core/utils/reorder';
+import { hasVisibleContent } from '../../../../core/html/html-safe';
 import { PageHeader } from '../../../../shared/ui/page-header/page-header';
+import { RichEditor } from '../../../../shared/ui/rich-editor/rich-editor';
 import { Icon } from '../../../../shared/ui/icon/icon';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { DripSettings } from './drip-settings';
 import { ModuleCard } from '../../modules/module-card/module-card';
 import { TeacherModulesService } from '../../modules/modules.service';
 import { CourseStatus, CourseWithContent } from '../teacher-courses.models';
@@ -20,7 +23,16 @@ import { CourseWizardService } from '../course-wizard/course-wizard.service';
  */
 @Component({
   selector: 'app-course-content',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, StatusBadge, ModuleCard, Icon],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    PageHeader,
+    StatusBadge,
+    ModuleCard,
+    Icon,
+    DripSettings,
+    RichEditor,
+  ],
   templateUrl: './course-content.html',
   styleUrl: './course-content.scss',
 })
@@ -55,7 +67,7 @@ export class CourseContent {
     }),
     description: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.maxLength(1000)],
+      validators: [Validators.maxLength(5000)],
     }),
   });
 
@@ -128,7 +140,7 @@ export class CourseContent {
     this.modulesApi
       .create(this.courseId, {
         title: value.title.trim(),
-        description: value.description.trim() || undefined,
+        description: hasVisibleContent(value.description) ? value.description : undefined,
       })
       .subscribe({
         next: () => {

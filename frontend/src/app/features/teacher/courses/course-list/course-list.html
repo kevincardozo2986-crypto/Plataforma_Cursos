@@ -175,14 +175,16 @@
                         </button>
                       }
                     }
-                    <button
-                      type="button"
-                      class="delete-action"
-                      [disabled]="busyId() === course.id"
-                      (click)="menu.open = false; askDelete(course.id)"
-                    >
-                      Eliminar curso
-                    </button>
+                    @if (course.isOwner !== false) {
+                      <button
+                        type="button"
+                        class="delete-action"
+                        [disabled]="busyId() === course.id"
+                        (click)="menu.open = false; askDelete(course.id)"
+                      >
+                        Eliminar curso
+                      </button>
+                    }
                   </div>
                 </details>
               }

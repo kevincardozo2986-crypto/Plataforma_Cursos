@@ -2,6 +2,7 @@ import { studyStreak } from './study-streak.js';
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -35,6 +36,33 @@ export class ProgressService {
 
   // --- Inscripciones ---
 
+  /**
+   * Comprueba que esta persona puede inscribirse (curso publicado, no inscrita ya, acceso y cupo), sin
+   * exigir el pago. Devuelve el precio. Lo usa el pago antes de cobrar, para no cobrar algo que luego
+   * no se puede entregar.
+   */
+  async assertCanEnroll(user: AuthenticatedUser, courseId: number, password?: string) {
+    const rules = await this.access.getEnrollmentRules(courseId);
+
+    if (rules.status !== CourseStatus.PUBLISHED) {
+      throw new NotFoundException('El curso no existe');
+    }
+
+    const existing = await this.repository.findEnrollment(user.id, courseId);
+
+    if (existing && existing.status !== EnrollmentStatus.CANCELLED) {
+      throw new ConflictException('Ya estás inscrito en este curso');
+    }
+
+    await this.assertCanJoin(courseId, rules, password);
+
+    return { price: rules.price ?? 0 };
+  }
+
+  async hasPaid(userId: number, courseId: number): Promise<boolean> {
+    return this.repository.hasApprovedPayment(userId, courseId);
+  }
+
   async enroll(user: AuthenticatedUser, courseId: number, password?: string) {
     const rules = await this.access.getEnrollmentRules(courseId);
 
@@ -49,6 +77,11 @@ export class ProgressService {
     }
 
     await this.assertCanJoin(courseId, rules, password);
+
+    // Un curso de pago solo admite a quien ya lo pagó.
+    if ((rules.price ?? 0) > 0 && !(await this.repository.hasApprovedPayment(user.id, courseId))) {
+      throw new HttpException('Este curso es de pago: completa el pago para inscribirte', 402);
+    }
 
     if (existing) {
       return this.repository.updateEnrollment(existing.id, {

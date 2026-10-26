@@ -1,0 +1,32 @@
+.table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-card .empty {
+  margin: 16px;
+}
+
+.table-card .pager {
+  padding: 0 16px 14px;
+}
+
+th small,
+td small {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+
+.teacher {
+  display: block;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+tr.busy {
+  opacity: 0.6;
+  pointer-events: none;
+}

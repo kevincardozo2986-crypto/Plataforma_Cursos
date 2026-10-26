@@ -1,0 +1,116 @@
+:host {
+  display: block;
+}
+
+.unlock {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  background: var(--p-surface-2);
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+}
+
+.unlock.editing {
+  border-color: var(--p-accent);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lock-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+  border-radius: 9px;
+}
+
+.text {
+  flex: 1;
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.muted {
+  color: var(--p-muted);
+}
+
+.panel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--p-border);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 0;
+}
+
+.field legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.small {
+  max-width: 160px;
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.checks input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--p-accent);
+}
+
+.error {
+  margin: 0;
+  color: var(--p-danger);
+  font-size: 0.84rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.spacer {
+  flex: 1;
+}

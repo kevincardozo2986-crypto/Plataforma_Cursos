@@ -148,13 +148,22 @@
       </div>
     </section>
 
+    <!-- Archivos descargables -->
+    <app-course-files-card [courseId]="courseId" />
+
+    <!-- Equipo docente -->
+    <app-team-card [courseId]="courseId" [isOwner]="isOwner" />
+
     <!-- Prerrequisitos -->
     <section class="wz-card tone-violet">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="book" [size]="19" /></span>
         <div>
           <h2>Cursos recomendados</h2>
-          <p>Cursos sugeridos para complementar el aprendizaje. No es necesario completarlos para inscribirse.</p>
+          <p>
+            Cursos sugeridos para complementar el aprendizaje. No es necesario completarlos para
+            inscribirse.
+          </p>
         </div>
       </header>
 

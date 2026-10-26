@@ -52,6 +52,12 @@ export const TEACHER_ROUTES: Routes = [
       },
 
       {
+        path: 'analytics',
+        title: 'Analíticas',
+        loadComponent: () => import('./analytics/analytics-page').then((m) => m.AnalyticsPage),
+      },
+
+      {
         path: 'courses',
         title: 'Mis cursos',
         loadComponent: () => import('./courses/course-list/course-list').then((m) => m.CourseList),

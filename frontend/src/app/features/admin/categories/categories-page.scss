@@ -1,0 +1,61 @@
+.add {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.add h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.add h2 app-icon {
+  color: var(--p-accent);
+}
+
+.add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 200px;
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.field.grow {
+  flex: 1 1 260px;
+}
+
+.table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-card .empty {
+  margin: 16px;
+}
+
+th small {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 400;
+}
+
+.editing td {
+  background: var(--p-accent-soft);
+}
+
+.danger {
+  color: var(--p-danger);
+}

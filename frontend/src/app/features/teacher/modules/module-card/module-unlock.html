@@ -1,0 +1,128 @@
+<div class="unlock" [class.editing]="editing()">
+  <div class="summary">
+    <span class="lock-icon" aria-hidden="true">
+      <app-icon
+        [name]="summary().kind === 'open' || summary().kind === 'first' ? 'eye' : 'lock'"
+        [size]="16"
+      />
+    </span>
+
+    <p class="text">
+      @switch (summary().kind) {
+        @case ('date') {
+          Se abre el
+          <strong>{{ courseModule().unlockAt | date: "d 'de' MMMM 'de' y, h:mm a" }}</strong>
+        }
+        @case ('days') {
+          Se abre
+          <strong
+            >{{ courseModule().unlockAfterDays }}
+            {{ courseModule().unlockAfterDays === 1 ? 'día' : 'días' }}</strong
+          >
+          después de inscribirse
+        }
+        @case ('requires') {
+          Se abre al terminar: <strong>{{ requiredTitles().join(', ') }}</strong>
+        }
+        @case ('first') {
+          Siempre abierto (es el primero)
+        }
+        @case ('after-previous') {
+          Se abre al terminar <strong>{{ previousTitle() }}</strong>
+        }
+        @default {
+          Abierto desde el principio
+          @if (configurable()) {
+            <span class="muted"> (sin ajuste)</span>
+          }
+        }
+      }
+    </p>
+
+    @if (configurable() && !editing()) {
+      <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="start()">
+        <app-icon name="edit" [size]="14" /> Apertura
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <form class="form" novalidate (submit)="$event.preventDefault(); save()">
+      @switch (mode()) {
+        @case ('BY_DATE') {
+          <label class="field">
+            <span>Fecha y hora en que se abre (tu hora local)</span>
+            <input
+              class="panel-input"
+              type="datetime-local"
+              name="date"
+              [value]="date()"
+              (input)="date.set($any($event.target).value)"
+            />
+          </label>
+        }
+        @case ('AFTER_DAYS') {
+          <label class="field">
+            <span>Días después de la inscripción (0 = de inmediato)</span>
+            <input
+              class="panel-input small"
+              type="number"
+              name="days"
+              min="0"
+              max="3650"
+              step="1"
+              placeholder="Ej. 7"
+              [value]="days()"
+              (input)="days.set($any($event.target).value)"
+            />
+          </label>
+        }
+        @case ('PREREQUISITES') {
+          <fieldset class="field">
+            <legend>Hay que terminar estos módulos antes</legend>
+
+            @if (others().length === 0) {
+              <p class="muted">Este curso no tiene otros módulos.</p>
+            } @else {
+              <ul class="checks">
+                @for (other of others(); track other.id) {
+                  <li>
+                    <label>
+                      <input
+                        type="checkbox"
+                        [checked]="isRequired(other.id)"
+                        (change)="toggle(other.id, $any($event.target).checked)"
+                      />
+                      <span>{{ other.title }}</span>
+                    </label>
+                  </li>
+                }
+              </ul>
+            }
+          </fieldset>
+        }
+      }
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <div class="actions">
+        <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="clear()">
+          Quitar el ajuste
+        </button>
+        <span class="spacer"></span>
+        <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="cancel()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="panel-btn panel-btn--primary panel-btn--sm"
+          [disabled]="saving()"
+        >
+          <app-icon name="save" [size]="14" /> {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

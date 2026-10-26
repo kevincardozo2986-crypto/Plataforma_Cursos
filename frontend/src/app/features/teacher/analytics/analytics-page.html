@@ -1,0 +1,438 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="chart" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ESPACIO DOCENTE / ANALÍTICAS</span>
+        <h1>Analíticas</h1>
+        <p>Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.</p>
+      </div>
+      <button
+        type="button"
+        class="panel-btn panel-btn--primary"
+        [disabled]="exporting() || loading()"
+        (click)="exportCurrent()"
+      >
+        <app-icon name="download" [size]="17" />
+        {{ exporting() ? 'Preparando…' : 'Exportar a Excel (CSV)' }}
+      </button>
+    </header>
+
+    <div class="filters">
+      <div class="periods" role="group" aria-label="Periodo">
+        <span class="field-icon" aria-hidden="true"><app-icon name="calendar" [size]="16" /></span>
+        @for (entry of periods; track entry.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="period() === entry.value"
+            [attr.aria-pressed]="period() === entry.value"
+            (click)="setPeriod(entry.value)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+
+      <label class="course">
+        <span class="sr-only">Curso</span>
+        <span class="select-icon" aria-hidden="true"><app-icon name="book" [size]="16" /></span>
+        <select class="panel-select" (change)="setCourse($event)">
+          <option value="">Todos mis cursos</option>
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.title }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
+    }
+
+    <ul class="tiles" [class.dim]="loading()">
+      @for (tile of tiles(); track tile.label) {
+        <li class="tile" [class]="'tile tone-' + tile.tone">
+          <span class="tile-icon" aria-hidden="true"
+            ><app-icon [name]="tile.icon" [size]="19"
+          /></span>
+          <span class="label">{{ tile.label }}</span>
+          <strong class="value">{{ tile.value }}</strong>
+        </li>
+      }
+    </ul>
+
+    <div class="tabs" role="tablist" aria-label="Reportes">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab() === 'courses'"
+        [attr.aria-selected]="tab() === 'courses'"
+        (click)="tab.set('courses')"
+      >
+        <app-icon name="book" [size]="17" /> Cursos
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab() === 'students'"
+        [attr.aria-selected]="tab() === 'students'"
+        (click)="tab.set('students')"
+      >
+        <app-icon name="users" [size]="17" /> Estudiantes
+        <span class="count">{{ studentsTotal() }}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="tab() === 'ratings'"
+        [attr.aria-selected]="tab() === 'ratings'"
+        (click)="tab.set('ratings')"
+      >
+        <app-icon name="star" [size]="17" /> Reseñas
+        <span class="count">{{ ratings()?.count ?? 0 }}</span>
+      </button>
+    </div>
+
+    @if (tab() === 'courses') {
+      @if (data(); as d) {
+        <section class="panel-card block">
+          <h2><app-icon name="trend" [size]="19" /> Inscripciones y finalizaciones</h2>
+
+          @if (
+            bars().length === 0 || (d.completion.enrolled === 0 && d.completion.completed === 0)
+          ) {
+            <p class="empty">
+              <app-icon name="calendar" [size]="20" /> No hubo movimiento en este periodo. Prueba
+              con uno más largo.
+            </p>
+          } @else {
+            <ul class="legend" aria-label="Leyenda">
+              <li><span class="key s1"></span> Inscripciones</li>
+              <li><span class="key s2"></span> Finalizaciones</li>
+            </ul>
+            <div
+              class="columns"
+              role="img"
+              [attr.aria-label]="
+                'Inscripciones y finalizaciones por ' + (d.bucket === 'month' ? 'mes' : 'día')
+              "
+            >
+              @for (bar of bars(); track $index) {
+                <div
+                  class="column"
+                  [attr.title]="
+                    bar.label +
+                    ': ' +
+                    bar.enrollments +
+                    ' inscripciones, ' +
+                    bar.completions +
+                    ' finalizaciones'
+                  "
+                >
+                  <span class="pair">
+                    <span class="bar s1" [style.height.%]="bar.enrollHeight"></span>
+                    <span class="bar s2" [style.height.%]="bar.doneHeight"></span>
+                  </span>
+                  @if ($index % (bars().length > 16 ? 4 : 1) === 0) {
+                    <span class="x">{{ bar.label }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="panel-card block">
+          <h2><app-icon name="list" [size]="19" /> Por curso</h2>
+
+          @if (d.courseBreakdown.length === 0) {
+            <p class="empty">
+              <app-icon name="book" [size]="20" /> Todavía no hay cursos para medir.
+            </p>
+          } @else {
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Inscritos</th>
+                    <th scope="col">Finalización</th>
+                    <th scope="col" class="num">Nota media</th>
+                    <th scope="col" class="num">Calificación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (course of d.courseBreakdown; track course.id) {
+                    <tr>
+                      <th scope="row">
+                        <a
+                          class="course-link"
+                          [routerLink]="['/teacher/courses', course.id, 'edit']"
+                          [attr.title]="course.title"
+                          >{{ course.title }}</a
+                        >
+                        <span class="status" [attr.data-status]="course.status">{{
+                          statusLabels[course.status]
+                        }}</span>
+                      </th>
+                      <td class="wide">
+                        <span class="meter" [attr.aria-label]="course.enrolled + ' inscritos'">
+                          <span
+                            class="meter-fill s1"
+                            [style.width.%]="(course.enrolled / maxEnrolled()) * 100"
+                          ></span>
+                        </span>
+                        <span class="meter-text">{{ fmt(course.enrolled) }}</span>
+                      </td>
+                      <td class="wide">
+                        <span
+                          class="meter"
+                          [attr.aria-label]="course.completionRate + ' % de finalización'"
+                        >
+                          <span
+                            class="meter-fill ok"
+                            [style.width.%]="course.completionRate"
+                          ></span>
+                        </span>
+                        <span class="meter-text"
+                          >{{ course.completionRate }}% ·
+                          {{ fmt(course.completed) }} terminaron</span
+                        >
+                      </td>
+                      <td class="num">
+                        {{ course.averageScore === null ? '—' : course.averageScore }}
+                      </td>
+                      <td class="num">
+                        @if (course.rating.count > 0) {
+                          ★ {{ course.rating.average }}
+                          <span class="muted">({{ course.rating.count }})</span>
+                        } @else {
+                          —
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      } @else if (loading()) {
+        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando analíticas…</p>
+      }
+    }
+
+    @if (tab() === 'students') {
+      <section class="panel-card block">
+        <div class="students-bar">
+          <label class="search">
+            <span class="sr-only">Buscar estudiante</span>
+            <span class="select-icon" aria-hidden="true"
+              ><app-icon name="search" [size]="16"
+            /></span>
+            <input
+              class="panel-input"
+              type="search"
+              placeholder="Buscar por nombre o correo"
+              [value]="search()"
+              (input)="onSearch($event)"
+            />
+          </label>
+
+          <label class="state">
+            <span class="sr-only">Estado</span>
+            <select class="panel-select" (change)="setState($event)">
+              <option value="">Todos los estados</option>
+              @for (item of states; track item) {
+                <option [value]="item">{{ stateLabels[item] }}</option>
+              }
+            </select>
+          </label>
+
+          <p class="hint">
+            <app-icon name="info" [size]="14" /> «Inactivo»: sin avanzar ninguna lección hace
+            {{ data()?.completion?.inactiveAfterDays ?? 30 }} días o más.
+          </p>
+        </div>
+
+        @if (studentsLoading() && students().length === 0) {
+          <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando estudiantes…</p>
+        } @else if (students().length === 0) {
+          <p class="empty">
+            <app-icon name="users" [size]="20" /> No hay estudiantes con esos filtros.
+          </p>
+        } @else {
+          <div class="table-scroll" [class.dim]="studentsLoading()">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Estudiante</th>
+                  <th scope="col">Curso</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Avance</th>
+                  <th scope="col">Última actividad</th>
+                  <th scope="col" class="num">Quizzes</th>
+                  <th scope="col" class="num">Tareas</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of students(); track row.enrollmentId) {
+                  <tr>
+                    <th scope="row">
+                      <span class="person">
+                        <span class="avatar" aria-hidden="true">{{ initials(row.student) }}</span>
+                        <span>
+                          <strong>{{ row.student.firstName }} {{ row.student.lastName }}</strong>
+                          <small class="muted">{{ row.student.email }}</small>
+                        </span>
+                      </span>
+                    </th>
+                    <td>{{ row.course.title }}</td>
+                    <td>
+                      <span class="pill" [attr.data-state]="row.state">{{
+                        stateLabels[row.state]
+                      }}</span>
+                    </td>
+                    <td class="wide">
+                      <span
+                        class="meter"
+                        [attr.aria-label]="'Avance ' + row.progress.percent + ' %'"
+                      >
+                        <span
+                          class="meter-fill"
+                          [class.ok]="row.progress.percent === 100"
+                          [style.width.%]="row.progress.percent"
+                        ></span>
+                      </span>
+                      <span class="meter-text"
+                        >{{ row.progress.percent }}% · {{ row.progress.completed }}/{{
+                          row.progress.total
+                        }}</span
+                      >
+                    </td>
+                    <td class="nowrap">
+                      @if (row.lastActivityAt) {
+                        {{ row.lastActivityAt | date: 'd MMM y' }}
+                      } @else {
+                        <span class="muted">Sin actividad</span>
+                      }
+                    </td>
+                    <td class="num">{{ row.quizAverage === null ? '—' : row.quizAverage }}</td>
+                    <td class="num">
+                      {{ row.taskAverage === null ? '—' : row.taskAverage + '%' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span class="muted">{{ from() }}–{{ to() }} de {{ fmt(studentsTotal()) }}</span>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              [disabled]="!hasPrev()"
+              (click)="page(-1)"
+            >
+              <app-icon name="arrow-left" [size]="15" /> Anterior
+            </button>
+            <button
+              type="button"
+              class="panel-btn panel-btn--ghost panel-btn--sm"
+              [disabled]="!hasNext()"
+              (click)="page(1)"
+            >
+              Siguiente <app-icon name="chevron-right" [size]="15" />
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    @if (tab() === 'ratings') {
+      @if (ratings(); as r) {
+        <div class="ratings-grid">
+          <section class="panel-card block">
+            <h2><app-icon name="star" [size]="19" /> Calificación</h2>
+
+            @if (r.count === 0) {
+              <p class="empty">
+                <app-icon name="star" [size]="20" /> Todavía no hay reseñas en este periodo.
+              </p>
+            } @else {
+              <div class="big">
+                <strong>{{ r.average }}</strong>
+                <span class="big-stars" aria-hidden="true">{{
+                  stars(Math.round(r.average ?? 0))
+                }}</span>
+                <span class="muted"
+                  >{{ fmt(r.count) }} {{ r.count === 1 ? 'reseña' : 'reseñas' }}</span
+                >
+              </div>
+
+              <ul class="dist">
+                @for (row of r.distribution; track row.stars) {
+                  <li>
+                    <span class="dist-label">{{ row.stars }} ★</span>
+                    <span class="meter"
+                      ><span class="meter-fill amber" [style.width.%]="row.percent"></span
+                    ></span>
+                    <span class="dist-count">{{ row.count }} · {{ row.percent }}%</span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+
+          <section class="panel-card block">
+            <h2><app-icon name="file" [size]="19" /> Reseñas recientes</h2>
+
+            @if (r.recent.length === 0) {
+              <p class="empty">
+                <app-icon name="info" [size]="20" /> Aquí aparecerán los comentarios.
+              </p>
+            } @else {
+              <ul class="reviews">
+                @for (review of r.recent; track review.id) {
+                  <li>
+                    <div class="review-head">
+                      <span class="big-stars small" aria-hidden="true">{{
+                        stars(review.rating)
+                      }}</span>
+                      <span class="sr-only">{{ review.rating }} de 5 estrellas</span>
+                      <strong>{{ review.student }}</strong>
+                      <span class="muted"
+                        >· {{ review.course.title }} ·
+                        {{ review.createdAt | date: 'd MMM y' }}</span
+                      >
+                    </div>
+                    @if (review.comment) {
+                      <p>{{ review.comment }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+              <a class="all" routerLink="/teacher/reviews"
+                >Ver y responder todas <app-icon name="chevron-right" [size]="14"
+              /></a>
+            }
+          </section>
+        </div>
+      } @else if (loading()) {
+        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando reseñas…</p>
+      }
+    }
+  </div>
+</section>

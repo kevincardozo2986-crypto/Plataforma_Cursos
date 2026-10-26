@@ -63,6 +63,8 @@ export class CourseAccessService {
       visibility: rules.visibility,
       accessPasswordHash: rules.accessPassword,
       maxStudents: rules.maxStudents,
+      /** 0 = gratis. Un curso de pago exige un pago aprobado para inscribirse. */
+      price: Number(rules.price ?? 0),
       prerequisites: rules.requires.map((item) => item.prerequisite),
     };
   }

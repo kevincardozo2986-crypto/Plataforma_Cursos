@@ -1,0 +1,165 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="book" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ADMINISTRACIÓN / CURSOS</span>
+        <h1>Cursos</h1>
+        <p>Todos los cursos de la plataforma, de cualquier docente.</p>
+      </div>
+    </header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
+    }
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Buscar</span>
+        <app-icon name="search" [size]="16" />
+        <input
+          class="panel-input"
+          type="search"
+          placeholder="Buscar por título o docente"
+          [value]="q()"
+          (input)="onSearch($event)"
+        />
+      </label>
+      <label>
+        <span class="sr-only">Estado</span>
+        <select class="panel-select" (change)="setStatus($event)">
+          <option value="">Todos los estados</option>
+          @for (item of statuses; track item) {
+            <option [value]="item">{{ statusLabels[item] }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="panel-card table-card">
+      @if (loading() && courses().length === 0) {
+        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando cursos…</p>
+      } @else if (courses().length === 0) {
+        <p class="empty"><app-icon name="book" [size]="20" /> No hay cursos con esos filtros.</p>
+      } @else {
+        <div class="table-scroll" [class.dim]="loading()">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Curso</th>
+                <th scope="col">Docente</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="num">Inscritos</th>
+                <th scope="col">Creado</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (course of courses(); track course.id) {
+                <tr [class.busy]="busyId() === course.id">
+                  <th scope="row">
+                    <a
+                      class="course-link"
+                      [routerLink]="['/courses', course.id]"
+                      [attr.title]="course.title"
+                      >{{ course.title }}</a
+                    >
+                    <small class="muted">
+                      {{ course.category?.name ?? 'Sin categoría' }} · {{ course.modules }}
+                      {{ course.modules === 1 ? 'módulo' : 'módulos' }}
+                    </small>
+                  </th>
+                  <td>
+                    <strong class="teacher"
+                      >{{ course.teacher.firstName }} {{ course.teacher.lastName }}</strong
+                    >
+                    <small class="muted">{{ course.teacher.email }}</small>
+                  </td>
+                  <td>
+                    <span class="pill" [attr.data-tone]="tone(course.status)">{{
+                      statusLabels[course.status]
+                    }}</span>
+                  </td>
+                  <td class="num">{{ course.enrollments }}</td>
+                  <td class="nowrap muted small">{{ course.createdAt | date: 'd MMM y' }}</td>
+                  <td class="actions">
+                    @if (pending()?.id === course.id) {
+                      <span class="confirm-text"
+                        >¿{{
+                          pending()?.status === 'ARCHIVED'
+                            ? 'Archivarlo'
+                            : pending()?.status === 'PUBLISHED'
+                              ? 'Publicarlo'
+                              : 'Pasarlo a borrador'
+                        }}?</span
+                      >
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--primary panel-btn--sm"
+                        [disabled]="busyId() === course.id"
+                        (click)="confirm(course)"
+                      >
+                        Sí
+                      </button>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        (click)="cancel()"
+                      >
+                        No
+                      </button>
+                    } @else {
+                      @for (target of targets(course); track target.status) {
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          (click)="ask(course, target.status)"
+                        >
+                          <app-icon [name]="target.icon" [size]="15" /> {{ target.label }}
+                        </button>
+                      }
+                      <a
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        [routerLink]="['/teacher/courses', course.id, 'edit']"
+                        title="Abrir el asistente del curso"
+                      >
+                        <app-icon name="edit" [size]="15" /> Editar
+                      </a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span class="muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+          <button
+            type="button"
+            class="panel-btn panel-btn--ghost panel-btn--sm"
+            [disabled]="!hasPrev()"
+            (click)="page(-1)"
+          >
+            <app-icon name="arrow-left" [size]="15" /> Anterior
+          </button>
+          <button
+            type="button"
+            class="panel-btn panel-btn--ghost panel-btn--sm"
+            [disabled]="!hasNext()"
+            (click)="page(1)"
+          >
+            Siguiente <app-icon name="chevron-right" [size]="15" />
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</section>

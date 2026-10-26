@@ -111,6 +111,7 @@ export class CourseAccessRepository {
         visibility: true,
         accessPassword: true,
         maxStudents: true,
+        price: true,
         requires: {
           select: { prerequisite: { select: { id: true, title: true } } },
         },

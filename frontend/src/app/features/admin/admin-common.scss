@@ -1,0 +1,282 @@
+:host {
+  display: block;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--p-muted);
+}
+
+.panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.panel-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.hero-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--p-accent-ink);
+  background: linear-gradient(135deg, #7c4dff, var(--p-accent));
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(124, 77, 255, 0.28);
+}
+
+.hero-copy {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: block;
+  color: var(--p-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.hero h1 {
+  margin: 2px 0 0;
+  color: var(--p-ink);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  margin: 6px 0 0;
+  color: var(--p-muted);
+  font-size: 0.95rem;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  color: var(--p-muted);
+  background: var(--p-surface-2);
+  border-radius: 12px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 240px;
+}
+
+.search app-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  color: var(--p-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search .panel-input {
+  padding-left: 36px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--p-border);
+}
+
+thead th {
+  color: var(--p-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--p-surface-2);
+}
+
+tbody th {
+  font-weight: 600;
+}
+
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.person strong,
+.person small {
+  display: block;
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  color: var(--p-accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  background: var(--p-accent-soft);
+  border-radius: 50%;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  color: var(--p-muted);
+  font-size: 0.74rem;
+  font-weight: 650;
+  background: var(--p-surface-2);
+  border-radius: 999px;
+}
+
+.pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.pill[data-tone='ok'] {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+.pill[data-tone='warn'] {
+  color: var(--p-warn);
+  background: var(--p-warn-soft);
+}
+
+.pill[data-tone='danger'] {
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+}
+
+.pill[data-tone='accent'] {
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pager .muted {
+  margin-right: auto;
+  font-size: 0.84rem;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+.confirm-text {
+  color: var(--p-danger);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.course-link {
+  display: block;
+  max-width: 340px;
+  overflow: hidden;
+  color: var(--p-ink);
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.course-link:hover {
+  color: var(--p-accent);
+  text-decoration: underline;
+}
+
+/* Un flex en la celda rompe la línea de la fila: se deja como celda y se separa lo de adentro. */
+td.actions {
+  display: table-cell;
+  text-align: right;
+}
+
+td.actions > * {
+  margin: 2px 0 2px 6px;
+  vertical-align: middle;
+}

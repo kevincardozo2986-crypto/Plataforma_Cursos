@@ -17,6 +17,7 @@ import { hasVisibleText } from '../../common/dto/sanitize-html.js';
 import { slugify } from '../../common/utils/slugify.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { CategoriesService } from '../categories/categories.service.js';
+import { CourseFilesService } from '../course-files/course-files.service.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
 import { CourseModulesService } from '../course-modules/course-modules.service.js';
 import { ProgressService } from '../progress/progress.service.js';
@@ -45,6 +46,7 @@ export class CoursesService {
     private readonly reviews: ReviewsService,
     private readonly certificates: CertificatesService,
     @Optional() private readonly activity?: ActivityNotificationsService,
+    @Optional() private readonly courseFiles?: CourseFilesService,
   ) {}
 
   async listPublished(query: ListCoursesQueryDto) {
@@ -265,7 +267,11 @@ export class CoursesService {
       );
     }
 
+    // Sus archivos adjuntos se borran también del disco (los registros caen con el curso).
+    const files = (await this.courseFiles?.namesOfCourse(id)) ?? [];
+
     await this.repository.delete(id);
+    await this.courseFiles?.removeStored(files);
 
     return { deleted: true };
   }

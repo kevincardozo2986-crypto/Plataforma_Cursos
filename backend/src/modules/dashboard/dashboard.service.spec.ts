@@ -133,3 +133,133 @@ describe('DashboardService.teacher', () => {
     expect(result.quizzes.passRate).toBe(0);
   });
 });
+
+
+describe('DashboardService.students', () => {
+  const row = (overrides: Record<string, unknown> = {}) => ({
+    enrollmentId: 1, userId: 5, firstName: 'Ana', lastName: 'Ruiz', email: 'ana@campus.com',
+    courseId: 1, courseTitle: 'Angular', enrolledAt: new Date('2026-09-01T00:00:00Z'), completedAt: null,
+    totalLessons: 8, doneLessons: 2, lastActivityAt: new Date('2026-10-01T00:00:00Z'),
+    quizAverage: 80, taskAverage: null, state: 'IN_PROGRESS', ...overrides,
+  });
+
+  function setup(rows: unknown[] = [row()], total = rows.length) {
+    const built = build();
+    const students = vi.fn().mockResolvedValue({ items: rows, total });
+
+    Object.assign(built.repository, { students });
+
+    return { ...built, repository: { ...built.repository, students } };
+  }
+
+  it('devuelve cada inscripción con su avance en porcentaje y sus notas', async () => {
+    const { service } = setup();
+
+    const result = await service.students(teacher, {}, now);
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]).toMatchObject({
+      student: { id: 5, firstName: 'Ana', email: 'ana@campus.com' },
+      course: { id: 1, title: 'Angular' },
+      state: 'IN_PROGRESS',
+      progress: { completed: 2, total: 8, percent: 25 },
+      quizAverage: 80,
+      taskAverage: null,
+    });
+  });
+
+  it('un curso sin lecciones da 0 % y el porcentaje nunca pasa de 100', async () => {
+    const { service } = setup([row({ totalLessons: 0, doneLessons: 0 }), row({ enrollmentId: 2, totalLessons: 3, doneLessons: 5 })]);
+
+    const result = await service.students(teacher, {}, now);
+
+    expect(result.items.map((item) => item.progress.percent)).toEqual([0, 100]);
+  });
+
+  it('un docente ve solo lo suyo; un admin, todo; y se pasan los filtros y la paginación', async () => {
+    const { service, repository } = setup();
+
+    await service.students(teacher, { period: '30d', state: 'INACTIVE', q: ' ana ', limit: 20, offset: 40 }, now);
+    expect(repository.students).toHaveBeenLastCalledWith(
+      { teacherId: 7, courseId: undefined },
+      expect.objectContaining({ state: 'INACTIVE', q: ' ana ', take: 20, skip: 40, since: expect.any(Date) }),
+    );
+
+    await service.students(admin, {}, now);
+    expect(repository.students).toHaveBeenLastCalledWith(
+      { teacherId: undefined, courseId: undefined },
+      expect.objectContaining({ take: 50, skip: 0, since: undefined }),
+    );
+  });
+
+  it('el límite de inactividad es de 30 días antes de ahora', async () => {
+    const { service, repository } = setup();
+
+    await service.students(teacher, {}, now);
+
+    const filter = repository.students.mock.calls[0][1] as { cutoff: Date };
+
+    expect(filter.cutoff.toISOString()).toBe('2026-09-06T12:00:00.000Z');
+  });
+
+  it('un curso que no es del docente se rechaza (403) y no consulta nada', async () => {
+    const { service, repository, access } = setup();
+    access.assertCanManage.mockRejectedValue(new ForbiddenException());
+
+    await expect(service.students(teacher, { courseId: 99 }, now)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.students).not.toHaveBeenCalled();
+  });
+});
+
+describe('DashboardService.ratings', () => {
+  function setup(groups: { rating: number; count: number }[], recent: unknown[] = []) {
+    const built = build();
+
+    Object.assign(built.repository, { ratingBreakdown: vi.fn().mockResolvedValue({ groups, recent }) });
+
+    return built;
+  }
+
+  it('reparte las reseñas de 5 a 1 estrellas con su porcentaje y el promedio', async () => {
+    const { service } = setup([{ rating: 5, count: 6 }, { rating: 4, count: 2 }, { rating: 1, count: 2 }]);
+
+    const result = await service.ratings(teacher, {}, now);
+
+    expect(result.count).toBe(10);
+    expect(result.average).toBe(4);
+    expect(result.distribution).toEqual([
+      { stars: 5, count: 6, percent: 60 },
+      { stars: 4, count: 2, percent: 20 },
+      { stars: 3, count: 0, percent: 0 },
+      { stars: 2, count: 0, percent: 0 },
+      { stars: 1, count: 2, percent: 20 },
+    ]);
+  });
+
+  it('sin reseñas: promedio null y todo en cero', async () => {
+    const { service } = setup([]);
+
+    const result = await service.ratings(teacher, {}, now);
+
+    expect(result.average).toBeNull();
+    expect(result.count).toBe(0);
+    expect(result.distribution.every((d) => d.count === 0 && d.percent === 0)).toBe(true);
+  });
+
+  it('las recientes traen el nombre del estudiante y el curso', async () => {
+    const { service } = setup([{ rating: 5, count: 1 }], [
+      { id: 1, rating: 5, comment: 'Muy bueno', createdAt: now, user: { firstName: 'Ana', lastName: 'Ruiz' }, course: { id: 1, title: 'Angular' } },
+    ]);
+
+    const result = await service.ratings(teacher, {}, now);
+
+    expect(result.recent[0]).toMatchObject({ student: 'Ana Ruiz', comment: 'Muy bueno', course: { title: 'Angular' } });
+  });
+
+  it('un curso ajeno se rechaza (403)', async () => {
+    const { service, access } = setup([]);
+    access.assertCanManage.mockRejectedValue(new ForbiddenException());
+
+    await expect(service.ratings(teacher, { courseId: 99 }, now)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+});

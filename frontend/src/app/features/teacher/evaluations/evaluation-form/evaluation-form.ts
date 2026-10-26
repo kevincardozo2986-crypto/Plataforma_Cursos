@@ -12,7 +12,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { startWith } from 'rxjs';
 
 import { apiErrorMessage } from '../../../../core/http/api-error';
+import { hasVisibleContent } from '../../../../core/html/html-safe';
 import { PageHeader } from '../../../../shared/ui/page-header/page-header';
+import { RichEditor } from '../../../../shared/ui/rich-editor/rich-editor';
 import {
   changeType,
   markOnlyCorrect,
@@ -41,7 +43,7 @@ type QuestionGroup = FormGroup<{
 /** Crear (desde un módulo) o editar una evaluación con sus preguntas, de cinco tipos. */
 @Component({
   selector: 'app-evaluation-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader],
+  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor],
   templateUrl: './evaluation-form.html',
   styleUrl: './evaluation-form.scss',
 })
@@ -74,7 +76,7 @@ export class EvaluationForm {
     }),
     description: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.maxLength(1000)],
+      validators: [Validators.maxLength(5000)],
     }),
     passingScore: new FormControl(60, {
       nonNullable: true,
@@ -240,7 +242,8 @@ export class EvaluationForm {
     }
 
     const value = this.form.getRawValue();
-    const description = value.description.trim();
+    // Un editor vacío deja «<p><br></p>»: eso no es una descripción.
+    const description = hasVisibleContent(value.description) ? value.description : '';
 
     const input: EvaluationInput = {
       title: value.title.trim(),

@@ -73,6 +73,7 @@ model User {
   reviews               Review[]
   instructingCourses    CourseInstructor[]
   profile               UserProfile?
+  payments              Payment[]
   certificates          Certificate[]
   certificateTemplates  CertificateTemplate[]
   certificateFonts      CertificateCustomFont[]
@@ -81,6 +82,8 @@ model User {
 }
 
 model Course {
+  payments Payment[]
+  files CourseFile[]
   programmingEnabled Boolean @default(false)
   id          Int          @id @default(autoincrement())
   title       String
@@ -737,4 +740,56 @@ model CertificateCustomFont {
 
   @@index([ownerId])
   @@map("certificate_custom_fonts")
+}
+
+/// Archivo descargable de un curso (guías, plantillas, material): lo adjunta el docente y lo bajan los estudiantes inscritos.
+/// El archivo vive en la carpeta privada de las subidas (ver módulo uploads).
+model CourseFile {
+  id           Int    @id @default(autoincrement())
+  /// Nombre con el que quedó guardado (32 hexadecimales + extensión).
+  storedName   String @unique
+  originalName String
+  size         Int
+  position     Int    @default(0)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([courseId, position])
+  @@map("course_files")
+}
+
+enum PaymentStatus {
+  APPROVED
+  DECLINED
+}
+
+/// Pago SIMULADO de un curso (no hay pasarela real): sirve para probar el flujo de compra.
+/// Nunca se guarda el número completo de la tarjeta ni su código de seguridad.
+model Payment {
+  id        Int           @id @default(autoincrement())
+  /// Código del comprobante, por ejemplo "PAY-7F3K-9QXA".
+  reference String        @unique
+  status    PaymentStatus
+  amount    Decimal       @db.Decimal(10, 2)
+  currency  String        @default("COP")
+  cardBrand String
+  cardLast4 String
+  payerName String
+  /// Por qué se rechazó (solo si `status` es DECLINED).
+  failureReason String?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([courseId, status])
+  @@map("payments")
 }

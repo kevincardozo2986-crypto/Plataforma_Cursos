@@ -1,0 +1,117 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="shield" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ADMINISTRACIÓN</span>
+        <h1>Resumen de la plataforma</h1>
+        <p>Cuentas, cursos y actividad de todo el campus.</p>
+      </div>
+    </header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+
+    @if (loading()) {
+      <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando…</p>
+    } @else if (data(); as d) {
+      <ul class="tiles">
+        @for (tile of tiles(); track tile.label) {
+          <li class="tile" [class]="'tile tone-' + tile.tone">
+            <span class="tile-icon" aria-hidden="true"
+              ><app-icon [name]="tile.icon" [size]="19"
+            /></span>
+            <span class="label">{{ tile.label }}</span>
+            <strong class="value">{{ tile.value }}</strong>
+            <span class="note">{{ tile.note }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="grid">
+        <section class="panel-card block">
+          <h2><app-icon name="users" [size]="19" /> Quién usa la plataforma</h2>
+          <ul class="roles">
+            @for (row of roles(); track row.role) {
+              <li>
+                <span class="role-name">{{ roleLabels[row.role] }}s</span>
+                <span class="meter"
+                  ><span
+                    class="meter-fill"
+                    [attr.data-role]="row.role"
+                    [style.width.%]="row.percent"
+                  ></span
+                ></span>
+                <span class="role-count">{{ fmt(row.count) }} · {{ row.percent }}%</span>
+              </li>
+            }
+          </ul>
+          <a class="more" routerLink="/admin/users"
+            >Ver todos los usuarios <app-icon name="chevron-right" [size]="14"
+          /></a>
+        </section>
+
+        <section class="panel-card block">
+          <h2><app-icon name="book" [size]="19" /> Cursos por estado</h2>
+          <ul class="states">
+            <li>
+              <span class="pill" data-tone="ok">{{ statusLabels.PUBLISHED }}</span>
+              <strong>{{ fmt(d.courses.PUBLISHED) }}</strong>
+            </li>
+            <li>
+              <span class="pill" data-tone="warn">{{ statusLabels.DRAFT }}</span>
+              <strong>{{ fmt(d.courses.DRAFT) }}</strong>
+            </li>
+            <li>
+              <span class="pill">{{ statusLabels.ARCHIVED }}</span>
+              <strong>{{ fmt(d.courses.ARCHIVED) }}</strong>
+            </li>
+          </ul>
+          <a class="more" routerLink="/admin/courses"
+            >Ver todos los cursos <app-icon name="chevron-right" [size]="14"
+          /></a>
+        </section>
+      </div>
+
+      <div class="grid">
+        <section class="panel-card block">
+          <h2><app-icon name="user" [size]="19" /> Cuentas recientes</h2>
+          <ul class="recent">
+            @for (user of d.recentUsers; track user.id) {
+              <li>
+                <span class="avatar" aria-hidden="true">{{ initials(user) }}</span>
+                <span class="who">
+                  <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+                  <small class="muted">{{ user.email }}</small>
+                </span>
+                <span class="pill" data-tone="accent">{{ roleLabels[user.role] }}</span>
+                <span class="muted when">{{ user.createdAt | date: 'd MMM' }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section class="panel-card block">
+          <h2><app-icon name="list" [size]="19" /> Cursos recientes</h2>
+          <ul class="recent">
+            @for (course of d.recentCourses; track course.id) {
+              <li>
+                <span class="who">
+                  <strong>{{ course.title }}</strong>
+                  <small class="muted">{{ course.teacher }}</small>
+                </span>
+                <span class="pill" [attr.data-tone]="tone(course.status)">{{
+                  statusLabels[course.status]
+                }}</span>
+                <span class="muted when">{{ course.createdAt | date: 'd MMM' }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
+    }
+  </div>
+</section>

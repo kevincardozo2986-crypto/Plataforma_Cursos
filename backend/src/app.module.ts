@@ -17,6 +17,9 @@ import { ProgressModule } from './modules/progress/progress.module.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { AssignmentsModule } from './modules/assignments/assignments.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
+import { CourseFilesModule } from './modules/course-files/course-files.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { AnnouncementsModule } from './modules/announcements/announcements.module.js';
 import { DiscussionsModule } from './modules/discussions/discussions.module.js';
@@ -61,6 +64,9 @@ export const observeEnabled = Boolean(
     UploadsModule,
     DashboardModule,
     AssignmentsModule,
+    CourseFilesModule,
+    AdminModule,
+    PaymentsModule,
     NotificationsModule,
     AnnouncementsModule,
     DiscussionsModule,

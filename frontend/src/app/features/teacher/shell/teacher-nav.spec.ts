@@ -69,11 +69,7 @@ describe('TEACHER_NAV', () => {
     expect(pending).not.toContain('assignments');
     expect(pending).not.toContain('reviews');
     expect(pending).not.toContain('summary');
-    expect(pending).toEqual(
-      expect.arrayContaining([
-        'zoom/api',
-        'analytics',
-      ]),
-    );
+    expect(pending).not.toContain('analytics');
+    expect(pending).toEqual(expect.arrayContaining(['zoom/api']));
   });
 });

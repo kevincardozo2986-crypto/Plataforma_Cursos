@@ -6,6 +6,8 @@ import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import { Icon } from '../../../../../shared/ui/icon/icon';
+import { CourseFilesCard } from './course-files-card';
+import { TeamCard } from './team-card';
 import { CertificateTemplate } from '../../../../../core/certificates/certificates.models';
 import { CertificatesService } from '../../../../../core/certificates/certificates.service';
 import { TeacherCourse } from '../../teacher-courses.models';
@@ -21,7 +23,7 @@ interface CandidateCourse {
 /** Paso 3: qué aprenderá el estudiante, a quién va dirigido, duración, requisitos y prerrequisitos. */
 @Component({
   selector: 'app-additional-step',
-  imports: [RichEditor, ReactiveFormsModule, RouterLink, Icon],
+  imports: [RichEditor, ReactiveFormsModule, RouterLink, Icon, TeamCard, CourseFilesCard],
   templateUrl: './additional-step.html',
   styleUrl: './additional-step.scss',
 })
@@ -35,6 +37,10 @@ export class AdditionalStep {
   >;
 
   /** Los demás cursos que administra el usuario: candidatos a prerrequisito. */
+  /** Solo el autor (o un admin) agrega y quita instructores. */
+  readonly isOwner = this.course.isOwner !== false;
+  readonly courseId = this.course.id;
+
   readonly candidates = signal<CandidateCourse[]>([]);
   readonly loadingCandidates = signal(true);
 
@@ -43,7 +49,6 @@ export class AdditionalStep {
 
   /** Lo que todavía no existe en el asistente; se muestra como aviso, sin enlaces falsos. */
   readonly upcoming = [
-    { label: 'Adjuntos', hint: 'Archivos descargables del curso.' },
     { label: 'Clase en vivo', hint: 'Crear una reunión de Zoom asociada al curso.' },
   ];
 

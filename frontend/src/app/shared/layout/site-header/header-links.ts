@@ -41,9 +41,9 @@ export function headerLinksFor(role: UserRole | null): HeaderLink[] {
       ];
     case 'ADMIN':
       return [
-        { label: 'Panel', route: '/teacher/dashboard', prefix: true },
+        { label: 'Administración', route: '/admin', prefix: true },
+        { label: 'Panel docente', route: '/teacher/dashboard', prefix: true },
         { label: 'Gestionar cursos', route: '/teacher/courses', prefix: true },
-        { label: 'Usuarios', soon: true },
       ];
     default:
       return common;

@@ -1,3 +1,4 @@
+import type { DripType } from '../modules/modules.models';
 import { CourseStatus } from '../../../shared/ui/status-badge/status-badge';
 import { CourseModule } from '../modules/modules.models';
 
@@ -29,6 +30,8 @@ export const DRAFT_TITLE = 'Curso sin título';
 
 export interface TeacherCourse {
   id: number;
+  /** true si es el autor (o un admin); false si solo es instructor del curso. */
+  isOwner?: boolean;
   title: string;
   slug: string;
   description: string;
@@ -51,6 +54,8 @@ export interface TeacherCourse {
   publicContent: boolean;
   qaEnabled: boolean;
   programmingEnabled?: boolean;
+  /** Cómo se abre el contenido a los estudiantes. */
+  dripType?: DripType;
 
   // Resumen del curso
   whatYouWillLearn: string | null;
@@ -104,6 +109,7 @@ export interface CourseUpdate {
   publicContent?: boolean;
   qaEnabled?: boolean;
   programmingEnabled?: boolean;
+  dripType?: DripType;
   whatYouWillLearn?: string | null;
   audience?: string | null;
   durationMinutes?: number | null;

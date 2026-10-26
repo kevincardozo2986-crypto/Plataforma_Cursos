@@ -11,7 +11,7 @@ describe('headerLinksFor', () => {
   it('agrega enlaces distintos según el rol', () => {
     expect(labels('STUDENT')).toContain('Mis cursos');
     expect(labels('TEACHER')).toEqual(expect.arrayContaining(['Panel', 'Mis cursos']));
-    expect(labels('ADMIN')).toContain('Usuarios');
+    expect(labels('ADMIN')).toEqual(expect.arrayContaining(['Administración', 'Panel docente']));
   });
 
   it('el profesor enlaza a su panel y a sus cursos, ya disponibles', () => {
@@ -26,10 +26,11 @@ describe('headerLinksFor', () => {
     expect(teacherLinks.every((link) => !link.soon && link.prefix)).toBe(true);
   });
 
-  it('marca como próximamente las páginas que aún no existen', () => {
-    const pending = headerLinksFor('ADMIN').filter((link) => link.soon);
+  it('el administrador enlaza a su administración y al panel docente, ya disponibles', () => {
+    const links = headerLinksFor('ADMIN');
 
-    expect(pending.map((link) => link.label)).toEqual(['Usuarios']);
+    expect(links.filter((link) => link.soon)).toEqual([]);
+    expect(links.find((link) => link.label === 'Administración')?.route).toBe('/admin');
   });
 
   it('lleva al estudiante a su panel y a sus inscripciones', () => {

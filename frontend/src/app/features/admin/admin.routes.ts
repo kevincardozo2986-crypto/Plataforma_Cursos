@@ -1,17 +1,32 @@
 import { Routes } from '@angular/router';
 
-const comingSoon = () =>
-  import('../../shared/ui/coming-soon/coming-soon').then((m) => m.ComingSoon);
-
-/** Rutas de /admin (solo ADMIN, ver roleGuard en app.routes.ts). Las pantallas llegan en la siguiente ronda. */
+/** Rutas de /admin (solo ADMIN, ver roleGuard en app.routes.ts). Cuelgan de AdminShell, que pone el menú lateral. */
 export const ADMIN_ROUTES: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'users' },
-  { path: 'users', title: 'Usuarios', data: { title: 'Usuarios' }, loadComponent: comingSoon },
-  { path: 'courses', title: 'Cursos', data: { title: 'Cursos' }, loadComponent: comingSoon },
   {
-    path: 'categories',
-    title: 'Categorías',
-    data: { title: 'Categorías' },
-    loadComponent: comingSoon,
+    path: '',
+    loadComponent: () => import('./shell/admin-shell').then((m) => m.AdminShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'overview' },
+      {
+        path: 'overview',
+        title: 'Resumen',
+        loadComponent: () => import('./overview/overview-page').then((m) => m.OverviewPage),
+      },
+      {
+        path: 'users',
+        title: 'Usuarios',
+        loadComponent: () => import('./users/users-page').then((m) => m.UsersPage),
+      },
+      {
+        path: 'courses',
+        title: 'Cursos',
+        loadComponent: () => import('./courses/courses-page').then((m) => m.CoursesPage),
+      },
+      {
+        path: 'categories',
+        title: 'Categorías',
+        loadComponent: () => import('./categories/categories-page').then((m) => m.CategoriesPage),
+      },
+    ],
   },
 ];

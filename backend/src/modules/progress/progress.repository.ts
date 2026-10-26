@@ -7,6 +7,13 @@ import { EnrollmentStatus } from '../../generated/prisma/enums.js';
 export class ProgressRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** ¿Tiene esta persona un pago aprobado de este curso? */
+  async hasApprovedPayment(userId: number, courseId: number): Promise<boolean> {
+    return (
+      (await this.prisma.payment.count({ where: { userId, courseId, status: 'APPROVED' } })) > 0
+    );
+  }
+
   studyDates(userId: number) {
     return this.prisma.lessonProgress.findMany({
       where: { enrollment: { userId } },

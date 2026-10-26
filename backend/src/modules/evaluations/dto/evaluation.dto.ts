@@ -15,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { SanitizeHtml } from '../../../common/dto/sanitize-html.js';
 import { Trim } from '../../../common/dto/trim.js';
 
 export class OptionDto {
@@ -89,9 +90,9 @@ export class CreateEvaluationDto {
   title: string;
 
   @IsOptional()
-  @Trim()
+  @SanitizeHtml()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(5000)
   description?: string;
 
   @IsOptional()
@@ -117,9 +118,9 @@ export class UpdateEvaluationDto {
   title?: string;
 
   @IsOptional()
-  @Trim()
+  @SanitizeHtml()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(5000)
   description?: string;
 
   @IsOptional()

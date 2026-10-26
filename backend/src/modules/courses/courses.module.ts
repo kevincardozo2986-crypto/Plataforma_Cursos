@@ -5,6 +5,7 @@ import { AuthModule } from '../auth/auth.module.js';
 import { CategoriesModule } from '../categories/categories.module.js';
 import { CertificatesModule } from '../certificates/certificates.module.js';
 import { CourseAccessModule } from '../course-access/course-access.module.js';
+import { CourseFilesModule } from '../course-files/course-files.module.js';
 import { CourseModulesModule } from '../course-modules/course-modules.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { ProgressModule } from '../progress/progress.module.js';
@@ -20,6 +21,7 @@ import { CoursesService } from './courses.service.js';
     ActivityNotificationsModule,
     AuthModule,
     CourseAccessModule,
+    CourseFilesModule,
     CategoriesModule,
     CourseModulesModule,
     ProgressModule,

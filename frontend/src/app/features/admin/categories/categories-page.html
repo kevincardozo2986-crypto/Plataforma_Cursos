@@ -1,0 +1,169 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="layout" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ADMINISTRACIÓN / CATEGORÍAS</span>
+        <h1>Categorías</h1>
+        <p>Con ellas se agrupan los cursos en el catálogo y se eligen al crear un curso.</p>
+      </div>
+    </header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
+    }
+
+    <form class="panel-card add" (submit)="$event.preventDefault(); add()">
+      <h2><app-icon name="plus" [size]="19" /> Nueva categoría</h2>
+      <div class="add-row">
+        <label class="field">
+          <span>Nombre</span>
+          <input
+            class="panel-input"
+            name="name"
+            maxlength="80"
+            placeholder="Ej. Programación"
+            [value]="newName()"
+            (input)="newName.set($any($event.target).value)"
+          />
+        </label>
+        <label class="field grow">
+          <span>Descripción (opcional)</span>
+          <input
+            class="panel-input"
+            name="description"
+            maxlength="500"
+            placeholder="De qué trata esta categoría"
+            [value]="newDescription()"
+            (input)="newDescription.set($any($event.target).value)"
+          />
+        </label>
+        <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
+          <app-icon name="plus" [size]="16" /> Agregar
+        </button>
+      </div>
+    </form>
+
+    <div class="panel-card table-card">
+      @if (loading()) {
+        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando categorías…</p>
+      } @else if (categories().length === 0) {
+        <p class="empty">
+          <app-icon name="layout" [size]="20" /> Todavía no hay categorías. Crea la primera arriba.
+        </p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Categoría</th>
+                <th scope="col">Descripción</th>
+                <th scope="col" class="num">Cursos publicados</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (category of categories(); track category.id) {
+                @if (editId() === category.id) {
+                  <tr class="editing">
+                    <td>
+                      <input
+                        class="panel-input"
+                        maxlength="80"
+                        [value]="editName()"
+                        (input)="editName.set($any($event.target).value)"
+                        [attr.aria-label]="'Nombre de ' + category.name"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="panel-input"
+                        maxlength="500"
+                        [value]="editDescription()"
+                        (input)="editDescription.set($any($event.target).value)"
+                        aria-label="Descripción"
+                      />
+                    </td>
+                    <td class="num">{{ category._count?.courses ?? 0 }}</td>
+                    <td class="actions">
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--primary panel-btn--sm"
+                        [disabled]="busy()"
+                        (click)="saveEdit(category)"
+                      >
+                        <app-icon name="save" [size]="15" /> Guardar
+                      </button>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        (click)="cancelEdit()"
+                      >
+                        Cancelar
+                      </button>
+                    </td>
+                  </tr>
+                } @else {
+                  <tr>
+                    <th scope="row">
+                      <strong>{{ category.name }}</strong>
+                      <small class="muted">/{{ category.slug }}</small>
+                    </th>
+                    <td class="muted">{{ category.description || '—' }}</td>
+                    <td class="num">{{ category._count?.courses ?? 0 }}</td>
+                    <td class="actions">
+                      @if (confirmId() === category.id) {
+                        <span class="confirm-text"
+                          >¿Borrarla? Sus cursos quedan sin categoría.</span
+                        >
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--danger panel-btn--sm"
+                          [disabled]="busy()"
+                          (click)="remove(category)"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          (click)="confirmId.set(null)"
+                        >
+                          No
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          (click)="startEdit(category)"
+                        >
+                          <app-icon name="edit" [size]="15" /> Editar
+                        </button>
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                          aria-label="Borrar"
+                          title="Borrar"
+                          (click)="confirmId.set(category.id)"
+                        >
+                          <app-icon name="trash" [size]="15" />
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</section>

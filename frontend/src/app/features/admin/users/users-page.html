@@ -1,0 +1,318 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="users" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ADMINISTRACIÓN / USUARIOS</span>
+        <h1>Usuarios</h1>
+        <p>Quién tiene cuenta, con qué rol, y quién puede entrar.</p>
+      </div>
+      <button type="button" class="panel-btn panel-btn--primary" (click)="openCreate()">
+        <app-icon name="plus" [size]="17" /> Crear cuenta
+      </button>
+    </header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
+    }
+
+    @if (creating()) {
+      <form class="panel-card create" novalidate (submit)="$event.preventDefault(); create()">
+        <h2><app-icon name="plus" [size]="19" /> Nueva cuenta</h2>
+
+        <div class="grid">
+          <label class="field">
+            <span>Nombre</span>
+            <input
+              class="panel-input"
+              name="firstName"
+              [value]="form().firstName"
+              (input)="patch('firstName', $any($event.target).value)"
+            />
+          </label>
+          <label class="field">
+            <span>Apellido</span>
+            <input
+              class="panel-input"
+              name="lastName"
+              [value]="form().lastName"
+              (input)="patch('lastName', $any($event.target).value)"
+            />
+          </label>
+          <label class="field">
+            <span>Correo</span>
+            <input
+              class="panel-input"
+              type="email"
+              name="email"
+              autocomplete="off"
+              [value]="form().email"
+              (input)="patch('email', $any($event.target).value)"
+            />
+          </label>
+          <label class="field">
+            <span>Documento</span>
+            <input
+              class="panel-input"
+              name="document"
+              [value]="form().document"
+              (input)="patch('document', $any($event.target).value)"
+            />
+          </label>
+          <label class="field">
+            <span>Teléfono (opcional)</span>
+            <input
+              class="panel-input"
+              type="tel"
+              name="phone"
+              [value]="form().phone"
+              (input)="patch('phone', $any($event.target).value)"
+            />
+          </label>
+          <label class="field">
+            <span>Rol</span>
+            <select
+              class="panel-select"
+              name="role"
+              [value]="form().role"
+              (change)="patch('role', $any($event.target).value)"
+            >
+              @for (item of roles; track item) {
+                <option [value]="item" [selected]="form().role === item">
+                  {{ roleLabels[item] }}
+                </option>
+              }
+            </select>
+          </label>
+          <div class="field wide">
+            <span>Contraseña inicial</span>
+            <div class="pass-row">
+              <input
+                class="panel-input mono"
+                name="password"
+                autocomplete="new-password"
+                [type]="showPassword() ? 'text' : 'password'"
+                [value]="form().password"
+                (input)="patch('password', $any($event.target).value)"
+              />
+              <button
+                type="button"
+                class="panel-btn panel-btn--ghost"
+                (click)="showPassword.set(!showPassword())"
+              >
+                <app-icon name="eye" [size]="16" /> {{ showPassword() ? 'Ocultar' : 'Ver' }}
+              </button>
+              <button type="button" class="panel-btn panel-btn--ghost" (click)="regenerate()">
+                <app-icon name="refresh" [size]="16" /> Generar otra
+              </button>
+            </div>
+            <small class="muted"
+              >Se guarda cifrada y no se puede volver a ver: cópiala y compártela con la
+              persona.</small
+            >
+          </div>
+        </div>
+
+        @if (formError()) {
+          <p class="form-error" role="alert">{{ formError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="panel-btn panel-btn--ghost" (click)="closeCreate()">
+            Cancelar
+          </button>
+          <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
+            <app-icon name="save" [size]="16" /> {{ saving() ? 'Creando…' : 'Crear cuenta' }}
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Buscar</span>
+        <app-icon name="search" [size]="16" />
+        <input
+          class="panel-input"
+          type="search"
+          placeholder="Buscar por nombre, correo o documento"
+          [value]="q()"
+          (input)="onSearch($event)"
+        />
+      </label>
+      <label>
+        <span class="sr-only">Rol</span>
+        <select class="panel-select" (change)="setRole($event)">
+          <option value="">Todos los roles</option>
+          @for (item of roles; track item) {
+            <option [value]="item">{{ roleLabels[item] }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Estado</span>
+        <select class="panel-select" (change)="setStatus($event)">
+          <option value="">Todos los estados</option>
+          <option value="ACTIVE">Con acceso</option>
+          <option value="INACTIVE">Sin acceso</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="panel-card table-card">
+      @if (loading() && users().length === 0) {
+        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando cuentas…</p>
+      } @else if (users().length === 0) {
+        <p class="empty"><app-icon name="users" [size]="20" /> No hay cuentas con esos filtros.</p>
+      } @else {
+        <div class="table-scroll" [class.dim]="loading()">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Persona</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Actividad</th>
+                <th scope="col">Desde</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr [class.busy]="busyId() === user.id">
+                  <th scope="row">
+                    <span class="person">
+                      <span class="avatar" aria-hidden="true">
+                        @if (user.avatarUrl) {
+                          <img [src]="user.avatarUrl" alt="" />
+                        } @else {
+                          {{ initials(user) }}
+                        }
+                      </span>
+                      <span>
+                        <strong>
+                          {{ user.firstName }} {{ user.lastName }}
+                          @if (isMe(user)) {
+                            <span class="me">Tú</span>
+                          }
+                        </strong>
+                        <small class="muted">{{ user.email }} · {{ user.document }}</small>
+                      </span>
+                    </span>
+                  </th>
+                  <td>
+                    @if (isMe(user)) {
+                      <span class="pill" data-tone="accent">{{ roleLabels[user.role] }}</span>
+                    } @else {
+                      <select
+                        class="panel-select role-select"
+                        [attr.aria-label]="'Rol de ' + user.firstName"
+                        (change)="askRole(user, $event)"
+                      >
+                        @for (item of roles; track item) {
+                          <option [value]="item" [selected]="user.role === item">
+                            {{ roleLabels[item] }}
+                          </option>
+                        }
+                      </select>
+                    }
+                  </td>
+                  <td>
+                    <span
+                      class="pill"
+                      [attr.data-tone]="user.status === 'ACTIVE' ? 'ok' : 'danger'"
+                    >
+                      {{ user.status === 'ACTIVE' ? 'Con acceso' : 'Sin acceso' }}
+                    </span>
+                  </td>
+                  <td class="muted small">
+                    @if (user.role === 'STUDENT') {
+                      {{ user.enrollments }}
+                      {{ user.enrollments === 1 ? 'inscripción' : 'inscripciones' }}
+                    } @else {
+                      {{ user.courses }} {{ user.courses === 1 ? 'curso' : 'cursos' }}
+                      @if (user.instructing > 0) {
+                        · instructor en {{ user.instructing }}
+                      }
+                    }
+                  </td>
+                  <td class="nowrap muted small">{{ user.createdAt | date: 'd MMM y' }}</td>
+                  <td class="actions">
+                    @if (isMe(user)) {
+                      <span class="muted small">Es tu cuenta</span>
+                    } @else if (pending()?.id === user.id) {
+                      <span class="confirm-text">
+                        @if (pending()?.role; as role) {
+                          ¿Hacerlo {{ roleLabels[role].toLowerCase() }}?
+                        } @else if (pending()?.status === 'INACTIVE') {
+                          ¿Quitarle el acceso?
+                        } @else {
+                          ¿Devolverle el acceso?
+                        }
+                      </span>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--primary panel-btn--sm"
+                        [disabled]="busyId() === user.id"
+                        (click)="confirm(user)"
+                      >
+                        Sí
+                      </button>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        (click)="cancel()"
+                      >
+                        No
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        [class.danger]="user.status === 'ACTIVE'"
+                        (click)="askStatus(user)"
+                      >
+                        <app-icon
+                          [name]="user.status === 'ACTIVE' ? 'ban' : 'check-circle'"
+                          [size]="15"
+                        />
+                        {{ user.status === 'ACTIVE' ? 'Quitar acceso' : 'Dar acceso' }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span class="muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+          <button
+            type="button"
+            class="panel-btn panel-btn--ghost panel-btn--sm"
+            [disabled]="!hasPrev()"
+            (click)="page(-1)"
+          >
+            <app-icon name="arrow-left" [size]="15" /> Anterior
+          </button>
+          <button
+            type="button"
+            class="panel-btn panel-btn--ghost panel-btn--sm"
+            [disabled]="!hasNext()"
+            (click)="page(1)"
+          >
+            Siguiente <app-icon name="chevron-right" [size]="15" />
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</section>

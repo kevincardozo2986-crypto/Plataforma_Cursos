@@ -61,6 +61,49 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
   - Las finalizaciones se ubican por la fecha en que se completó el curso, no por la de inscripción.
 - **`courseBreakdown[].averageScore`:** `null` si el curso aún no tiene intentos calificados.
 
+## Reportes para las Analíticas
+
+Mismos permisos y filtros `period` y `courseId` que arriba (un curso ajeno responde `403`; un estudiante, `403`).
+
+### `GET /dashboard/teacher/students`
+
+Una fila **por inscripción** de tus cursos. Parámetros extra: `state` (`COMPLETED` | `IN_PROGRESS` | `INACTIVE` | `CANCELLED`), `q` (busca en nombre,
+apellido o correo; sin distinguir mayúsculas), `limit` (1–500, por defecto 50) y `offset`. Orden: la inscripción más reciente primero.
+
+```json
+{
+  "total": 48, "inactiveAfterDays": 30,
+  "items": [
+    { "enrollmentId": 12,
+      "student": { "id": 5, "firstName": "Ana", "lastName": "Ruiz", "email": "ana@campus.com" },
+      "course": { "id": 3, "title": "Curso de Angular" },
+      "state": "IN_PROGRESS",
+      "enrolledAt": "2026-09-01T10:00:00.000Z", "completedAt": null, "lastActivityAt": "2026-10-01T09:30:00.000Z",
+      "progress": { "completed": 2, "total": 8, "percent": 25 },
+      "quizAverage": 80, "taskAverage": 75 }
+  ]
+}
+```
+
+- `state`: cancelada → `CANCELLED`; terminó todas las lecciones → `COMPLETED`; activa que **no avanza ninguna lección hace 30 días o más** →
+  `INACTIVE`; el resto → `IN_PROGRESS` (mismas reglas que `completion` del dashboard).
+- `progress.percent`: lecciones hechas / lecciones del curso, de 0 a 100 (un curso sin lecciones da 0).
+- `quizAverage`: promedio (0–100) de los intentos de quizzes **ya calificados** de esa persona en ese curso; `taskAverage`: promedio de sus tareas calificadas
+  como **porcentaje del puntaje máximo** de cada una. Ambos son `null` si no tiene ninguno.
+- `lastActivityAt`: la última lección que marcó como completada (`null` si ninguna).
+
+### `GET /dashboard/teacher/ratings`
+
+```json
+{
+  "count": 25, "average": 4.3,
+  "distribution": [ { "stars": 5, "count": 14, "percent": 56 }, { "stars": 4, "count": 7, "percent": 28 }, "…hasta 1 estrella" ],
+  "recent": [ { "id": 9, "rating": 5, "comment": "Excelente", "createdAt": "…", "student": "Ana Ruiz", "course": { "id": 3, "title": "Curso de Angular" } } ]
+}
+```
+
+`distribution` siempre trae las 5 filas (de 5 a 1 estrella); `recent`, las 20 reseñas más nuevas del periodo.
+
 ## Todavía no disponible
 
 Las **ganancias** no están aquí porque dependen del módulo de pagos, que aún no existe. Cuando se construya se agrega

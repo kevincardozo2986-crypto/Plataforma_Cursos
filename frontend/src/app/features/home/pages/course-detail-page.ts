@@ -1,4 +1,5 @@
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
+import { CheckoutDialog } from './checkout-dialog/checkout-dialog';
 import { CoursePlayer } from '../../student/course-player/course-player';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
@@ -39,7 +40,7 @@ interface CourseProgress {
 
 @Component({
   selector: 'app-course-detail-page',
-  imports: [RouterLink, FormsModule, CoursePlayer, RichHtmlPipe],
+  imports: [RouterLink, FormsModule, CoursePlayer, RichHtmlPipe, CheckoutDialog],
   templateUrl: './course-detail-page.html',
   styleUrl: './course-detail-page.scss',
 })
@@ -97,6 +98,25 @@ export class CourseDetailPage {
         this.course.set(course);
         if (course && this.auth.user()?.role === 'STUDENT') this.checkEnrollment();
       });
+  }
+
+  readonly checkoutOpen = signal(false);
+
+  coursePrice(course: CourseDetail): number {
+    return Number(course.price ?? 0);
+  }
+
+  /** El pago se aprobó (y el servidor ya inscribió): mostramos el curso como inscrito. */
+  onPaid(): void {
+    const course = this.course();
+    if (!course) return;
+    this.enrollmentNotice.set('¡Pago aprobado e inscripción realizada! El curso ya aparece en Mis cursos.');
+    this.progress.set({
+      status: 'ACTIVE',
+      percent: 0,
+      completedLessons: 0,
+      totalLessons: course.modules?.reduce((sum, module) => sum + module.lessons.length, 0) ?? 0,
+    });
   }
 
   price(value: Course['price']): string {

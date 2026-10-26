@@ -48,11 +48,13 @@
 
           <div class="panel-field">
             <label for="description">Descripción (opcional)</label>
-            <textarea
-              id="description"
-              class="panel-textarea short"
+            <app-rich-editor
+              inputId="description"
+              label="Descripción de la evaluación"
+              [minHeight]="140"
               formControlName="description"
-            ></textarea>
+              placeholder="Qué cubre, cuánto dura, indicaciones para presentarla…"
+            />
           </div>
 
           <div class="panel-field score">

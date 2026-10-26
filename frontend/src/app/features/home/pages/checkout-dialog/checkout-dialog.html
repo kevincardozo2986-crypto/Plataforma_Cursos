@@ -1,0 +1,152 @@
+<div class="backdrop" (click)="close()" (keydown.escape)="close()" role="presentation">
+  <div
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="checkout-title"
+    tabindex="-1"
+    (click)="$event.stopPropagation()"
+    (keydown.escape)="close()"
+  >
+    <button class="x" type="button" aria-label="Cerrar" (click)="close()" [disabled]="processing()">×</button>
+
+    @if (receipt(); as r) {
+      <div class="done">
+        <div class="check" aria-hidden="true">✓</div>
+        <h2 id="checkout-title">¡Pago aprobado!</h2>
+        <p class="lead">Ya estás inscrito en <strong>{{ r.course.title }}</strong>.</p>
+        <dl class="receipt">
+          <div><dt>Comprobante</dt><dd class="mono">{{ r.reference }}</dd></div>
+          <div><dt>Fecha</dt><dd>{{ receiptDate() }}</dd></div>
+          <div><dt>Tarjeta</dt><dd>{{ BRAND[r.cardBrand] || 'Tarjeta' }} •••• {{ r.cardLast4 }}</dd></div>
+          <div><dt>Titular</dt><dd>{{ r.payerName }}</dd></div>
+          <div class="total"><dt>Total</dt><dd>{{ money() }}</dd></div>
+        </dl>
+        <p class="sim">Pago simulado: no se cobró dinero real.</p>
+        <button class="pay" type="button" (click)="close()">Ir al curso</button>
+      </div>
+    } @else {
+      <header>
+        <span class="eyebrow">Pago seguro simulado</span>
+        <h2 id="checkout-title">Comprar curso</h2>
+        <p class="course">{{ title() }} · <strong>{{ money() }}</strong></p>
+      </header>
+
+      <p class="sim banner">
+        <strong>Esto es una simulación.</strong> No se cobra dinero real ni se guarda tu número de tarjeta. Usa una
+        tarjeta de prueba:
+      </p>
+      <div class="chips">
+        @for (card of testCards; track card.number) {
+          <button type="button" class="chip" (click)="useTestCard(card.number)" [disabled]="processing()">
+            <span>{{ card.label }}</span>
+            <small>{{ card.hint }} · {{ card.number }}</small>
+          </button>
+        }
+      </div>
+
+      <div class="card" [class.amex]="brand() === 'AMEX'" [attr.data-brand]="brand()" aria-hidden="true">
+        <div class="top">
+          <span class="chipimg"></span>
+          <span class="brand">{{ brand() === 'OTRA' ? '' : brandLabel() }}</span>
+        </div>
+        <div class="num">{{ previewNumber() }}</div>
+        <div class="bottom">
+          <div>
+            <small>Titular</small>
+            <span>{{ holder() || 'NOMBRE APELLIDO' }}</span>
+          </div>
+          <div>
+            <small>Vence</small>
+            <span>{{ expiry() || 'MM/AA' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form (submit)="$event.preventDefault(); submit()" novalidate>
+        <label for="ck-holder">Nombre en la tarjeta</label>
+        <input
+          id="ck-holder"
+          autocomplete="cc-name"
+          maxlength="80"
+          [value]="holder()"
+          (input)="holder.set($any($event.target).value)"
+          [class.bad]="touched() && errors()['holder']"
+          [disabled]="processing()"
+        />
+        @if (touched() && errors()['holder']) {<small class="err">{{ errors()['holder'] }}</small>}
+
+        <label for="ck-number">Número de la tarjeta</label>
+        <input
+          id="ck-number"
+          inputmode="numeric"
+          autocomplete="cc-number"
+          placeholder="0000 0000 0000 0000"
+          [value]="number()"
+          (input)="setNumber($any($event.target).value); $any($event.target).value = number()"
+          [class.bad]="touched() && errors()['number']"
+          [disabled]="processing()"
+        />
+        @if (touched() && errors()['number']) {<small class="err">{{ errors()['number'] }}</small>}
+
+        <div class="row">
+          <div>
+            <label for="ck-expiry">Vencimiento</label>
+            <input
+              id="ck-expiry"
+              inputmode="numeric"
+              autocomplete="cc-exp"
+              placeholder="MM/AA"
+              [value]="expiry()"
+              (input)="setExpiry($any($event.target).value); $any($event.target).value = expiry()"
+              [class.bad]="touched() && errors()['expiry']"
+              [disabled]="processing()"
+            />
+            @if (touched() && errors()['expiry']) {<small class="err">{{ errors()['expiry'] }}</small>}
+          </div>
+          <div>
+            <label for="ck-cvv">Código de seguridad</label>
+            <input
+              id="ck-cvv"
+              inputmode="numeric"
+              autocomplete="cc-csc"
+              type="password"
+              [placeholder]="cvvLength() === 4 ? '••••' : '•••'"
+              [value]="cvv()"
+              (input)="setCvv($any($event.target).value); $any($event.target).value = cvv()"
+              [class.bad]="touched() && errors()['cvv']"
+              [disabled]="processing()"
+            />
+            @if (touched() && errors()['cvv']) {<small class="err">{{ errors()['cvv'] }}</small>}
+          </div>
+        </div>
+
+        @if (needsPassword()) {
+          <label for="ck-password">Contraseña del curso</label>
+          <input
+            id="ck-password"
+            type="password"
+            autocomplete="off"
+            maxlength="100"
+            [value]="password()"
+            (input)="password.set($any($event.target).value)"
+            [class.bad]="touched() && errors()['password']"
+            [disabled]="processing()"
+          />
+          @if (touched() && errors()['password']) {<small class="err">{{ errors()['password'] }}</small>}
+        }
+
+        @if (declined()) {
+          <p class="alert declined" role="alert"><strong>Pago rechazado.</strong> {{ declined() }}. Prueba con otra tarjeta.</p>
+        }
+        @if (serverError()) {
+          <p class="alert" role="alert">{{ serverError() }}</p>
+        }
+
+        <button class="pay" type="submit" [disabled]="processing()">
+          @if (processing()) {<span class="spinner" aria-hidden="true"></span> Procesando pago…} @else {Pagar {{ money() }}}
+        </button>
+      </form>
+    }
+  </div>
+</div>

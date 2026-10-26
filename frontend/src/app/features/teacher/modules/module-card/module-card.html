@@ -20,11 +20,13 @@
 
         <div class="panel-field">
           <label [attr.for]="'module-desc-' + courseModule().id">Descripción (opcional)</label>
-          <textarea
-            class="panel-textarea short"
-            [id]="'module-desc-' + courseModule().id"
+          <app-rich-editor
+            [inputId]="'module-desc-' + courseModule().id"
+            label="Descripción del módulo"
+            [minHeight]="130"
             formControlName="description"
-          ></textarea>
+            placeholder="De qué trata este módulo y qué se logra al terminarlo."
+          />
         </div>
 
         <div class="row-actions">
@@ -48,7 +50,7 @@
       <div class="title-block">
         <h2>{{ courseModule().title }}</h2>
         @if (courseModule().description) {
-          <p class="panel-muted">{{ courseModule().description }}</p>
+          <div class="rich-desc" [innerHTML]="courseModule().description | richHtml"></div>
         }
       </div>
 
@@ -108,6 +110,16 @@
       </div>
     }
   </header>
+
+  @if (dripType() !== 'NONE') {
+    <app-module-unlock
+      [courseModule]="courseModule()"
+      [mode]="dripType()"
+      [siblings]="siblings()"
+      [index]="index()"
+      (saved)="changed.emit()"
+    />
+  }
 
   @if (error()) {
     <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>

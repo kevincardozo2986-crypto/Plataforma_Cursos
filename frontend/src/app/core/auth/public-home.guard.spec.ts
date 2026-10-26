@@ -8,7 +8,7 @@ describe('Destino de inicio por sesión', () => {
   for (const [role, path] of [
     ['STUDENT', '/student/dashboard'],
     ['TEACHER', '/teacher/dashboard'],
-    ['ADMIN', '/teacher/dashboard'],
+    ['ADMIN', '/admin/overview'],
   ] as const) {
     it(`redirige ${role} fuera del inicio informativo`, () => {
       TestBed.configureTestingModule({
