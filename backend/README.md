@@ -16,6 +16,15 @@ npm test
 npm run test:e2e
 ```
 
+## Aula del estudiante
+
+- El reproductor reconoce el video de la lección, recursos de tipo video y videos incrustados desde el editor. YouTube y Vimeo se reproducen dentro del aula mediante sus API oficiales.
+- Para completar una lección con video se exige ver al menos el 90 % de tramos diferentes. Adelantar, repetir el mismo tramo o dejar el reproductor pausado no aumenta ese porcentaje. El avance se conserva en PostgreSQL y se valida también al abrir las lecciones siguientes.
+- Los MP4 subidos usan la duración del archivo en el servidor. Para otros formatos y proveedores se usa la duración informada por el reproductor; este seguimiento no constituye una protección DRM frente a un cliente manipulado.
+- El certificado exige completar las lecciones, aprobar cada evaluación con su nota mínima configurada y obtener al menos 60 % en cada tarea. Las respuestas abiertas y tareas pendientes de revisión no habilitan el certificado.
+- El certificado usa la plantilla del docente o, si no se ha asignado una, el diseño predeterminado del campus. El estudiante ve sus requisitos y descarga el PDF autenticado desde el aula; la finalización se recalcula cuando se guarda una calificación.
+- Antes de iniciar una instalación actualizada, ejecuta `npx prisma migrate deploy` para crear la tabla de seguimiento de video.
+
 ## Configuración
 
 - `PORT`: puerto HTTP; por defecto, `3000`.

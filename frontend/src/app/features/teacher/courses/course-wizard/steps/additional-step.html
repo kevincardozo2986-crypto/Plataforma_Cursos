@@ -126,7 +126,7 @@
         <label for="certificateTemplateId">Plantilla</label>
         <select id="certificateTemplateId" class="panel-select" (change)="onTemplate($event)">
           <option value="" [selected]="form.controls.certificateTemplateId.value === null">
-            Este curso no da certificado
+            Plantilla predeterminada del campus
           </option>
           @for (template of templates(); track template.id) {
             <option

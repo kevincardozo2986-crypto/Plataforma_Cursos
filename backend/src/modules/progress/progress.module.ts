@@ -1,3 +1,4 @@
+import { LearningPolicyModule } from '../learning-policy/learning-policy.module.js';
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module.js';
@@ -9,7 +10,13 @@ import { ProgressRepository } from './progress.repository.js';
 import { ProgressService } from './progress.service.js';
 
 @Module({
-  imports: [AuthModule, CourseAccessModule, LessonsModule, CertificatesModule],
+  imports: [
+    LearningPolicyModule,
+    AuthModule,
+    CourseAccessModule,
+    LessonsModule,
+    CertificatesModule,
+  ],
   controllers: [ProgressController],
   providers: [ProgressService, ProgressRepository],
   exports: [ProgressService],

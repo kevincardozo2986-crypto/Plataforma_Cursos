@@ -1009,3 +1009,393 @@ textarea:focus-visible {
     font-size: 0.7rem;
   }
 }
+
+/* The lesson takes the screen; the learning route stays alongside it. */
+.classroom {
+  max-width: 1800px;
+  padding: 18px 24px 32px;
+  grid-template-columns: clamp(240px, 18vw, 280px) minmax(0, 1fr);
+  gap: 18px 22px;
+}
+.classroom-heading {
+  position: relative;
+}
+.breadcrumb {
+  font-size: 0.7rem;
+}
+.heading-title {
+  margin: 10px 0 8px;
+  gap: 12px;
+}
+.heading-title h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  letter-spacing: -0.035em;
+}
+.course-eyebrow {
+  display: none;
+}
+.course-facts {
+  gap: 8px 14px;
+  font-size: 0.68rem;
+}
+.course-facts > span {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.teacher {
+  padding-right: 12px;
+  gap: 7px;
+}
+.teacher-avatar {
+  width: 28px;
+  height: 28px;
+  border-width: 1px;
+  font-size: 0.6rem;
+}
+.teacher strong {
+  font-size: 0.7rem;
+}
+.teacher small {
+  display: none;
+}
+.quick-tools {
+  margin-top: 12px;
+  gap: 7px;
+}
+.quick-tools button {
+  padding: 6px 10px;
+  font-size: 0.68rem;
+  border-radius: 8px;
+}
+.lesson-workspace {
+  grid-column: 2;
+  gap: 14px;
+}
+.lesson-stage {
+  border-radius: 16px;
+}
+.lesson-caption {
+  padding: 8px 14px;
+  font-size: 0.62rem;
+  gap: 6px;
+}
+.lesson-caption span {
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+app-course-video {
+  --course-video-height: max(300px, calc(100dvh - 270px));
+}
+.watch-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 11px 16px;
+  font-size: 0.72rem;
+  color: #b8cdea;
+  background: #10243d;
+}
+.watch-status.ready {
+  color: #83e4ce;
+}
+.watch-status strong {
+  color: inherit;
+  white-space: nowrap;
+}
+.classroom-sidebar {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 0 3px 4px;
+}
+.curriculum-card {
+  order: 0;
+  flex-shrink: 0;
+  padding: 16px 10px 10px;
+  border-radius: 15px;
+}
+.curriculum-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-inline: 4px;
+}
+.curriculum-heading h2 {
+  font-size: 0.84rem;
+}
+.curriculum-heading > span {
+  margin: 0;
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+.module summary {
+  padding: 11px 9px;
+  font-size: 0.73rem;
+}
+.lesson-row {
+  padding: 11px 9px;
+  font-size: 0.73rem;
+  gap: 8px;
+}
+.lesson-row > small {
+  font-size: 0.62rem;
+}
+.lesson-check {
+  width: 16px;
+  height: 16px;
+}
+.current-lesson {
+  display: block;
+  margin-top: 4px;
+  color: #1265ed;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+.progress-card {
+  order: 1;
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border-radius: 15px;
+}
+.progress-card .card-label {
+  display: none;
+}
+.progress-card h2 {
+  font-size: 0.82rem;
+}
+.progress-summary {
+  gap: 12px;
+  margin-top: 12px;
+}
+.progress-ring {
+  width: 48px;
+  height: 48px;
+  padding: 4px;
+}
+.progress-ring strong {
+  font-size: 0.85rem;
+  letter-spacing: -0.02em;
+}
+.progress-summary > div:last-child > strong {
+  font-size: 0.78rem;
+}
+.progress-summary p {
+  font-size: 0.68rem;
+}
+.finished {
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.lesson-details {
+  padding: 16px 18px;
+  border-radius: 15px;
+  min-width: 0;
+}
+.lesson-toolbar {
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.lesson-toolbar .eyebrow {
+  display: none;
+}
+.lesson-toolbar h2 {
+  font-size: 1rem;
+}
+.complete-button {
+  padding: 8px 12px;
+  font-size: 0.7rem;
+  border-radius: 8px;
+}
+.lesson-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  overflow: visible;
+}
+.lesson-tabs button {
+  flex: 0 1 auto;
+  padding: 8px 10px;
+  gap: 6px;
+  font-size: 0.7rem;
+  border-radius: 7px;
+}
+.lesson-tabs app-student-icon {
+  width: 14px;
+  height: 14px;
+}
+.tab-content {
+  padding: 18px 0 0;
+  font-size: 0.8rem;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.tab-content h3 {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+.tab-content textarea {
+  padding: 10px;
+  font-size: 0.78rem;
+}
+.tab-content form {
+  gap: 8px;
+}
+.lesson-navigation {
+  grid-column: 2;
+  margin: 0;
+  gap: 12px;
+}
+.lesson-navigation button {
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+.lesson-navigation strong {
+  font-size: 0.78rem;
+}
+.graduation-card {
+  order: 2;
+  flex-shrink: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.graduation-card h2 {
+  font-size: 0.86rem;
+}
+.graduation-card p {
+  font-size: 0.72rem;
+  line-height: 1.6;
+  margin-top: 10px;
+  color: var(--muted);
+}
+.graduation-checklist {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+  margin: 14px 0;
+  font-size: 0.71rem;
+  color: var(--muted);
+}
+.graduation-checklist .met {
+  color: #078879;
+}
+.final-grade {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.final-grade strong {
+  color: var(--ink);
+}
+.text-action {
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: #1265ed;
+  font-size: 0.72rem;
+  text-align: left;
+}
+.certificate-download {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px;
+  font-size: 0.74rem;
+  margin-top: 12px;
+}
+@media (max-width: 1050px) {
+  .classroom {
+    grid-template-columns: 240px minmax(0, 1fr);
+    padding-inline: 16px;
+    gap: 16px;
+  }
+}
+@media (max-width: 800px) {
+  .classroom {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px 12px 24px;
+  }
+  .classroom-sidebar {
+    position: static;
+    grid-column: 1;
+    max-height: none;
+    overflow: visible;
+    grid-row: auto;
+  }
+  .curriculum-card {
+    max-height: 380px;
+    overflow-y: auto;
+  }
+  .lesson-workspace {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .lesson-navigation {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  app-course-video {
+    --course-video-height: none;
+  }
+  .lesson-details {
+    padding: 14px;
+  }
+  .lesson-toolbar {
+    flex-wrap: wrap;
+  }
+  .heading-title h1 {
+    font-size: 1.3rem;
+  }
+  .tab-content {
+    max-height: 360px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lesson-row {
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .certificate-download {
+    transition:
+      transform 180ms ease,
+      filter 180ms ease;
+  }
+  .certificate-download:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+}
+
+.stage-previous {
+  border: 1px solid #ffffff40;
+  border-radius: 5px;
+  padding: 4px 8px;
+  background: transparent;
+  color: #e5f0ff;
+  font-size: inherit;
+}
+.stage-previous:hover:not(:disabled) {
+  background: #ffffff15;
+}
+.stage-previous:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

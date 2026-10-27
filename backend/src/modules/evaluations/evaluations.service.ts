@@ -182,6 +182,8 @@ export class EvaluationsService {
       results: items,
     });
 
+    if (!scored.pendingReview) await this.progress.refreshCompletion(user.id, courseId);
+
     return {
       ...this.toStudentAttempt(attempt),
       earnedPoints: scored.earnedPoints,
@@ -276,6 +278,7 @@ export class EvaluationsService {
       });
     }
 
+    await this.progress.refreshCompletion(attempt.user.id, attempt.evaluation.module.courseId);
     return this.getAttempt(user, id);
   }
 

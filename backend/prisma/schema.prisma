@@ -240,6 +240,7 @@ model Lesson {
   module   CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   resources       Resource[]
+  videoWatches    VideoWatchProgress[]
   progress        LessonProgress[]
   discussionPosts DiscussionPost[]
 
@@ -705,6 +706,7 @@ model Enrollment {
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   lessonProgress LessonProgress[]
+  videoWatches VideoWatchProgress[]
 
   @@unique([userId, courseId])
   @@index([courseId])
@@ -792,4 +794,20 @@ model Payment {
   @@index([userId, createdAt])
   @@index([courseId, status])
   @@map("payments")
+}
+
+model VideoWatchProgress {
+  id Int @id @default(autoincrement())
+  enrollmentId Int
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId Int
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  source String
+  duration Float
+  position Float @default(0)
+  playing Boolean @default(false)
+  ranges Json @default("[]")
+  reportedAt DateTime @default(now())
+  @@unique([enrollmentId, lessonId])
+  @@map("video_watch_progress")
 }

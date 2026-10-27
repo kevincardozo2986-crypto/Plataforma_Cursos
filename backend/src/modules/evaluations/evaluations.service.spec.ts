@@ -70,7 +70,7 @@ function build(findOne?: unknown) {
     assertContentAccess: vi.fn().mockResolvedValue(undefined),
     canManage: vi.fn().mockReturnValue(false),
   };
-  const progress = { isEnrolled: vi.fn().mockResolvedValue(true) };
+  const progress = { refreshCompletion: vi.fn().mockResolvedValue(undefined), isEnrolled: vi.fn().mockResolvedValue(true) };
   const notifications = { notify: vi.fn().mockResolvedValue(1) };
 
   const service = new EvaluationsService(

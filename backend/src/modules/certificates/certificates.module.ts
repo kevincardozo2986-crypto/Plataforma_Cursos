@@ -1,3 +1,4 @@
+import { LearningPolicyModule } from '../learning-policy/learning-policy.module.js';
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module.js';
@@ -14,6 +15,7 @@ import { CertificatesService } from './certificates.service.js';
 
 @Module({
   imports: [
+    LearningPolicyModule,
     AuthModule,
     CourseAccessModule,
     UsersModule,

@@ -1,3 +1,4 @@
+import type { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Logger, NotFoundException } from '@nestjs/common';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
@@ -65,6 +66,7 @@ function build() {
     users as unknown as UsersService,
     notifications as unknown as NotificationsService,
     fonts as unknown as CertificateFontsService,
+    { completion: vi.fn().mockResolvedValue({ eligible: true }) } as unknown as LearningPolicyService,
   );
 
   return { service, repository, access, users, notifications, fonts };
@@ -360,12 +362,12 @@ describe('CertificatesService', () => {
       expect(notifications.notify).not.toHaveBeenCalled();
     });
 
-    it('un curso sin plantilla no emite nada', async () => {
+    it('un curso aprobado sin plantilla usa el certificado predeterminado', async () => {
       const { service, repository } = build();
       repository.findCourseForCertificate.mockResolvedValue({ ...course, certificateTemplate: null });
 
-      expect(await service.issueFor(5, 3)).toEqual({ certificate: null, created: false });
-      expect(repository.createCertificate).not.toHaveBeenCalled();
+      expect((await service.issueFor(5, 3)).created).toBe(true);
+      expect(repository.createCertificate).toHaveBeenCalledWith(expect.objectContaining({design: expect.objectContaining({font: 'SANS', layout: 'CLASSIC'})}));
     });
 
     it('sin nombre público usa nombre y apellido del docente', async () => {

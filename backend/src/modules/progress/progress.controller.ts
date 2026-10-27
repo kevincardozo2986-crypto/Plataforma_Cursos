@@ -1,3 +1,4 @@
+import { VideoWatchDto } from './dto/video-watch.dto.js';
 import {
   Body,
   Controller,
@@ -70,6 +71,25 @@ export class ProgressController {
     @Param('courseId', ParseIntPipe) courseId: number,
   ) {
     return this.progress.courseProgress(user, courseId);
+  }
+
+  @Get('lessons/:lessonId/video-progress')
+  @Roles(Role.STUDENT)
+  videoState(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', ParseIntPipe) id: number,
+  ) {
+    return this.progress.videoState(user, id);
+  }
+
+  @Post('lessons/:lessonId/video-progress')
+  @Roles(Role.STUDENT)
+  recordVideo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', ParseIntPipe) id: number,
+    @Body() dto: VideoWatchDto,
+  ) {
+    return this.progress.recordVideo(user, id, dto);
   }
 
   @Post('lessons/:lessonId/complete')

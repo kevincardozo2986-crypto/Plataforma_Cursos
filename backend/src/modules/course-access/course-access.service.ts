@@ -1,3 +1,4 @@
+import { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
 import {
   ForbiddenException,
   Injectable,
@@ -32,7 +33,7 @@ export type ContentRef =
  */
 @Injectable()
 export class CourseAccessService {
-  constructor(private readonly repository: CourseAccessRepository) {}
+  constructor(private readonly repository: CourseAccessRepository, private readonly learning: LearningPolicyService) {}
 
   async getCourseOrThrow(courseId: number) {
     const course = await this.repository.findCourseBasics(courseId);
@@ -159,6 +160,8 @@ export class CourseAccessService {
         requiredModules: [],
       });
     }
+
+    if ('lessonId' in ref) await this.learning.assertLessonOrder(enrollment.id, courseId, ref.lessonId);
 
     if (course.dripType === DripType.NONE) {
       return;

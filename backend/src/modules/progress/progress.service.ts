@@ -1,9 +1,12 @@
+import { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
+import type { VideoWatchDto } from './dto/video-watch.dto.js';
 import { studyStreak } from './study-streak.js';
 import {
   ConflictException,
   ForbiddenException,
   HttpException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -22,11 +25,13 @@ import { ProgressRepository } from './progress.repository.js';
 
 @Injectable()
 export class ProgressService {
+  private readonly logger = new Logger(ProgressService.name);
   constructor(
     private readonly repository: ProgressRepository,
     private readonly access: CourseAccessService,
     private readonly lessons: LessonsService,
     private readonly certificates: CertificatesService,
+    private readonly learning: LearningPolicyService,
   ) {}
 
   async studyStreak(user: AuthenticatedUser) {
@@ -171,26 +176,63 @@ export class ProgressService {
     // No se puede dar por vista una lección de un módulo que todavía está cerrado.
     await this.access.assertContentAccess(user, { lessonId });
 
+    await this.learning.assertVideoComplete(enrollment.id, lessonId);
     await this.repository.markLessonDone(enrollment.id, lessonId);
 
     const progress = await this.computeProgress(enrollment.id, courseId);
 
     if (
       progress.totalLessons > 0 &&
-      progress.completedLessons === progress.totalLessons &&
-      enrollment.status !== EnrollmentStatus.COMPLETED
+      progress.completedLessons === progress.totalLessons
     ) {
-      await this.repository.updateEnrollment(enrollment.id, {
-        status: EnrollmentStatus.COMPLETED,
-        completedAt: new Date(),
-      });
-
-      // Si el curso tiene plantilla de certificado, se emite. Un fallo aquí no debe impedir
-      // que la lección quede marcada como completada.
-      await this.certificates.tryIssue(user.id, courseId);
+      await this.refreshCompletion(user.id, courseId);
     }
 
     return progress;
+  }
+
+  /** Grades can arrive after the last lesson. Re-evaluate graduation when either changes. */
+  async refreshCompletion(userId: number, courseId: number): Promise<void> {
+    try {
+      const state = await this.learning.completion(userId, courseId);
+      const enrollment = await this.getActiveEnrollment(userId, courseId);
+      if (state.eligible) {
+        if (enrollment.status !== EnrollmentStatus.COMPLETED) {
+          await this.repository.updateEnrollment(enrollment.id, {
+            status: EnrollmentStatus.COMPLETED,
+            completedAt: new Date(),
+          });
+          await this.certificates.tryIssue(userId, courseId);
+        }
+      } else if (enrollment.status === EnrollmentStatus.COMPLETED) {
+        await this.repository.updateEnrollment(enrollment.id, {
+          status: EnrollmentStatus.ACTIVE,
+          completedAt: null,
+        });
+      }
+    } catch (error) {
+      this.logger.warn(
+        `No se pudo actualizar la finalizacion del curso ${courseId}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  async videoState(user: AuthenticatedUser, lessonId: number) {
+    const courseId = await this.access.courseIdOfLesson(lessonId);
+    const enrollment = await this.getActiveEnrollment(user.id, courseId);
+    await this.access.assertContentAccess(user, { lessonId });
+    return this.learning.videoState(enrollment.id, lessonId);
+  }
+
+  async recordVideo(
+    user: AuthenticatedUser,
+    lessonId: number,
+    dto: VideoWatchDto,
+  ) {
+    const courseId = await this.access.courseIdOfLesson(lessonId);
+    const enrollment = await this.getActiveEnrollment(user.id, courseId);
+    await this.access.assertContentAccess(user, { lessonId });
+    return this.learning.recordVideo(enrollment.id, lessonId, dto);
   }
 
   async uncompleteLesson(user: AuthenticatedUser, lessonId: number) {

@@ -113,6 +113,20 @@ export class CertificatesController {
     return this.certificates.verify(code);
   }
 
+  @Get('courses/:courseId/completion')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  completion(@CurrentUser() user: AuthenticatedUser, @Param('courseId', ParseIntPipe) courseId: number) {
+    return this.certificates.courseCompletion(user, courseId);
+  }
+
+  @Post('courses/:courseId/claim')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
+  claim(@CurrentUser() user: AuthenticatedUser, @Param('courseId', ParseIntPipe) courseId: number) {
+    return this.certificates.claim(user, courseId);
+  }
+
   /** Mis certificados. */
   @Get('mine')
   @UseGuards(JwtAuthGuard)

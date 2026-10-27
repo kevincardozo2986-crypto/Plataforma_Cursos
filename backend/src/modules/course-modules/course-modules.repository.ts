@@ -1,3 +1,4 @@
+import { primaryVideo } from '../learning-policy/watch-coverage.js';
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service.js';
@@ -47,6 +48,9 @@ export class CourseModulesRepository {
                   title: true,
                   position: true,
                   durationMinutes: true,
+                  videoUrl: true,
+                  content: true,
+                  resources: { select: { type: true, url: true } },
                 },
               }),
         },
@@ -54,7 +58,20 @@ export class CourseModulesRepository {
       },
     });
 
-    return modules.map(flatten);
+    return modules.map((module) => ({
+      ...flatten(module),
+      lessons: module.lessons.map((lesson) => {
+        if (fullLessons) return lesson;
+        const { videoUrl, content, resources, ...outline } =
+          lesson as typeof lesson & {
+            resources: { type: string; url: string }[];
+          };
+        return {
+          ...outline,
+          hasVideo: Boolean(primaryVideo({ videoUrl, content, resources })),
+        };
+      }),
+    }));
   }
 
   /** Un módulo con la lista de ids de los módulos que requiere. */
@@ -112,7 +129,9 @@ export class CourseModulesRepository {
       data: {
         ...data,
         requires: {
-          create: requiresModuleIds.map((requiredModuleId) => ({ requiredModuleId })),
+          create: requiresModuleIds.map((requiredModuleId) => ({
+            requiredModuleId,
+          })),
         },
       },
       include: withRequires,
@@ -131,7 +150,9 @@ export class CourseModulesRepository {
           ? {
               requires: {
                 deleteMany: {},
-                create: requiresModuleIds.map((requiredModuleId) => ({ requiredModuleId })),
+                create: requiresModuleIds.map((requiredModuleId) => ({
+                  requiredModuleId,
+                })),
               },
             }
           : {}),

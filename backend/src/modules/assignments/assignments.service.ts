@@ -267,6 +267,7 @@ export class AssignmentsService {
       refId: detail.assignment.id,
     });
 
+    await this.progress.refreshCompletion(detail.user.id, detail.assignment.module.courseId);
     return this.getSubmission(user, id);
   }
 

@@ -27,7 +27,7 @@ export interface CourseDetail extends Course {
     id: number;
     title: string;
     description?: string;
-    lessons: { id: number; title: string; durationMinutes?: number | null }[];
+    lessons: { id: number; title: string; durationMinutes?: number | null; hasVideo?: boolean }[];
   }[];
 }
 interface CourseProgress {

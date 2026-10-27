@@ -51,7 +51,7 @@ function build() {
     assertCanManage: vi.fn().mockResolvedValue({}),
     assertContentAccess: vi.fn().mockResolvedValue(undefined),
   };
-  const progress = { isEnrolled: vi.fn().mockResolvedValue(true) };
+  const progress = { refreshCompletion: vi.fn().mockResolvedValue(undefined), isEnrolled: vi.fn().mockResolvedValue(true) };
   const uploads = {
     privateInfo: vi.fn().mockResolvedValue({ originalName: 'mi tarea.pdf', size: 1234, uploadedBy: 5 }),
     resolvePrivate: vi.fn().mockResolvedValue('/ruta/privada/archivo.pdf'),

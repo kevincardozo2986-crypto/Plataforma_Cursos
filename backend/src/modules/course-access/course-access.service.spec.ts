@@ -1,3 +1,5 @@
+import type { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
+const learning = { assertLessonOrder: vi.fn().mockResolvedValue(undefined) } as unknown as LearningPolicyService;
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { CourseStatus, Role } from '../../generated/prisma/enums.js';
@@ -13,7 +15,7 @@ describe('CourseAccessService', () => {
   const service = new CourseAccessService({
     findCourseBasics,
     courseIdOfModule,
-  } as unknown as CourseAccessRepository);
+  } as unknown as CourseAccessRepository, learning);
 
   const course = (status: CourseStatus) => ({ id: 1, teacherId: 7, status });
 
@@ -108,7 +110,7 @@ describe('CourseAccessService: instructores', () => {
       }),
     };
 
-    return new CourseAccessService(repository as unknown as CourseAccessRepository);
+    return new CourseAccessService(repository as unknown as CourseAccessRepository, learning);
   }
 
   it('el autor y los instructores gestionan el curso; otro docente no', async () => {
@@ -130,7 +132,7 @@ describe('CourseAccessService: instructores', () => {
   it('un curso en borrador lo ve su instructor, no un estudiante', async () => {
     const draft = new CourseAccessService({
       findCourseBasics: vi.fn().mockResolvedValue({ id: 3, teacherId: 7, status: CourseStatus.DRAFT, instructors: [{ userId: 8 }] }),
-    } as unknown as CourseAccessRepository);
+    } as unknown as CourseAccessRepository, learning);
 
     await expect(draft.assertCanView(coInstructor, 3)).resolves.toBeDefined();
     await expect(draft.assertCanView(user(5, Role.STUDENT), 3)).rejects.toBeInstanceOf(NotFoundException);
@@ -180,7 +182,7 @@ describe('CourseAccessService: acceso al contenido y liberación gradual', () =>
       completedModuleIds: vi.fn().mockResolvedValue([]),
     };
 
-    return { service: new CourseAccessService(repository as unknown as CourseAccessRepository), repository };
+    return { service: new CourseAccessService(repository as unknown as CourseAccessRepository, learning), repository };
   }
 
   describe('assertContentAccess', () => {

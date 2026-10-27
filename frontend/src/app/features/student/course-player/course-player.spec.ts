@@ -53,6 +53,18 @@ describe('CoursePlayer', () => {
     });
   });
   afterEach(() => {
+    for (const request of http
+      .match('/api/certificates/courses/7/completion')
+      .filter((r) => !r.cancelled))
+      request.flush({
+        contentComplete: false,
+        gradesComplete: true,
+        eligible: false,
+        certificateEnabled: true,
+        average: null,
+        assessments: [],
+        certificate: null,
+      });
     http.verify();
     localStorage.removeItem('campus.notes:student@example.com:7:2');
   });
@@ -61,6 +73,66 @@ describe('CoursePlayer', () => {
       .expectOne('/api/lessons/2')
       .flush({ id: 2, title: 'Componentes', content: '<p>Contenido real</p>', resources: [] });
   }
+  it('lets the student go back while the current video is incomplete', () => {
+    http
+      .expectOne('/api/lessons/2')
+      .flush({ id: 2, title: 'Video', videoUrl: 'https://example.com/video.mp4', resources: [] });
+    http
+      .expectOne('/api/lessons/2/video-progress')
+      .flush({ required: true, percent: 10, eligible: false, position: 10 });
+    fixture.detectChanges();
+    const previous = fixture.nativeElement.querySelector('.stage-previous') as HTMLButtonElement;
+    expect(previous.disabled).toBe(false);
+    previous.click();
+    http.expectOne('/api/lessons/1').flush({ id: 1, title: 'Introduccion', resources: [] });
+    expect(player.selectedId()).toBe(1);
+  });
+  it('promotes an embedded YouTube video into the main player and enforces the server threshold', () => {
+    http.expectOne('/api/lessons/2').flush({
+      id: 2,
+      title: 'Componentes',
+      content:
+        '<p>Introduccion</p><iframe src="https://www.youtube.com/embed/9P0UkeGBZwQ"></iframe>',
+      resources: [],
+    });
+    http
+      .expectOne('/api/lessons/2/video-progress')
+      .flush({ required: true, percent: 89, eligible: false, position: 89 });
+    expect(player.currentVideo()).toBe('https://www.youtube.com/embed/9P0UkeGBZwQ');
+    expect(player.lessonDescription()).toBe('<p>Introduccion</p>');
+    expect(player.canComplete()).toBe(false);
+    player.complete();
+    http.expectNone('/api/lessons/2/complete');
+    player.availability.set([
+      { moduleId: 10, locked: false },
+      { moduleId: 20, locked: false },
+    ]);
+    player.select(3);
+    http.expectNone('/api/lessons/3');
+    player.reportVideo({ position: 90, duration: 100, playing: true });
+    http
+      .expectOne('/api/lessons/2/video-progress')
+      .flush({ required: true, percent: 90, eligible: true, position: 90 });
+    expect(player.canComplete()).toBe(true);
+    // Reaching 90% enables completion, but the next lesson still waits for saved completion.
+    expect(player.lessonLocked(3)).toBe(true);
+  });
+  it('shows the introductory video for an empty course without fabricating lesson progress', () => {
+    loadLesson();
+    fixture.componentRef.setInput('course', {
+      ...course,
+      modules: [],
+      introVideoUrl: 'https://example.com/intro.mp4',
+    });
+    fixture.detectChanges();
+    http.expectOne('/api/courses/7/modules/availability').flush({ modules: [] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-course-video video')?.getAttribute('src')).toBe(
+      'https://example.com/intro.mp4',
+    );
+    expect(fixture.nativeElement.textContent).toContain('video introductorio');
+    expect(player.lessons()).toHaveLength(0);
+  });
   it('resumes the first incomplete unlocked lesson and renders its real content', () => {
     expect(player.selectedId()).toBe(2);
     loadLesson();

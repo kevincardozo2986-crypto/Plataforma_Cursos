@@ -1,3 +1,4 @@
+import type { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
 import { ConflictException, ForbiddenException } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
@@ -52,6 +53,7 @@ function build() {
     access as unknown as CourseAccessService,
     lessons as unknown as LessonsService,
     certificates as unknown as CertificatesService,
+    { assertVideoComplete: vi.fn().mockResolvedValue(undefined), completion: vi.fn().mockResolvedValue({ eligible: true }) } as unknown as LearningPolicyService,
   );
 
   return { service, repository, access, lessons, certificates };

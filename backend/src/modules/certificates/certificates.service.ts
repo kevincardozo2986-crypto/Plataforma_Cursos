@@ -1,3 +1,4 @@
+import { LearningPolicyService } from '../learning-policy/learning-policy.service.js';
 import {
   BadRequestException,
   ConflictException,
@@ -59,6 +60,7 @@ export class CertificatesService {
     private readonly users: UsersService,
     private readonly notifications: NotificationsService,
     private readonly fonts: CertificateFontsService,
+    private readonly learning: LearningPolicyService,
   ) {}
 
   // --- Plantillas (docente) ---
@@ -189,15 +191,17 @@ export class CertificatesService {
   // --- Emisión ---
 
   /**
-   * Emite el certificado de quien completó un curso, si el curso tiene plantilla. Es idempotente:
+   * Emite el certificado de quien aprobo un curso, con plantilla personalizada o predeterminada. Es idempotente:
    * si ya lo tiene, devuelve el que existe. `created` dice si se emitió ahora.
    */
   async issueFor(userId: number, courseId: number) {
     const course = await this.repository.findCourseForCertificate(courseId);
 
-    if (!course?.certificateTemplate) {
+    if (!course) {
       return { certificate: null, created: false };
     }
+
+    if (!(await this.learning.completion(userId, courseId)).eligible) return { certificate: null, created: false };
 
     const existing = await this.repository.findByCourseAndUser(courseId, userId);
 
@@ -233,11 +237,14 @@ export class CertificatesService {
   /**
    * Lo que un certificado guarda del curso y del diseño al emitirse (o al actualizarse): el título,
    * la duración, el nombre y la firma del docente, y una copia del diseño de la plantilla.
-   * Requiere que el curso tenga plantilla.
+   * Si no hay una plantilla personalizada, usa el diseno predeterminado del campus.
    */
   private snapshotOf(course: NonNullable<Awaited<ReturnType<CertificatesRepository['findCourseForCertificate']>>>) {
     const { teacher } = course;
-    const template = course.certificateTemplate as NonNullable<typeof course.certificateTemplate>;
+    const template = course.certificateTemplate ?? {
+      title: DEFAULT_TITLE, body: DEFAULT_BODY, accentColor: DEFAULT_COLOR,
+      layout: 'CLASSIC' as const, font: 'SANS', bodyFont: 'SANS', style: {},
+    };
     const design: CertificateDesign = {
       title: template.title,
       body: template.body,
@@ -289,6 +296,18 @@ export class CertificatesService {
     }
 
     return issued;
+  }
+
+  async courseCompletion(user: AuthenticatedUser, courseId: number) {
+    const requirements = await this.learning.completion(user.id, courseId);
+    const certificate = await this.repository.findByCourseAndUser(courseId, user.id);
+    return { ...requirements, certificate: certificate ? { id: certificate.id, status: certificate.status } : null };
+  }
+
+  async claim(user: AuthenticatedUser, courseId: number) {
+    const state = await this.learning.completion(user.id, courseId);
+    if (!state.eligible) throw new ForbiddenException('Completa las lecciones y aprueba las evaluaciones y tareas para obtener el certificado');
+    return this.issueFor(user.id, courseId);
   }
 
   // --- Consulta ---
@@ -349,6 +368,10 @@ export class CertificatesService {
 
     if (isOwner && certificate.status === 'REVOKED') {
       throw new ForbiddenException('Este certificado fue revocado');
+    }
+
+    if (isOwner && !(await this.learning.completion(user.id, certificate.courseId)).eligible) {
+      throw new ForbiddenException('Aun tienes requisitos del curso pendientes');
     }
 
     const design = certificate.design as unknown as CertificateDesign;

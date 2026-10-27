@@ -1,3 +1,6 @@
+import { embeddedLessonVideo, withoutMainVideo } from './video-source';
+import { CourseVideo, VideoSample } from './course-video';
+import { CourseAssessments, Assessment } from './course-assessments';
 import { LessonResource, LearningResource, materialKind } from './lesson-resource';
 import { CodePractice } from './code-practice';
 import { QuestionThread } from './question-thread';
@@ -19,7 +22,7 @@ import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subscription, finalize } from 'rxjs';
+import { Subject, Subscription, catchError, concatMap, EMPTY, finalize, switchMap } from 'rxjs';
 import type { CourseDetail } from '../../home/pages/course-detail-page';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -52,7 +55,24 @@ interface Post {
   body: string;
   author?: { firstName: string; lastName: string };
 }
+interface VideoState {
+  required: boolean;
+  percent: number;
+  eligible: boolean;
+  position: number;
+}
+interface Graduation {
+  contentComplete: boolean;
+  gradesComplete: boolean;
+  eligible: boolean;
+  certificateEnabled: boolean;
+  average: number | null;
+  assessments: Assessment[];
+  certificate: { id: number; status: string } | null;
+}
+
 type Tab =
+  | 'assessments'
   | 'practice'
   | 'description'
   | 'resources'
@@ -71,6 +91,8 @@ type Tab =
     QuestionThread,
     StudentAssignments,
     CourseFiles,
+    CourseVideo,
+    CourseAssessments,
     RichHtmlPipe,
   ],
   templateUrl: './course-player.html',
@@ -86,6 +108,30 @@ export class CoursePlayer {
   private lessonRequest?: Subscription;
   private panelRequest?: Subscription;
   private availabilityRequest?: Subscription;
+  readonly videoState = signal<VideoState | null>(null);
+  readonly watchError = signal('');
+  readonly graduation = signal<Graduation | null>(null);
+  readonly graduationError = signal('');
+  readonly graduationLoading = signal(false);
+  readonly downloading = signal(false);
+  private graduationRequest?: Subscription;
+  private videoStateRequest?: Subscription;
+  private readonly watchSamples = new Subject<{ id: number; sample: VideoSample }>();
+  readonly currentVideo = computed(
+    () =>
+      this.lesson()?.videoUrl ||
+      this.lesson()?.resources?.find((r) => materialKind(r) === 'video')?.url ||
+      embeddedLessonVideo(this.lesson()?.content),
+  );
+  readonly lessonDescription = computed(() =>
+    withoutMainVideo(this.lesson()?.content ?? '', this.currentVideo()),
+  );
+  readonly canComplete = computed(
+    () => !this.currentVideo() || this.videoState()?.eligible === true,
+  );
+  readonly pendingGrades = computed(
+    () => this.graduation()?.assessments.filter((a) => !a.passed).length ?? 0,
+  );
   readonly progress = signal<LearningProgress>({
     percent: 0,
     completedLessons: 0,
@@ -115,6 +161,7 @@ export class CoursePlayer {
   readonly formatDuration = formatDuration;
   readonly playable = isPlayableVideoUrl;
   private readonly allTabs: { id: Tab; label: string }[] = [
+    { id: 'assessments', label: 'Evaluaciones' },
     { id: 'description', label: 'Descripción' },
     { id: 'resources', label: 'Recursos' },
     { id: 'assignments', label: 'Tareas' },
@@ -152,6 +199,32 @@ export class CoursePlayer {
       ] ?? 'Todos los niveles',
   );
   constructor() {
+    this.watchSamples
+      .pipe(
+        concatMap(({ id, sample }) =>
+          this.http.post<VideoState>('/api/lessons/' + id + '/video-progress', sample).pipe(
+            switchMap((state) => {
+              if (this.selectedId() === id) {
+                this.videoState.set(state);
+                this.watchError.set('');
+              }
+              return EMPTY;
+            }),
+            catchError((error) => {
+              if (this.selectedId() === id)
+                this.watchError.set(
+                  apiErrorMessage(
+                    error,
+                    'No pudimos guardar el avance del video. Revisa tu conexion y sigue reproduciendo para reintentar.',
+                  ),
+                );
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
     effect(() => {
       const course = this.course();
       untracked(() => {
@@ -159,6 +232,7 @@ export class CoursePlayer {
         this.selectedId.set(null);
         this.lesson.set(null);
         this.initialize(course.id);
+        this.refreshGraduation();
       });
     });
   }
@@ -201,7 +275,7 @@ export class CoursePlayer {
   }
   select(id: number): void {
     const item = this.lessons().find((lesson) => lesson.id === id);
-    if (!item || this.locked(item.moduleId) || this.saving()) return;
+    if (!item || this.lessonLocked(id) || this.saving() || this.questionSaving()) return;
     this.saveNote(false);
     this.lessonRequest?.unsubscribe();
     this.panelRequest?.unsubscribe();
@@ -211,6 +285,9 @@ export class CoursePlayer {
     this.loading.set(true);
     this.error.set('');
     this.videoError.set(false);
+    this.videoState.set(null);
+    this.watchError.set('');
+    this.videoStateRequest?.unsubscribe();
     this.tab.set('description');
     this.panelError.set('');
     this.progressError.set('');
@@ -228,12 +305,98 @@ export class CoursePlayer {
       .subscribe({
         next: (lesson) => {
           this.lesson.set(lesson);
-          if (!lesson.videoUrl)
+          if (this.currentVideo()) {
+            this.videoStateRequest = this.http
+              .get<VideoState>('/api/lessons/' + id + '/video-progress')
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: (state) => this.videoState.set(state),
+                error: (e) =>
+                  this.watchError.set(apiErrorMessage(e, 'No pudimos cargar tu avance del video.')),
+              });
+          }
+          if (!this.currentVideo())
             this.activeResource.set(
               lesson.resources?.find((resource) => materialKind(resource) !== 'link') ?? null,
             );
         },
         error: (error) => this.error.set(apiErrorMessage(error, 'No pudimos abrir esta lección.')),
+      });
+  }
+  lessonLocked(id: number): boolean {
+    const items = this.lessons();
+    const index = items.findIndex((item) => item.id === id);
+    if (index < 0 || this.locked(items[index].moduleId)) return true;
+    if (this.completed().has(id)) return false;
+    return items
+      .slice(0, index)
+      .some(
+        (item) =>
+          (item.hasVideo || (item.id === this.lesson()?.id && Boolean(this.currentVideo()))) &&
+          !this.completed().has(item.id),
+      );
+  }
+  reportVideo(sample: VideoSample): void {
+    const id = this.lesson()?.id;
+    if (id && this.currentVideo()) this.watchSamples.next({ id, sample });
+  }
+  refreshGraduation(): void {
+    this.graduationRequest?.unsubscribe();
+    this.graduationLoading.set(true);
+    this.graduationError.set('');
+    this.graduationRequest = this.http
+      .get<Graduation>('/api/certificates/courses/' + this.course().id + '/completion')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.graduationLoading.set(false)),
+      )
+      .subscribe({
+        next: (state) => this.graduation.set(state),
+        error: (e) =>
+          this.graduationError.set(
+            apiErrorMessage(e, 'No pudimos consultar las notas y el certificado.'),
+          ),
+      });
+  }
+  downloadCertificate(): void {
+    if (
+      !this.graduation()?.eligible ||
+      !this.graduation()?.certificateEnabled ||
+      this.downloading()
+    )
+      return;
+    this.downloading.set(true);
+    this.graduationError.set('');
+    this.http
+      .post<{ certificate: { id: number; status: string } | null }>(
+        '/api/certificates/courses/' + this.course().id + '/claim',
+        {},
+      )
+      .pipe(
+        switchMap((result) => {
+          if (!result.certificate || result.certificate.status !== 'VALID')
+            throw new Error('El certificado no esta disponible o fue revocado.');
+          return this.http.get('/api/certificates/' + result.certificate.id + '/pdf', {
+            responseType: 'blob',
+          });
+        }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.downloading.set(false)),
+      )
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'certificado-' + this.course().id + '.pdf';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          this.refreshGraduation();
+        },
+        error: (e) =>
+          this.graduationError.set(
+            apiErrorMessage(e, 'No pudimos descargar el certificado. Intenta de nuevo.'),
+          ),
       });
   }
   openResource(resource: LearningResource): void {
@@ -261,7 +424,7 @@ export class CoursePlayer {
   }
   complete(): void {
     const lesson = this.lesson();
-    if (!lesson || this.saving() || this.completed().has(lesson.id)) return;
+    if (!lesson || this.saving() || this.completed().has(lesson.id) || !this.canComplete()) return;
     this.saving.set(true);
     this.progressError.set('');
     this.http
@@ -274,6 +437,7 @@ export class CoursePlayer {
         next: (progress) => {
           this.progress.set(progress);
           this.initialize();
+          this.refreshGraduation();
         },
         error: (error) =>
           this.progressError.set(apiErrorMessage(error, 'No pudimos guardar tu progreso.')),

@@ -11,9 +11,7 @@
       </div>
       <span class="course-status"
         ><span aria-hidden="true"></span
-        >{{
-          progress().percent === 100 && progress().totalLessons ? 'Curso completado' : 'En curso'
-        }}</span
+        >{{ graduation()?.eligible ? 'Curso aprobado' : 'En curso' }}</span
       >
     </div>
     <div class="course-facts">
@@ -71,33 +69,43 @@
         </div>
       } @else if (lesson(); as current) {
         <div class="lesson-caption">
+          @if (previous(); as previousLesson) {
+            <button
+              type="button"
+              class="stage-previous"
+              [disabled]="lessonLocked(previousLesson.id) || saving() || questionSaving()"
+              (click)="select(previousLesson.id)"
+            >
+              &#8592; Lecci&#243;n anterior
+            </button>
+          }
           <span>M&#243;dulo {{ (selected()?.moduleIndex ?? 0) + 1 }}</span
           ><span>Lecci&#243;n {{ selectedIndex() + 1 }} de {{ lessons().length }}</span>
         </div>
         @if (activeResource(); as material) {
           <app-lesson-resource [resource]="material" />
-          @if (current.videoUrl) {
+          @if (currentVideo()) {
             <button class="back-to-video" (click)="activeResource.set(null)">
               &#8592; Volver al video de la lecci&#243;n
             </button>
           }
-        } @else if (current.videoUrl && playable(current.videoUrl)) {
-          <video
-            controls
-            playsinline
-            preload="metadata"
-            [src]="current.videoUrl"
-            [poster]="course().imageUrl || course().image || course().thumbnail || ''"
-            [attr.aria-label]="current.title"
-            (error)="videoError.set(true)"
-          >
-            Tu navegador no puede reproducir este video.
-          </video>
-          @if (videoError()) {
-            <p class="stage-message" role="alert">
-              No pudimos reproducir el video. Intenta abrir otra lecci&#243;n o vuelve m&#225;s
-              tarde.
-            </p>
+        } @else if (currentVideo(); as video) {
+          <app-course-video
+            [src]="video"
+            [title]="current.title"
+            [poster]="course().imageUrl || ''"
+            (sample)="reportVideo($event)"
+          />
+          <div class="watch-status" [class.ready]="canComplete()" role="status">
+            <span>{{
+              videoState()?.eligible
+                ? 'Requisito de video cumplido'
+                : 'Mira al menos el 90 % para continuar'
+            }}</span>
+            <strong>{{ videoState()?.percent ?? 0 }} % visto</strong>
+          </div>
+          @if (watchError()) {
+            <p class="stage-message" role="alert">{{ watchError() }}</p>
           }
         } @else {
           <div
@@ -124,6 +132,16 @@
             </div>
           </div>
         }
+      } @else if (!lessons().length && course().introVideoUrl) {
+        <div class="lesson-caption"><span>Presentaci&#243;n del curso</span></div>
+        <app-course-video
+          [src]="course().introVideoUrl!"
+          [title]="course().title || 'Presentacion del curso'"
+          [poster]="course().imageUrl || ''"
+        />
+        <p class="stage-message">
+          Este es el video introductorio. El docente a&#250;n no ha agregado lecciones al temario.
+        </p>
       } @else {
         <div class="stage-state">
           <app-student-icon />
@@ -149,7 +167,7 @@
           <button
             class="complete-button"
             [class.completed]="completed().has(lesson()!.id)"
-            [disabled]="saving() || completed().has(lesson()!.id)"
+            [disabled]="saving() || completed().has(lesson()!.id) || !canComplete()"
             (click)="complete()"
           >
             {{
@@ -157,7 +175,9 @@
                 ? 'Guardando...'
                 : completed().has(lesson()!.id)
                   ? '✓ Completada'
-                  : 'Marcar como completada'
+                  : !canComplete()
+                    ? 'Completa el 90 % del video'
+                    : 'Completar lección'
             }}
           </button>
         }
@@ -189,10 +209,17 @@
       </nav>
       <div class="tab-content">
         @switch (tab()) {
+          @case ('assessments') {
+            <app-course-assessments
+              [items]="graduation()?.assessments ?? []"
+              [modules]="course().modules ?? []"
+              (changed)="refreshGraduation()"
+            />
+          }
           @case ('description') {
             <h3>Sobre esta lecci&#243;n</h3>
-            @if (lesson()?.content) {
-              <div class="rich-text" [innerHTML]="lesson()!.content | richHtml"></div>
+            @if (lessonDescription()) {
+              <div class="rich-text" [innerHTML]="lessonDescription() | richHtml"></div>
             } @else {
               <p class="empty-message">
                 {{
@@ -376,13 +403,23 @@
               [class.selected]="selectedId() === item.id"
               [class.done]="completed().has(item.id)"
               [attr.aria-current]="selectedId() === item.id ? 'step' : null"
-              [disabled]="locked(module.id) || saving() || questionSaving()"
+              [disabled]="lessonLocked(item.id) || saving() || questionSaving()"
+              [attr.title]="
+                lessonLocked(item.id)
+                  ? 'Completa el video anterior o los requisitos del modulo'
+                  : item.title
+              "
               (click)="select(item.id)"
             >
               <span class="lesson-check" aria-hidden="true">{{
                 completed().has(item.id) ? '✓' : ''
               }}</span
-              ><span class="lesson-name">{{ lessonIndex + 1 }}. {{ item.title }}</span>
+              ><span class="lesson-name"
+                >{{ lessonIndex + 1 }}. {{ item.title }}
+                @if (selectedId() === item.id) {
+                  <small class="current-lesson">Est&#225;s aqu&#237;</small>
+                }
+              </span>
               @if (item.durationMinutes) {
                 <small>{{ formatDuration(item.durationMinutes) }}</small>
               }
@@ -396,13 +433,62 @@
         <p class="empty-message">El temario aparecer&#225; cuando el docente agregue contenido.</p>
       }
     </section>
+    <section class="graduation-card" aria-labelledby="graduation-title">
+      <span class="card-label">TU META</span>
+      <h2 id="graduation-title">Tu certificado</h2>
+      @if (graduationLoading()) {
+        <p role="status">Consultando requisitos...</p>
+      }
+      @if (graduation(); as state) {
+        <ul class="graduation-checklist">
+          <li [class.met]="state.contentComplete">
+            {{ state.contentComplete ? '✓' : '○' }} Lecciones completadas
+          </li>
+          <li [class.met]="state.gradesComplete">
+            {{ state.gradesComplete ? '✓' : '○' }} Evaluaciones y tareas aprobadas
+          </li>
+        </ul>
+        @if (state.average !== null) {
+          <p class="final-grade">
+            Tu calificaci&#243;n <strong>{{ state.average }} / 100</strong>
+          </p>
+        }
+        @if (pendingGrades()) {
+          <button class="text-action" (click)="openTool('assessments')">
+            Ver {{ pendingGrades() }} requisitos pendientes &#8594;
+          </button>
+        }
+        @if (state.eligible && state.certificateEnabled) {
+          <p class="finished">&#161;Lo lograste! Tu certificado est&#225; listo.</p>
+          <button
+            class="primary certificate-download"
+            (click)="downloadCertificate()"
+            [disabled]="downloading() || state.certificate?.status === 'REVOKED'"
+          >
+            {{
+              downloading()
+                ? 'Preparando PDF...'
+                : state.certificate?.status === 'REVOKED'
+                  ? 'Certificado revocado'
+                  : 'Descargar certificado PDF'
+            }}
+          </button>
+        } @else if (!state.certificateEnabled) {
+          <p>El docente a&#250;n no ha asignado una plantilla de certificado.</p>
+        }
+      }
+      @if (graduationError()) {
+        <p class="error" role="alert">{{ graduationError() }}</p>
+        <button class="text-action" (click)="refreshGraduation()">Reintentar consulta</button>
+      }
+    </section>
   </aside>
 
   <nav class="lesson-navigation" aria-label="Navegar entre lecciones">
     <button
       class="previous"
       [disabled]="
-        !previous() || locked(previous()!.moduleId) || loading() || saving() || questionSaving()
+        !previous() || lessonLocked(previous()!.id) || loading() || saving() || questionSaving()
       "
       (click)="select(previous()!.id)"
     >
@@ -414,7 +500,7 @@
     </button>
     <button
       class="next"
-      [disabled]="!next() || locked(next()!.moduleId) || loading() || saving() || questionSaving()"
+      [disabled]="!next() || lessonLocked(next()!.id) || loading() || saving() || questionSaving()"
       (click)="select(next()!.id)"
     >
       <span
