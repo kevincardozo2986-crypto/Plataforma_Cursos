@@ -11,6 +11,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  HostListener,
   computed,
   effect,
   inject,
@@ -99,8 +100,91 @@ type Tab =
   styleUrl: './course-player.scss',
 })
 export class CoursePlayer {
+  readonly maximized = signal(false);
+  readonly focusToolOpen = signal(false);
+  readonly modulesOpen = signal(false);
+
+  toggleModules(): void {
+    this.modulesOpen.update((value) => !value);
+    this.focusToolOpen.set(false);
+  }
+
+  closeFocusPanels(): void {
+    this.element.nativeElement
+      .querySelector<HTMLButtonElement>('.focus-rail button.active')
+      ?.focus({ preventScroll: true });
+    this.modulesOpen.set(false);
+    this.focusToolOpen.set(false);
+  }
+
+  readonly activeToolLabel = computed(
+    () => this.tabs().find((item) => item.id === this.tab())?.label ?? 'Herramientas',
+  );
+
+  toggleMaximized(): void {
+    this.maximized.update((value) => !value);
+    this.focusToolOpen.set(false);
+    this.modulesOpen.set(false);
+    this.focusMaximizeButton();
+  }
+
+  private focusMaximizeButton(): void {
+    this.element.nativeElement
+      .querySelector<HTMLButtonElement>('.maximize-button')
+      ?.focus({ preventScroll: true });
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onClassroomKeydown(event: KeyboardEvent): void {
+    if (!this.maximized() || event.defaultPrevented) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (this.modulesOpen()) {
+        this.modulesOpen.set(false);
+        this.element.nativeElement
+          .querySelector<HTMLButtonElement>('.focus-modules-button')
+          ?.focus();
+      } else if (this.focusToolOpen()) {
+        this.closeFocusPanels();
+      } else {
+        this.maximized.set(false);
+        this.focusMaximizeButton();
+      }
+    } else if (event.key === 'Tab') {
+      const buttons = Array.from(
+        this.element.nativeElement.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), summary, iframe, [tabindex="0"]',
+        ),
+      ).filter(
+        (element) =>
+          element.getClientRects().length > 0 &&
+          !element.closest('[inert]') &&
+          getComputedStyle(element).visibility !== 'hidden',
+      );
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      const active = this.element.nativeElement.ownerDocument.activeElement;
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+  }
+
   readonly course = input.required<CourseDetail>();
   readonly initialProgress = input.required<LearningProgress>();
+  readonly courseInformation = computed(() => {
+    const course = this.course();
+    return [
+      { title: 'Qué aprenderás', content: course.whatYouWillLearn },
+      { title: 'A quién está dirigido', content: course.audience },
+      { title: 'Materiales incluidos', content: course.materials },
+      { title: 'Requisitos', content: course.requirements },
+    ].filter((section) => section.content?.trim());
+  });
   private readonly http = inject(HttpClient);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly auth = inject(AuthService);
@@ -161,10 +245,10 @@ export class CoursePlayer {
   readonly formatDuration = formatDuration;
   readonly playable = isPlayableVideoUrl;
   private readonly allTabs: { id: Tab; label: string }[] = [
-    { id: 'assessments', label: 'Evaluaciones' },
     { id: 'description', label: 'Descripción' },
     { id: 'resources', label: 'Recursos' },
     { id: 'assignments', label: 'Tareas' },
+    { id: 'assessments', label: 'Evaluaciones' },
     { id: 'practice', label: 'Practicar código' },
     { id: 'notes', label: 'Mis notas' },
     { id: 'questions', label: 'Preguntas' },
@@ -276,6 +360,12 @@ export class CoursePlayer {
   select(id: number): void {
     const item = this.lessons().find((lesson) => lesson.id === id);
     if (!item || this.lessonLocked(id) || this.saving() || this.questionSaving()) return;
+    if (this.modulesOpen()) {
+      this.element.nativeElement
+        .querySelector<HTMLButtonElement>('.focus-modules-button')
+        ?.focus({ preventScroll: true });
+      this.modulesOpen.set(false);
+    }
     this.saveNote(false);
     this.lessonRequest?.unsubscribe();
     this.panelRequest?.unsubscribe();
@@ -451,6 +541,10 @@ export class CoursePlayer {
     });
   }
   selectTab(tab: Tab): void {
+    if (this.maximized()) {
+      this.modulesOpen.set(false);
+      this.focusToolOpen.set(true);
+    }
     if (tab === 'practice' && !this.programmingEnabled()) return;
     this.tab.set(tab);
     this.panelRequest?.unsubscribe();

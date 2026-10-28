@@ -47,6 +47,9 @@ describe('Inicio del estudiante', () => {
     http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => {
+    for (const request of http.match('/api/courses'))
+      request.flush({ data: [], total: 0, page: 1, limit: 12 });
+    for (const request of http.match('/api/certificates/mine')) request.flush([]);
     for (const request of http.match('/api/enrollments/streak')) {
       request.flush({ days: 0, studiedToday: false, week: [] });
     }
@@ -97,5 +100,65 @@ describe('Inicio del estudiante', () => {
     expect(page.notifications()[0].title).toBe('Nueva lección');
     page.closeMenus();
     expect(page.panel()).toBeNull();
+  });
+  it('counts only valid certificates and opens their panel', () => {
+    http.expectOne('/api/enrollments/mine').flush(items);
+    const certificate = {
+      id: 9,
+      code: 'CERT-9',
+      status: 'VALID',
+      courseId: 2,
+      courseTitle: 'Python',
+      instructorName: 'Docente',
+      issuedAt: '2026-10-27',
+    };
+    http
+      .expectOne('/api/certificates/mine')
+      .flush([certificate, { ...certificate, id: 10, status: 'REVOKED' }]);
+    expect(page.validCertificates().map((item) => item.id)).toEqual([9]);
+    page.openCertificates();
+    expect(page.panel()).toBe('certificates');
+  });
+  it('shows a recoverable certificate error without blocking courses', () => {
+    http.expectOne('/api/enrollments/mine').flush(items);
+    http.expectOne('/api/certificates/mine').flush({}, { status: 500, statusText: 'Error' });
+    expect(page.certificatesError()).toBeTruthy();
+    expect(page.enrollments().length).toBe(3);
+    page.loadCertificates();
+    http.expectOne('/api/certificates/mine').flush([]);
+    expect(page.certificatesError()).toBe('');
+    expect(page.certificatesLoading()).toBe(false);
+  });
+  it('keeps all enrollments reachable in pages of two and resets an out-of-range page', () => {
+    http.expectOne('/api/enrollments/mine').flush(items);
+    expect(page.continuingCourses().map((item) => item.id)).toEqual([1, 3]);
+    expect(page.coursePages()).toBe(2);
+    page.coursePage.set(1);
+    expect(page.continuingCourses().map((item) => item.id)).toEqual([2]);
+    page.query.set('Python');
+    expect(page.currentCoursePage()).toBe(0);
+    expect(page.continuingCourses().map((item) => item.id)).toEqual([2]);
+  });
+  it('suggests only catalogue courses the student has not enrolled in, four per page', () => {
+    http.expectOne('/api/enrollments/mine').flush(items);
+    const courses = Array.from({ length: 9 }, (_, index) => ({
+      id: String(index + 1),
+      title: 'Course ' + index,
+    }));
+    http.expectOne('/api/courses').flush({ data: courses, total: 9, page: 1, limit: 12 });
+    expect(page.recommendations().map((item) => item.id)).toEqual(['4', '5', '6', '7', '8', '9']);
+    expect(page.suggestedCourses().map((item) => item.id)).toEqual(['4', '5', '6', '7']);
+    page.recommendationPage.set(1);
+    expect(page.suggestedCourses().map((item) => item.id)).toEqual(['8', '9']);
+  });
+  it('keeps enrolled courses available if the catalogue fails and allows retry', () => {
+    http.expectOne('/api/enrollments/mine').flush(items);
+    http.expectOne('/api/courses').flush({}, { status: 500, statusText: 'Error' });
+    expect(page.recommendationsError()).toBeTruthy();
+    expect(page.continuingCourses().length).toBe(2);
+    page.loadRecommendations();
+    http.expectOne('/api/courses').flush({ data: [], total: 0, page: 1, limit: 12 });
+    expect(page.recommendationsError()).toBe('');
+    expect(page.recommendationsLoading()).toBe(false);
   });
 });

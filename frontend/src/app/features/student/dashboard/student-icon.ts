@@ -10,6 +10,9 @@ import { Component, input } from '@angular/core';
 export class StudentIcon {
   readonly name = input('book');
   readonly paths: Record<string, string> = {
+    download: 'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',
+    maximize: 'M8 4H4v4m12-4h4v4M4 16v4h4m8 0h4v-4',
+    minimize: 'M4 8h4V4m8 0v4h4M8 20v-4H4m16 0h-4v4',
     home: 'm3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9',
     book: 'M12 5C9 3 5 3 2 4v16c3-1 7-1 10 1m0-16c3-2 7-2 10-1v16c-3-1-7-1-10 1V5Z',
     search: 'M20 20l-5-5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z',

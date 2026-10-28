@@ -1,0 +1,145 @@
+{
+  "startedAt": "2026-10-28T16:14:04.780Z",
+  "checks": [
+    {
+      "name": "Teacher and student have separate correct roles",
+      "passed": true
+    },
+    {
+      "name": "Unpublished draft is hidden from the public",
+      "passed": true
+    },
+    {
+      "name": "Publishing validates the minimum course content",
+      "passed": true
+    },
+    {
+      "name": "Saved teacher settings and HTML survive reload",
+      "passed": true
+    },
+    {
+      "name": "Password hash stays hidden in managed course",
+      "passed": true
+    },
+    {
+      "name": "Published student outline contains all lessons and video flags",
+      "passed": true
+    },
+    {
+      "name": "Content/files and password-protected enrollment reject unauthorized access",
+      "passed": true
+    },
+    {
+      "name": "Sequential drip opens first module and locks the second",
+      "passed": true
+    },
+    {
+      "name": "Enrolled student receives lesson HTML and resources",
+      "passed": true
+    },
+    {
+      "name": "Course materials are listed and downloadable with the student token",
+      "passed": true
+    },
+    {
+      "name": "A video lesson cannot be completed before the watched threshold",
+      "passed": true
+    },
+    {
+      "name": "Watched progress unlocks completion after real elapsed playback time",
+      "passed": true
+    },
+    {
+      "name": "Completing the preceding module unlocks the next module",
+      "passed": true
+    },
+    {
+      "name": "Lessons alone do not issue a certificate while assessments are pending",
+      "passed": true
+    },
+    {
+      "name": "Quiz hides correct answers from students",
+      "passed": true
+    },
+    {
+      "name": "Essay responses wait for teacher grading",
+      "passed": true
+    },
+    {
+      "name": "Student receives the teacher-reviewed quiz grade",
+      "passed": true
+    },
+    {
+      "name": "Teacher task instructions and attachment reach the student",
+      "passed": true
+    },
+    {
+      "name": "Student receives task grade, feedback and submitted file",
+      "passed": true
+    },
+    {
+      "name": "Completion normalizes task grade to percent and combines requirements",
+      "passed": true
+    },
+    {
+      "name": "Eligible student downloads a PDF and public verification succeeds",
+      "passed": true
+    },
+    {
+      "name": "Student can read the teacher reply in the course discussion",
+      "passed": true
+    },
+    {
+      "name": "Paid course blocks free enrollment and simulated checkout enrolls the student",
+      "passed": true
+    }
+  ],
+  "courses": [
+    {
+      "id": 9,
+      "title": "AUDIT-CURSO-10b12c79-principal"
+    },
+    {
+      "id": 10,
+      "title": "AUDIT-CURSO-10b12c79-pago"
+    }
+  ],
+  "uploads": [
+    {
+      "name": "4e804ca6dfa3d0230c25e4a4e8c1cb75.mp4",
+      "private": false
+    },
+    {
+      "name": "298b79e2ab6f98492cf0f0d7add1d2c5.txt",
+      "private": true
+    },
+    {
+      "name": "d224403ab8d4b90b20aa472b1274eeae.txt",
+      "private": true
+    },
+    {
+      "name": "aba49fb25be90f4046945538aff61fd3.txt",
+      "private": true
+    }
+  ],
+  "fixtures": {
+    "courseId": 9,
+    "paidCourseId": 10,
+    "moduleIds": [
+      8,
+      9
+    ],
+    "lessonIds": [
+      8,
+      9,
+      10
+    ],
+    "taskId": 2,
+    "quizId": 2,
+    "teacherId": 14,
+    "studentId": 13
+  },
+  "success": true,
+  "finishedAt": "2026-10-28T16:14:08.671Z",
+  "cleaned": true
+}

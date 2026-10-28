@@ -23,14 +23,14 @@
 }
 
 html.a11y-dark {
-  --p-bg: #0b1826;
-  --p-surface: #12263b;
-  --p-surface-2: #0e2033;
-  --p-ink: #eaf2fb;
-  --p-muted: #a9bdd2;
-  --p-border: #2b435d;
+  --p-bg: #090909;
+  --p-surface: #171717;
+  --p-surface-2: #202020;
+  --p-ink: #f2f2f2;
+  --p-muted: #bcbcbc;
+  --p-border: #3c3c3c;
   --p-accent: #5aa9ff;
-  --p-accent-ink: #06284d;
+  --p-accent-ink: #101010;
   --p-accent-soft: rgba(90, 169, 255, 0.16);
   --p-ok: #5fd3a0;
   --p-ok-soft: rgba(95, 211, 160, 0.14);
@@ -226,7 +226,6 @@ html.a11y-dark {
     padding: 20px 14px 56px;
   }
 }
-
 
 /*
  * Contenido con formato (HTML del editor enriquecido). Se usa dentro del editor y en cualquier

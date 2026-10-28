@@ -73,6 +73,44 @@ describe('CoursePlayer', () => {
       .expectOne('/api/lessons/2')
       .flush({ id: 2, title: 'Componentes', content: '<p>Contenido real</p>', resources: [] });
   }
+  it('keeps teacher course information and module descriptions available after enrollment, sanitizing rich HTML', () => {
+    loadLesson();
+    fixture.componentRef.setInput('course', {
+      ...course,
+      whatYouWillLearn: '<p>Objetivos publicados</p><script>alert(1)</script>',
+      audience: '<p>Estudiantes iniciales</p>',
+      materials: '<p>Guias incluidas</p>',
+      requirements: '<p>Navegador actualizado</p>',
+      instructors: [{ id: 4, firstName: 'Ana', lastName: 'Docente' }],
+      modules: course.modules.map((module) => ({
+        ...module,
+        description: '<p>Orientacion del modulo</p>',
+      })),
+    });
+    fixture.detectChanges();
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: true },
+      ],
+    });
+    loadLesson();
+    fixture.detectChanges();
+    const overview = fixture.nativeElement.querySelector('.course-overview') as HTMLElement;
+    for (const text of [
+      'Objetivos publicados',
+      'Estudiantes iniciales',
+      'Guias incluidas',
+      'Navegador actualizado',
+      'Ana Docente',
+    ]) {
+      expect(overview.textContent).toContain(text);
+    }
+    expect(overview.querySelector('script')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.module-description').textContent).toContain(
+      'Orientacion del modulo',
+    );
+  });
   it('lets the student go back while the current video is incomplete', () => {
     http
       .expectOne('/api/lessons/2')
@@ -81,7 +119,9 @@ describe('CoursePlayer', () => {
       .expectOne('/api/lessons/2/video-progress')
       .flush({ required: true, percent: 10, eligible: false, position: 10 });
     fixture.detectChanges();
-    const previous = fixture.nativeElement.querySelector('.stage-previous') as HTMLButtonElement;
+    const previous = fixture.nativeElement.querySelector(
+      '.lesson-navigation .previous',
+    ) as HTMLButtonElement;
     expect(previous.disabled).toBe(false);
     previous.click();
     http.expectOne('/api/lessons/1').flush({ id: 1, title: 'Introduccion', resources: [] });
@@ -125,7 +165,12 @@ describe('CoursePlayer', () => {
       introVideoUrl: 'https://example.com/intro.mp4',
     });
     fixture.detectChanges();
-    http.expectOne('/api/courses/7/modules/availability').flush({ modules: [] });
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: true },
+      ],
+    });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-course-video video')?.getAttribute('src')).toBe(
       'https://example.com/intro.mp4',
@@ -207,7 +252,12 @@ describe('CoursePlayer', () => {
     loadLesson();
     fixture.componentRef.setInput('course', { ...course, modules: [] });
     fixture.detectChanges();
-    http.expectOne('/api/courses/7/modules/availability').flush({ modules: [] });
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: true },
+      ],
+    });
     player.selectTab('practice');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-code-practice')).toBeTruthy();
@@ -238,5 +288,109 @@ describe('CoursePlayer', () => {
     expect(player.tab()).not.toBe('practice');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-code-practice')).toBeNull();
+  });
+  it('maximizes without recreating the video or changing the selected lesson', () => {
+    http
+      .expectOne('/api/lessons/2')
+      .flush({ id: 2, title: 'Video', videoUrl: 'https://example.com/video.mp4', resources: [] });
+    http
+      .expectOne('/api/lessons/2/video-progress')
+      .flush({ required: true, percent: 10, eligible: false, position: 10 });
+    fixture.detectChanges();
+    const video = fixture.nativeElement.querySelector('app-course-video');
+    const button = fixture.nativeElement.querySelector('.maximize-button') as HTMLButtonElement;
+    button.click();
+    fixture.detectChanges();
+    expect(player.maximized()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.classroom').getAttribute('aria-modal')).toBe(
+      'true',
+    );
+    expect(fixture.nativeElement.querySelector('app-course-video')).toBe(video);
+    expect(player.selectedId()).toBe(2);
+    expect(fixture.nativeElement.querySelector('.complete-button').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.next').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.previous').disabled).toBe(false);
+    button.click();
+    fixture.detectChanges();
+    expect(player.maximized()).toBe(false);
+    expect(fixture.nativeElement.querySelector('app-course-video')).toBe(video);
+  });
+  it('restores the normal view with Escape without changing the lesson', () => {
+    loadLesson();
+    player.toggleMaximized();
+    fixture.detectChanges();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+    fixture.detectChanges();
+    expect(player.maximized()).toBe(false);
+    expect(player.selectedId()).toBe(2);
+    expect(fixture.nativeElement.querySelector('.classroom').hasAttribute('aria-modal')).toBe(
+      false,
+    );
+  });
+  it('closes the mobile module drawer before leaving the maximized view', () => {
+    loadLesson();
+    player.toggleMaximized();
+    player.toggleModules();
+    fixture.detectChanges();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+    expect(player.modulesOpen()).toBe(false);
+    expect(player.maximized()).toBe(true);
+    player.toggleMaximized();
+    expect(player.modulesOpen()).toBe(false);
+  });
+  it('closes the module drawer after selecting an unlocked lesson and stays maximized', () => {
+    loadLesson();
+    player.toggleMaximized();
+    player.toggleModules();
+    player.select(1);
+    http.expectOne('/api/lessons/1').flush({ id: 1, title: 'Introduccion', resources: [] });
+    expect(player.modulesOpen()).toBe(false);
+    expect(player.maximized()).toBe(true);
+    expect(player.selectedId()).toBe(1);
+  });
+  it('places the maximize control inside the player control strip', () => {
+    loadLesson();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.lesson-stage .player-corner-controls .maximize-button'),
+    ).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.classroom-topbar .maximize-button')).toBeNull();
+  });
+  it('keeps focus tools compact until opened and Escape closes them before restoring', () => {
+    loadLesson();
+    player.toggleMaximized();
+    expect(player.focusToolOpen()).toBe(false);
+    player.selectTab('notes');
+    fixture.detectChanges();
+    expect(player.focusToolOpen()).toBe(true);
+    expect(fixture.nativeElement.querySelector('#lesson-notes')).toBeTruthy();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+    expect(player.focusToolOpen()).toBe(false);
+    expect(player.maximized()).toBe(true);
+    player.toggleMaximized();
+    expect(player.focusToolOpen()).toBe(false);
+  });
+
+  it('uses mutually exclusive overlay panels without recreating the video area', () => {
+    loadLesson();
+    player.toggleMaximized();
+    fixture.detectChanges();
+    const stage = fixture.nativeElement.querySelector('.lesson-stage');
+    player.toggleModules();
+    player.selectTab('notes');
+    fixture.detectChanges();
+    expect(player.modulesOpen()).toBe(false);
+    expect(player.focusToolOpen()).toBe(true);
+    expect(player.activeToolLabel()).toBe('Mis notas');
+    expect(stage.hasAttribute('inert')).toBe(true);
+    player.closeFocusPanels();
+    fixture.detectChanges();
+    expect(stage.hasAttribute('inert')).toBe(false);
+    expect(fixture.nativeElement.querySelector('.lesson-stage')).toBe(stage);
+    expect(player.maximized()).toBe(true);
+    player.selectTab('description');
+    player.toggleModules();
+    expect(player.focusToolOpen()).toBe(false);
+    expect(player.modulesOpen()).toBe(true);
   });
 });

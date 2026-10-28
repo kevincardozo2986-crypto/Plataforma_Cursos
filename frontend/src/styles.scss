@@ -1,6 +1,7 @@
 @use './panel';
 @use './app/features/home/home-dark';
-
+@use './dark-theme';
+@use './course-focus';
 
 * {
   box-sizing: border-box;
@@ -34,9 +35,9 @@ html.a11y-large-text {
 }
 html.a11y-dark {
   color-scheme: dark;
-  --a11y-surface: #12263b;
-  --a11y-ink: #f0f5fc;
-  --a11y-border: #7c90a6;
+  --a11y-surface: #171717;
+  --a11y-ink: #f2f2f2;
+  --a11y-border: #777;
 }
 html.a11y-contrast {
   --a11y-surface: #fff;
@@ -45,7 +46,7 @@ html.a11y-contrast {
   color-scheme: light;
 }
 html.a11y-dark.a11y-contrast {
-  --a11y-surface: #07121e;
+  --a11y-surface: #080808;
   --a11y-ink: #fff;
   --a11y-border: #fff;
   color-scheme: dark;

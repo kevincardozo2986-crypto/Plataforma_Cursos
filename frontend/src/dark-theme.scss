@@ -1,0 +1,695 @@
+/* Global dark surfaces. Scoped overrides bridge legacy component colors;
+   certificate artwork, media, and code editors retain their own palettes. */
+html.a11y-dark {
+  --theme-bg: #090909;
+  --theme-surface: #171717;
+  --theme-raised: #222222;
+  --theme-control: #101010;
+  --theme-ink: #f2f2f2;
+  --theme-muted: #bcbcbc;
+  --theme-border: #3c3c3c;
+  --theme-accent: #8bdcff;
+  --theme-soft: #282828;
+  --theme-danger: #ffaaa4;
+  --theme-success: #8be0b9;
+
+  app-root {
+    color: var(--theme-ink);
+  }
+  app-main-layout,
+  app-home-page,
+  app-catalog-page,
+  app-course-detail-page {
+    background: var(--theme-bg) !important;
+    color: var(--theme-ink) !important;
+  }
+  :is(
+    app-student-dashboard,
+    app-course-player,
+    app-teacher-dashboard,
+    app-account-settings,
+    .login-page,
+    .register-page,
+    .certificates,
+    .studio
+  ) {
+    --ink: var(--theme-ink) !important;
+    --muted: var(--theme-muted) !important;
+    --surface: var(--theme-surface) !important;
+    --soft: var(--theme-soft) !important;
+    --border: var(--theme-border) !important;
+    --link: var(--theme-accent) !important;
+  }
+  app-course-detail-page {
+    --course-ink: var(--theme-ink) !important;
+    --course-muted: var(--theme-muted) !important;
+    --course-border: var(--theme-border) !important;
+    --course-surface: var(--theme-surface) !important;
+  }
+  /* Text controls share the same contrast in every form and dialog. */
+  app-root
+    :is(
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not(
+          [type='file']
+        ),
+      select,
+      textarea
+    ) {
+    background-color: var(--theme-control) !important;
+    color: var(--theme-ink) !important;
+    border-color: var(--theme-border) !important;
+    caret-color: var(--theme-accent);
+    color-scheme: dark;
+  }
+  app-root :is(input, textarea)::placeholder {
+    color: #aaaaaa !important;
+    opacity: 1;
+  }
+  app-root :is(input, select, textarea):disabled {
+    color: #aaaaaa !important;
+    opacity: 0.75;
+  }
+  app-root select option {
+    background: var(--theme-control);
+    color: var(--theme-ink);
+  }
+  app-root :is(input, select, textarea):-webkit-autofill {
+    -webkit-text-fill-color: var(--theme-ink) !important;
+    box-shadow: 0 0 0 1000px var(--theme-control) inset !important;
+  }
+  app-root :is(a, button, input, select, textarea, summary):focus-visible {
+    outline-color: var(--theme-accent) !important;
+  }
+
+  /* Student home and its account/notification panels. */
+  app-student-dashboard {
+    color: var(--theme-ink) !important;
+    .dashboard {
+      background: var(--theme-bg) !important;
+    }
+    .student-shell {
+      background: #111111 !important;
+      border-color: var(--theme-border) !important;
+      box-shadow: 0 12px 50px #0003 !important;
+    }
+    .profile-sidebar {
+      background: linear-gradient(155deg, #202020, #161616) !important;
+      border-color: var(--theme-border) !important;
+    }
+    .dashboard-bar {
+      background: linear-gradient(110deg, #252525, #1b1b1b) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.continue-card, .recommendation-card, .top-panel) {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+      color: var(--theme-ink) !important;
+    }
+    .activity-panel {
+      background: linear-gradient(150deg, #232323, #191919) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(
+      h1,
+      h2,
+      h3,
+      .profile-person h2,
+      .continue-copy h3,
+      .recommendation-copy h3,
+      .activity-title h2,
+      .overall h3,
+      .streak-total strong,
+      .progress-line strong,
+      .progress-ring strong
+    ) {
+      color: var(--theme-ink) !important;
+    }
+    :is(
+      .profile-email,
+      .profile-footer p,
+      .profile-footer p strong,
+      .logout-button,
+      .dashboard-bar p,
+      .continue-copy p,
+      .overall p,
+      .recommendation-footer,
+      .streak-total small,
+      .dashboard-footer,
+      .pagination > span,
+      .notification-list p,
+      .muted
+    ) {
+      color: var(--theme-muted) !important;
+    }
+    :is(.eyebrow, .profile-role, .course-label, .text-button, .notification-list a, .nav-count) {
+      color: var(--theme-accent) !important;
+    }
+    .profile-links :is(a, button) {
+      color: #cecece !important;
+    }
+    .profile-links :is(a, button):hover {
+      color: white !important;
+      background: #303030 !important;
+    }
+    .profile-links .selected {
+      background: #77d8f5 !important;
+      color: #092841 !important;
+    }
+    :is(.role-badge, .icon-button, .pagination button, .search, .soft) {
+      background: var(--theme-raised) !important;
+      border-color: var(--theme-border) !important;
+      color: #e0e0e0 !important;
+    }
+    .explore-button {
+      background: #79d7f3 !important;
+      color: #082941 !important;
+    }
+    .profile-avatar {
+      box-shadow: 0 0 0 7px #58c4ed0d !important;
+    }
+    .profile-online {
+      border-color: #1d1d1d !important;
+    }
+    .profile-footer strong {
+      color: #dddddd !important;
+    }
+    .certificate-shortcut {
+      color: #d0d0d0 !important;
+      border-color: var(--theme-border) !important;
+    }
+    .certificate-shortcut strong {
+      color: var(--theme-accent) !important;
+    }
+    .overall {
+      border-color: var(--theme-border) !important;
+    }
+    .progress-ring {
+      background: conic-gradient(#78d9f5 var(--progress), #3b3b3b 0) !important;
+    }
+    .progress-ring::before {
+      background: #202020 !important;
+    }
+    .empty-state {
+      background: #191919 !important;
+      color: var(--theme-muted) !important;
+      border-color: var(--theme-border) !important;
+    }
+    .empty-state h3 {
+      color: var(--theme-ink) !important;
+    }
+    :is(.notification-list li, .preference) {
+      border-color: var(--theme-border) !important;
+    }
+    .panel-backdrop {
+      background: #000000aa !important;
+    }
+    .level-badge {
+      background: #161616ed !important;
+      color: #d5f0ff !important;
+      border-color: #5c5c5c !important;
+    }
+    .round-arrow {
+      color: var(--theme-accent) !important;
+      border-color: #555555 !important;
+    }
+    progress,
+    progress::-webkit-progress-bar {
+      background: #3b3b3b !important;
+    }
+    progress::-webkit-progress-value {
+      background: #75d8f5 !important;
+    }
+    progress::-moz-progress-bar {
+      background: #75d8f5 !important;
+    }
+  }
+  .activity-panel app-study-streak {
+    .day {
+      background: #151515 !important;
+      border-color: #414141 !important;
+      color: #cecece !important;
+    }
+    .day.today {
+      background: #78d6f3 !important;
+      border-color: #a6e9ff !important;
+    }
+    .day.today :is(.day-label, .day-date) {
+      color: #09283f !important;
+    }
+    .day.done:not(.today) {
+      background: #17483f !important;
+      border-color: #5d9e89 !important;
+    }
+    .weekly-notice {
+      color: var(--theme-muted) !important;
+    }
+    .weekly-notice .retry {
+      color: var(--theme-accent) !important;
+    }
+  }
+  app-account-settings {
+    .photo-section {
+      background: #242424 !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(p, small, .muted) {
+      color: var(--theme-muted) !important;
+    }
+    :is(label, h3) {
+      color: var(--theme-ink) !important;
+    }
+  }
+
+  /* Learning classroom. Keep video frames and resource previews untouched. */
+  app-course-player {
+    background: var(--theme-bg) !important;
+    :is(
+      .lesson-details,
+      .curriculum-card,
+      .progress-card,
+      .module,
+      .classroom-topbar .course-status
+    ) {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.lesson-tabs, .module summary) {
+      background: #242424 !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(
+      .classroom-heading h1,
+      .curriculum-heading h2,
+      .progress-card h2,
+      .tab-content h3,
+      .teacher strong,
+      .progress-summary strong
+    ) {
+      color: var(--theme-ink) !important;
+    }
+    :is(
+      .breadcrumb,
+      .course-facts,
+      .curriculum-heading > span,
+      .empty-message,
+      .rich-text,
+      .progress-summary p,
+      .lock-reason,
+      .lesson-row > small
+    ) {
+      color: var(--theme-muted) !important;
+    }
+    .lesson-tabs button {
+      color: #c8c8c8 !important;
+    }
+    .lesson-tabs button.active {
+      background: #343434 !important;
+      color: #e0f6ff !important;
+    }
+    :is(.quick-tools button, .lesson-navigation > button, .resource, .secondary) {
+      background: #252525 !important;
+      color: #c6e9fa !important;
+      border-color: var(--theme-border) !important;
+    }
+    .lesson-navigation .complete-button {
+      background: #326ecd !important;
+      color: white !important;
+    }
+    .lesson-navigation .complete-button.completed {
+      background: #184a3f !important;
+      color: #9fe6c7 !important;
+    }
+    .lesson-row {
+      color: #dddddd !important;
+    }
+    .lesson-row.selected,
+    .lesson-row:hover:not(:disabled) {
+      background: #303030 !important;
+      color: #d1f1ff !important;
+    }
+    .level {
+      background: #174b3f !important;
+      color: #9de1c4 !important;
+    }
+    .post,
+    .resource,
+    .description-grid .course-overview {
+      border-color: var(--theme-border) !important;
+    }
+    .current-lesson {
+      color: var(--theme-accent) !important;
+    }
+  }
+  :is(app-student-assignments, app-course-assessments, app-course-files, app-question-thread) {
+    color: var(--theme-ink) !important;
+    :is(.card, .assignment, .evaluation, .file, .reply, .submission, .attempt, .empty) {
+      background: var(--theme-surface) !important;
+      color: var(--theme-ink) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(h3, h4, label) {
+      color: var(--theme-ink) !important;
+    }
+    :is(p, small, .muted) {
+      color: var(--theme-muted) !important;
+    }
+  }
+
+  /* Public pages and authentication. */
+  app-certificates-section {
+    .certificates {
+      --section-bg: var(--theme-bg);
+      background: linear-gradient(180deg, var(--theme-bg), #151515) !important;
+    }
+    .intro h2 {
+      color: var(--theme-ink) !important;
+    }
+    .intro h2 span,
+    .eyebrow {
+      color: var(--theme-accent) !important;
+    }
+    .description {
+      color: var(--theme-muted) !important;
+    }
+  }
+  app-site-footer .site-footer {
+    background: #111111 !important;
+    border-color: var(--theme-border) !important;
+  }
+  app-course-detail-page {
+    .course-detail {
+      color: var(--theme-ink) !important;
+    }
+    :is(.detail-panel, .enrollment-card, .module, .review, .review-card, .syllabus-card) {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.category, .module-number) {
+      background: var(--theme-soft) !important;
+      color: var(--theme-accent) !important;
+    }
+    :is(.course-heading h1, .section-title, .module h3, .enrollment-card h2) {
+      color: var(--theme-ink) !important;
+    }
+    :is(.lead, .description, .summary, .module-meta, .rating-text, .review p) {
+      color: var(--theme-muted) !important;
+    }
+    :is(.empty, .not-found) {
+      background: var(--theme-surface) !important;
+      color: var(--theme-muted) !important;
+    }
+  }
+  .login-page {
+    .login-card {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.card-copy h1, .card-copy h2, .login-title, .field > label) {
+      color: var(--theme-ink) !important;
+    }
+    :is(.card-copy p, .notice, .login-footer, .remember, .divider) {
+      color: var(--theme-muted) !important;
+    }
+  }
+  :is(app-login-form, app-register-form) {
+    .input-wrap {
+      background: var(--theme-control) !important;
+      border-color: var(--theme-border) !important;
+    }
+    .input-wrap :is(svg, .eye),
+    .text-link {
+      color: var(--theme-accent) !important;
+    }
+    .input-wrap input {
+      background: transparent !important;
+    }
+    :is(.field-error, .error-message) {
+      color: var(--theme-danger) !important;
+    }
+  }
+  app-checkout-dialog {
+    .dialog {
+      background: var(--theme-surface) !important;
+      color: var(--theme-ink) !important;
+    }
+    :is(.x, .chip, .success) {
+      background: var(--theme-raised) !important;
+      color: var(--theme-ink) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.course, .chip small, small, .help, .note) {
+      color: var(--theme-muted) !important;
+    }
+    .banner {
+      background: #493e1b !important;
+      color: #ffe1a0 !important;
+      border-color: #927336 !important;
+    }
+    :is(.error, .err) {
+      color: var(--theme-danger) !important;
+    }
+  }
+
+  /* Management pages already use --p-*; bridge the custom teacher overview. */
+  app-teacher-dashboard {
+    .studio {
+      color: var(--theme-ink) !important;
+    }
+    :is(
+      .draft-card,
+      .published-section,
+      .published-empty,
+      .metric,
+      .metric-card,
+      .stat-card,
+      .insight-card,
+      .analytics-card,
+      .activity-card
+    ) {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    :is(.draft-card:nth-child(2), .draft-card:nth-child(3), .draft-card.featured) {
+      background: var(--theme-surface) !important;
+    }
+    :is(
+      .studio-header h1,
+      .section-head h2,
+      .draft-body h3,
+      .featured .draft-body h3,
+      .published-info h3,
+      .metric strong,
+      .stat-card strong
+    ) {
+      color: var(--theme-ink) !important;
+    }
+    :is(
+      .studio-header p,
+      .section-note,
+      .draft-body p,
+      .featured .draft-body p,
+      .published-info p,
+      .published-empty p,
+      .scene-note,
+      .studio-footer
+    ) {
+      color: var(--theme-muted) !important;
+    }
+    :is(.overline, .course-category, .library-link, .manage) {
+      color: var(--theme-accent) !important;
+    }
+    .published-row:hover {
+      background: var(--theme-raised) !important;
+    }
+    :is(.continue, .quantity, .draft-tag) {
+      background: var(--theme-soft) !important;
+      color: #c6edff !important;
+      border-color: var(--theme-border) !important;
+    }
+    .published-row + .published-row {
+      border-color: var(--theme-border) !important;
+    }
+  }
+  /* Explicit errors/success states stay distinguishable on dark surfaces. */
+  :is(.panel-page, .panel-dialog, .top-panel) {
+    .panel-alert.danger,
+    .panel-alert--error {
+      background: #4a252d !important;
+      color: #ffc0ba !important;
+    }
+    .panel-alert.success,
+    .panel-alert--ok {
+      background: #194238 !important;
+      color: #a5e8c9 !important;
+    }
+  }
+}
+html.a11y-dark.a11y-contrast {
+  --theme-bg: #000000;
+  --theme-surface: #0b0b0b;
+  --theme-ink: #fff;
+  --theme-muted: #eeeeee;
+  --theme-border: #999999;
+}
+
+html.a11y-dark {
+  app-home-page .home-page {
+    background: var(--theme-bg) !important;
+  }
+  app-hero {
+    .benefit-card {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    .benefit-card :is(h2, h3, strong) {
+      color: var(--theme-ink) !important;
+    }
+    .benefit-card p {
+      color: var(--theme-muted) !important;
+    }
+    .benefit-icon {
+      background: var(--theme-raised) !important;
+      color: var(--theme-accent) !important;
+    }
+  }
+  app-continuing-learning .title-dot {
+    color: var(--theme-accent) !important;
+  }
+  app-certificates-section .certificates {
+    background: var(--theme-bg) !important;
+  }
+  app-register-form :is(.terms a, .terms-link, a) {
+    color: var(--theme-accent) !important;
+  }
+  app-site-header :is(.avatar, .menu-avatar) {
+    background: #444444 !important;
+    color: #fff !important;
+  }
+  app-profile-page .initials {
+    background: #444444 !important;
+    color: #fff !important;
+  }
+  app-teacher-dashboard {
+    .quick-icon {
+      background: #303030 !important;
+      color: #b2d9ff !important;
+    }
+    .quick-icon.green {
+      background: #19483b !important;
+      color: #9de3c5 !important;
+    }
+    .quick-icon.purple {
+      background: #3a2a58 !important;
+      color: #d5b8ff !important;
+    }
+  }
+  app-course-list :is(.cover-label, .cover-book) {
+    color: #d3c29f !important;
+  }
+  :is(app-student-assignments, app-course-assessments, app-course-files, app-question-thread) {
+    :is(.task, .assessment, .box, fieldset) {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+      color: var(--theme-ink) !important;
+    }
+    .task-icon {
+      background: var(--theme-soft) !important;
+      color: var(--theme-accent) !important;
+    }
+    .error {
+      color: var(--theme-danger) !important;
+    }
+    :is(.success, .notice, .passed small) {
+      color: var(--theme-success) !important;
+    }
+    :is(legend, .task-title strong) {
+      color: var(--theme-ink) !important;
+    }
+  }
+}
+
+html.a11y-dark app-course-player {
+  .lesson-navigation :is(small, .navigation-arrow),
+  .chevron {
+    color: var(--theme-accent) !important;
+  }
+  .module summary {
+    color: #e0e0e0 !important;
+  }
+}
+
+/* Neutral black surfaces also replace legacy navy component backgrounds. */
+html.a11y-dark {
+  --a11y-surface: #171717;
+  --a11y-ink: #f2f2f2;
+  --a11y-border: #555;
+  app-site-header {
+    :is(.bar, .mobile-menu, .account-dropdown) {
+      background: #171717 !important;
+      border-color: #3c3c3c !important;
+    }
+    :is(.pill, .icon-button, .mobile-menu a, .login-link) {
+      color: #ddd !important;
+    }
+    :is(.pill.is-active, .register-link) {
+      background: #eee !important;
+      color: #151515 !important;
+    }
+  }
+  app-hero .hero,
+  app-continuing-learning .learning-editorial {
+    background: var(--theme-bg) !important;
+    color: var(--theme-ink) !important;
+  }
+  app-course-card {
+    .course-card {
+      background: var(--theme-surface) !important;
+      border-color: var(--theme-border) !important;
+    }
+    .course-image {
+      background: #222 !important;
+    }
+    .view-course {
+      background: #292929 !important;
+      color: #eee !important;
+    }
+  }
+  app-course-player .lesson-stage {
+    background: radial-gradient(ellipse at 90% 100%, #353535, transparent 55%), #111 !important;
+  }
+  app-course-player :is(.lesson-caption, .watch-status) {
+    background: #181818 !important;
+  }
+  app-course-player .graduation-card {
+    background: linear-gradient(125deg, #222, #333) !important;
+  }
+  app-password-recovery {
+    --surface: #171717 !important;
+    --ink: #f2f2f2 !important;
+    --border: #444 !important;
+  }
+  app-accessibility-menu {
+    :is(
+      .options,
+      .option,
+      .language-selector,
+      .language-buttons button,
+      .option-icon,
+      .header-icon
+    ) {
+      background: #202020 !important;
+      border-color: #444 !important;
+    }
+  }
+  app-notification-bell .dropdown {
+    background: #171717 !important;
+    border-color: #444 !important;
+  }
+}
+
+html.a11y-dark app-course-video {
+  background: #111 !important;
+  .notice {
+    background: #222 !important;
+  }
+}

@@ -1,30 +1,7 @@
 <section class="streak-card" aria-labelledby="streak-title">
   <div class="streak-main">
     <div class="flame" [class.idle]="!streak()?.days" aria-hidden="true">
-      <svg viewBox="0 0 64 80" fill="none">
-        <defs>
-          <linearGradient
-            id="streak-fire"
-            x1="32"
-            y1="4"
-            x2="32"
-            y2="76"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#ffd56a" />
-            <stop offset=".5" stop-color="#ff9d24" />
-            <stop offset="1" stop-color="#f25b20" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M35 3c5 19-5 25-3 34 6-3 10-9 11-17 13 13 20 27 14 42-4 11-14 16-25 16C14 78 4 66 6 51c1-10 7-18 13-24-1 12 1 17 5 20C20 29 35 21 35 3Z"
-          fill="url(#streak-fire)"
-        />
-        <path
-          d="M34 44c2 9-6 12-5 19 4-1 7-5 8-9 8 8 7 20-5 22-14-1-16-15-8-25 0 5 1 7 3 8-1-6 4-10 7-15Z"
-          fill="#ffe9a3"
-        />
-      </svg>
+      <app-streak-flame [active]="(streak()?.days ?? 0) > 0" />
     </div>
     <div>
       <h2 id="streak-title">Racha de estudio</h2>
@@ -49,6 +26,13 @@
     </div>
   </div>
   <div class="week-heading"><span>Esta semana</span><span>Lunes a domingo</span></div>
+  @if (error()) {
+    <div class="weekly-notice" role="alert">
+      No pudimos consultar tu actividad. <button class="retry" (click)="load()">Reintentar</button>
+    </div>
+  } @else if (loading()) {
+    <p class="weekly-notice" role="status">Cargando tu actividad...</p>
+  }
   <div class="week" aria-label="Actividad de esta semana, de lunes a domingo">
     @for (day of week(); track day.date) {
       <div
@@ -69,16 +53,7 @@
       >
         <span class="day-label">{{ dayLabel(day.date) }}</span>
         <span class="day-fire" aria-hidden="true">
-          <svg viewBox="0 0 64 80" fill="none">
-            <path
-              class="fire-outer"
-              d="M35 3c5 19-5 25-3 34 6-3 10-9 11-17 13 13 20 27 14 42-4 11-14 16-25 16C14 78 4 66 6 51c1-10 7-18 13-24-1 12 1 17 5 20C20 29 35 21 35 3Z"
-            />
-            <path
-              class="fire-inner"
-              d="M34 44c2 9-6 12-5 19 4-1 7-5 8-9 8 8 7 20-5 22-14-1-16-15-8-25 0 5 1 7 3 8-1-6 4-10 7-15Z"
-            />
-          </svg>
+          <app-streak-flame [active]="day.completed || day.today" />
         </span>
         <span class="day-date">{{ day.today ? 'Hoy' : day.date.slice(8) }}</span>
       </div>

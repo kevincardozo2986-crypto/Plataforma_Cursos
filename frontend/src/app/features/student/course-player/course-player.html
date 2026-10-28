@@ -1,55 +1,76 @@
-<main class="classroom">
-  <header class="classroom-heading">
+<main
+  class="classroom"
+  [class.is-maximized]="maximized()"
+  [class.modules-open]="modulesOpen()"
+  [class.tools-open]="focusToolOpen()"
+  [attr.role]="maximized() ? 'dialog' : null"
+  [attr.aria-modal]="maximized() ? 'true' : null"
+  aria-label="Aula del curso"
+>
+  <div class="classroom-topbar">
     <a class="breadcrumb" routerLink="/student/dashboard" fragment="my-courses"
       >Mis cursos <span aria-hidden="true">&#8250;</span>
       <span>{{ course().title || course().name }}</span></a
     >
-    <div class="heading-title">
-      <div>
-        <span class="course-eyebrow">TU ESPACIO DE APRENDIZAJE</span>
-        <h1>{{ course().title || course().name }}</h1>
-      </div>
+    <div class="classroom-actions">
       <span class="course-status"
         ><span aria-hidden="true"></span
         >{{ graduation()?.eligible ? 'Curso aprobado' : 'En curso' }}</span
       >
     </div>
-    <div class="course-facts">
-      @if (course().teacher; as teacher) {
-        <div class="teacher">
-          <span class="teacher-avatar" aria-hidden="true"
-            >{{ teacher.firstName.charAt(0) }}{{ teacher.lastName.charAt(0) }}</span
-          ><span
-            ><strong>{{ teacher.firstName }} {{ teacher.lastName }}</strong
-            ><small>Docente</small></span
-          >
-        </div>
-      }
-      <span><app-student-icon />{{ course().modules?.length ?? 0 }} m&#243;dulos</span>
-      <span><app-student-icon name="play" />{{ lessons().length }} lecciones</span>
-      @if (course().durationMinutes) {
-        <span>{{ formatDuration(course().durationMinutes!) }}</span>
-      }
-      <span class="level">{{ level() }}</span>
-    </div>
-    <div class="quick-tools" aria-label="Herramientas del curso">
-      <button (click)="openTool('resources')"><app-student-icon />Ver materiales</button>
-      @if (programmingEnabled()) {
-        <button (click)="openTool('practice')">
-          <app-student-icon name="menu" />Practicar c&#243;digo
-        </button>
-      }
-      @if (course()['qaEnabled'] !== false) {
-        <button (click)="openTool('questions')">
-          <app-student-icon name="user" />Hacer una pregunta
-        </button>
-      }
-    </div>
-  </header>
-
+  </div>
+  <nav class="focus-rail" aria-label="Herramientas del aula">
+    <button
+      type="button"
+      class="focus-modules-button"
+      [class.active]="modulesOpen()"
+      [attr.aria-expanded]="modulesOpen()"
+      aria-controls="course-curriculum"
+      (click)="toggleModules()"
+      title="Módulos del curso"
+    >
+      <app-student-icon name="book" /><span>M&#243;dulos</span>
+    </button>
+    <span class="rail-divider" aria-hidden="true"></span>
+    @for (item of tabs(); track item.id) {
+      <button
+        type="button"
+        [class.active]="focusToolOpen() && tab() === item.id"
+        [attr.aria-pressed]="focusToolOpen() && tab() === item.id"
+        aria-controls="course-tools"
+        [attr.title]="item.label"
+        (click)="selectTab(item.id)"
+      >
+        <app-student-icon
+          [name]="
+            item.id === 'questions'
+              ? 'user'
+              : item.id === 'notes'
+                ? 'book'
+                : item.id === 'announcements'
+                  ? 'bell'
+                  : item.id === 'assessments'
+                    ? 'award'
+                    : item.id === 'resources'
+                      ? 'download'
+                      : 'menu'
+          "
+        /><span>{{ item.label }}</span>
+      </button>
+    }
+  </nav>
+  @if (maximized() && (modulesOpen() || focusToolOpen())) {
+    <button
+      type="button"
+      class="focus-panel-dismiss"
+      aria-label="Cerrar panel lateral"
+      (click)="closeFocusPanels()"
+    ></button>
+  }
   <div class="lesson-workspace">
     <section
       class="lesson-stage"
+      [attr.inert]="maximized() && (modulesOpen() || focusToolOpen()) ? '' : null"
       aria-label="Lección actual"
       [attr.aria-busy]="loading() || initializing()"
     >
@@ -69,16 +90,6 @@
         </div>
       } @else if (lesson(); as current) {
         <div class="lesson-caption">
-          @if (previous(); as previousLesson) {
-            <button
-              type="button"
-              class="stage-previous"
-              [disabled]="lessonLocked(previousLesson.id) || saving() || questionSaving()"
-              (click)="select(previousLesson.id)"
-            >
-              &#8592; Lecci&#243;n anterior
-            </button>
-          }
           <span>M&#243;dulo {{ (selected()?.moduleIndex ?? 0) + 1 }}</span
           ><span>Lecci&#243;n {{ selectedIndex() + 1 }} de {{ lessons().length }}</span>
         </div>
@@ -144,7 +155,7 @@
         </p>
       } @else {
         <div class="stage-state">
-          <app-student-icon />
+          <span class="waiting-play" aria-hidden="true"><app-student-icon name="play" /></span>
           <h2>Tu pr&#243;xima lecci&#243;n te espera</h2>
           <p>
             {{
@@ -153,16 +164,59 @@
                 : 'El docente aún no ha agregado lecciones a este curso.'
             }}
           </p>
+          @if (!lessons().length) {
+            <small class="waiting-hint">Cuando las publique, aparecer&#225;n aqu&#237;.</small>
+          }
         </div>
       }
+      <div class="player-corner-controls">
+        <button
+          type="button"
+          class="maximize-button"
+          [attr.aria-pressed]="maximized()"
+          [attr.aria-label]="maximized() ? 'Restaurar vista' : 'Ampliar curso'"
+          (click)="toggleMaximized()"
+          [attr.title]="
+            maximized() ? 'Volver a la vista normal (Esc)' : 'Ampliar el espacio del curso'
+          "
+        >
+          <app-student-icon [name]="maximized() ? 'minimize' : 'maximize'" />
+          <span>{{ maximized() ? 'Restaurar vista' : 'Maximizar curso' }}</span>
+        </button>
+      </div>
     </section>
 
-    <section id="course-tools" class="lesson-details" aria-label="Información de la lección">
-      <div class="lesson-toolbar">
-        <div>
-          <span class="eyebrow">EST&#193;S APRENDIENDO</span>
-          <h2>{{ selected()?.title || 'Contenido de la lección' }}</h2>
-        </div>
+    <nav
+      [attr.inert]="maximized() && (modulesOpen() || focusToolOpen()) ? '' : null"
+      class="lesson-navigation"
+      aria-label="Navegar entre lecciones"
+    >
+      <button
+        class="previous"
+        [disabled]="
+          !previous() || lessonLocked(previous()!.id) || loading() || saving() || questionSaving()
+        "
+        (click)="select(previous()!.id)"
+      >
+        <span class="navigation-arrow" aria-hidden="true">&#8592;</span
+        ><span
+          ><small>Lecci&#243;n anterior</small
+          ><strong>{{ previous()?.title || 'Inicio del curso' }}</strong></span
+        >
+      </button>
+      <button
+        class="next"
+        [disabled]="
+          !next() || lessonLocked(next()!.id) || loading() || saving() || questionSaving()
+        "
+        (click)="select(next()!.id)"
+      >
+        <span
+          ><small>Siguiente lecci&#243;n</small
+          ><strong>{{ next()?.title || 'Fin del contenido' }}</strong></span
+        ><span class="navigation-arrow" aria-hidden="true">&#8594;</span>
+      </button>
+      <div class="completion-action">
         @if (lesson()) {
           <button
             class="complete-button"
@@ -182,8 +236,62 @@
           </button>
         }
       </div>
+    </nav>
+    <header class="classroom-heading">
+      <div class="heading-title">
+        <div>
+          <h1>{{ course().title || course().name }}</h1>
+        </div>
+      </div>
+      <div class="course-facts">
+        @if (course().teacher; as teacher) {
+          <div class="teacher">
+            <span class="teacher-avatar" aria-hidden="true"
+              >{{ teacher.firstName.charAt(0) }}{{ teacher.lastName.charAt(0) }}</span
+            ><span
+              ><strong>{{ teacher.firstName }} {{ teacher.lastName }}</strong
+              ><small>Docente</small></span
+            >
+          </div>
+        }
+        <span><app-student-icon />{{ course().modules?.length ?? 0 }} m&#243;dulos</span>
+        <span><app-student-icon name="play" />{{ lessons().length }} lecciones</span>
+        @if (course().durationMinutes) {
+          <span>{{ formatDuration(course().durationMinutes!) }}</span>
+        }
+        <span class="level">{{ level() }}</span>
+      </div>
+      <div class="quick-tools" aria-label="Herramientas del curso">
+        <button (click)="openTool('resources')"><app-student-icon />Ver materiales</button>
+        @if (programmingEnabled()) {
+          <button (click)="openTool('practice')">
+            <app-student-icon name="menu" />Practicar c&#243;digo
+          </button>
+        }
+        @if (course()['qaEnabled'] !== false) {
+          <button (click)="openTool('questions')">
+            <app-student-icon name="user" />Hacer una pregunta
+          </button>
+        }
+      </div>
+    </header>
+
+    <section id="course-tools" class="lesson-details" aria-label="Información de la lección">
       @if (progressError()) {
         <p class="error" role="alert">{{ progressError() }}</p>
+      }
+      @if (maximized() && focusToolOpen()) {
+        <div class="focus-tool-heading">
+          <h2>{{ activeToolLabel() }}</h2>
+          <button
+            type="button"
+            class="close-focus-tool"
+            (click)="closeFocusPanels()"
+            aria-label="Cerrar herramienta"
+          >
+            <app-student-icon name="close" />
+          </button>
+        </div>
       }
       <nav class="lesson-tabs" aria-label="Secciones de la lección">
         @for (item of tabs(); track item.id) {
@@ -217,18 +325,46 @@
             />
           }
           @case ('description') {
-            <h3>Sobre esta lecci&#243;n</h3>
-            @if (lessonDescription()) {
-              <div class="rich-text" [innerHTML]="lessonDescription() | richHtml"></div>
-            } @else {
-              <p class="empty-message">
-                {{
-                  loading()
-                    ? 'Cargando contenido...'
-                    : 'El docente aún no ha agregado una descripción para esta lección.'
-                }}
-              </p>
-            }
+            <div class="description-grid">
+              <section>
+                <h3>Sobre esta lecci&#243;n</h3>
+                @if (lessonDescription()) {
+                  <div class="rich-text" [innerHTML]="lessonDescription() | richHtml"></div>
+                } @else {
+                  <p class="empty-message">
+                    {{
+                      loading()
+                        ? 'Cargando contenido...'
+                        : 'El docente aún no ha agregado una descripción para esta lección.'
+                    }}
+                  </p>
+                }
+              </section>
+              <section class="course-overview">
+                <h3>Sobre el curso</h3>
+                @if (course().description) {
+                  <div class="rich-text" [innerHTML]="course().description | richHtml"></div>
+                } @else {
+                  <p class="empty-message">
+                    El docente a&#250;n no ha agregado una descripci&#243;n del curso.
+                  </p>
+                }
+                @for (section of courseInformation(); track section.title) {
+                  <section class="course-information">
+                    <h4>{{ section.title }}</h4>
+                    <div class="rich-text" [innerHTML]="section.content | richHtml"></div>
+                  </section>
+                }
+                @if (course().instructors?.length) {
+                  <section class="course-information">
+                    <h4>Equipo docente</h4>
+                    @for (instructor of course().instructors; track instructor.id) {
+                      <p>{{ instructor.firstName }} {{ instructor.lastName }}</p>
+                    }
+                  </section>
+                }
+              </section>
+            </div>
           }
           @case ('resources') {
             <app-course-files [courseId]="+course().id" />
@@ -357,28 +493,11 @@
       </div>
     </section>
   </div>
-  <aside class="classroom-sidebar" aria-label="Progreso y temario">
-    <section class="progress-card">
-      <span class="card-label">CADA PASO CUENTA</span>
-      <h2>Tu progreso</h2>
-      <div class="progress-summary">
-        <div
-          class="progress-ring"
-          [style.--progress]="progress().percent + '%'"
-          role="img"
-          [attr.aria-label]="'Progreso: ' + progress().percent + '%'"
-        >
-          <strong>{{ progress().percent }}%</strong>
-        </div>
-        <div>
-          <strong>{{ progress().completedLessons }} de {{ progress().totalLessons }}</strong>
-          <p>lecciones completadas</p>
-        </div>
-      </div>
-      @if (progress().percent === 100 && progress().totalLessons) {
-        <p class="finished">&#10003; Completaste todas las lecciones.</p>
-      }
-    </section>
+  <aside
+    id="course-curriculum"
+    class="classroom-sidebar"
+    [attr.aria-label]="maximized() ? 'Módulos del curso' : 'Progreso y temario'"
+  >
     <section class="curriculum-card" aria-labelledby="curriculum-title">
       <div class="curriculum-heading">
         <h2 id="curriculum-title">Tu ruta de aprendizaje</h2>
@@ -394,6 +513,12 @@
             ><span>M&#243;dulo {{ index + 1 }}: {{ module.title }}</span
             ><small>{{ moduleCompleted(module.id) }}/{{ module.lessons.length }}</small>
           </summary>
+          @if (module.description) {
+            <div
+              class="module-description rich-text"
+              [innerHTML]="module.description | richHtml"
+            ></div>
+          }
           @if (locked(module.id) && !initializing()) {
             <p class="lock-reason">{{ lockReason(module.id) }}</p>
           }
@@ -431,6 +556,27 @@
         </details>
       } @empty {
         <p class="empty-message">El temario aparecer&#225; cuando el docente agregue contenido.</p>
+      }
+    </section>
+    <section class="progress-card">
+      <span class="card-label">CADA PASO CUENTA</span>
+      <h2>Tu progreso</h2>
+      <div class="progress-summary">
+        <div
+          class="progress-ring"
+          [style.--progress]="progress().percent + '%'"
+          role="img"
+          [attr.aria-label]="'Progreso: ' + progress().percent + '%'"
+        >
+          <strong>{{ progress().percent }}%</strong>
+        </div>
+        <div>
+          <strong>{{ progress().completedLessons }} de {{ progress().totalLessons }}</strong>
+          <p>lecciones completadas</p>
+        </div>
+      </div>
+      @if (progress().percent === 100 && progress().totalLessons) {
+        <p class="finished">&#10003; Completaste todas las lecciones.</p>
       }
     </section>
     <section class="graduation-card" aria-labelledby="graduation-title">
@@ -483,30 +629,4 @@
       }
     </section>
   </aside>
-
-  <nav class="lesson-navigation" aria-label="Navegar entre lecciones">
-    <button
-      class="previous"
-      [disabled]="
-        !previous() || lessonLocked(previous()!.id) || loading() || saving() || questionSaving()
-      "
-      (click)="select(previous()!.id)"
-    >
-      <span class="navigation-arrow" aria-hidden="true">&#8592;</span
-      ><span
-        ><small>Lecci&#243;n anterior</small
-        ><strong>{{ previous()?.title || 'Inicio del curso' }}</strong></span
-      >
-    </button>
-    <button
-      class="next"
-      [disabled]="!next() || lessonLocked(next()!.id) || loading() || saving() || questionSaving()"
-      (click)="select(next()!.id)"
-    >
-      <span
-        ><small>Siguiente lecci&#243;n</small
-        ><strong>{{ next()?.title || 'Fin del contenido' }}</strong></span
-      ><span class="navigation-arrow" aria-hidden="true">&#8594;</span>
-    </button>
-  </nav>
 </main>

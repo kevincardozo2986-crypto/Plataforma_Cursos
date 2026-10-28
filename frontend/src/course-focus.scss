@@ -1,0 +1,560 @@
+/* Immersive classroom. Resizing keeps the existing video mounted. */
+app-course-player {
+  .classroom-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .focus-rail,
+  .focus-tool-heading,
+  .focus-panel-dismiss {
+    display: none;
+  }
+  .player-corner-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 34px;
+    padding: 3px 8px;
+    background: #080808;
+  }
+  .maximize-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 6px 9px;
+    background: #202020;
+    color: #fff;
+    font: inherit;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .maximize-button:hover {
+    background: #383838;
+    border-color: #aaa;
+  }
+  .maximize-button app-student-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .classroom.is-maximized {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100%;
+    height: 100dvh;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    z-index: 1200;
+    background: var(--p-bg) !important;
+    color: var(--p-ink);
+    box-sizing: border-box;
+    display: grid !important;
+    grid-template-columns: 66px minmax(0, 1fr) !important;
+    grid-template-rows: 25px minmax(0, 1fr) 38px !important;
+    gap: 8px !important;
+    overflow: hidden;
+    .classroom-topbar {
+      grid-column: 1/-1 !important;
+      grid-row: 1 !important;
+      min-width: 0;
+      min-height: 0;
+      gap: 12px !important;
+    }
+    .breadcrumb {
+      font-size: 0.65rem;
+      min-width: 0;
+    }
+    .breadcrumb > span:last-child {
+      max-width: 75vw;
+    }
+    .classroom-actions,
+    .classroom-heading {
+      display: none !important;
+    }
+    .focus-rail {
+      grid-column: 1 !important;
+      grid-row: 2/4 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+      min-height: 0;
+      padding: 6px 3px;
+      border: 1px solid var(--p-border);
+      background: var(--p-surface);
+      border-radius: 12px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      z-index: 6;
+    }
+    .focus-rail button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex-shrink: 0;
+      width: 100%;
+      min-height: 48px;
+      padding: 7px 2px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--p-muted);
+      font: inherit;
+      font-size: 0.56rem;
+      line-height: 1.25;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+    .focus-rail button:hover {
+      background: var(--p-surface-2);
+      color: var(--p-ink);
+    }
+    .focus-rail button.active {
+      background: var(--p-accent-soft);
+      color: var(--p-accent);
+    }
+    .focus-rail app-student-icon {
+      width: 19px;
+      height: 19px;
+    }
+    .rail-divider {
+      flex-shrink: 0;
+      height: 1px;
+      margin: 3px 7px;
+      background: var(--p-border);
+    }
+    .lesson-workspace {
+      display: contents !important;
+    }
+    .lesson-stage {
+      grid-column: 2 !important;
+      grid-row: 2 !important;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      border-radius: 12px;
+      box-shadow: none;
+      overflow: hidden;
+    }
+    .lesson-caption {
+      display: none !important;
+    }
+    .watch-status {
+      flex-shrink: 0;
+      min-height: 22px;
+      padding: 4px 10px;
+      font-size: 0.62rem;
+    }
+    .lesson-stage > app-course-video {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      --course-video-height: none;
+    }
+    app-course-video .embed-player {
+      flex: 1;
+      min-height: 0;
+    }
+    app-course-video :is(video, iframe) {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 0;
+      aspect-ratio: auto !important;
+      max-height: none !important;
+      object-fit: contain;
+    }
+    app-course-video video {
+      flex: 1;
+    }
+    app-course-video .video-actions {
+      flex-shrink: 0;
+      padding: 3px 10px;
+      gap: 8px;
+      font-size: 0.6rem;
+    }
+    app-course-video .video-actions button {
+      padding: 2px 7px;
+    }
+    app-course-video .notice {
+      max-height: 100px;
+      overflow: auto;
+      flex-shrink: 0;
+    }
+    .stage-state,
+    .lesson-cover {
+      flex: 1;
+      min-height: 0 !important;
+      aspect-ratio: auto !important;
+      padding: 24px;
+    }
+    .stage-state h2 {
+      font-size: 1.6rem;
+    }
+    .lesson-cover h2 {
+      font-size: 2rem;
+    }
+    .lesson-stage > app-lesson-resource {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+    .stage-message {
+      max-height: 70px;
+      flex-shrink: 0;
+      overflow: auto;
+      padding: 8px 12px;
+    }
+    .player-corner-controls {
+      min-height: 30px;
+      padding: 2px 7px;
+    }
+    .player-corner-controls .maximize-button span {
+      display: none;
+    }
+    .player-corner-controls .maximize-button {
+      width: 29px;
+      height: 26px;
+      padding: 4px;
+    }
+    .lesson-navigation {
+      grid-column: 2 !important;
+      grid-row: 3 !important;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
+      min-height: 0;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0;
+      background: transparent;
+    }
+    .lesson-navigation > button {
+      max-width: none;
+      padding: 7px 10px;
+      height: 33px;
+    }
+    .lesson-navigation .next {
+      margin-left: 0;
+    }
+    .lesson-navigation strong {
+      display: none;
+    }
+    .lesson-navigation small {
+      font-size: 0.64rem;
+    }
+    .navigation-arrow {
+      width: auto;
+      height: auto;
+      background: none;
+    }
+    .completion-action {
+      width: auto !important;
+      margin-left: auto !important;
+    }
+    .completion-action .complete-button {
+      width: auto;
+      padding: 7px 12px;
+      font-size: 0.64rem;
+    }
+    .classroom-sidebar {
+      display: none !important;
+      position: absolute !important;
+      top: 41px !important;
+      bottom: 8px !important;
+      left: 82px !important;
+      width: min(340px, calc(100vw - 98px));
+      height: auto !important;
+      min-height: 0;
+      max-height: none !important;
+      padding: 0 !important;
+      overflow: auto !important;
+      overscroll-behavior: contain;
+      border-radius: 12px;
+      box-shadow: 10px 8px 45px #0005;
+      z-index: 5;
+    }
+    &.modules-open .classroom-sidebar {
+      display: block !important;
+    }
+    .classroom-sidebar .progress-card,
+    .classroom-sidebar .graduation-card {
+      display: none !important;
+    }
+    .curriculum-card {
+      min-height: 100%;
+      max-height: none !important;
+      overflow: visible !important;
+      box-sizing: border-box;
+      border-radius: 12px;
+    }
+    .lesson-details {
+      display: none !important;
+      position: absolute;
+      top: 41px;
+      bottom: 8px;
+      left: 82px;
+      width: min(390px, calc(100vw - 98px));
+      height: auto !important;
+      min-height: 0;
+      padding: 16px;
+      background: var(--p-surface);
+      color: var(--p-ink);
+      border: 1px solid var(--p-border);
+      border-radius: 12px;
+      box-shadow: 10px 8px 45px #0005;
+      overflow: hidden;
+      z-index: 5;
+    }
+    &.tools-open .lesson-details {
+      display: flex !important;
+      flex-direction: column;
+    }
+    .focus-tool-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--p-border);
+      flex-shrink: 0;
+    }
+    .focus-tool-heading h2 {
+      font-size: 1rem;
+      margin: 0;
+    }
+    .close-focus-tool {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--p-border);
+      background: var(--p-surface-2);
+      color: var(--p-ink);
+      padding: 6px;
+      cursor: pointer;
+    }
+    .close-focus-tool app-student-icon {
+      width: 16px;
+      height: 16px;
+    }
+    .lesson-tabs {
+      display: none !important;
+    }
+    .tab-content {
+      display: block;
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      max-height: none !important;
+      overflow: auto !important;
+      overscroll-behavior: contain;
+      padding: 16px 0 0;
+      border: 0;
+    }
+    .tab-content textarea {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .description-grid {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .course-overview {
+      border-left: 0;
+      border-top: 1px solid var(--p-border);
+      padding: 16px 0 0;
+    }
+    .lesson-details > .error {
+      flex-shrink: 0;
+      margin: 4px 0;
+      font-size: 0.7rem;
+    }
+    .focus-panel-dismiss {
+      display: block;
+      position: absolute;
+      top: 41px;
+      right: 8px;
+      bottom: 8px;
+      left: 82px;
+      z-index: 4;
+      border: 0;
+      border-radius: 12px;
+      background: #0002;
+      cursor: default;
+    }
+  }
+}
+html:has(app-course-player .classroom.is-maximized),
+html:has(app-course-player .classroom.is-maximized) body {
+  overflow: hidden !important;
+}
+html:has(app-course-player .classroom.is-maximized)
+  :is(app-site-header, app-site-footer, app-accessibility-menu) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+@media (max-width: 600px) {
+  app-course-player .classroom.is-maximized {
+    padding: 6px !important;
+    gap: 6px !important;
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    grid-template-rows: 23px minmax(0, 1fr) 65px !important;
+    .breadcrumb {
+      font-size: 0.6rem;
+    }
+    .breadcrumb > span:last-child {
+      max-width: 70vw;
+    }
+    .focus-rail {
+      padding: 4px 2px;
+      gap: 2px;
+    }
+    .focus-rail button {
+      min-height: 45px;
+      font-size: 0.49rem;
+      gap: 4px;
+      padding: 6px 1px;
+    }
+    .focus-rail app-student-icon {
+      width: 18px;
+      height: 18px;
+    }
+    .lesson-navigation {
+      flex-wrap: wrap;
+      align-content: center;
+      gap: 4px;
+    }
+    .lesson-navigation > button {
+      padding: 5px 7px;
+      height: 28px;
+    }
+    .lesson-navigation small {
+      font-size: 0.53rem;
+    }
+    .lesson-navigation .next {
+      margin-left: auto;
+    }
+    .navigation-arrow {
+      font-size: 0.7rem;
+    }
+    .completion-action {
+      flex-basis: 100%;
+      margin: 0 !important;
+    }
+    .completion-action .complete-button {
+      width: 100%;
+      min-height: 26px;
+      padding: 5px;
+      font-size: 0.56rem;
+    }
+    .classroom-sidebar,
+    .lesson-details {
+      top: 35px !important;
+      bottom: 6px !important;
+      left: 64px !important;
+      width: calc(100vw - 76px);
+    }
+    .lesson-details {
+      padding: 12px;
+    }
+    .focus-panel-dismiss {
+      top: 35px;
+      right: 6px;
+      bottom: 6px;
+      left: 64px;
+    }
+    .stage-state {
+      padding: 16px;
+    }
+    .stage-state h2 {
+      font-size: 1.2rem;
+    }
+    .stage-state p {
+      font-size: 0.7rem;
+    }
+    .watch-status {
+      font-size: 0.54rem;
+      gap: 4px;
+    }
+    .waiting-play {
+      width: 48px;
+      height: 48px;
+    }
+    app-course-video .video-actions {
+      font-size: 0.5rem;
+      padding: 3px 6px;
+      gap: 4px;
+    }
+    .focus-tool-heading h2 {
+      font-size: 0.88rem;
+    }
+  }
+}
+@media (max-height: 520px) {
+  app-course-player .classroom.is-maximized {
+    .focus-rail button {
+      min-height: 39px;
+    }
+    .focus-rail {
+      overflow: auto;
+    }
+  }
+}
+
+/* Keep the compact toolbar visible above the embedded player in both themes. */
+app-course-player .classroom.is-maximized .focus-rail {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  align-self: stretch;
+  color: var(--p-ink);
+  background: var(--p-surface);
+  border-color: var(--p-border);
+}
+app-course-player .classroom .player-corner-controls .maximize-button {
+  position:relative;
+  width:36px;
+  height:30px;
+  padding:5px;
+  color:#fff!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:4px;
+  box-shadow:none;
+}
+app-course-player .player-corner-controls .maximize-button span { display:none; }
+app-course-player .player-corner-controls .maximize-button app-student-icon { width:21px; height:21px; transition:transform .18s ease,opacity .18s ease; opacity:.85; }
+app-course-player .player-corner-controls .maximize-button:hover app-student-icon { opacity:1; transform:scale(1.12); }
+app-course-player .player-corner-controls .maximize-button::before {
+  content:attr(aria-label);
+  position:absolute;
+  right:0;
+  bottom:calc(100% + 8px);
+  padding:7px 10px;
+  border-radius:6px;
+  background:#111e;
+  color:#fff;
+  font-size:.67rem;
+  font-weight:500;
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+  transform:translateY(3px);
+  transition:opacity .18s ease,transform .18s ease;
+}
+app-course-player .player-corner-controls .maximize-button:is(:hover,:focus-visible)::before { opacity:1; transform:translateY(0); }
+@media(prefers-reduced-motion:reduce) { app-course-player .player-corner-controls .maximize-button::before,app-course-player .player-corner-controls .maximize-button app-student-icon { transition:none; } }

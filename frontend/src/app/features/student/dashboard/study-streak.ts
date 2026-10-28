@@ -1,5 +1,6 @@
+import { StreakFlame } from './streak-flame';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface Streak {
@@ -9,10 +10,12 @@ interface Streak {
 }
 @Component({
   selector: 'app-study-streak',
+  imports: [StreakFlame],
   templateUrl: './study-streak.html',
   styleUrl: './study-streak.scss',
 })
 export class StudyStreak {
+  readonly daysChanged = output<number | null>();
   readonly streak = signal<Streak | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
@@ -51,10 +54,12 @@ export class StudyStreak {
       .subscribe({
         next: (data) => {
           this.streak.set(data);
+          this.daysChanged.emit(data.days);
           this.loading.set(false);
         },
         error: () => {
           this.error.set(true);
+          this.daysChanged.emit(null);
           this.loading.set(false);
         },
       });

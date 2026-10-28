@@ -1,249 +1,344 @@
-<app-site-header />
 <div class="dashboard">
-  <div class="workspace">
-    <main class="student-content">
-      <div class="welcome-layout">
-        <section class="welcome" aria-labelledby="student-title">
-          <div>
-            <p class="greeting">¡Hola, {{ firstName() }}! <span aria-hidden="true">👋</span></p>
-            <h1 id="student-title">Tu aprendizaje <em>sigue aquí.</em></h1>
-            <p class="welcome-description">
-              Continúa con tus cursos, cumple tus metas y sigue construyendo tu futuro.
-            </p>
-          </div>
-        </section>
+  <div class="student-shell">
+    <aside class="profile-sidebar" aria-label="Perfil del estudiante">
+      <a class="campus-brand" routerLink="/student/dashboard" aria-label="Campus Virtual, inicio">
+        <img
+          class="campus-logo--light"
+          src="/images/campus-virtual-logo.png"
+          alt="Campus Virtual"
+        />
+        <img
+          class="campus-logo--dark"
+          src="/images/campus-virtual-logo-white.png"
+          alt="Campus Virtual"
+        />
+      </a>
+      <div class="profile-person">
+        <button class="profile-avatar" (click)="panel.set('account')" aria-label="Editar mi perfil">
+          @if (auth.user()?.avatarUrl; as photo) {
+            <img [src]="photo" alt="Tu foto de perfil" />
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+          <span class="profile-online" aria-hidden="true"></span>
+        </button>
+        <span class="profile-role">TU ESPACIO PERSONAL</span>
+        <h2>{{ firstName() }} {{ auth.user()?.lastName }}</h2>
+        <p class="profile-email">{{ auth.user()?.email }}</p>
+        <span class="role-badge"><span aria-hidden="true"></span> Estudiante</span>
       </div>
-
-      <div class="learning-content">
-        @if (loading()) {
-          <div class="state" role="status">Estamos preparando tu espacio de aprendizaje…</div>
-        } @else if (error()) {
-          <div class="state" role="alert">
-            <h2>No pudimos cargar tus cursos</h2>
-            <p>{{ error() }}</p>
-            <button class="button primary" (click)="load()">Reintentar</button>
+      <nav class="profile-links" aria-label="Navegaci&#243;n del estudiante">
+        <a class="selected" routerLink="/student/dashboard" aria-current="page"
+          ><app-student-icon name="home" />Mi aprendizaje</a
+        >
+        <button (click)="showAll(); panel.set('courses')">
+          <app-student-icon name="book" />Mis cursos
+          <span class="nav-count">{{ enrollments().length }}</span>
+        </button>
+        <button (click)="openCertificates()"><app-student-icon name="award" />Certificados</button>
+        <button (click)="panel.set('account')"><app-student-icon name="user" />Mi perfil</button>
+      </nav>
+      <div class="profile-footer">
+        <p>Un paso m&#225;s cerca<br /><strong>de tu pr&#243;ximo logro.</strong></p>
+        <a class="explore-button" routerLink="/courses"
+          >Explorar cursos <app-student-icon name="arrow" /></a
+        ><button class="logout-button" (click)="logout()">
+          <app-student-icon name="logout" />Cerrar sesi&#243;n
+        </button>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+      <header class="dashboard-bar">
+        <div>
+          <span class="eyebrow">CAMPUS VIRTUAL</span>
+          <h1>
+            &#161;Qu&#233; bueno verte, {{ firstName() }}!
+            <span class="greeting-spark" aria-hidden="true">&#10022;</span>
+          </h1>
+          <p>Tu siguiente gran paso empieza aqu&#237;.</p>
+        </div>
+        <div class="bar-actions">
+          <button class="icon-button" (click)="openNotifications()" aria-label="Ver notificaciones">
+            <app-student-icon name="bell" /></button
+          ><button class="icon-button" (click)="panel.set('settings')" aria-label="Preferencias">
+            <app-student-icon name="settings" />
+          </button>
+        </div>
+      </header>
+      <section class="continue-section" aria-labelledby="continue-title">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">SIGUE ADELANTE</span>
+            <h2 id="continue-title">Contin&#250;a con tus cursos</h2>
           </div>
-        } @else {
-          <div class="progress-layout">
-            @if (featured(); as item) {
-              <article class="continue-card">
-                <svg class="continue-trace" aria-hidden="true" focusable="false">
-                  <rect x="1" y="1" rx="21" pathLength="100" />
-                </svg>
-                <div class="continue-image" [class.is-placeholder]="!item.course.imageUrl">
+          <div class="section-actions">
+            <button class="text-button" (click)="showAll(); panel.set('courses')">
+              Ver todos <app-student-icon name="arrow" />
+            </button>
+            @if (coursePages() > 1) {
+              <div class="pagination" aria-label="P&#225;ginas de mis cursos">
+                <button
+                  [disabled]="currentCoursePage() === 0"
+                  (click)="coursePage.set(currentCoursePage() - 1)"
+                  aria-label="Cursos anteriores"
+                >
+                  &#8592;</button
+                ><span>{{ currentCoursePage() + 1 }}/{{ coursePages() }}</span
+                ><button
+                  [disabled]="currentCoursePage() + 1 >= coursePages()"
+                  (click)="coursePage.set(currentCoursePage() + 1)"
+                  aria-label="Cursos siguientes"
+                >
+                  &#8594;
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="continuing-grid">
+          @if (loading()) {
+            <div class="empty-state" role="status">Preparando tus cursos...</div>
+          } @else if (error()) {
+            <div class="empty-state" role="alert">
+              <p>{{ error() }}</p>
+              <button class="text-button" (click)="load()">Reintentar</button>
+            </div>
+          } @else {
+            @for (item of continuingCourses(); track item.id) {
+              <a class="continue-card" [routerLink]="['/courses', item.courseId]">
+                <div class="continue-cover">
                   @if (item.course.imageUrl) {
                     <img [src]="item.course.imageUrl" alt="" />
                   } @else {
-                    <app-student-icon name="play" />
-                    <span class="continue-orbit" aria-hidden="true"></span>
+                    <span>{{ item.course.title.charAt(0).toUpperCase() }}</span>
                   }
+                  <span class="play-bubble"><app-student-icon name="play" /></span>
                 </div>
-                <div class="continue-content">
-                  <span class="blue-label">{{
-                    item.progress.completedLessons ? 'Continúa aprendiendo' : 'Tu próximo paso'
+                <div class="continue-copy">
+                  <span class="course-label">{{
+                    item.status === 'COMPLETED'
+                      ? 'COMPLETADO'
+                      : item.progress.completedLessons
+                        ? 'EN CURSO'
+                        : 'TU PRÓXIMO PASO'
                   }}</span>
-                  <h2>{{ item.course.title }}</h2>
-                  <p class="lesson-count">
-                    <app-student-icon />{{ item.progress.completedLessons }} de
-                    {{ item.progress.totalLessons }} lecciones completadas
+                  <h3>{{ item.course.title }}</h3>
+                  <p>
+                    {{ item.progress.completedLessons }} de
+                    {{ item.progress.totalLessons }} lecciones
                   </p>
-                  <div class="progress-row">
-                    <span class="progress-track" [style.--fill]="item.progress.percent + '%'">
-                      <progress
-                        [value]="item.progress.percent"
-                        max="100"
-                        [attr.aria-label]="'Progreso en ' + item.course.title"
-                      ></progress>
-                      <span class="progress-glint" aria-hidden="true"></span> </span
+                  <div class="progress-line">
+                    <progress
+                      [value]="item.progress.percent"
+                      max="100"
+                      [attr.aria-label]="'Progreso en ' + item.course.title"
+                    ></progress
                     ><strong>{{ item.progress.percent }}%</strong>
                   </div>
                 </div>
-                <a class="button primary" [routerLink]="['/courses', item.courseId]"
-                  ><app-student-icon name="play" />Ver curso<app-student-icon name="arrow"
-                /></a>
-              </article>
-            } @else {
-              <section class="continue-card no-feature">
-                <span class="summary-icon"><app-student-icon name="award" /></span>
-                <div>
-                  <span class="blue-label">{{
-                    completed().length ? 'Sigue creciendo' : 'Tu siguiente gran paso'
-                  }}</span>
-                  <h2>
-                    {{
-                      completed().length
-                        ? 'Hay mucho más por descubrir.'
-                        : 'Tu primer curso te espera.'
-                    }}
-                  </h2>
-                  <a class="text-link" routerLink="/courses">Explorar el catálogo →</a>
-                </div>
-              </section>
+              </a>
+            } @empty {
+              <div class="empty-state">
+                <app-student-icon name="book" />
+                <h3>Tu primer curso te espera</h3>
+                <a class="text-button" routerLink="/courses"
+                  >Encuentra lo que quieres aprender &#8594;</a
+                >
+              </div>
+            }
+          }
+        </div>
+      </section>
+      <aside class="activity-panel" aria-label="Racha y progreso">
+        <div class="activity-title">
+          <div>
+            <span class="eyebrow">CADA D&#205;A CUENTA</span>
+            <h2>Tu racha</h2>
+          </div>
+          <div class="streak-total">
+            <app-streak-flame [active]="(streakDays() ?? 0) > 0" /><span
+              ><strong>{{ streakDays() ?? '&#8212;' }}</strong
+              ><small>d&#237;as</small></span
+            >
+          </div>
+        </div>
+        <app-study-streak (daysChanged)="streakDays.set($event)" />
+        <div class="overall">
+          <div
+            class="progress-ring"
+            [style.--progress]="overallProgress() + '%'"
+            role="img"
+            [attr.aria-label]="'Progreso general: ' + overallProgress() + '%'"
+          >
+            <strong>{{ loading() || error() ? '&#8212;' : overallProgress() + '%' }}</strong>
+          </div>
+          <div>
+            <h3>Tu progreso general</h3>
+            <p>{{ completed().length }} de {{ enrollments().length }} cursos completados</p>
+          </div>
+        </div>
+        <button class="certificate-shortcut" (click)="openCertificates()">
+          <app-student-icon name="award" /><span>Tus certificados</span
+          ><strong>{{
+            certificatesLoading() || certificatesError() ? '&#8212;' : validCertificates().length
+          }}</strong
+          ><app-student-icon name="arrow" />
+        </button>
+      </aside>
+      <section class="recommendations-section" aria-labelledby="recommendations-title">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">NO DEJES DE DESCUBRIR</span>
+            <h2 id="recommendations-title">Te podr&#237;a interesar</h2>
+          </div>
+          <div class="section-actions">
+            <a class="text-button" routerLink="/courses"
+              >Ver cat&#225;logo <app-student-icon name="arrow"
+            /></a>
+            @if (recommendationPages() > 1) {
+              <div class="pagination" aria-label="P&#225;ginas de sugerencias">
+                <button
+                  [disabled]="currentRecommendationPage() === 0"
+                  (click)="recommendationPage.set(currentRecommendationPage() - 1)"
+                  aria-label="Sugerencias anteriores"
+                >
+                  &#8592;</button
+                ><span>{{ currentRecommendationPage() + 1 }}/{{ recommendationPages() }}</span
+                ><button
+                  [disabled]="currentRecommendationPage() + 1 >= recommendationPages()"
+                  (click)="recommendationPage.set(currentRecommendationPage() + 1)"
+                  aria-label="Sugerencias siguientes"
+                >
+                  &#8594;
+                </button>
+              </div>
             }
           </div>
-
-          <section class="my-courses" id="my-courses" aria-labelledby="my-courses-title">
-            <header class="section-heading">
-              <h2 id="my-courses-title">
-                Mis cursos <span>{{ enrollments().length }}</span>
-              </h2>
-              <button class="text-link" (click)="showAll()">
-                Ver todos <app-student-icon name="arrow" />
-              </button>
-            </header>
-            <div class="course-toolbar">
-              <label class="search"
-                ><app-student-icon name="search" /><input
-                  type="search"
-                  placeholder="Buscar en mis cursos…"
-                  aria-label="Buscar en mis cursos"
-                  [value]="query()"
-                  (input)="query.set($any($event.target).value)"
-              /></label>
-              @if (enrollments().length) {
-                <div class="course-filters" role="group" aria-label="Filtrar mis cursos">
-                  <button
-                    [class.active]="filter() === 'all'"
-                    [attr.aria-pressed]="filter() === 'all'"
-                    (click)="filter.set('all')"
-                  >
-                    Todos</button
-                  ><button
-                    [class.active]="filter() === 'ACTIVE'"
-                    [attr.aria-pressed]="filter() === 'ACTIVE'"
-                    (click)="filter.set('ACTIVE')"
-                  >
-                    En curso</button
-                  ><button
-                    [class.active]="filter() === 'COMPLETED'"
-                    [attr.aria-pressed]="filter() === 'COMPLETED'"
-                    (click)="filter.set('COMPLETED')"
-                  >
-                    Completados
-                  </button>
-                </div>
-              }
+        </div>
+        <div class="recommendation-grid">
+          @if (recommendationsLoading()) {
+            <div class="empty-state" role="status">Buscando nuevos cursos para ti...</div>
+          } @else if (recommendationsError()) {
+            <div class="empty-state" role="alert">
+              <p>{{ recommendationsError() }}</p>
+              <button class="text-button" (click)="loadRecommendations()">Reintentar</button>
             </div>
-            <div class="course-grid">
-              @for (item of visible(); track item.id; let index = $index) {
-                <article
-                  class="course-card"
-                  animate.enter="course-arrive"
-                  [style.--entry-delay]="(index % 8) * 45 + 'ms'"
-                >
-                  <a
-                    class="course-cover"
-                    [class.alternate]="index % 2 === 1"
-                    [routerLink]="['/courses', item.courseId]"
-                    [attr.aria-label]="'Ver curso: ' + item.course.title"
-                  >
-                    @if (item.course.imageUrl) {
-                      <img [src]="item.course.imageUrl" alt="" loading="lazy" />
-                    } @else {
-                      <app-student-icon />
-                    }
-                    <span class="course-badge" [class.is-completed]="item.status === 'COMPLETED'">{{
-                      item.status === 'COMPLETED'
-                        ? '✓ Completado'
-                        : levelLabels[item.course.level] || 'Tu curso'
-                    }}</span>
-                  </a>
-                  <div class="course-body">
-                    <h3>{{ item.course.title }}</h3>
-                    <p class="lesson-count">
-                      <app-student-icon />{{ item.progress.completedLessons }} de
-                      {{ item.progress.totalLessons }} lecciones
-                    </p>
-                    <div class="progress-row">
-                      <span class="progress-track" [style.--fill]="item.progress.percent + '%'">
-                        <progress
-                          [value]="item.progress.percent"
-                          max="100"
-                          [attr.aria-label]="'Progreso en ' + item.course.title"
-                        ></progress>
-                        <span class="progress-glint" aria-hidden="true"></span> </span
-                      ><strong>{{ item.progress.percent }}%</strong>
-                    </div>
-                    <a class="button soft" [routerLink]="['/courses', item.courseId]"
-                      >{{ item.status === 'COMPLETED' ? 'Volver a ver' : 'Ver curso'
-                      }}<app-student-icon name="arrow"
-                    /></a>
-                  </div>
-                </article>
-              } @empty {
-                <div class="state empty">
-                  <app-student-icon name="search" />
-                  <h3>
-                    {{
-                      enrollments().length
-                        ? 'No encontramos cursos con ese filtro'
-                        : 'Aquí empieza tu próximo logro'
-                    }}
-                  </h3>
-                  <p>
-                    {{
-                      enrollments().length
-                        ? 'Prueba otro nombre o muestra todos tus cursos.'
-                        : 'Explora el catálogo y encuentra lo que quieres aprender.'
-                    }}
-                  </p>
-                  @if (enrollments().length) {
-                    <button class="button soft" (click)="showAll()">Mostrar mis cursos</button>
+          } @else {
+            @for (item of suggestedCourses(); track item.id) {
+              <a class="recommendation-card" [routerLink]="['/courses', item.id]"
+                ><div class="recommendation-cover">
+                  @if (item.imageUrl || item.image || item.thumbnail; as cover) {
+                    <img [src]="cover" alt="" loading="lazy" />
                   } @else {
-                    <a class="button primary" routerLink="/courses"
-                      >Explorar cursos <app-student-icon name="arrow"
-                    /></a>
+                    <span class="cover-letter">{{
+                      (item.title || item.name || 'Curso').charAt(0).toUpperCase()
+                    }}</span>
                   }
+                  <span class="level-badge">{{ levelLabels[item.level || ''] || 'Para ti' }}</span>
                 </div>
-              }
-            </div>
-          </section>
-        }
-      </div>
-      <aside class="learning-sidebar" aria-label="Tu actividad de aprendizaje">
-        <app-study-streak />
-        @if (!loading() && !error()) {
-          <section class="overall" aria-labelledby="overall-title">
-            <h2 id="overall-title">Tu progreso general</h2>
-            <div class="overall-body">
-              <div
-                class="progress-ring"
-                [style.--progress]="overallProgress() + '%'"
-                role="img"
-                [attr.aria-label]="'Progreso general: ' + overallProgress() + '%'"
+                <div class="recommendation-copy">
+                  <span class="course-label">{{
+                    item.category?.name || 'EXPLORA ALGO NUEVO'
+                  }}</span>
+                  <h3>{{ item.title || item.name }}</h3>
+                  <div class="recommendation-footer">
+                    <span>{{ item.price && +item.price > 0 ? 'Ver curso' : 'Gratis' }}</span
+                    ><span class="round-arrow" aria-hidden="true">&#8599;</span>
+                  </div>
+                </div></a
               >
-                <strong>{{ overallProgress() }}%</strong>
+            } @empty {
+              <div class="empty-state">
+                <p>Ya conoces los cursos disponibles. Pronto habr&#225; m&#225;s por descubrir.</p>
+                <a class="text-button" routerLink="/courses">Explorar el cat&#225;logo &#8594;</a>
               </div>
-              <ul>
-                <li><i></i>{{ inProgress().length }} en curso</li>
-                <li><i></i>{{ completed().length }} completados</li>
-                <li><i></i>{{ pending().length }} por empezar</li>
-              </ul>
-            </div>
-          </section>
-        }
-      </aside>
+            }
+          }
+        </div>
+      </section>
+      <footer class="dashboard-footer">
+        <span>Aprende a tu ritmo. Construye tu futuro.</span
+        ><span>CAMPUS VIRTUAL <span aria-hidden="true">&#10022;</span></span>
+      </footer>
     </main>
   </div>
-
   @if (panel(); as currentPanel) {
     <button class="panel-backdrop" aria-label="Cerrar panel" (click)="closePanel()"></button>
     <aside class="top-panel" aria-label="Panel del estudiante">
       <header>
         <h2>
           {{
-            currentPanel === 'account'
-              ? 'Mi cuenta'
-              : currentPanel === 'settings'
-                ? 'Preferencias'
-                : 'Notificaciones'
+            currentPanel === 'courses'
+              ? 'Mis cursos'
+              : currentPanel === 'certificates'
+                ? 'Mis certificados'
+                : currentPanel === 'account'
+                  ? 'Mi cuenta'
+                  : currentPanel === 'settings'
+                    ? 'Preferencias'
+                    : 'Notificaciones'
           }}
         </h2>
         <button class="icon-button" aria-label="Cerrar panel" (click)="closePanel()">
           <app-student-icon name="close" />
         </button>
       </header>
-      @if (currentPanel === 'account') {
+      @if (currentPanel === 'courses') {
+        <label class="search"
+          ><app-student-icon name="search" /><input
+            aria-label="Buscar mis cursos"
+            placeholder="Buscar un curso..."
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
+        /></label>
+        <ul class="notification-list">
+          @for (item of visible(); track item.id) {
+            <li>
+              <a [routerLink]="['/courses', item.courseId]"
+                ><strong>{{ item.course.title }}</strong>
+                <p>
+                  {{ item.progress.percent }} % completado <span aria-hidden="true">&#8599;</span>
+                </p></a
+              >
+            </li>
+          } @empty {
+            <li class="muted">No encontramos cursos. Prueba otra b&#250;squeda.</li>
+          }
+        </ul>
+      } @else if (currentPanel === 'certificates') {
+        @if (certificatesLoading()) {
+          <p role="status">Cargando certificados…</p>
+        } @else if (certificatesError()) {
+          <p role="alert">{{ certificatesError() }}</p>
+          <button class="button soft" (click)="loadCertificates()">Reintentar</button>
+        } @else {
+          <ul class="notification-list">
+            @for (certificate of validCertificates(); track certificate.id) {
+              <li>
+                <strong>{{ certificate.courseTitle }}</strong>
+                <p>{{ certificate.instructorName }}</p>
+                <button
+                  class="button soft"
+                  [disabled]="downloadingCertificate() !== null"
+                  (click)="downloadCertificate(certificate)"
+                >
+                  {{
+                    downloadingCertificate() === certificate.id ? 'Descargando…' : 'Descargar PDF'
+                  }}
+                </button>
+              </li>
+            } @empty {
+              <li class="muted">
+                Aún no tienes certificados emitidos. Completa los requisitos de tus cursos para
+                conseguir el primero.
+              </li>
+            }
+          </ul>
+          @if (downloadError()) {
+            <p role="alert">{{ downloadError() }}</p>
+          }
+        }
+      } @else if (currentPanel === 'account') {
         <app-account-settings />
       } @else if (currentPanel === 'settings') {
         <p class="muted">Ajusta tu espacio de aprendizaje.</p>
