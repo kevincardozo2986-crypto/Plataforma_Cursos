@@ -1,103 +1,141 @@
-﻿# Backend — Plataforma de cursos
+﻿# Backend — Campus Virtual
 
-API NestJS. Por ahora, `GET /` devuelve `Hello World!`.
+API REST en **NestJS 12** con **Prisma 7** y **PostgreSQL**. Es un monolito modular: cada funcionalidad es un módulo en `src/modules/`. Para la visión general y la puesta en marcha de todo el proyecto, lee primero el [README de la raíz](../README.md).
 
 ## Comandos
 
 Desde `backend/`:
 
 ```bash
-npm ci
-npm run start:dev
-npm run build
-npm run start:prod
-npm run lint
-npm test
-npm run test:e2e
+npm ci                          # instalar dependencias
+npx prisma migrate deploy       # crear/actualizar las tablas (hazlo tras cada git pull)
+npm run start:dev               # desarrollo con recarga (http://localhost:3000)
+npm run build                   # compilar a dist/
+npm run start:prod              # ejecutar lo compilado
+npm run lint                    # oxlint
+npm test                        # pruebas unitarias (vitest)
+npm run test:e2e                # pruebas de integración HTTP
+npm run format                  # prettier
 ```
 
-## Aula del estudiante
-
-- El reproductor reconoce el video de la lección, recursos de tipo video y videos incrustados desde el editor. YouTube y Vimeo se reproducen dentro del aula mediante sus API oficiales.
-- Para completar una lección con video se exige ver al menos el 90 % de tramos diferentes. Adelantar, repetir el mismo tramo o dejar el reproductor pausado no aumenta ese porcentaje. El avance se conserva en PostgreSQL y se valida también al abrir las lecciones siguientes.
-- Los MP4 subidos usan la duración del archivo en el servidor. Para otros formatos y proveedores se usa la duración informada por el reproductor; este seguimiento no constituye una protección DRM frente a un cliente manipulado.
-- El certificado exige completar las lecciones, aprobar cada evaluación con su nota mínima configurada y obtener al menos 60 % en cada tarea. Las respuestas abiertas y tareas pendientes de revisión no habilitan el certificado.
-- El certificado usa la plantilla del docente o, si no se ha asignado una, el diseño predeterminado del campus. El estudiante ve sus requisitos y descarga el PDF autenticado desde el aula; la finalización se recalcula cuando se guarda una calificación.
-- Antes de iniciar una instalación actualizada, ejecuta `npx prisma migrate deploy` para crear la tabla de seguimiento de video.
+El cliente de Prisma se genera solo antes de `build` y `start:dev` (queda en `src/generated/prisma`, que no se versiona). Si cambias `schema.prisma`, ejecuta `npm run prisma:generate`.
 
 ## Configuración
 
-- `PORT`: puerto HTTP; por defecto, `3000`.
-- `DATABASE_URL`: conexión PostgreSQL requerida por Prisma.
-- `OBSERVE_APP_KEY` y `OBSERVE_APP_SECRET`: credenciales opcionales de NestJS Observe. La observabilidad permanece desactivada si falta alguna.
+Copia `.env.example` a `.env` y complétalo. **Obligatorias**: `DATABASE_URL` y `JWT_SECRET` (la API no arranca sin `JWT_SECRET`). Todas las variables están explicadas en `.env.example` y en la [tabla del README raíz](../README.md#3-variables-de-entorno-backendenv). Ejecuta siempre los comandos desde `backend/` porque `.env` se lee del directorio de ejecución.
 
-El backend carga `.env` desde el directorio de ejecución. Ejecutar los comandos desde `backend/`, copiar `.env.example` a `.env` y completar la conexión PostgreSQL. Después de compilar:
+Para ejecutar lo compilado: `node --env-file=.env dist/main.js`.
 
-```bash
-node --env-file=.env dist/main.js
-```
-
-No guardar credenciales reales en el código ni en archivos versionados.
-
-El cliente Prisma se genera automáticamente antes de compilar o ejecutar `start:dev`. También se puede generar con `npm run prisma:generate`. Su código queda en `src/generated/prisma` y no se versiona. La generación no modifica las tablas de la base de datos.
+> CORS permite solo `http://localhost:4200` (está fijo en `src/main.ts`). Al desplegar, cámbialo por la URL real del frontend.
 
 ## Estructura
 
-- `src/`: módulos, controladores y servicios; pruebas unitarias junto al código.
-- `test/`: pruebas de integración HTTP.
+```
+backend/
+├── prisma/
+│   ├── schema.prisma        modelo de datos (fuente de verdad)
+│   └── migrations/          historial de cambios de la base de datos
+├── src/
+│   ├── main.ts              arranque: CORS, ValidationPipe global (whitelist + forbidNonWhitelisted)
+│   ├── app.module.ts        registra todos los módulos
+│   ├── common/              decoradores (@CurrentUser), DTOs/utilidades compartidas, helper managedBy()
+│   ├── database/            PrismaService
+│   └── modules/             un directorio por funcionalidad (ver abajo)
+├── test/                    pruebas de integración HTTP
+├── assets/                  fuentes de los certificados
+├── uploads/                 archivos subidos (no se versiona; es el almacenamiento real)
+├── postman/                 colección para probar la API
+├── API-*.md                 documentación de endpoints por tema
+└── ARCHITECTURE.md          reglas de capas y dependencias
+```
 
+### Capas de un módulo
 
-## Verificacion de cambio de contrasena por Gmail
+```
+Controller → Service → Repository → PrismaService → PostgreSQL
+```
 
-En `backend/.env` configura `SMTP_USER` (el Gmail que envia los correos) y
-`SMTP_PASSWORD` (una contrasena de aplicacion de Google). `SMTP_HOST=smtp.gmail.com`
-y `SMTP_PORT=465` ya estan preparados. No uses la contrasena habitual de Gmail.
-Activa la verificacion en dos pasos y crea la contrasena de aplicacion:
-https://support.google.com/accounts/answer/185833?hl=es
-Reinicia la API despues de configurar estas variables. La direccion del remitente
-no tiene que coincidir con el proveedor de correo del estudiante.
+- **Controller** (`*.controller.ts`): rutas, guards y DTOs. Sin lógica.
+- **Service** (`*.service.ts`): reglas de negocio y permisos. No importa Prisma.
+- **Repository** (`*.repository.ts`): el único lugar con consultas Prisma del módulo.
+- **DTO** (`dto/*.dto.ts`): validación del cuerpo con `class-validator`. Un campo no declarado en el DTO se rechaza con 400.
+- Si un módulo necesita algo de otro, llama al **service exportado** del otro módulo, nunca a su repositorio. Sin dependencias circulares. Detalle y excepciones en [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-Desde Mi cuenta, el estudiante introduce su correo o cedula. El backend comprueba
-que pertenece a la sesion y envia un codigo de seis digitos al correo guardado,
-nunca a una direccion arbitraria. El codigo vence en 10 minutos, admite cinco
-intentos y se puede reenviar cada 60 segundos. Se almacena un HMAC del codigo,
-no su texto. Al confirmar, se consume en una escritura atomica junto con el cambio
-de contrasena y la revocacion de las sesiones. Se requiere volver a iniciar sesion.
-Los errores de SMTP no se presentan como envios exitosos; no se imprimen codigos.
+## Módulos
 
-Endpoints autenticados: `POST /auth/password/request-code` con `{ identifier }`
-y `POST /auth/password/confirm-code` con `{ code, newPassword }`.
+| Módulo | Qué hace | Documentación |
+| --- | --- | --- |
+| `auth` | Registro, login (JWT), recuperación de contraseña por código de correo, guards de sesión y rol. | — |
+| `users` | Cuentas y roles. | — |
+| `admin` | Panel del administrador: resumen, usuarios, cursos. Solo `ADMIN`. | `API-ADMIN.md` |
+| `profile` | Perfil, foto, firma del docente, preferencias y accesibilidad. | `API-PERFIL.md` |
+| `categories` | Categorías de cursos. | — |
+| `courses` | CRUD de cursos, estados (borrador/publicado/archivado), visibilidad, precio, cupo, prerrequisitos. | `API-INSTRUCTORES.md` |
+| `course-modules`, `lessons`, `resources` | Módulos, lecciones y recursos del contenido. | `API-CONTENIDO.md` |
+| `course-files` | Archivos descargables del curso (privados). | `API-CONTENIDO.md` §4 |
+| `course-access` | **Permisos centralizados**: quién gestiona un curso, quién ve su contenido, liberación gradual (*drip*). | `API-CONTENIDO.md` |
+| `progress` | Inscripciones, progreso por lección, seguimiento de video, finalización. | — |
+| `evaluations` | Quizzes, intentos y calificación. | `API-EVALUACIONES.md` |
+| `assignments` | Tareas, entregas de archivos y calificación. | `API-TAREAS.md` |
+| `certificates`, `certificate-fonts` | Plantillas, emisión, PDF (pdfkit) y verificación pública. | `API-CERTIFICADOS.md` |
+| `payments` | Compra de cursos con tarjeta **simulada**. | `API-PAGOS.md` |
+| `announcements`, `discussions`, `reviews`, `notifications` | Comunicación: anuncios, preguntas/respuestas, reseñas y avisos. | `API-COMUNICACION.md` |
+| `dashboard` | Reportes del docente: totales, series, estudiantes, reseñas (solo lectura). | `API-DASHBOARD.md` |
+| `uploads` | Subida de imágenes, videos y documentos privados. | — |
+| `learning-policy` | Reglas del seguimiento de video: cobertura de tramos vistos (`watch-coverage.ts`) y duración de los MP4 locales. | — |
 
+## Cosas importantes que conviene saber
 
-## Avisos de actividad dentro de la plataforma
+### Autenticación y permisos
+- `POST /auth/login` recibe `identifier` (correo o documento) y `password` y devuelve un JWT. El registro público siempre crea `STUDENT`; solo un administrador crea docentes o administradores.
+- `JwtAuthGuard` **relee el rol y el estado del usuario en la base de datos en cada petición**. Desactivar a alguien o cambiar su contraseña incrementa `sessionVersion` e invalida sus tokens.
+- Para limitar por rol usa `@UseGuards(JwtAuthGuard, RolesGuard)` con `@Roles(Role.ADMIN)`, etc.
+- Para "mis cursos" usa siempre el helper `managedBy(userId)` (`common/prisma/managed-by.ts`) en lugar de filtrar por `teacherId`, así los instructores ven lo mismo que el autor.
 
-- Publicar un curso publico crea un aviso para los estudiantes activos. Volver a
-  publicar el mismo curso no repite el aviso para el mismo estudiante.
-- Cambiar la contrasena (desde perfil o mediante codigo) crea un aviso de seguridad
-  para el propietario. Nunca incluye la contrasena ni el codigo.
-- Al iniciar la API y cada hora se revisan cursos activos con lecciones y al menos
-  siete dias sin completar una leccion. Si no hay progreso, se cuenta desde la
-  inscripcion. Se genera un solo recordatorio por periodo de inactividad; completar
-  otra leccion habilita un nuevo periodo. Se excluyen cuentas inactivas, cursos
-  sin publicar e inscripciones completadas o canceladas.
+### Inscripción y progreso
+- `ProgressService.enroll` valida: curso publicado, no inscrito, contraseña (si la hay), cupo, prerrequisitos y **pago aprobado si el curso tiene precio** (si no, responde 402).
+- Una lección con video solo se completa con ≥ 90 % de tramos distintos vistos (se guarda en `VideoWatchProgress`). No es una protección DRM frente a un cliente manipulado.
+- El certificado exige: lecciones completas, cada evaluación aprobada con su nota mínima y al menos 60 % en cada tarea. Se recalcula cuando se guarda una calificación.
 
-Son avisos en el menu del avatar, no correos. La API debe permanecer encendida para
-la revision por hora; al volver a arrancarla se revisa lo pendiente. Las claves
-unicas de evento evitan duplicados incluso si hay varios procesos de la API.
+### Certificados
+La emisión **guarda una copia** del diseño, nombre y firma (`snapshot`), así que editar la plantilla después no cambia los certificados ya emitidos. `GET /certificates/verify/:code` es público.
 
+### Archivos subidos
+- Imágenes → WebP con `sharp` (sin instalar nada más).
+- Videos → se recomprimen a H.264/AAC con **ffmpeg** en una cola de uno a la vez. Sin ffmpeg se guardan tal cual.
+- Documentos (pdf, doc(x), xls(x), ppt(x), zip, txt; máx. 20 MB) → carpeta `uploads/.private`; se descargan solo con sesión y permiso (`/submission-files/:name`, `/course-files/:id/download`).
 
-## Aula multimedia del estudiante
+### HTML del docente
+Todo HTML enriquecido pasa por `cleanHtml` (sanitize-html). Los iframes se permiten para cualquier sitio https externo, con `sandbox` forzado. El frontend aplica la misma regla (`core/html/html-safe.ts`); si cambias una, cambia la otra.
 
-Los recursos de una leccion admiten PDF, VIDEO, AUDIO, IMAGE, INTERACTIVE, LINK,
-DOCUMENT y OTHER. El docente puede agregarlos por enlace desde Recursos; el aula
-los muestra dentro de la leccion con acceso al original. La subida directa de
-archivos de audio/PDF y paquetes SCORM/H5P requiere un flujo adicional: un enlace
-INTERACTIVE sirve para una actividad web que permita ser incrustada, no importa
-paquetes ni registra puntuaciones SCORM.
+### Pagos simulados
+`payments/card.ts` valida la tarjeta (Luhn, vencimiento, CVV) y simula la pasarela con `simulateGateway`. **Nunca se guarda el número completo ni el CVV**, solo marca y últimos 4 dígitos. El importe lo decide el servidor. Para usar una pasarela real hay que sustituir esa función y añadir confirmación por *webhook*.
 
-El estudiante puede consultar preguntas y sus respuestas, participar en la
-conversacion y practicar HTML/CSS/JavaScript en una vista previa con sandbox sin
-same-origin y CSP que bloquea conexiones externas. El editor no ejecuta Python ni
-codigo del lado del servidor, y sus borradores son locales por usuario/curso/leccion.
-No son entregas calificadas. Las notas tambien son locales. El progreso de las
-lecciones, las preguntas y las respuestas se guardan mediante las APIs existentes.
+### Tareas programadas
+`notifications/activity-notifications.service.ts` se ejecuta al iniciar la API y cada hora: genera recordatorios para estudiantes con 7 días sin completar una lección (uno por periodo de inactividad). La API debe estar encendida para que corra. Las claves únicas de evento evitan duplicados aunque haya varios procesos.
+
+### Recuperación de contraseña por correo
+Configura `SMTP_USER` y `SMTP_PASSWORD` (contraseña de aplicación de Google, con verificación en dos pasos activa) y reinicia la API. El estudiante introduce su correo o documento; el backend envía un código de 6 dígitos **solo al correo guardado**. El código vence en 10 minutos, admite 5 intentos, se reenvía cada 60 s y se almacena como HMAC, no en texto. Al confirmarlo se cambia la contraseña y se cierran todas las sesiones. Endpoints: `POST /auth/password/request-code` y `POST /auth/password/confirm-code`.
+
+## Base de datos y migraciones
+
+- `prisma/schema.prisma` define el modelo (usuarios, cursos, módulos, lecciones, inscripciones, evaluaciones, tareas, certificados, pagos, notificaciones…).
+- Tras cambiar el esquema: `npx prisma migrate dev --name descripcion_corta` (crea y aplica la migración). **Versiona la carpeta creada y no edites migraciones ya aplicadas.**
+- En otro equipo o en el servidor: `npx prisma migrate deploy`.
+- Si al fusionar ramas dos migraciones hacen lo mismo (por ejemplo, agregan la misma columna), elimina la duplicada y márcala con `npx prisma migrate resolve --applied <nombre>`.
+- Primer administrador: regístrate y ejecuta `UPDATE users SET role = 'ADMIN' WHERE email = '…';` (no hay *seed*).
+
+## Pruebas
+
+- Los *services* se prueban con el repositorio simulado (`*.service.spec.ts`), sin base de datos, junto al archivo que verifican.
+- La lógica pura se aísla en funciones sin dependencias para probarla fácil (`evaluations/scoring.ts`, `course-access/drip.ts`, `payments/card.ts`).
+- Cada vez que agregues un campo al `select` de un repositorio, revisa los mocks de las pruebas que lo usan.
+
+## Cómo agregar una funcionalidad nueva
+
+1. Crea `src/modules/<nombre>/` con `*.module.ts`, `*.controller.ts`, `*.service.ts`, `*.repository.ts`, `dto/` y las pruebas.
+2. Regístralo en `app.module.ts`.
+3. Si necesita datos de otro módulo, importa ese módulo y usa su *service*.
+4. Si agrega tablas: `schema.prisma` + migración.
+5. Protege las rutas con `JwtAuthGuard` (y `RolesGuard` + `@Roles` si es por rol); valida permisos sobre un curso con `CourseAccessService`.
+6. Documenta los endpoints en un `API-<TEMA>.md` y enlázalo en la tabla de módulos.
