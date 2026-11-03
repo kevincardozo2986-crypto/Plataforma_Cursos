@@ -22,6 +22,7 @@ export interface StudentEnrollment {
 }
 interface StudentNotification {
   id: number;
+  type?: string;
   title: string;
   message?: string | null;
   courseId?: number | null;
@@ -270,6 +271,14 @@ export class StudentDashboard {
   logout(): void {
     this.auth.logout();
     void this.router.navigate(['/']);
+  }
+
+  /**
+   * Oculta el panel sin navegar: para los enlaces que ya navegan solos. `closePanel` navega a la
+   * ruta actual y le ganaba al enlace, que terminaba otra vez en el panel.
+   */
+  hidePanel(): void {
+    this.panel.set(null);
   }
 
   closePanel(): void {

@@ -1,4 +1,4 @@
-import { notificationLink, timeAgo } from './notification-link';
+import { notificationLink, notificationQueryParams, timeAgo } from './notification-link';
 import { NotificationType } from './notifications.service';
 
 const note = (type: NotificationType, courseId: number | null = 3, refId: number | null = 20) => ({
@@ -87,5 +87,16 @@ describe('timeAgo', () => {
   it('una fecha inválida da vacío y una del futuro, «hace un momento»', () => {
     expect(timeAgo('nada', now)).toBe('');
     expect(timeAgo(new Date(now.getTime() + 60_000).toISOString(), now)).toBe('hace un momento');
+  });
+});
+
+describe('notificationQueryParams', () => {
+  it('a un estudiante, la respuesta a su pregunta le abre la pestaña Preguntas', () => {
+    expect(notificationQueryParams(note('NEW_REPLY'), 'STUDENT')).toEqual({ tab: 'preguntas' });
+  });
+
+  it('otros avisos y el docente no llevan parámetros', () => {
+    expect(notificationQueryParams(note('ANNOUNCEMENT'), 'STUDENT')).toBeUndefined();
+    expect(notificationQueryParams(note('NEW_REPLY'), 'TEACHER')).toBeUndefined();
   });
 });

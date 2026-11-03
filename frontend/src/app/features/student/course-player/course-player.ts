@@ -20,7 +20,7 @@ import {
   untracked,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, Subscription, catchError, concatMap, EMPTY, finalize, switchMap } from 'rxjs';
@@ -55,6 +55,9 @@ interface Post {
   title: string;
   body: string;
   author?: { firstName: string; lastName: string };
+  /** Solo en las preguntas: si ya la contestó el docente y cuántas respuestas tiene. */
+  answered?: boolean;
+  _count?: { replies: number };
 }
 interface VideoState {
   required: boolean;
@@ -186,6 +189,8 @@ export class CoursePlayer {
     ].filter((section) => section.content?.trim());
   });
   private readonly http = inject(HttpClient);
+  private readonly route = inject(ActivatedRoute);
+  private requestedTab = false;
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
@@ -309,6 +314,13 @@ export class CoursePlayer {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+    // Un aviso («Respondieron tu pregunta») manda `?tab=preguntas`: se abre esa pestaña. Se vuelve a
+    // leer si llega otro aviso estando ya en el curso, porque la ruta no cambia.
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.requestedTab = params.get('tab') === 'preguntas';
+      // Si todavía se está iniciando, se abre al terminar (`select` vuelve a «Descripción»).
+      if (!this.initializing()) this.applyRequestedTab();
+    });
     effect(() => {
       const course = this.course();
       untracked(() => {
@@ -338,6 +350,7 @@ export class CoursePlayer {
             const first = open.find((item) => !this.completed().has(item.id)) ?? open[0];
             if (first) this.select(first.id);
           }
+          this.applyRequestedTab();
         },
         error: (error) =>
           this.initError.set(apiErrorMessage(error, 'No pudimos cargar el contenido disponible.')),
@@ -532,6 +545,13 @@ export class CoursePlayer {
         error: (error) =>
           this.progressError.set(apiErrorMessage(error, 'No pudimos guardar tu progreso.')),
       });
+  }
+  /** Abre la pestaña que pidió la ruta (`?tab=preguntas`), una sola vez. */
+  private applyRequestedTab(): void {
+    if (!this.requestedTab || !this.tabs().some((t) => t.id === 'questions')) return;
+    this.requestedTab = false;
+    // Después de pintar la página, para que exista `#course-tools` al desplazarse.
+    setTimeout(() => this.openTool('questions'));
   }
   openTool(tab: Tab): void {
     this.selectTab(tab);

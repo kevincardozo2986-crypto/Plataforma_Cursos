@@ -519,6 +519,15 @@ form label {
   color: var(--muted);
   font-size: 0.7rem;
 }
+.answered-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
 .post h4 {
   margin: 4px 0 8px;
   font-size: 0.9rem;

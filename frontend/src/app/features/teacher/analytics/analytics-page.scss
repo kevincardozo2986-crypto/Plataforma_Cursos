@@ -212,6 +212,10 @@
   line-height: 1.15;
 }
 
+.tabs[hidden] {
+  display: none;
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

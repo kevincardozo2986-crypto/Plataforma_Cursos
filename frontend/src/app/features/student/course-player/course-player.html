@@ -453,9 +453,12 @@
             @for (post of posts(); track post.id) {
               <article class="post">
                 <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
+                @if (post.answered) {
+                  <span class="answered-badge">✓ Respondida por el docente</span>
+                }
                 <h4>{{ post.title }}</h4>
                 <p>{{ post.body }}</p>
-                <app-question-thread [postId]="post.id" />
+                <app-question-thread [postId]="post.id" [count]="post._count?.replies ?? 0" />
               </article>
             } @empty {
               @if (!panelLoading() && !panelError()) {

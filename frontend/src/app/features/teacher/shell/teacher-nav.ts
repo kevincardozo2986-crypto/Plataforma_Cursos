@@ -44,6 +44,19 @@ export const TEACHER_NAV: NavItem[] = [
     icon: ['M4 4h16v13H6.5A2.5 2.5 0 0 0 4 19.5z', 'M4 19.5A2.5 2.5 0 0 0 6.5 22H20'],
   },
   {
+    label: 'Inscritos',
+    path: 'students',
+    ready: true,
+    description:
+      'La lista de personas inscritas en tus cursos, con su avance, última actividad y notas.',
+    icon: [
+      'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2',
+      'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      'M23 21v-2a4 4 0 0 0-3-3.87',
+      'M16 3.13a4 4 0 0 1 0 7.75',
+    ],
+  },
+  {
     label: 'Mi perfil',
     path: 'profile',
     ready: true,

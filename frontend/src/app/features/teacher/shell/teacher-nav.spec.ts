@@ -13,6 +13,7 @@ describe('TEACHER_NAV', () => {
       'Inicio',
       'Resumen',
       'Cursos',
+      'Inscritos',
       'Mi perfil',
       'Anuncios',
       'Intentos del cuestionario',

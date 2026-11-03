@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
 
 import {
@@ -51,6 +51,13 @@ export class AnalyticsPage {
   private readonly dashboardApi = inject(DashboardService);
   private readonly analytics = inject(AnalyticsService);
   private readonly coursesApi = inject(TeacherCoursesService);
+  private readonly route = inject(ActivatedRoute);
+
+  /**
+   * La ruta «Inscritos» reutiliza esta página mostrando solo la lista de estudiantes (de todos los
+   * tiempos); `?course=ID` la deja filtrada por ese curso.
+   */
+  readonly onlyStudents = this.route.snapshot.data['view'] === 'students';
 
   readonly periods = PERIODS;
   readonly statusLabels = STATUS_LABELS;
@@ -60,8 +67,8 @@ export class AnalyticsPage {
   readonly pageSize = PAGE_SIZE;
   readonly Math = Math;
 
-  readonly tab = signal<Tab>('courses');
-  readonly period = signal<Period>('30d');
+  readonly tab = signal<Tab>(this.onlyStudents ? 'students' : 'courses');
+  readonly period = signal<Period>(this.onlyStudents ? 'all' : '30d');
   readonly courseId = signal<number | null>(null);
   readonly courses = signal<TeacherCourse[]>([]);
 
@@ -154,6 +161,13 @@ export class AnalyticsPage {
 
   constructor() {
     this.coursesApi.list().subscribe({ next: (courses) => this.courses.set(courses) });
+
+    const course = Number(this.route.snapshot.queryParamMap.get('course'));
+
+    if (Number.isInteger(course) && course > 0) {
+      this.courseId.set(course);
+    }
+
     this.load();
   }
 
@@ -161,6 +175,16 @@ export class AnalyticsPage {
 
   private load(): void {
     this.request?.unsubscribe();
+
+    if (this.onlyStudents) {
+      // Solo la lista: no hacen falta los totales ni las reseñas.
+      this.loading.set(false);
+      this.offset.set(0);
+      this.loadStudents();
+
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 

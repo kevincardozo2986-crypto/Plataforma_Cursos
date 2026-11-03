@@ -1,11 +1,22 @@
 <section class="panel-page">
   <div class="panel-container">
     <header class="hero">
-      <span class="hero-icon" aria-hidden="true"><app-icon name="chart" [size]="26" /></span>
+      <span class="hero-icon" aria-hidden="true"
+        ><app-icon [name]="onlyStudents ? 'users' : 'chart'" [size]="26"
+      /></span>
       <div class="hero-copy">
-        <span class="eyebrow">ESPACIO DOCENTE / ANALÍTICAS</span>
-        <h1>Analíticas</h1>
-        <p>Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.</p>
+        @if (onlyStudents) {
+          <span class="eyebrow">ESPACIO DOCENTE / INSCRITOS</span>
+          <h1>Inscritos</h1>
+          <p>
+            Las personas inscritas en tus cursos, con su avance y su última actividad. Filtra por
+            curso, estado o nombre.
+          </p>
+        } @else {
+          <span class="eyebrow">ESPACIO DOCENTE / ANALÍTICAS</span>
+          <h1>Analíticas</h1>
+          <p>Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.</p>
+        }
       </div>
       <button
         type="button"
@@ -19,20 +30,24 @@
     </header>
 
     <div class="filters">
-      <div class="periods" role="group" aria-label="Periodo">
-        <span class="field-icon" aria-hidden="true"><app-icon name="calendar" [size]="16" /></span>
-        @for (entry of periods; track entry.value) {
-          <button
-            type="button"
-            class="chip"
-            [class.active]="period() === entry.value"
-            [attr.aria-pressed]="period() === entry.value"
-            (click)="setPeriod(entry.value)"
-          >
-            {{ entry.label }}
-          </button>
-        }
-      </div>
+      @if (!onlyStudents) {
+        <div class="periods" role="group" aria-label="Periodo">
+          <span class="field-icon" aria-hidden="true"
+            ><app-icon name="calendar" [size]="16"
+          /></span>
+          @for (entry of periods; track entry.value) {
+            <button
+              type="button"
+              class="chip"
+              [class.active]="period() === entry.value"
+              [attr.aria-pressed]="period() === entry.value"
+              (click)="setPeriod(entry.value)"
+            >
+              {{ entry.label }}
+            </button>
+          }
+        </div>
+      }
 
       <label class="course">
         <span class="sr-only">Curso</span>
@@ -40,7 +55,9 @@
         <select class="panel-select" (change)="setCourse($event)">
           <option value="">Todos mis cursos</option>
           @for (course of courses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
+            <option [value]="course.id" [selected]="course.id === courseId()">
+              {{ course.title }}
+            </option>
           }
         </select>
       </label>
@@ -57,19 +74,21 @@
       </p>
     }
 
-    <ul class="tiles" [class.dim]="loading()">
-      @for (tile of tiles(); track tile.label) {
-        <li class="tile" [class]="'tile tone-' + tile.tone">
-          <span class="tile-icon" aria-hidden="true"
-            ><app-icon [name]="tile.icon" [size]="19"
-          /></span>
-          <span class="label">{{ tile.label }}</span>
-          <strong class="value">{{ tile.value }}</strong>
-        </li>
-      }
-    </ul>
+    @if (!onlyStudents) {
+      <ul class="tiles" [class.dim]="loading()">
+        @for (tile of tiles(); track tile.label) {
+          <li class="tile" [class]="'tile tone-' + tile.tone">
+            <span class="tile-icon" aria-hidden="true"
+              ><app-icon [name]="tile.icon" [size]="19"
+            /></span>
+            <span class="label">{{ tile.label }}</span>
+            <strong class="value">{{ tile.value }}</strong>
+          </li>
+        }
+      </ul>
+    }
 
-    <div class="tabs" role="tablist" aria-label="Reportes">
+    <div class="tabs" role="tablist" aria-label="Reportes" [hidden]="onlyStudents">
       <button
         type="button"
         role="tab"

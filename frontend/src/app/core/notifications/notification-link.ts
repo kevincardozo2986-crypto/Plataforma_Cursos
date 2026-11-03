@@ -35,6 +35,16 @@ export function notificationLink(
   return course;
 }
 
+/** Parámetros de la ruta: la respuesta a una pregunta abre la pestaña «Preguntas» del curso. */
+export function notificationQueryParams(
+  notification: Pick<AppNotification, 'type'>,
+  role: UserRole | null | undefined,
+): Record<string, string> | undefined {
+  const staff = role === 'TEACHER' || role === 'ADMIN';
+
+  return !staff && notification.type === 'NEW_REPLY' ? { tab: 'preguntas' } : undefined;
+}
+
 /** «hace un momento», «hace 5 min», «hace 3 h», «ayer», «hace 4 días», o la fecha si ya pasó un mes. */
 export function timeAgo(iso: string, now: Date = new Date()): string {
   const then = new Date(iso).getTime();

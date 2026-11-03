@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { catchError, EMPTY, switchMap, timer } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
-import { notificationLink } from './notification-link';
+import { notificationLink, notificationQueryParams } from './notification-link';
 import { AppNotification, NotificationsService } from './notifications.service';
 
 /** Cada cuánto se pregunta cuántas hay sin leer (mientras haya sesión). */
@@ -73,10 +73,11 @@ export class NotificationCenter {
         .subscribe();
     }
 
-    const link = notificationLink(notification, this.auth.user()?.role);
+    const role = this.auth.user()?.role;
+    const link = notificationLink(notification, role);
 
     if (link) {
-      void this.router.navigate(link);
+      void this.router.navigate(link, { queryParams: notificationQueryParams(notification, role) });
     }
 
     return opened;

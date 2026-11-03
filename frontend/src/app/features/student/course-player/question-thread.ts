@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +14,7 @@ interface Reply {
   imports: [FormsModule],
   template: `
     <button class="toggle" [attr.aria-expanded]="expanded()" (click)="toggle()">
-      {{ expanded() ? 'Ocultar conversación' : 'Ver respuestas y participar' }}
+      {{ expanded() ? 'Ocultar conversación' : toggleLabel() }}
     </button>
     @if (expanded()) {
       <div class="thread">
@@ -135,6 +135,15 @@ interface Reply {
 })
 export class QuestionThread {
   readonly postId = input.required<number>();
+  /** Cuántas respuestas tenía al listarla: así se ve que hay respuestas sin abrir el hilo. */
+  readonly count = input(0);
+  readonly sent = signal(0);
+  readonly toggleLabel = computed(() => {
+    const total = this.count() + this.sent();
+    return total === 0
+      ? 'Ver respuestas y participar'
+      : `Ver ${total} ${total === 1 ? 'respuesta' : 'respuestas'} y participar`;
+  });
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
   readonly expanded = signal(false);
@@ -176,6 +185,7 @@ export class QuestionThread {
       .subscribe({
         next: (reply) => {
           this.replies.update((items) => [...items, reply]);
+          this.sent.update((n) => n + 1);
           this.body = '';
         },
         error: (error) => this.error.set(apiErrorMessage(error, 'No pudimos enviar tu respuesta.')),

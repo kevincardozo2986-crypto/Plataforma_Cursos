@@ -139,6 +139,9 @@
                     <a [routerLink]="['/teacher/courses', course.id, 'edit', 'curriculum']"
                       >Organizar contenido</a
                     >
+                    <a [routerLink]="['/teacher/students']" [queryParams]="{ course: course.id }"
+                      >Ver inscritos</a
+                    >
                     @switch (course.status) {
                       @case ('DRAFT') {
                         <button
