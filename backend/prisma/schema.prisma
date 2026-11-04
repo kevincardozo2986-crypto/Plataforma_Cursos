@@ -83,6 +83,7 @@ model User {
 
 model Course {
   payments Payment[]
+  pokTemplate PokCourseTemplate?
   files CourseFile[]
   programmingEnabled Boolean @default(false)
   id          Int          @id @default(autoincrement())
@@ -503,6 +504,22 @@ model Certificate {
   issuedAt  DateTime  @default(now())
   revokedAt DateTime?
 
+  /// Quién emite este certificado, fijado al emitirlo según lo que eligió el curso: la plataforma (PDF propio)
+  /// o POK (credencial digital). Un certificado es de uno solo.
+  provider        CertificateProvider @default(PLATFORM)
+  /// Diseño de POK con el que se emitió (solo si `provider` es POK).
+  pokTemplateId   String?
+  /// Credencial digital en POK (https://docs.pok.tech) de este certificado. NONE = no se envió.
+  pokStatus       PokStatus @default(NONE)
+  pokCredentialId String?   @unique
+  /// Estado tal como lo devolvió POK (texto libre), para diagnóstico.
+  pokState        String?
+  /// Por qué falló el envío a POK (solo si `pokStatus` es FAILED).
+  pokError        String?
+  /// Página pública de la credencial en POK (la que ve quien la recibe).
+  pokUrl          String?
+  pokSyncedAt     DateTime?
+
   courseId Int
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
@@ -810,4 +827,30 @@ model VideoWatchProgress {
   reportedAt DateTime @default(now())
   @@unique([enrollmentId, lessonId])
   @@map("video_watch_progress")
+}
+
+enum PokStatus {
+  NONE
+  PENDING
+  EMITTED
+  ACCEPTED
+  FAILED
+}
+
+/// Diseño de POK (https://docs.pok.tech) con el que un curso emite las credenciales de sus certificados.
+/// Sin fila, el curso usa el diseño predeterminado de `POK_TEMPLATE_ID`.
+model PokCourseTemplate {
+  courseId        Int      @id
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  pokTemplateId   String
+  /// Nombre del diseño al elegirlo (para mostrarlo sin consultar a POK).
+  pokTemplateName String?
+  updatedAt       DateTime @updatedAt
+
+  @@map("pok_course_templates")
+}
+
+enum CertificateProvider {
+  PLATFORM
+  POK
 }

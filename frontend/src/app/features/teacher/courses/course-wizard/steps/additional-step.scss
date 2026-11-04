@@ -64,3 +64,39 @@
   display: flex;
   flex-direction: column;
 }
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.mode-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  color: var(--p-ink);
+  font: inherit;
+  text-align: left;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.mode-option small {
+  color: var(--p-muted);
+  font-size: 0.75rem;
+}
+
+.mode-option.active {
+  background: var(--p-accent-soft, #e6f4f1);
+  border-color: var(--p-accent);
+  box-shadow: 0 0 0 2px var(--p-accent-soft, #e6f4f1);
+}
+
+.mode-option:focus-visible {
+  outline: 3px solid var(--p-accent);
+  outline-offset: 2px;
+}

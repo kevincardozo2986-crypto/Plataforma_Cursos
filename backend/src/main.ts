@@ -8,12 +8,11 @@ import {
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(
-    AppModule,
-    observeEnabled
-      ? { instrument: ObserveInstrument }
-      : {},
-  );
+  const app = await NestFactory.create(AppModule, {
+    // El webhook de POK se firma sobre el cuerpo tal cual llegó: hay que conservarlo sin modificar.
+    rawBody: true,
+    ...(observeEnabled ? { instrument: ObserveInstrument } : {}),
+  });
 
   app.enableShutdownHooks();
 

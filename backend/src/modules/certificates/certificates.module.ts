@@ -12,6 +12,9 @@ import {
 } from './certificates.controller.js';
 import { CertificatesRepository } from './certificates.repository.js';
 import { CertificatesService } from './certificates.service.js';
+import { PokController } from './pok/pok.controller.js';
+import { PokWebhookController } from './pok/pok-webhook.controller.js';
+import { PokService } from './pok/pok.service.js';
 
 @Module({
   imports: [
@@ -22,8 +25,8 @@ import { CertificatesService } from './certificates.service.js';
     NotificationsModule,
     CertificateFontsModule,
   ],
-  controllers: [CertificateTemplatesController, CertificatesController],
-  providers: [CertificatesService, CertificatesRepository],
+  controllers: [CertificateTemplatesController, CertificatesController, PokController, PokWebhookController],
+  providers: [CertificatesService, CertificatesRepository, PokService],
   // Progreso emite el certificado al completar un curso; cursos asigna la plantilla.
   exports: [CertificatesService],
 })

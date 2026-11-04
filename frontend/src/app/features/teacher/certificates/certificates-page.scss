@@ -570,6 +570,27 @@ td strong,
   gap: 5px;
 }
 
+.pill.pok {
+  color: var(--p-muted, #475569);
+  background: var(--p-soft, #eef2f7);
+}
+
+.pill.pok[data-pok='ACCEPTED'],
+.pill.pok[data-pok='EMITTED'] {
+  color: var(--p-ok);
+  background: var(--p-ok-soft);
+}
+
+.pill.pok[data-pok='FAILED'] {
+  color: var(--p-danger);
+  background: var(--p-danger-soft);
+}
+
+.pok-retry {
+  margin-left: 4px;
+  padding-inline: 6px;
+}
+
 .confirm-text.neutral {
   color: var(--p-ink);
 }

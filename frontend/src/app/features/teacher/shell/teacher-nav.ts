@@ -151,6 +151,14 @@ export const TEACHER_NAV: NavItem[] = [
     icon: ['M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12z', 'M8.5 14L7 22l5-3 5 3-1.5-8'],
   },
   {
+    label: 'POK',
+    path: 'pok',
+    ready: true,
+    description:
+      'Credenciales digitales de POK: conexión, tus diseños y cuál usa cada curso para sus certificados.',
+    icon: ['M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z'],
+  },
+  {
     label: 'Analíticas',
     path: 'analytics',
     ready: true,

@@ -32,6 +32,7 @@ import {
   pdfFileName,
 } from './certificate-text.js';
 import { CertificatesRepository } from './certificates.repository.js';
+import { PokService } from './pok/pok.service.js';
 import type {
   CreateCertificateTemplateDto,
   ListCertificatesQueryDto,
@@ -61,6 +62,7 @@ export class CertificatesService {
     private readonly notifications: NotificationsService,
     private readonly fonts: CertificateFontsService,
     private readonly learning: LearningPolicyService,
+    private readonly pok: PokService,
   ) {}
 
   // --- Plantillas (docente) ---
@@ -215,21 +217,36 @@ export class CertificatesService {
       return { certificate: null, created: false };
     }
 
+    // El curso elige UNA vía: la credencial de POK (si eligió un diseño y POK está activo) o el certificado de la
+    // plataforma. Se fija ahora, así que cambiar la elección después no altera lo ya emitido.
+    const pokChoice = this.pok.enabled ? await this.repository.findPokTemplate(courseId) : null;
+    const provider = pokChoice ? ('POK' as const) : ('PLATFORM' as const);
+
     const certificate = await this.createWithUniqueCode({
       studentName: `${student.firstName} ${student.lastName}`,
       studentDocument: student.document,
       ...this.snapshotOf(course),
       courseId,
       userId,
+      provider,
+      pokTemplateId: pokChoice?.pokTemplateId ?? null,
     });
 
     await this.notifications.notify([userId], {
       type: 'CERTIFICATE_ISSUED',
-      title: '¡Obtuviste tu certificado!',
-      message: `Completaste «${course.title}»`,
+      title: provider === 'POK' ? '¡Tu credencial digital está en camino!' : '¡Obtuviste tu certificado!',
+      message:
+        provider === 'POK'
+          ? `Completaste «${course.title}». Tu credencial digital la emite POK`
+          : `Completaste «${course.title}»`,
       courseId,
       refId: certificate.id,
     });
+
+    // En segundo plano: si POK tarda o falla, no se rompe nada y se puede reintentar.
+    if (provider === 'POK') {
+      void this.pok.emit(certificate.id);
+    }
 
     return { certificate, created: true };
   }
@@ -300,8 +317,29 @@ export class CertificatesService {
 
   async courseCompletion(user: AuthenticatedUser, courseId: number) {
     const requirements = await this.learning.completion(user.id, courseId);
-    const certificate = await this.repository.findByCourseAndUser(courseId, user.id);
-    return { ...requirements, certificate: certificate ? { id: certificate.id, status: certificate.status } : null };
+    let certificate = await this.repository.findByCourseAndUser(courseId, user.id);
+
+    if (certificate && (await this.pok.refreshPending([certificate]))) {
+      certificate = await this.repository.findByCourseAndUser(courseId, user.id);
+    }
+
+    // Con certificado ya emitido, su origen; si no, el que emitiría el curso hoy.
+    const certificateProvider =
+      certificate?.provider ?? (this.pok.enabled && (await this.repository.findPokTemplate(courseId)) ? 'POK' : 'PLATFORM');
+
+    return {
+      ...requirements,
+      certificateProvider,
+      certificate: certificate
+        ? {
+            id: certificate.id,
+            status: certificate.status,
+            provider: certificate.provider,
+            pokStatus: certificate.pokStatus,
+            pokUrl: certificate.pokUrl,
+          }
+        : null,
+    };
   }
 
   async claim(user: AuthenticatedUser, courseId: number) {
@@ -312,8 +350,17 @@ export class CertificatesService {
 
   // --- Consulta ---
 
-  mine(user: AuthenticatedUser) {
-    return this.repository.findMine(user.id);
+  /** Mis certificados; `pokAvailable` dice si se puede pedir la credencial de POK (está activado). */
+  async mine(user: AuthenticatedUser) {
+    const pokAvailable = this.pok.enabled;
+    let items = await this.repository.findMine(user.id);
+
+    // Las credenciales de POK que siguen «pendientes» se consultan antes de mostrarlas.
+    if (await this.pok.refreshPending(items)) {
+      items = await this.repository.findMine(user.id);
+    }
+
+    return items.map((item) => ({ ...item, pokAvailable }));
   }
 
   /** Comprobación pública: cualquiera con el código ve a quién se emitió y si sigue vigente. */
@@ -366,6 +413,10 @@ export class CertificatesService {
       }
     }
 
+    if (certificate.provider === 'POK') {
+      throw new BadRequestException('Este certificado es una credencial digital de POK: no tiene PDF de la plataforma');
+    }
+
     if (isOwner && certificate.status === 'REVOKED') {
       throw new ForbiddenException('Este certificado fue revocado');
     }
@@ -410,6 +461,10 @@ export class CertificatesService {
 
     await this.access.assertCanManage(user, certificate.courseId);
 
+    if (certificate.provider === 'POK') {
+      throw new BadRequestException('Este certificado es una credencial de POK: ya se emitió allá y no se puede corregir desde aquí');
+    }
+
     if (dto.studentName === undefined && dto.studentDocument === undefined) {
       throw new BadRequestException('No hay nada que cambiar: envía studentName o studentDocument');
     }
@@ -434,6 +489,10 @@ export class CertificatesService {
     }
 
     await this.access.assertCanManage(user, certificate.courseId);
+
+    if (certificate.provider === 'POK') {
+      throw new BadRequestException('Este certificado es una credencial de POK: no usa el diseño de la plataforma');
+    }
 
     const course = await this.repository.findCourseForCertificate(certificate.courseId);
 

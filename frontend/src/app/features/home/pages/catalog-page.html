@@ -5,4 +5,18 @@
     [loading]="coursesLoading()"
     [error]="coursesError()"
   />
+
+  @if (!coursesLoading() && !coursesError() && courses().length > 0) {
+    <nav class="catalog-more" aria-label="Más cursos">
+      <p>Mostrando {{ courses().length }} de {{ total() }} cursos</p>
+      @if (moreError()) {
+        <p class="catalog-more-error" role="alert">{{ moreError() }}</p>
+      }
+      @if (hasMore()) {
+        <button type="button" class="catalog-more-button" [disabled]="loadingMore()" (click)="loadMore()">
+          {{ loadingMore() ? 'Cargando…' : 'Ver más cursos' }}
+        </button>
+      }
+    </nav>
+  }
 </main>

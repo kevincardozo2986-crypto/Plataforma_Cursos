@@ -1,0 +1,183 @@
+<section class="panel-page">
+  <div class="panel-container">
+    <header class="hero">
+      <span class="hero-icon" aria-hidden="true"><app-icon name="star" [size]="26" /></span>
+      <div class="hero-copy">
+        <span class="eyebrow">ESPACIO DOCENTE / POK</span>
+        <h1>Credenciales digitales POK</h1>
+        <p>
+          Cada curso entrega <strong>un solo</strong> tipo de certificado: el de la plataforma (PDF) o
+          la credencial digital de POK. Aquí eliges cuál, y con qué diseño de POK.
+        </p>
+      </div>
+    </header>
+
+    @if (error()) {
+      <p class="panel-alert panel-alert--error" role="alert">
+        <app-icon name="warning" [size]="18" /> {{ error() }}
+      </p>
+    }
+    @if (notice()) {
+      <p class="panel-alert panel-alert--ok" role="status">
+        <app-icon name="check-circle" [size]="18" /> {{ notice() }}
+      </p>
+    }
+
+    @if (loading()) {
+      <p class="empty"><app-icon name="refresh" [size]="18" /> Consultando POK…</p>
+    } @else if (connection(); as conn) {
+      @if (!conn.enabled) {
+        <section class="panel-card block">
+          <h2><app-icon name="info" [size]="19" /> POK no está activado</h2>
+          <p class="muted">
+            Falta la clave de API en el servidor. Quien administra la plataforma debe agregar
+            <code>POK_API_KEY</code> en <code>backend/.env</code> y reiniciar la API. Mientras tanto,
+            los certificados de la plataforma se emiten con normalidad.
+          </p>
+        </section>
+      } @else {
+        <section class="panel-card block">
+          <h2><app-icon name="check-circle" [size]="19" /> Conexión</h2>
+          <dl class="facts">
+            <div>
+              <dt>Organización</dt>
+              <dd>{{ conn.organization?.name ?? 'No pudimos leerla' }}</dd>
+            </div>
+            <div>
+              <dt>Créditos disponibles</dt>
+              <dd>{{ conn.organization?.availableCredits ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Modo</dt>
+              <dd>
+                @if (conn.draftMode) {
+                  <span class="badge warn">Pruebas: quedan en borrador</span>
+                } @else {
+                  <span class="badge ok">Emisión real</span>
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Emisor</dt>
+              <dd>{{ conn.emitter }}</dd>
+            </div>
+            <div>
+              <dt>Avisos de POK (webhook)</dt>
+              <dd>
+                @if (conn.webhookConfigured) {
+                  <span class="badge ok">Configurado</span>
+                } @else {
+                  <span class="badge warn">Sin configurar</span>
+                }
+              </dd>
+            </div>
+          </dl>
+          @if (conn.draftMode) {
+            <p class="hint">
+              <app-icon name="info" [size]="14" /> En modo de pruebas las credenciales se crean como
+              borrador en tu cuenta de POK: no gastan créditos ni envían correos.
+            </p>
+          }
+        </section>
+
+        <section class="panel-card block">
+          <h2><app-icon name="star" [size]="19" /> Tus diseños en POK</h2>
+          @if (templatesError()) {
+            <p class="panel-alert panel-alert--error" role="alert">
+              <app-icon name="warning" [size]="18" /> {{ templatesError() }}
+              <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="load()">
+                Reintentar
+              </button>
+            </p>
+          } @else if (templates().length === 0) {
+            <p class="empty">
+              No hay diseños en tu cuenta de POK. Créalos en el panel de POK (los diseños no se
+              pueden crear desde aquí) y vuelve a esta pantalla.
+            </p>
+          } @else {
+            <ul class="templates">
+              @for (template of templates(); track template.id) {
+                <li class="template">
+                  <strong>{{ template.name }}</strong>
+                  <span class="mono">{{ template.id }}</span>
+                  @for (tag of template.tags; track tag) {
+                    <span class="tag">{{ tag }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="panel-card block">
+          <h2><app-icon name="book" [size]="19" /> Certificado de cada curso</h2>
+          <p class="muted">
+            Elige "Certificado de la plataforma" o un diseño de POK. Quienes ya terminaron un curso
+            conservan el que recibieron; los siguientes reciben el nuevo.
+          </p>
+
+          @if (courses().length === 0) {
+            <p class="empty"><app-icon name="book" [size]="20" /> Todavía no tienes cursos.</p>
+          } @else {
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Certificado que se entrega</th>
+                    <th scope="col" class="num">Sin enviar a POK</th>
+                    <th scope="col"><span class="sr-only">Acciones</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (course of courses(); track course.id) {
+                    <tr [class.busy]="busyId() === course.id">
+                      <th scope="row">
+                        <strong>{{ course.title }}</strong>
+                        <small class="muted">{{ statusLabels[course.status] }}</small>
+                      </th>
+                      <td>
+                        <select
+                          class="panel-select"
+                          [attr.aria-label]="'Certificado que entrega ' + course.title"
+                          [disabled]="busyId() === course.id"
+                          (change)="choose(course, $event)"
+                        >
+                          <option value="" [selected]="chosen(course) === ''">
+                            Certificado de la plataforma
+                          </option>
+                          @for (template of templates(); track template.id) {
+                            <option [value]="template.id" [selected]="chosen(course) === template.id">
+                              POK · {{ template.name }}
+                            </option>
+                          }
+                          @if (isMissing(course)) {
+                            <option [value]="course.pokTemplateId" selected>
+                              POK · {{ course.pokTemplateName ?? course.pokTemplateId }} (ya no está en POK)
+                            </option>
+                          }
+                        </select>
+                      </td>
+                      <td class="num">{{ course.unsent }}</td>
+                      <td class="actions">
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm"
+                          [disabled]="busyId() === course.id || course.unsent === 0"
+                          title="Envía a POK los certificados de este curso que aún no están allá"
+                          (click)="sendPending(course)"
+                        >
+                          <app-icon name="refresh" [size]="15" /> Enviar pendientes
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      }
+    }
+  </div>
+</section>

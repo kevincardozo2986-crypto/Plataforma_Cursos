@@ -10,6 +10,7 @@ import type { UsersService } from '../users/users.service.js';
 import { CODE_PATTERN } from './certificate-text.js';
 import type { CertificatesRepository } from './certificates.repository.js';
 import { CertificatesService, MAX_TEMPLATES } from './certificates.service.js';
+import type { PokService } from './pok/pok.service.js';
 
 const owner = { id: 7, role: Role.TEACHER } as AuthenticatedUser;
 const other = { id: 8, role: Role.TEACHER } as AuthenticatedUser;
@@ -51,6 +52,7 @@ function build() {
     findForManagers: vi.fn().mockResolvedValue({ items: [], total: 0 }),
     revoke: vi.fn().mockResolvedValue({ ...stored, status: 'REVOKED' }),
     updateCertificate: vi.fn().mockResolvedValue({}),
+    findPokTemplate: vi.fn().mockResolvedValue(null),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
   const users = { findById: vi.fn().mockResolvedValue({ id: 5, firstName: 'Ana', lastName: 'Ruiz', document: '1234567890' }) };
@@ -60,6 +62,8 @@ function build() {
     resolve: vi.fn().mockResolvedValue({ regular: 'Helvetica', bold: 'Helvetica-Bold' }),
   };
 
+  const pok = { emit: vi.fn().mockResolvedValue(undefined), enabled: false, refreshPending: vi.fn().mockResolvedValue(false) };
+
   const service = new CertificatesService(
     repository as unknown as CertificatesRepository,
     access as unknown as CourseAccessService,
@@ -67,9 +71,10 @@ function build() {
     notifications as unknown as NotificationsService,
     fonts as unknown as CertificateFontsService,
     { completion: vi.fn().mockResolvedValue({ eligible: true }) } as unknown as LearningPolicyService,
+    pok as unknown as PokService,
   );
 
-  return { service, repository, access, users, notifications, fonts };
+  return { service, repository, access, users, notifications, fonts, pok };
 }
 
 describe('CertificatesService', () => {
@@ -472,6 +477,68 @@ describe('CertificatesService', () => {
       repository.findByCode.mockClear();
       await expect(service.verify("'; DROP TABLE certificates;--")).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.findByCode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('una sola vía de certificado: plataforma o POK', () => {
+    it('sin elección de POK, el certificado es de la plataforma y NO se envía a POK', async () => {
+      const { service, repository, pok } = build();
+
+      pok.enabled = true;
+      await service.issueFor(5, 3);
+
+      expect(repository.createCertificate.mock.calls[0][0]).toMatchObject({ provider: 'PLATFORM', pokTemplateId: null });
+      expect(pok.emit).not.toHaveBeenCalled();
+    });
+
+    it('si el curso eligió POK, el certificado es de POK con su diseño, se avisa distinto y se envía solo a POK', async () => {
+      const { service, repository, pok, notifications } = build();
+
+      pok.enabled = true;
+      repository.findPokTemplate.mockResolvedValue({ pokTemplateId: 'tpl-9' });
+      await service.issueFor(5, 3);
+
+      expect(repository.createCertificate.mock.calls[0][0]).toMatchObject({ provider: 'POK', pokTemplateId: 'tpl-9' });
+      expect(pok.emit).toHaveBeenCalledWith(40);
+      expect(notifications.notify.mock.calls[0][1].title).toMatch(/credencial digital/);
+    });
+
+    it('si el curso eligió POK pero POK está apagado, el estudiante recibe el de la plataforma (no se queda sin nada)', async () => {
+      const { service, repository, pok } = build();
+
+      pok.enabled = false;
+      repository.findPokTemplate.mockResolvedValue({ pokTemplateId: 'tpl-9' });
+      await service.issueFor(5, 3);
+
+      expect(repository.createCertificate.mock.calls[0][0]).toMatchObject({ provider: 'PLATFORM' });
+      expect(pok.emit).not.toHaveBeenCalled();
+    });
+
+    it('un certificado de POK no tiene PDF de la plataforma (400)', async () => {
+      const { service, repository } = build();
+
+      repository.findById.mockResolvedValue({ ...stored, provider: 'POK' });
+
+      await expect(service.pdf(student, 40)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('un certificado de POK no se corrige ni se "actualiza diseño" desde la plataforma (400)', async () => {
+      const { service, repository } = build();
+
+      repository.findById.mockResolvedValue({ ...stored, provider: 'POK' });
+
+      await expect(service.editIssued(owner, 40, { studentName: 'Otro' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.refreshDesign(owner, 40)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('courseCompletion informa el origen y el estado de POK al estudiante', async () => {
+      const { service, repository } = build();
+
+      repository.findByCourseAndUser.mockResolvedValue({ ...stored, provider: 'POK', pokStatus: 'PENDING', pokUrl: null });
+
+      expect((await service.courseCompletion(student, 3)).certificate).toEqual({
+        id: 40, status: 'VALID', provider: 'POK', pokStatus: 'PENDING', pokUrl: null,
+      });
     });
   });
 

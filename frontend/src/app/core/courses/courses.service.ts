@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
@@ -12,7 +12,10 @@ import { CoursesResponse } from './courses.models';
 export class CoursesService {
   private readonly http = inject(HttpClient);
 
-  getCourses(): Observable<CoursesResponse> {
-    return this.http.get<CoursesResponse>('/api/courses');
+  /** El catálogo viene de a 12 cursos; `page` pide las siguientes páginas (la primera no lleva parámetros). */
+  getCourses(page = 1): Observable<CoursesResponse> {
+    const params = page > 1 ? new HttpParams().set('page', page) : undefined;
+
+    return this.http.get<CoursesResponse>('/api/courses', { params });
   }
 }

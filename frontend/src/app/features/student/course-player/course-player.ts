@@ -23,7 +23,7 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, Subscription, catchError, concatMap, EMPTY, finalize, switchMap } from 'rxjs';
+import { Subject, Subscription, catchError, concatMap, EMPTY, finalize, of, switchMap } from 'rxjs';
 import type { CourseDetail } from '../../home/pages/course-detail-page';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -70,9 +70,17 @@ interface Graduation {
   gradesComplete: boolean;
   eligible: boolean;
   certificateEnabled: boolean;
+  /** Quién emite el certificado de este curso: la plataforma (PDF) o POK (credencial digital). */
+  certificateProvider?: 'PLATFORM' | 'POK';
   average: number | null;
   assessments: Assessment[];
-  certificate: { id: number; status: string } | null;
+  certificate: {
+    id: number;
+    status: string;
+    provider?: 'PLATFORM' | 'POK';
+    pokStatus?: 'NONE' | 'PENDING' | 'EMITTED' | 'ACCEPTED' | 'FAILED';
+    pokUrl?: string | null;
+  } | null;
 }
 
 type Tab =
@@ -458,6 +466,43 @@ export class CoursePlayer {
         error: (e) =>
           this.graduationError.set(
             apiErrorMessage(e, 'No pudimos consultar las notas y el certificado.'),
+          ),
+      });
+  }
+  readonly pokBusy = signal(false);
+  readonly pokLabels: Record<string, string> = {
+    NONE: 'Sin enviar',
+    PENDING: 'Pendiente',
+    EMITTED: 'Emitida',
+    ACCEPTED: 'Aceptada',
+    FAILED: 'Falló el envío',
+  };
+  /** Credencial de POK: se pide (si aún no existe) o se consulta su estado. No hay PDF de la plataforma. */
+  requestPokCredential(): void {
+    if (this.pokBusy()) return;
+    this.pokBusy.set(true);
+    this.graduationError.set('');
+    const existing = this.graduation()?.certificate;
+    const request = existing
+      ? this.http.post('/api/certificates/' + existing.id + '/pok/sync', {})
+      : this.http.post('/api/certificates/courses/' + this.course().id + '/claim', {});
+    request
+      .pipe(
+        switchMap((result) => {
+          const claimed = result as { certificate?: { id: number } | null };
+          // Recién emitido: se pide a POK enseguida (si no, quedaría esperando la tarea en segundo plano).
+          return existing || !claimed.certificate
+            ? of(result)
+            : this.http.post('/api/certificates/' + claimed.certificate.id + '/pok/sync', {});
+        }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.pokBusy.set(false)),
+      )
+      .subscribe({
+        next: () => this.refreshGraduation(),
+        error: (e) =>
+          this.graduationError.set(
+            apiErrorMessage(e, 'No pudimos pedir tu credencial digital. Intenta de nuevo.'),
           ),
       });
   }

@@ -2,6 +2,49 @@
   display: block;
 }
 
+.catalog-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 56px;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.catalog-more p {
+  margin: 0;
+}
+
+.catalog-more-error {
+  color: #b91c1c;
+}
+
+.catalog-more-button {
+  padding: 12px 28px;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  background: #1265ed;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.catalog-more-button:hover:not(:disabled) {
+  background: #0d52c4;
+}
+
+.catalog-more-button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.catalog-more-button:focus-visible {
+  outline: 3px solid #2279ff;
+  outline-offset: 3px;
+}
+
 .home-page {
   min-height: 100vh;
 

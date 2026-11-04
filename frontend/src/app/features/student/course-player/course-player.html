@@ -607,7 +607,29 @@
             Ver {{ pendingGrades() }} requisitos pendientes &#8594;
           </button>
         }
-        @if (state.eligible && state.certificateEnabled) {
+        @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
+          <!-- Este curso entrega la credencial digital de POK (no hay PDF de la plataforma) -->
+          <p class="finished">&#161;Lo lograste! Tu credencial digital la emite POK.</p>
+          @if (state.certificate; as cert) {
+            <p>
+              Estado: <strong>{{ pokLabels[cert.pokStatus ?? 'NONE'] }}</strong>
+              @if (cert.pokUrl && (cert.pokStatus === 'EMITTED' || cert.pokStatus === 'ACCEPTED')) {
+                · <a [href]="cert.pokUrl" target="_blank" rel="noopener noreferrer">Ver en POK</a>
+              }
+            </p>
+          }
+          @if (state.certificate?.pokStatus !== 'EMITTED' && state.certificate?.pokStatus !== 'ACCEPTED') {
+            <button class="primary certificate-download" (click)="requestPokCredential()" [disabled]="pokBusy()">
+              {{
+                pokBusy()
+                  ? 'Consultando...'
+                  : state.certificate
+                    ? 'Actualizar estado de mi credencial'
+                    : 'Obtener mi credencial digital'
+              }}
+            </button>
+          }
+        } @else if (state.eligible && state.certificateEnabled) {
           <p class="finished">&#161;Lo lograste! Tu certificado est&#225; listo.</p>
           <button
             class="primary certificate-download"

@@ -20,6 +20,7 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { CertificatesService } from './certificates.service.js';
+import { PokService } from './pok/pok.service.js';
 import {
   CreateCertificateTemplateDto,
   ListCertificatesQueryDto,
@@ -105,7 +106,10 @@ export class CertificateTemplatesController {
 /** Certificados emitidos. */
 @Controller('certificates')
 export class CertificatesController {
-  constructor(private readonly certificates: CertificatesService) {}
+  constructor(
+    private readonly certificates: CertificatesService,
+    private readonly pok: PokService,
+  ) {}
 
   /** Comprobación pública (sin sesión): `GET /certificates/verify/CC-7F3K-9QXA-B2MD`. */
   @Get('verify/:code')
@@ -156,6 +160,19 @@ export class CertificatesController {
     const { pdf, fileName } = await this.certificates.pdf(user, id);
 
     sendPdf(res, pdf, fileName, 'attachment');
+  }
+
+  /**
+   * POK: reintenta enviar el certificado (si falló o no se envió) o consulta su estado. Lo pide el
+   * dueño del certificado o quien gestiona el curso. Devuelve `{ pokStatus, pokError }`.
+   */
+  @Post(':id/pok/sync')
+  @UseGuards(JwtAuthGuard)
+  syncPok(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.pok.sync(user, id);
   }
 
   /** Corrige el nombre o el documento de un certificado emitido (el código no cambia). */

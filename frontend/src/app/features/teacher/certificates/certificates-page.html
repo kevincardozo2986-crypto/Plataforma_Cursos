@@ -244,6 +244,7 @@
                   <th>Código</th>
                   <th>Emitido</th>
                   <th>Estado</th>
+                  <th>POK</th>
                   <th><span class="sr-only">Acciones</span></th>
                 </tr>
               </thead>
@@ -280,6 +281,30 @@
                         />
                         {{ item.status === 'VALID' ? 'Vigente' : 'Revocado' }}
                       </span>
+                    </td>
+                    <td>
+                      @let pok = item.pokStatus ?? 'NONE';
+                      @if (item.provider !== 'POK') {
+                        <span class="muted" title="Certificado de la plataforma">—</span>
+                      } @else {
+                      <span class="pill pok" [attr.data-pok]="pok" [title]="item.pokError ?? ''">
+                        {{ pokLabels[pok] }}
+                      </span>
+                      @if (pok === 'FAILED' || pok === 'NONE' || pok === 'PENDING') {
+                        <button
+                          type="button"
+                          class="panel-btn panel-btn--ghost panel-btn--sm icon-only pok-retry"
+                          [disabled]="busyId() === item.id || item.status !== 'VALID'"
+                          [attr.aria-label]="
+                            pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'
+                          "
+                          [title]="pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'"
+                          (click)="syncPok(item)"
+                        >
+                          <app-icon name="refresh" [size]="15" />
+                        </button>
+                      }
+                      }
                     </td>
                     <td class="row-actions">
                       @if (confirmRefreshId() === item.id) {
@@ -319,6 +344,7 @@
                           No
                         </button>
                       } @else {
+                        @if (item.provider !== 'POK') {
                         <button
                           type="button"
                           class="panel-btn panel-btn--ghost panel-btn--sm"
@@ -343,6 +369,7 @@
                         >
                           <app-icon name="refresh" [size]="15" /> Actualizar diseño
                         </button>
+                        }
                         @if (item.status === 'VALID') {
                           <button
                             type="button"
@@ -359,7 +386,7 @@
                   </tr>
                   @if (editId() === item.id) {
                     <tr class="edit-row">
-                      <td colspan="6">
+                      <td colspan="7">
                         <form class="edit-form" (submit)="$event.preventDefault(); saveEdit(item)">
                           <label>
                             <span

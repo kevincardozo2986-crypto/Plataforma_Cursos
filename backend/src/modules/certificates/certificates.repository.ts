@@ -5,7 +5,9 @@ import { PrismaService } from '../../database/prisma.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type {
   CertificateLayout,
+  CertificateProvider,
   CertificateStatus,
+  PokStatus,
 } from '../../generated/prisma/enums.js';
 import type { CertificateDesign } from './certificate-pdf.js';
 import type { CertificateStyle } from './certificate-style.js';
@@ -33,6 +35,8 @@ export interface NewCertificate {
   design: CertificateDesign;
   courseId: number;
   userId: number;
+  provider?: CertificateProvider;
+  pokTemplateId?: string | null;
 }
 
 const templateSelect = {
@@ -199,6 +203,9 @@ export class CertificatesRepository {
         courseTitle: true,
         instructorName: true,
         issuedAt: true,
+        provider: true,
+        pokStatus: true,
+        pokUrl: true,
       },
     });
   }
@@ -233,6 +240,9 @@ export class CertificatesRepository {
           courseTitle: true,
           issuedAt: true,
           revokedAt: true,
+          provider: true,
+          pokStatus: true,
+          pokError: true,
           user: { select: { id: true, email: true } },
         },
       }),
@@ -258,6 +268,82 @@ export class CertificatesRepository {
     return this.prisma.certificate.update({
       where: { id },
       data: { ...data, design: data.design as unknown as Prisma.InputJsonValue | undefined },
+    });
+  }
+
+  // --- POK ---
+
+  /** El certificado con los datos de la persona, para enviarlo a POK. */
+  findForPok(id: number) {
+    return this.prisma.certificate.findUnique({
+      where: { id },
+      include: { user: { select: { firstName: true, lastName: true, email: true } } },
+    });
+  }
+
+  findPokTemplate(courseId: number) {
+    return this.prisma.pokCourseTemplate.findUnique({ where: { courseId } });
+  }
+
+  setPokTemplate(courseId: number, pokTemplateId: string, pokTemplateName: string) {
+    return this.prisma.pokCourseTemplate.upsert({
+      where: { courseId },
+      create: { courseId, pokTemplateId, pokTemplateName },
+      update: { pokTemplateId, pokTemplateName },
+    });
+  }
+
+  clearPokTemplate(courseId: number) {
+    return this.prisma.pokCourseTemplate.deleteMany({ where: { courseId } });
+  }
+
+  /** Los cursos del docente (`managerId`) o, sin él (admin), de todos, con su diseño de POK y cuántos certificados faltan por enviar. */
+  listCoursesForPok(managerId?: number) {
+    return this.prisma.course.findMany({
+      where: managerId ? managedBy(managerId) : {},
+      orderBy: { title: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        pokTemplate: { select: { pokTemplateId: true, pokTemplateName: true } },
+        _count: {
+          select: { certificates: { where: { provider: 'POK', status: 'VALID', pokCredentialId: null, pokStatus: { in: ['NONE', 'FAILED'] } } } },
+        },
+      },
+    });
+  }
+
+  /** Certificados de POK, vigentes, de un curso que todavía no están allá. */
+  async unsentCertificateIds(courseId: number, take: number): Promise<number[]> {
+    const rows = await this.prisma.certificate.findMany({
+      where: { courseId, provider: 'POK', status: 'VALID', pokCredentialId: null, pokStatus: { in: ['NONE', 'FAILED'] } },
+      orderBy: { id: 'asc' },
+      take,
+      select: { id: true },
+    });
+
+    return rows.map((row) => row.id);
+  }
+
+  findByPokCredentialId(pokCredentialId: string) {
+    return this.prisma.certificate.findUnique({ where: { pokCredentialId } });
+  }
+
+  setPok(
+    id: number,
+    data: {
+      pokStatus?: PokStatus;
+      pokCredentialId?: string | null;
+      pokState?: string | null;
+      pokError?: string | null;
+      pokUrl?: string | null;
+    },
+  ) {
+    return this.prisma.certificate.update({
+      where: { id },
+      data: { ...data, pokSyncedAt: new Date() },
+      select: { id: true, pokStatus: true, pokError: true },
     });
   }
 

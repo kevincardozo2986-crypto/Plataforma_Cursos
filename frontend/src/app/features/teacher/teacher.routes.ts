@@ -217,6 +217,12 @@ export const TEACHER_ROUTES: Routes = [
       },
 
       {
+        path: 'pok',
+        title: 'POK',
+        loadComponent: () => import('./pok/pok-page').then((m) => m.PokPage),
+      },
+
+      {
         path: 'certificates/new',
         title: 'Nueva plantilla de certificado',
         loadComponent: () => import('./certificates/template-editor').then((m) => m.TemplateEditor),
