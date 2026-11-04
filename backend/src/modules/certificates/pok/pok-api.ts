@@ -89,6 +89,33 @@ export function buildCredentialBody(input: CredentialInput, config: PokConfig, t
   };
 }
 
+/**
+ * El cuerpo de `POST /template/preview`: la misma forma que la emisión, pero SIN los campos de envío
+ * (`saveAsDraft`, `tags`, `skip…`) ni el correo: POK los rechaza como «propiedades de más».
+ */
+export function buildPreviewBody(input: { courseTitle: string; templateId: string }, config: PokConfig) {
+  return {
+    credential: {
+      emissionType: 'pok',
+      dateFormat: 'dd/MM/yyyy',
+      emissionDate: new Date().toISOString(),
+      title: clean(input.courseTitle, 150),
+      emitter: clean(config.emitter, 100),
+    },
+    receiver: { languageTag: config.languageTag, firstName: 'Nombre', lastName: 'del estudiante' },
+    customization: { template: { id: input.templateId, customParameters: {} } },
+  };
+}
+
+/** La imagen de la vista previa (`{ url }`), solo si es un enlace https. */
+export function previewUrlOf(body: unknown): string | null {
+  if (typeof body !== 'object' || body === null) return null;
+
+  const url = (body as Record<string, unknown>).url;
+
+  return typeof url === 'string' && /^https:\/\//.test(url) ? url.slice(0, 500) : null;
+}
+
 /** Pasa el estado que devuelve POK (texto libre) a uno de los nuestros. */
 export function statusFromState(state: string | null | undefined): PokStatus {
   const value = (state ?? '').toLowerCase();
@@ -330,6 +357,20 @@ export class PokClient {
         : { kind: 'error', status: response.status, message: 'POK no devolvió el id de la credencial' };
     } catch (error) {
       return { kind: 'error', status: 0, message: `No se pudo conectar con POK: ${(error as Error).message}` };
+    }
+  }
+
+  /**
+   * `POST /template/preview`: POK dibuja la credencial con el diseño y los datos de ejemplo y devuelve la
+   * dirección de la imagen. Null si POK no pudo (diseño inexistente, sin respuesta…).
+   */
+  async preview(body: ReturnType<typeof buildPreviewBody>): Promise<string | null> {
+    try {
+      const response = await this.request('/template/preview', { method: 'POST', body: JSON.stringify(body) });
+
+      return response.ok ? previewUrlOf(await readJson(response)) : null;
+    } catch {
+      return null;
     }
   }
 

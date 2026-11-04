@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -48,6 +48,13 @@ export class PokService {
 
   templates(): Observable<PokTemplate[]> {
     return this.http.get<PokTemplate[]>('/api/pok/templates');
+  }
+
+  /** La imagen real de cómo se ve la credencial de POK con ese diseño (la genera POK). */
+  preview(templateId: string, courseTitle: string): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`/api/pok/templates/${encodeURIComponent(templateId)}/preview`, {
+      params: new HttpParams().set('title', courseTitle),
+    });
   }
 
   courses(): Observable<PokCourse[]> {

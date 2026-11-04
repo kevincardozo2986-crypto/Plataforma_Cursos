@@ -7,6 +7,7 @@ import { CertificatesRepository } from '../certificates.repository.js';
 import {
   advanceStatus,
   buildCredentialBody,
+  buildPreviewBody,
   type PokConfig,
   PokClient,
   pokConfig,
@@ -17,6 +18,9 @@ import {
 } from './pok-api.js';
 
 /** Avisos de POK que cambian el estado de una credencial. */
+/** Cuánto tiempo se reutiliza una vista previa ya generada. */
+const PREVIEW_TTL_MS = 10 * 60_000;
+
 const EVENT_STATUS: Record<string, PokStatus> = {
   'credential-emitted': 'EMITTED',
   'credential-accepted': 'ACCEPTED',
@@ -154,6 +158,43 @@ export class PokService {
     }
 
     return templates;
+  }
+
+  /** Vistas previas ya pedidas a POK: la imagen es la misma mientras no cambien el diseño ni el título. */
+  private readonly previews = new Map<string, { url: string; at: number }>();
+
+  /**
+   * La imagen de cómo se ve la credencial de POK con ese diseño y el título del curso (con un estudiante de
+   * ejemplo). Se guarda unos minutos para no pedirle a POK lo mismo en cada clic.
+   */
+  async preview(templateId: string, courseTitle: string): Promise<{ url: string }> {
+    const config = this.requireConfig();
+
+    if (!/^[A-Za-z0-9_-]{1,100}$/.test(templateId)) {
+      throw new BadRequestException('El id del diseño no es válido');
+    }
+
+    const title = courseTitle.trim() || 'Nombre del curso';
+    const key = `${templateId}|${title}`;
+    const cached = this.previews.get(key);
+
+    if (cached && Date.now() - cached.at < PREVIEW_TTL_MS) {
+      return { url: cached.url };
+    }
+
+    const url = await this.clientFor(config).preview(buildPreviewBody({ courseTitle: title, templateId }, config));
+
+    if (!url) {
+      throw new BadGatewayException('No pudimos generar la vista previa en POK. Revisa que el diseño exista e intenta de nuevo');
+    }
+
+    if (this.previews.size >= 100) {
+      this.previews.delete(this.previews.keys().next().value as string);
+    }
+
+    this.previews.set(key, { url, at: Date.now() });
+
+    return { url };
   }
 
   /** Los cursos del docente con la vía de certificado que usa cada uno y cuántos certificados de POK faltan por enviar. */

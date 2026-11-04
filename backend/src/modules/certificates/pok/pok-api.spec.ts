@@ -3,10 +3,12 @@ import { createHmac } from 'node:crypto';
 import {
   advanceStatus,
   buildCredentialBody,
+  buildPreviewBody,
   credentialIdOf,
   organizationOf,
   PokClient,
   pokConfig,
+  previewUrlOf,
   statusFromState,
   templatesOf,
   verifyWebhook,
@@ -255,5 +257,39 @@ describe('PokClient.emit: reintenta cortes de red', () => {
     await client.emit(body);
 
     expect(http).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('vista previa de POK', () => {
+  it('el cuerpo no lleva los campos de envío ni el correo (POK los rechaza)', () => {
+    const body = buildPreviewBody({ courseTitle: '  Curso   de prueba ', templateId: 'tpl-1' }, config);
+
+    expect(body.credential).toMatchObject({ emissionType: 'pok', title: 'Curso de prueba', emitter: 'Universidad Santo Tomás' });
+    expect(body.credential).not.toHaveProperty('saveAsDraft');
+    expect(body.credential).not.toHaveProperty('tags');
+    expect(body.credential).not.toHaveProperty('skipAcceptance');
+    expect(body.receiver).not.toHaveProperty('email');
+    expect(body.receiver).toMatchObject({ firstName: 'Nombre', lastName: 'del estudiante', languageTag: 'es-AR' });
+    expect(body.customization.template).toEqual({ id: 'tpl-1', customParameters: {} });
+  });
+
+  it('lee la dirección de la imagen solo si es https', () => {
+    expect(previewUrlOf({ url: 'https://img.example/a.png' })).toBe('https://img.example/a.png');
+    expect(previewUrlOf({ url: 'http://inseguro.example/a.png' })).toBeNull();
+    expect(previewUrlOf({ url: 'javascript:alert(1)' })).toBeNull();
+    expect(previewUrlOf({})).toBeNull();
+    expect(previewUrlOf(null)).toBeNull();
+  });
+
+  it('PokClient.preview devuelve la imagen o null si POK falla', async () => {
+    const reply = (status: number, data: unknown) => vi.fn().mockResolvedValue(new Response(JSON.stringify(data), { status }));
+    const body = buildPreviewBody({ courseTitle: 'X', templateId: 'tpl-1' }, config);
+
+    const http = reply(200, { url: 'https://img.example/p.png' });
+
+    expect(await new PokClient(config, http as unknown as typeof fetch).preview(body)).toBe('https://img.example/p.png');
+    expect((http.mock.calls[0] as [string])[0]).toBe('https://api.pok.tech/template/preview');
+    expect(await new PokClient(config, reply(400, { fields: {} }) as unknown as typeof fetch).preview(body)).toBeNull();
+    expect(await new PokClient(config, vi.fn().mockRejectedValue(new Error('red')) as unknown as typeof fetch).preview(body)).toBeNull();
   });
 });

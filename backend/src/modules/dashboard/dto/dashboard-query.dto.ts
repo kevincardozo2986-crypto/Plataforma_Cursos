@@ -18,6 +18,14 @@ export class DashboardQueryDto {
   courseId?: number;
 }
 
+/** Pedir reseñas: a todos mis cursos o a uno solo. */
+export class RequestReviewsQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  courseId?: number;
+}
+
 export const STUDENT_STATES = ['COMPLETED', 'IN_PROGRESS', 'INACTIVE', 'CANCELLED'] as const;
 export type StudentState = (typeof STUDENT_STATES)[number];
 

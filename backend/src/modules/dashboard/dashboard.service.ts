@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { CourseStatus, EnrollmentStatus, Role } from '../../generated/prisma/enums.js';
 import { CourseAccessService } from '../course-access/course-access.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import {
   bucketOf,
   fillSeries,
@@ -10,7 +11,9 @@ import {
   mergeSeries,
   type Period,
   percent,
+  previousWindow,
   sinceOf,
+  weeklyCounts,
 } from './dashboard-calc.js';
 import { DashboardRepository, type Scope } from './dashboard.repository.js';
 import type { StudentState } from './dto/dashboard-query.dto.js';
@@ -23,6 +26,7 @@ export class DashboardService {
   constructor(
     private readonly repository: DashboardRepository,
     private readonly access: CourseAccessService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -62,6 +66,7 @@ export class DashboardService {
       pendingReview,
       pendingSubmissions,
       ratings,
+      previous,
     ] = await Promise.all([
       this.repository.courseCountsByStatus(scope),
       this.repository.findCourses(scope),
@@ -76,6 +81,8 @@ export class DashboardService {
       this.repository.countPendingReviews(scope),
       this.repository.countPendingSubmissions(scope),
       this.repository.ratingByCourse(scope, since),
+      // Solo se compara el total de mis cursos: con un curso filtrado o en "todo" no aplica.
+      this.previousCounts(scope, period, options.courseId, now),
     ]);
 
     const count = (status: string) => enrollmentCounts.get(status) ?? 0;
@@ -123,6 +130,8 @@ export class DashboardService {
         average: weightedAverage(ratings),
         count: ratings.reduce((total, r) => total + r.count, 0),
       },
+      // Estudiantes e inscripciones del periodo anterior, de la misma duración; null si no aplica.
+      previous,
       bucket,
       series: fillSeries(
         mergeSeries(enrolledSeries, completedSeries, bucket),
@@ -190,6 +199,7 @@ export class DashboardService {
     const { items, total } = await this.repository.students(scope, {
       since: sinceOf(options.period ?? 'all', now),
       cutoff: new Date(now.getTime() - INACTIVE_DAYS * DAY_MS),
+      now,
       state: options.state,
       q: options.q,
       take: options.limit ?? 50,
@@ -214,8 +224,142 @@ export class DashboardService {
         },
         quizAverage: row.quizAverage,
         taskAverage: row.taskAverage,
+        /** Lecciones completadas por semana en las últimas 8 (la última es la semana actual). */
+        weeks: row.weeks ?? new Array<number>(8).fill(0),
+        /** Quizzes presentados / quizzes del curso; null si el curso no tiene. */
+        quizzes: row.totalQuizzes > 0 ? { done: row.doneQuizzes, total: row.totalQuizzes } : null,
+        /** Tareas entregadas / tareas del curso; null si el curso no tiene. */
+        tasks: row.totalTasks > 0 ? { done: row.doneTasks, total: row.totalTasks } : null,
       })),
     };
+  }
+
+  /**
+   * Una inscripción en detalle: qué lecciones lleva (en orden), su actividad por semana y lo último que
+   * hizo (lecciones, quizzes y tareas). Solo quien gestiona el curso.
+   */
+  async studentDetail(user: AuthenticatedUser, enrollmentId: number, now = new Date()) {
+    const enrollment = await this.repository.findEnrollment(enrollmentId);
+
+    if (!enrollment) {
+      throw new NotFoundException('La inscripción no existe');
+    }
+
+    await this.access.assertCanManage(user, enrollment.courseId);
+
+    const [lessons, done, work] = await Promise.all([
+      this.repository.lessonsOfCourse(enrollment.courseId),
+      this.repository.completedLessons(enrollmentId),
+      this.repository.recentWork(enrollment.userId, enrollment.courseId, 8),
+    ]);
+    const doneIds = new Set(done.map((item) => item.lessonId));
+
+    const events = [
+      ...done.slice(0, 8).map((item) => ({ kind: 'LESSON' as const, label: `Completó «${item.lesson.title}»`, at: item.completedAt })),
+      ...work.attempts.map((item) => ({
+        kind: 'QUIZ' as const,
+        label: `Presentó el quiz «${item.evaluation.title}» (${item.status === 'PENDING_REVIEW' ? 'por revisar' : `${item.score} / 100`})`,
+        at: item.createdAt,
+      })),
+      ...work.submissions.map((item) => ({
+        kind: 'TASK' as const,
+        label: `Entregó la tarea «${item.assignment.title}»${item.status === 'GRADED' ? ` (${item.score} / ${item.assignment.maxScore})` : ''}`,
+        at: item.submittedAt,
+      })),
+      { kind: 'ENROLLED' as const, label: 'Se inscribió', at: enrollment.enrolledAt },
+    ]
+      .sort((a, b) => b.at.getTime() - a.at.getTime())
+      .slice(0, 8);
+
+    return {
+      enrollmentId,
+      lessons: lessons.map((lesson) => ({ id: lesson.id, title: lesson.title, done: doneIds.has(lesson.id) })),
+      weeks: weeklyCounts(
+        done.map((item) => item.completedAt),
+        now,
+      ),
+      events,
+    };
+  }
+
+  /**
+   * El docente le recuerda a un estudiante que siga su curso: le llega un aviso en la plataforma. Máximo uno
+   * por persona y curso al día (para no llenarlo de avisos), y no tiene sentido si ya terminó o canceló.
+   */
+  async remind(user: AuthenticatedUser, enrollmentId: number, now = new Date()) {
+    const enrollment = await this.repository.findEnrollment(enrollmentId);
+
+    if (!enrollment) {
+      throw new NotFoundException('La inscripción no existe');
+    }
+
+    await this.access.assertCanManage(user, enrollment.courseId);
+
+    if (
+      enrollment.status === EnrollmentStatus.CANCELLED ||
+      enrollment.status === EnrollmentStatus.COMPLETED ||
+      enrollment.completedAt
+    ) {
+      throw new BadRequestException('Esta persona ya terminó o canceló el curso: no necesita recordatorio');
+    }
+
+    const sent = await this.notifications.notifyOnce(
+      enrollment.userId,
+      {
+        type: 'COURSE_REMINDER',
+        title: 'Tu docente te recuerda tu curso',
+        message: `Llevas un tiempo sin avanzar en «${enrollment.course.title}». ¡Retómalo cuando puedas!`,
+        courseId: enrollment.courseId,
+      },
+      `teacher-reminder:${enrollment.id}:${now.toISOString().slice(0, 10)}`,
+    );
+
+    if (!sent) {
+      throw new ConflictException('Ya le enviaste un recordatorio hoy a esta persona');
+    }
+
+    return { sent: true };
+  }
+
+  private async previousCounts(scope: Scope, period: Period, courseId: number | undefined, now: Date) {
+    const window = courseId === undefined ? previousWindow(period, now) : undefined;
+
+    return window ? this.repository.countsBetween(scope, window.from, window.to) : null;
+  }
+
+  /**
+   * Invita a dejar una reseña a quienes terminaron un curso y aún no lo reseñaron (todos mis cursos o
+   * uno solo). A cada persona se le avisa una sola vez por curso; si ya se le invitó, no se repite.
+   */
+  async requestReviews(user: AuthenticatedUser, options: { courseId?: number } = {}) {
+    if (options.courseId !== undefined) {
+      await this.access.assertCanManage(user, options.courseId);
+    }
+
+    const scope: Scope = {
+      teacherId: user.role === Role.ADMIN ? undefined : user.id,
+      courseId: options.courseId,
+    };
+    const candidates = await this.repository.completedWithoutReview(scope);
+    let sent = 0;
+
+    for (const candidate of candidates) {
+      const created = await this.notifications.notifyOnce(
+        candidate.userId,
+        {
+          type: 'COURSE_REMINDER',
+          title: 'Cuéntanos qué te pareció tu curso',
+          message: `Terminaste «${candidate.title}». ¿Nos dejas una reseña? Ayuda a otros estudiantes.`,
+          courseId: candidate.courseId,
+        },
+        `review-request:${candidate.courseId}:${candidate.userId}`,
+      );
+
+      if (created) sent += 1;
+    }
+
+    // `eligible`: cuántos terminaron sin reseñar; `sent`: a cuántos se les avisó ahora (el resto ya tenía el aviso).
+    return { eligible: candidates.length, sent };
   }
 
   /** Reparto de las reseñas por estrellas (de 5 a 1) y las más recientes. */

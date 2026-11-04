@@ -1,22 +1,11 @@
 <section class="panel-page">
   <div class="panel-container">
     <header class="hero">
-      <span class="hero-icon" aria-hidden="true"
-        ><app-icon [name]="onlyStudents ? 'users' : 'chart'" [size]="26"
-      /></span>
+      <span class="hero-icon" aria-hidden="true"><app-icon name="chart" [size]="26" /></span>
       <div class="hero-copy">
-        @if (onlyStudents) {
-          <span class="eyebrow">ESPACIO DOCENTE / INSCRITOS</span>
-          <h1>Inscritos</h1>
-          <p>
-            Las personas inscritas en tus cursos, con su avance y su última actividad. Filtra por
-            curso, estado o nombre.
-          </p>
-        } @else {
           <span class="eyebrow">ESPACIO DOCENTE / ANALÍTICAS</span>
           <h1>Analíticas</h1>
           <p>Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.</p>
-        }
       </div>
       <button
         type="button"
@@ -30,24 +19,23 @@
     </header>
 
     <div class="filters">
-      @if (!onlyStudents) {
-        <div class="periods" role="group" aria-label="Periodo">
-          <span class="field-icon" aria-hidden="true"
-            ><app-icon name="calendar" [size]="16"
-          /></span>
-          @for (entry of periods; track entry.value) {
-            <button
-              type="button"
-              class="chip"
-              [class.active]="period() === entry.value"
-              [attr.aria-pressed]="period() === entry.value"
-              (click)="setPeriod(entry.value)"
-            >
-              {{ entry.label }}
-            </button>
-          }
-        </div>
-      }
+      <div class="periods" role="group" aria-label="Periodo">
+        <span class="field-icon" aria-hidden="true"
+          ><app-icon name="calendar" [size]="16"
+        /></span>
+        @for (entry of periods; track entry.value) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="period() === entry.value"
+            [attr.aria-pressed]="period() === entry.value"
+            (click)="setPeriod(entry.value)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+    
 
       <label class="course">
         <span class="sr-only">Curso</span>
@@ -74,21 +62,20 @@
       </p>
     }
 
-    @if (!onlyStudents) {
-      <ul class="tiles" [class.dim]="loading()">
-        @for (tile of tiles(); track tile.label) {
-          <li class="tile" [class]="'tile tone-' + tile.tone">
-            <span class="tile-icon" aria-hidden="true"
-              ><app-icon [name]="tile.icon" [size]="19"
-            /></span>
-            <span class="label">{{ tile.label }}</span>
-            <strong class="value">{{ tile.value }}</strong>
-          </li>
-        }
-      </ul>
-    }
+    <ul class="tiles" [class.dim]="loading()">
+      @for (tile of tiles(); track tile.label) {
+        <li class="tile" [class]="'tile tone-' + tile.tone">
+          <span class="tile-icon" aria-hidden="true"
+            ><app-icon [name]="tile.icon" [size]="19"
+          /></span>
+          <span class="label">{{ tile.label }}</span>
+          <strong class="value">{{ tile.value }}</strong>
+        </li>
+      }
+    </ul>
+  
 
-    <div class="tabs" role="tablist" aria-label="Reportes" [hidden]="onlyStudents">
+    <div class="tabs" role="tablist" aria-label="Reportes">
       <button
         type="button"
         role="tab"
@@ -144,7 +131,8 @@
               class="columns"
               role="img"
               [attr.aria-label]="
-                'Inscripciones y finalizaciones por ' + (d.bucket === 'month' ? 'mes' : 'día')
+                'Inscripciones y finalizaciones por ' +
+                  (d.bucket === 'month' ? 'mes' : d.bucket === 'week' ? 'semana' : 'día')
               "
             >
               @for (bar of bars(); track $index) {

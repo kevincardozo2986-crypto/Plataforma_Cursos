@@ -131,19 +131,19 @@
         <!-- Estado de emisión -->
         <section class="pk-panel px-ready" aria-label="Estado de emisión">
           <div class="px-ready__head">
-            <div class="px-ring" [class.is-done]="readyCount() === 4">
+            <div class="px-ring" [class.is-done]="readyCount() === steps().length">
               <svg viewBox="0 0 96 96" aria-hidden="true">
                 <circle class="trk" cx="48" cy="48" r="40" />
                 <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="ring" [attr.stroke-dashoffset]="ringOffset()" />
               </svg>
               <div class="px-ring__txt">
-                <div>{{ readyCount() }}/4<small>listo</small></div>
+                <div>{{ readyCount() }}/{{ steps().length }}<small>listo</small></div>
               </div>
             </div>
             <div>
               <p class="px-ready__title">
                 {{
-                  readyCount() === 4
+                  readyCount() === steps().length
                     ? '¡Todo listo para emitir!'
                     : missing() === 1
                       ? 'Te falta 1 paso para emitir'
@@ -152,7 +152,7 @@
               </p>
               <p class="px-ready__sub">
                 {{
-                  readyCount() === 4
+                  readyCount() === steps().length
                     ? 'Las credenciales se envían apenas un estudiante termina el curso.'
                     : 'Resuelve lo que está marcado y las credenciales saldrán solas.'
                 }}
@@ -181,7 +181,7 @@
                         type="button"
                         class="cv-btn cv-btn--secondary cv-btn--sm"
                         [attr.aria-expanded]="open() === step.id"
-                        (click)="togglePanel(step.id === 'mode' ? 'mode' : 'hook')"
+                        (click)="togglePanel('mode')"
                       >
                         {{ step.action }}
                       </button>
@@ -201,100 +201,65 @@
                     </div>
                   </div>
                 }
-                @if (step.id === 'hook') {
-                  <div class="px-expand" [class.open]="open() === 'hook'">
-                    <div>
-                      <div class="px-expand__in">
-                        <p class="px-hint">
-                          En POK → Ajustes → Webhooks agrega esta URL y pulsa el check para enviar un
-                          mensaje de prueba. Luego pega su «clave de firma» en
-                          <code>POK_WEBHOOK_SIGNING_KEY</code> (<code>backend/.env</code>) y reinicia la API.
-                        </p>
-                        <div class="px-field">
-                          <code>{{ webhookUrl() }}</code>
-                          <button type="button" class="cv-btn cv-btn--secondary cv-btn--sm" (click)="copyWebhook()">
-                            {{ copied() ? 'Copiado' : 'Copiar' }}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
               </li>
             }
           </ul>
         </section>
 
-        <!-- Vista previa -->
+        <!-- Vista previa: la imagen real que genera POK con tu diseño -->
         <section class="pk-panel px-stage" aria-label="Vista previa de la credencial">
           <div class="px-stage__head">
             <p>Así la recibe tu estudiante</p>
-            <span class="cv-chip">{{ selected() && isPok(selected()!) ? 'Credencial POK' : 'PDF de la plataforma' }}</span>
+            <span class="cv-chip">Credencial POK</span>
           </div>
           <div class="px-stage__body">
-            @if (selected(); as course) {
-              @for (key of [previewKey()]; track key) {
-                @if (isPok(course)) {
-                  <div class="px-cred px-cred--pok swap" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
-                    <div class="px-cred__frame"></div>
-                    <div class="px-cred__in">
-                      <svg class="px-cred__rays" viewBox="0 0 64 26" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-                        <path d="M32 2v14M20 6l12 10 12-10M10 14l22 4 22-4" /><circle cx="32" cy="22" r="3.2" />
-                      </svg>
-                      <p class="px-cred__org">{{ conn()!.emitter }}</p>
-                      <p class="px-cred__lbl">Otorga esta credencial a</p>
-                      <p class="px-cred__name">Nombre del estudiante</p>
-                      <p class="px-cred__course">{{ course.title }}</p>
-                    </div>
-                    <div class="px-cred__foot">
-                      <span>Verificable en POK</span>
-                      <div class="px-qr" aria-hidden="true">
-                        @for (on of qr; track $index) { <i [class.o]="!on"></i> }
-                      </div>
-                    </div>
-                    <div class="px-cred__shine"></div>
-                  </div>
-                } @else {
-                  <div class="px-cred px-cred--pdf swap" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
-                    <div class="px-cred__frame"></div>
-                    <div class="px-cred__in">
-                      <p class="px-cred__org">Campus Virtual</p>
-                      <p class="px-cred__lbl">Certificado de finalización</p>
-                      <p class="px-cred__name">Nombre del estudiante</p>
-                      <p class="px-cred__lbl">completó el curso</p>
-                      <p class="px-cred__course">{{ course.title }}</p>
-                    </div>
-                    <div class="px-cred__foot"><span>Verificable con un código</span><span>PDF descargable</span></div>
-                    <div class="px-cred__shine"></div>
-                  </div>
+            @if (previewTemplateId()) {
+              <div class="px-preview" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
+                @if (previewUrl(); as url) {
+                  <img
+                    [src]="url"
+                    [alt]="'Credencial de POK del curso ' + (selected()?.title ?? '')"
+                    (load)="previewLoaded()"
+                    (error)="previewFailed()"
+                  />
                 }
-              }
+                @if (previewLoading()) {
+                  <div class="px-preview__wait" role="status"><span class="px-spin"></span> Generando vista previa…</div>
+                }
+                <div class="px-preview__shine"></div>
+              </div>
             } @else {
-              <p class="px-empty">Cuando tengas cursos, aquí verás cómo recibe el estudiante su credencial.</p>
+              <p class="px-empty">
+                Cuando tengas un diseño en tu cuenta de POK, aquí verás cómo recibe el estudiante su
+                credencial.
+              </p>
             }
           </div>
 
-          <div class="px-designs">
-            @if (selected(); as course) {
-              @if (isPok(course)) {
-                @for (template of templates(); track template.id) {
-                  <button
-                    type="button"
-                    class="px-dz"
-                    [attr.aria-pressed]="course.pokTemplateId === template.id"
-                    [disabled]="busyId() === course.id"
-                    (click)="pickTemplate(course, template.id)"
-                  >
-                    <span class="px-dz__sw"></span>{{ template.name }}
-                  </button>
-                } @empty {
-                  <span class="px-muted">{{ selectedTemplateName() }}</span>
-                }
-                <a class="px-dz px-dz--new" href="https://pok.tech" target="_blank" rel="noopener noreferrer">+ Crear diseño en POK</a>
-              } @else {
-                <span class="px-muted">Se entrega el PDF con la plantilla del Campus Virtual.</span>
-              }
+          @if (previewError()) {
+            <p class="px-preview__note px-preview__note--bad" role="alert">{{ previewError() }}</p>
+          } @else if (selected(); as course) {
+            @if (!isPok(course)) {
+              <p class="px-preview__note">
+                Este curso entrega hoy el <b>PDF de la plataforma</b>. Así se vería con POK: cámbialo con el
+                interruptor de la lista.
+              </p>
             }
+          }
+
+          <div class="px-designs">
+            @for (template of templates(); track template.id) {
+              <button
+                type="button"
+                class="px-dz"
+                [attr.aria-pressed]="previewTemplateId() === template.id"
+                [disabled]="busyId() === selected()?.id"
+                (click)="choosePreview(template.id)"
+              >
+                <span class="px-dz__sw"></span>{{ template.name }}
+              </button>
+            }
+            <a class="px-dz px-dz--new" href="https://pok.tech" target="_blank" rel="noopener noreferrer">+ Crear diseño en POK</a>
             @if (templatesError()) {
               <span class="px-muted" role="alert">{{ templatesError() }}</span>
             }

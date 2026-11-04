@@ -69,8 +69,23 @@ export interface TeacherCourse {
   /** Plantilla de certificado asignada (solo en GET /courses/manage/:id). */
   certificateTemplate?: { id: number; name: string } | null;
 
+  /** Cifras de la biblioteca (solo en GET /courses/manage). */
+  library?: CourseLibraryStats;
+
   createdAt: string;
   updatedAt: string;
+}
+
+/** Resumen de un curso para la biblioteca del docente. */
+export interface CourseLibraryStats {
+  /** Inscritos activos o que ya terminaron (no cuenta las inscripciones canceladas). */
+  enrolled: number;
+  /** Avance promedio de los inscritos, 0–100. */
+  avgProgress: number;
+  /** Lecciones que ya tiene el curso. */
+  lessons: number;
+  /** Quién emite el certificado: la plataforma (PDF) o POK. */
+  certificate: 'PLATFORM' | 'POK';
 }
 
 /** Curso con su árbol de contenido (GET /courses/manage/:id). */

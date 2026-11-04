@@ -372,3 +372,45 @@ describe('PokService: emisión directa (espera a que POK emita)', () => {
     expect(repository.setPok).toHaveBeenCalledWith(3, expect.objectContaining({ pokStatus: 'EMITTED' }));
   });
 });
+
+describe('PokService.preview', () => {
+  it('pide la imagen a POK con el título del curso y la reutiliza (no vuelve a pedirla)', async () => {
+    const { service, client } = build();
+    const preview = vi.fn().mockResolvedValue('https://img.example/p.png');
+
+    (client as unknown as { preview: typeof preview }).preview = preview;
+
+    expect(await service.preview('tpl-1', 'Mi curso')).toEqual({ url: 'https://img.example/p.png' });
+    expect(await service.preview('tpl-1', 'Mi curso')).toEqual({ url: 'https://img.example/p.png' });
+    expect(preview).toHaveBeenCalledOnce();
+    expect(preview.mock.calls[0][0].credential.title).toBe('Mi curso');
+
+    await service.preview('tpl-1', 'Otro curso');
+
+    expect(preview).toHaveBeenCalledTimes(2);
+  });
+
+  it('un id de diseño con caracteres raros se rechaza antes de llamar a POK (400)', async () => {
+    const { service, client } = build();
+    const preview = vi.fn();
+
+    (client as unknown as { preview: typeof preview }).preview = preview;
+
+    await expect(service.preview('../etc/passwd', 'X')).rejects.toBeInstanceOf(BadRequestException);
+    expect(preview).not.toHaveBeenCalled();
+  });
+
+  it('si POK no devuelve la imagen responde 502', async () => {
+    const { service, client } = build();
+
+    (client as unknown as { preview: () => Promise<null> }).preview = vi.fn().mockResolvedValue(null);
+
+    await expect(service.preview('tpl-1', 'X')).rejects.toBeInstanceOf(BadGatewayException);
+  });
+
+  it('con POK apagado responde 400', async () => {
+    const { service } = build({});
+
+    await expect(service.preview('tpl-1', 'X')).rejects.toBeInstanceOf(BadRequestException);
+  });
+});

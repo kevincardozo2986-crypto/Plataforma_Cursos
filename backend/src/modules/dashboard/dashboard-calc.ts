@@ -1,7 +1,7 @@
 export const PERIODS = ['7d', '30d', '90d', '1y', 'all'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export type Bucket = 'day' | 'month';
+export type Bucket = 'day' | 'week' | 'month';
 
 /** Días sin avanzar en un curso para considerar inactiva una inscripción. */
 export const INACTIVE_DAYS = 30;
@@ -22,9 +22,44 @@ export function sinceOf(period: Period, now: Date): Date | undefined {
     : new Date(now.getTime() - PERIOD_DAYS[period] * DAY_MS);
 }
 
-/** Los periodos cortos se grafican por día; los largos, por mes. */
+/** 7 días se grafican por día; 30 y 90 días, por semana; un año y "todo", por mes. */
 export function bucketOf(period: Period): Bucket {
-  return period === 'all' || period === '1y' ? 'month' : 'day';
+  if (period === '7d') return 'day';
+  if (period === '30d' || period === '90d') return 'week';
+
+  return 'month';
+}
+
+/**
+ * El periodo inmediatamente anterior, de la misma duración (para decir "subió o bajó").
+ * "Todo el tiempo" no tiene anterior.
+ */
+export function previousWindow(period: Period, now: Date): { from: Date; to: Date } | undefined {
+  const since = sinceOf(period, now);
+
+  if (!since) return undefined;
+
+  const span = now.getTime() - since.getTime();
+
+  return { from: new Date(since.getTime() - span), to: since };
+}
+
+/**
+ * Cuántas veces pasó algo en cada una de las últimas `weeks` semanas, de la más antigua a la actual
+ * (la última cubre los 7 días hasta `now`). Lo que es más viejo que eso no se cuenta.
+ */
+export function weeklyCounts(dates: Date[], now: Date, weeks = 8): number[] {
+  const counts = new Array<number>(weeks).fill(0);
+
+  for (const date of dates) {
+    const index = weeks - 1 - Math.floor(Math.max(0, now.getTime() - date.getTime()) / (7 * DAY_MS));
+
+    if (index >= 0) {
+      counts[index] += 1;
+    }
+  }
+
+  return counts;
 }
 
 export function percent(part: number, whole: number): number {
@@ -52,18 +87,28 @@ function keyOf(date: Date, bucket: Bucket): string {
   return bucket === 'month' ? base : `${base}-${pad(date.getUTCDate())}`;
 }
 
+/** Inicio del grupo: el día, el lunes de esa semana (como `date_trunc('week')`) o el día 1 del mes. */
 function startOf(date: Date, bucket: Bucket): Date {
-  return bucket === 'month'
-    ? new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
-    : new Date(
-        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-      );
+  if (bucket === 'month') {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  }
+
+  const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+
+  if (bucket === 'week') {
+    // getUTCDay: 0 = domingo; el lunes es el inicio.
+    return new Date(day.getTime() - ((day.getUTCDay() + 6) % 7) * DAY_MS);
+  }
+
+  return day;
 }
 
 function next(date: Date, bucket: Bucket): Date {
-  return bucket === 'month'
-    ? new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1))
-    : new Date(date.getTime() + DAY_MS);
+  if (bucket === 'month') {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
+  }
+
+  return new Date(date.getTime() + (bucket === 'week' ? 7 : 1) * DAY_MS);
 }
 
 /**

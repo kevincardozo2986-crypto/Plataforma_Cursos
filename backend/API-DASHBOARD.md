@@ -26,7 +26,8 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
   "quizzes": { "attempts": 120, "averageScore": 74, "passRate": 81, "pendingReview": 5 },
   "assignments": { "pendingGrading": 7 },
   "rating": { "average": 4.3, "count": 25 },
-  "bucket": "day",
+  "previous": { "students": 5, "enrollments": 6 },
+  "bucket": "week",
   "series": [ { "date": "2026-09-06", "enrollments": 2, "completions": 0 } ],
   "courseBreakdown": [
     { "id": 3, "title": "Curso de Angular", "status": "PUBLISHED",
@@ -56,9 +57,10 @@ Un `period` inválido responde `400` con el mensaje "El periodo debe ser uno de:
   promedio **ponderado** por cantidad de reseñas (un curso con 9 reseñas pesa más que uno con 1). `average` es `null` si no
   hay reseñas. En `courseBreakdown[].rating` viene el de cada curso.
 - **`series` (para la gráfica):** inscripciones y finalizaciones por fecha.
-  - `bucket` es `day` (`date: "2026-10-06"`) en `7d`, `30d` y `90d`, y `month` (`date: "2026-10"`) en `1y` y `all`.
+  - `bucket` es `day` (`date: "2026-10-06"`) en `7d`; `week` en `30d` y `90d` (`date` es el **lunes** de esa semana, y la primera semana puede ser parcial); y `month` (`date: "2026-10"`) en `1y` y `all`.
   - Los días o meses sin movimiento vienen con ceros, así que se puede graficar directo sin rellenar huecos.
   - Las finalizaciones se ubican por la fecha en que se completó el curso, no por la de inscripción.
+- **`previous`:** estudiantes e inscripciones del periodo inmediatamente anterior, de la misma duración (para decir si subió o bajó). Es `null` en `all` y cuando se filtra por `courseId`.
 - **`courseBreakdown[].averageScore`:** `null` si el curso aún no tiene intentos calificados.
 
 ## Reportes para las Analíticas
@@ -103,6 +105,17 @@ apellido o correo; sin distinguir mayúsculas), `limit` (1–500, por defecto 50
 ```
 
 `distribution` siempre trae las 5 filas (de 5 a 1 estrella); `recent`, las 20 reseñas más nuevas del periodo.
+
+### `POST /dashboard/teacher/request-reviews`
+
+Invita a dejar una reseña a quienes **terminaron** un curso y todavía no lo reseñaron. Opcional `?courseId=` (si no, todos mis cursos; un docente solo alcanza los suyos, si no `403`).
+A cada persona se le avisa **una sola vez por curso** (aviso en la plataforma, `COURSE_REMINDER`, con `eventKey = review-request:<curso>:<usuario>`).
+
+```json
+{ "eligible": 3, "sent": 1 }
+```
+
+`eligible` = cuántos terminaron sin reseñar; `sent` = a cuántos se les avisó ahora (el resto ya tenía la invitación).
 
 ## Todavía no disponible
 

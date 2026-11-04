@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { managedBy } from '../../common/prisma/managed-by.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import {
   CourseLevel,
   CourseStatus,
@@ -173,6 +174,41 @@ export class CoursesRepository {
       omit: withoutSecrets,
       orderBy: { updatedAt: 'desc' },
     });
+  }
+
+  /**
+   * Cifras de cada curso para la biblioteca del docente: inscritos activos o terminados, avance
+   * promedio (lecciones vistas / lecciones del curso), si ya tiene lecciones y si entrega POK.
+   */
+  async libraryStats(courseIds: number[]) {
+    if (courseIds.length === 0) {
+      return [];
+    }
+
+    return this.prisma.$queryRaw<
+      { id: number; enrolled: number; avgProgress: number; lessons: number; pok: boolean }[]
+    >(Prisma.sql`
+      SELECT c."id",
+             (SELECT COUNT(*) FROM enrollments e
+               WHERE e."courseId" = c."id" AND e."status" <> 'CANCELLED')::int AS "enrolled",
+             COALESCE((
+               SELECT ROUND(AVG(
+                 CASE WHEN t.total = 0 THEN 0
+                      ELSE LEAST(100, 100.0 * (SELECT COUNT(*) FROM lesson_progress lp
+                                                WHERE lp."enrollmentId" = e."id") / t.total) END
+               ))
+               FROM enrollments e,
+                    LATERAL (SELECT COUNT(*) AS total FROM lessons l
+                              JOIN modules m ON m."id" = l."moduleId"
+                             WHERE m."courseId" = c."id") t
+               WHERE e."courseId" = c."id" AND e."status" <> 'CANCELLED'
+             ), 0)::int AS "avgProgress",
+             (SELECT COUNT(*) FROM lessons l JOIN modules m ON m."id" = l."moduleId"
+               WHERE m."courseId" = c."id")::int AS "lessons",
+             EXISTS (SELECT 1 FROM pok_course_templates p WHERE p."courseId" = c."id") AS "pok"
+        FROM courses c
+       WHERE c."id" IN (${Prisma.join(courseIds)})
+    `);
   }
 
   /** Para el editor: incluye prerrequisitos y el hash (el servicio lo reduce a `hasPassword`). */

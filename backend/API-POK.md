@@ -76,6 +76,7 @@ Docente o admin.
 | --- | --- |
 | `GET /pok/status` | `{ enabled }` y, si está activo, organización, créditos, modo (borrador/real) y si el webhook está configurado. |
 | `GET /pok/templates` | Los diseños de la cuenta de POK: `[{ id, name, tags }]`. `502` si POK no responde. Solo se lee la primera página de resultados. |
+| `GET /pok/templates/:templateId/preview?title=` | Cómo se ve la credencial con ese diseño: `{ url }` de una **imagen PNG que genera POK** (`POST /template/preview`) con el título del curso y un estudiante de ejemplo. Se guarda 10 minutos en memoria. `400` id inválido, `502` si POK no la genera. La usa la vista previa de la pantalla POK. |
 | `GET /pok/courses` | Mis cursos (un admin ve todos) con `pokTemplateId` / `pokTemplateName` (null = vía Plataforma) y `unsent` (certificados de POK vigentes aún no enviados). |
 | `PUT /pok/courses/:courseId/template` | `{ "pokTemplateId": "<id>" }` = el curso entrega la credencial de POK; `{ "pokTemplateId": null }` = vuelve al certificado de la plataforma. Comprueba contra POK que el diseño exista (`400` si no). Responde `issued` (credenciales emitidas a quienes ya habían terminado sin certificado). Quien no gestiona el curso recibe `403`. |
 | `POST /pok/courses/:courseId/send-pending` | Envía a POK los certificados **de POK** del curso que no están allá (hasta 100 por vez). `{ total, sent, failed }`. Reenviar uno que POK ya tiene **no duplica**. |

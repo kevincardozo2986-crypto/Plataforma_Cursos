@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/authenticated-request.interface.js';
@@ -30,6 +30,15 @@ export class PokController {
   @Get('templates')
   templates() {
     return this.pok.templates();
+  }
+
+  /**
+   * Cómo se ve la credencial con ese diseño: `{ url }` de la imagen que genera POK. `?title=` es el nombre del
+   * curso que aparecerá en ella (con un estudiante de ejemplo).
+   */
+  @Get('templates/:templateId/preview')
+  preview(@Param('templateId') templateId: string, @Query('title') title?: string) {
+    return this.pok.preview(templateId, (title ?? '').slice(0, 150));
   }
 
   /** Mis cursos con el diseño de POK que usa cada uno y cuántos certificados faltan por enviar. */
