@@ -12,6 +12,8 @@ import {
   statusFromState,
   templatesOf,
   verifyWebhook,
+  documentParameters,
+  parametersOf,
 } from './pok-api.js';
 
 const config = {
@@ -291,5 +293,44 @@ describe('vista previa de POK', () => {
     expect((http.mock.calls[0] as [string])[0]).toBe('https://api.pok.tech/template/preview');
     expect(await new PokClient(config, reply(400, { fields: {} }) as unknown as typeof fetch).preview(body)).toBeNull();
     expect(await new PokClient(config, vi.fn().mockRejectedValue(new Error('red')) as unknown as typeof fetch).preview(body)).toBeNull();
+  });
+});
+
+describe('documento del estudiante en el diseño de POK', () => {
+  const parameters = [
+    { id: 'p-doc', label: 'Documento Id' },
+    { id: 'p-horas', label: 'Número de horas' },
+    { id: 'p-cc', label: 'C.C.' },
+    { id: 'p-accion', label: 'Acción realizada' },
+  ];
+
+  it('lee los parámetros propios que trae el diseño (id y etiqueta)', () => {
+    expect(parametersOf({ id: 't', customParameters: [{ id: 'a', label: 'Documento' }, { id: 5 }, null] })).toEqual([{ id: 'a', label: 'Documento' }]);
+    expect(parametersOf({})).toEqual([]);
+    expect(parametersOf(null)).toEqual([]);
+  });
+
+  it('pone el documento solo en los campos que lo piden, sin confundir otras etiquetas', () => {
+    expect(documentParameters(parameters, ' 1098765432 ')).toEqual({ 'p-doc': '1098765432', 'p-cc': '1098765432' });
+    expect(documentParameters([{ id: 'x', label: 'Cédula de ciudadanía' }, { id: 'y', label: 'Identificación' }], '55')).toEqual({ x: '55', y: '55' });
+  });
+
+  it('sin documento o sin campos de documento, no manda nada', () => {
+    expect(documentParameters(parameters, null)).toEqual({});
+    expect(documentParameters(parameters, '  ')).toEqual({});
+    expect(documentParameters([{ id: 'h', label: 'Número de horas' }], '123')).toEqual({});
+  });
+
+  it('el cuerpo de la credencial lleva esos parámetros en customization.template.customParameters', () => {
+    const config = pokConfig({ POK_API_KEY: 'k', POK_EMITTER: 'U' } as NodeJS.ProcessEnv)!;
+    const body = buildCredentialBody(
+      { code: 'CC-1', courseId: 1, courseTitle: 'C', issuedAt: new Date(), firstName: 'A', lastName: 'B', email: 'a@b.co', document: '123' },
+      config,
+      'tpl',
+      { 'p-doc': '123' },
+    );
+
+    expect(body.customization.template.customParameters).toEqual({ 'p-doc': '123' });
+    expect(body.receiver.identification).toBe('123');
   });
 });

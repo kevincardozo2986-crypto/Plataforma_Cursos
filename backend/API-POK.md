@@ -111,3 +111,11 @@ Autenticación (se exige una; **sin ninguna configurada se rechaza todo**):
 - `pok/pok-api.spec.ts`: configuración, cuerpo de la petición, estados, firma del webhook y cliente HTTP.
 - `pok/pok.service.spec.ts`: emisión, reintento, permisos, webhook y que un fallo de POK **nunca** rompa el certificado; un certificado de la plataforma nunca se envía.
 - `certificates.service.spec.ts` («una sola vía»): el origen se fija al emitir, el aviso al estudiante, y que los de POK no tienen PDF ni se corrigen.
+
+## Documento del estudiante en la credencial
+
+Además de `receiver.identification`, muchos diseños de POK tienen un **campo propio** («Documento Id», «Documento», «Cédula»…) que no se llena solo.
+Al emitir, el backend lee los parámetros del diseño (`GET /template/{id}` → `customParameters: [{ id, label }]`) y manda el documento del estudiante en
+`customization.template.customParameters` como un objeto `{ idDelParametro: "documento" }`, en cada parámetro cuya etiqueta sea de documento
+(documento, cédula, identificación, c.c., dni). Los demás parámetros (p. ej. «Número de horas») no se tocan. Si POK no responde esa consulta, la emisión sigue sin ellos.
+La vista previa usa un documento de ejemplo (1234567890) para mostrar dónde saldrá. Las credenciales ya emitidas no cambian.

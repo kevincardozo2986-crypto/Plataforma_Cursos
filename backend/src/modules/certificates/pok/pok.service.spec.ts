@@ -50,6 +50,7 @@ function build(env: Record<string, string> = { POK_API_KEY: 'k' }) {
     organization: vi.fn().mockResolvedValue({ name: 'ORG', availableCredits: 3 }),
     listTemplates: vi.fn().mockResolvedValue([{ id: 't1', name: 'Uno', tags: [] }]),
     findTemplate: vi.fn().mockResolvedValue({ found: true, id: 't1', name: 'Uno' }),
+    templateParameters: vi.fn().mockResolvedValue([{ id: 'p-doc', label: 'Documento Id' }]),
   };
   const service = new PokService(repository as unknown as CertificatesRepository, access as unknown as CourseAccessService);
 
@@ -73,6 +74,24 @@ describe('PokService.emit', () => {
     expect(client.emit.mock.calls[0][0].receiver).toMatchObject({ email: 'ana@correo.com', firstName: 'Ana' });
     expect(repository.setPok).toHaveBeenCalledWith(19, expect.objectContaining({ pokCredentialId: 'cred-1', pokStatus: 'PENDING' }));
     expect(repository.setPok).toHaveBeenCalledWith(19, expect.objectContaining({ pokUrl: 'https://v.pok.tech/r/cred-1' }));
+  });
+
+  it('lleva el documento del estudiante al campo «Documento Id» del diseño', async () => {
+    const { service, client } = build();
+
+    await service.emit(19);
+
+    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({ 'p-doc': '123' });
+  });
+
+  it('si POK no devuelve los parámetros del diseño, emite igual (sin ellos)', async () => {
+    const { service, client } = build();
+    client.templateParameters.mockResolvedValue([]);
+
+    await service.emit(19);
+
+    expect(client.emit).toHaveBeenCalledOnce();
+    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({});
   });
 
   it('apagado (sin clave) no hace nada', async () => {

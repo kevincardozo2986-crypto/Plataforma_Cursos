@@ -8,6 +8,7 @@ import {
   advanceStatus,
   buildCredentialBody,
   buildPreviewBody,
+  documentParameters,
   type PokConfig,
   PokClient,
   pokConfig,
@@ -82,7 +83,12 @@ export class PokService {
         return 'FAILED';
       }
 
-      const result = await this.clientFor(config).emit(
+      const client = this.clientFor(config);
+      // El documento del estudiante va en los campos del diseño que lo piden («Documento Id», «Cédula»…).
+      const customParameters = certificate.studentDocument
+        ? documentParameters(await client.templateParameters(templateId), certificate.studentDocument)
+        : {};
+      const result = await client.emit(
         buildCredentialBody(
           {
             code: certificate.code,
@@ -96,6 +102,7 @@ export class PokService {
           },
           config,
           templateId,
+          customParameters,
         ),
       );
 
@@ -182,7 +189,10 @@ export class PokService {
       return { url: cached.url };
     }
 
-    const url = await this.clientFor(config).preview(buildPreviewBody({ courseTitle: title, templateId }, config));
+    const client = this.clientFor(config);
+    // Un documento de ejemplo, para ver dónde saldrá el del estudiante.
+    const customParameters = documentParameters(await client.templateParameters(templateId), '1234567890');
+    const url = await client.preview(buildPreviewBody({ courseTitle: title, templateId, customParameters }, config));
 
     if (!url) {
       throw new BadGatewayException('No pudimos generar la vista previa en POK. Revisa que el diseño exista e intenta de nuevo');

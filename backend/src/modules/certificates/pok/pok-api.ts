@@ -61,8 +61,47 @@ export interface CredentialInput {
 
 const clean = (value: string, max: number) => value.trim().replace(/\s+/g, ' ').slice(0, max);
 
+/** Parámetros propios de un diseño de POK (`GET /template/{id}` → `customParameters`). */
+export interface PokTemplateParameter {
+  id: string;
+  label: string;
+}
+
+/** Cómo se llama un campo que pide el documento de identidad: «Documento», «Documento Id», «Cédula», «Identificación», «c.c». */
+const DOCUMENT_LABEL = /documento|c[eé]dula|identificaci[oó]n|(?<![\p{L}\d])c\.?\s?c\.?(?![\p{L}\d])|(?<![\p{L}\d])dni(?![\p{L}\d])/iu;
+
+/** Los parámetros propios de la respuesta de `GET /template/{id}` (solo los que traen id y etiqueta). */
+export function parametersOf(body: unknown): PokTemplateParameter[] {
+  const list = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).customParameters : null;
+
+  if (!Array.isArray(list)) return [];
+
+  return list.flatMap((item) => {
+    const entry = item as { id?: unknown; label?: unknown } | null;
+
+    return typeof entry?.id === 'string' && typeof entry.label === 'string' ? [{ id: entry.id, label: entry.label }] : [];
+  });
+}
+
+/**
+ * `customParameters` de la credencial: el documento del estudiante en cada parámetro del diseño que lo pida
+ * (p. ej. «Documento Id»). POK espera un objeto `{ idDelParametro: valor }`; sin documento o sin esos campos, `{}`.
+ */
+export function documentParameters(parameters: PokTemplateParameter[], document: string | null): Record<string, string> {
+  const value = document ? clean(document, 40) : '';
+
+  if (!value) return {};
+
+  return Object.fromEntries(parameters.filter((parameter) => DOCUMENT_LABEL.test(parameter.label)).map((parameter) => [parameter.id, value]));
+}
+
 /** El cuerpo de `POST /credential`. La llave de idempotencia evita emitir dos veces el mismo certificado. */
-export function buildCredentialBody(input: CredentialInput, config: PokConfig, templateId: string) {
+export function buildCredentialBody(
+  input: CredentialInput,
+  config: PokConfig,
+  templateId: string,
+  customParameters: Record<string, string> = {},
+) {
   return {
     credential: {
       saveAsDraft: config.saveAsDraft,
@@ -83,7 +122,7 @@ export function buildCredentialBody(input: CredentialInput, config: PokConfig, t
       firstName: clean(input.firstName, 80),
     },
     customization: {
-      template: { id: templateId, customParameters: {} },
+      template: { id: templateId, customParameters },
     },
     idempotencyKey: `campus-${input.code}`,
   };
@@ -93,7 +132,10 @@ export function buildCredentialBody(input: CredentialInput, config: PokConfig, t
  * El cuerpo de `POST /template/preview`: la misma forma que la emisión, pero SIN los campos de envío
  * (`saveAsDraft`, `tags`, `skip…`) ni el correo: POK los rechaza como «propiedades de más».
  */
-export function buildPreviewBody(input: { courseTitle: string; templateId: string }, config: PokConfig) {
+export function buildPreviewBody(
+  input: { courseTitle: string; templateId: string; customParameters?: Record<string, string> },
+  config: PokConfig,
+) {
   return {
     credential: {
       emissionType: 'pok',
@@ -103,7 +145,7 @@ export function buildPreviewBody(input: { courseTitle: string; templateId: strin
       emitter: clean(config.emitter, 100),
     },
     receiver: { languageTag: config.languageTag, firstName: 'Nombre', lastName: 'del estudiante' },
-    customization: { template: { id: input.templateId, customParameters: {} } },
+    customization: { template: { id: input.templateId, customParameters: input.customParameters ?? {} } },
   };
 }
 
@@ -400,6 +442,17 @@ export class PokClient {
         : { found: false, unknown: true };
     } catch {
       return { found: false, unknown: true };
+    }
+  }
+
+  /** Los parámetros propios del diseño (`GET /template/{id}`); lista vacía si POK no respondió: la emisión sigue sin ellos. */
+  async templateParameters(id: string): Promise<PokTemplateParameter[]> {
+    try {
+      const response = await this.request(`/template/${encodeURIComponent(id)}`);
+
+      return response.ok ? parametersOf(await readJson(response)) : [];
+    } catch {
+      return [];
     }
   }
 
