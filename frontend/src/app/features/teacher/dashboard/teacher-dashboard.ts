@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -10,7 +11,7 @@ import { TeacherCoursesService } from '../courses/teacher-courses.service';
 
 @Component({
   selector: 'app-teacher-dashboard',
-  imports: [RouterLink, DatePipe],
+  imports: [PublicUrlPipe, RouterLink, DatePipe],
   templateUrl: './teacher-dashboard.html',
   styleUrl: './teacher-dashboard.scss',
 })

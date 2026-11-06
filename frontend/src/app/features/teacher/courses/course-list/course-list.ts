@@ -3,6 +3,7 @@ import { Component, ElementRef, HostListener, computed, inject, signal } from '@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
+import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { CourseStatus, TeacherCourse } from '../teacher-courses.models';
@@ -53,7 +54,7 @@ function storedView(): View {
  */
 @Component({
   selector: 'app-course-list',
-  imports: [RouterLink, NgTemplateOutlet],
+  imports: [RouterLink, NgTemplateOutlet, PublicUrlPipe],
   templateUrl: './course-list.html',
   styleUrl: './course-list.scss',
 })

@@ -60,13 +60,20 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "subpath": {
+              "baseHref": "/cursos-virtuales/"
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": { "proxyConfig": "proxy.conf.json", "hmr": false, "liveReload": true },
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "hmr": false,
+            "liveReload": true
+          },
           "configurations": {
             "production": {
               "buildTarget": "frontend:build:production"

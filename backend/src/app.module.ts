@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
+import { validateSecurityConfig } from './security/security.config.js';
 import { createObserveModule } from '@nestjs/observe';
 
 import { AppController } from './app.controller.js';
@@ -39,6 +40,7 @@ export const observeEnabled = Boolean(
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateSecurityConfig,
     }),
 
     DatabaseModule,

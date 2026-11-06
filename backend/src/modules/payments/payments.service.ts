@@ -1,12 +1,26 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { ProgressService } from '../progress/progress.service.js';
-import { brandOf, cvvValid, isExpired, luhnValid, newReference, simulateGateway } from './card.js';
+import {
+  brandOf,
+  cvvValid,
+  isExpired,
+  luhnValid,
+  newReference,
+  simulateGateway,
+} from './card.js';
 import type { CheckoutDto } from './dto/checkout.dto.js';
 import { PaymentsRepository } from './payments.repository.js';
 
-type PaymentRow = NonNullable<Awaited<ReturnType<PaymentsRepository['findApproved']>>>;
+type PaymentRow = NonNullable<
+  Awaited<ReturnType<PaymentsRepository['findApproved']>>
+>;
 
 /**
  * Compra de cursos con una pasarela SIMULADA: valida la tarjeta, «cobra» (no se mueve dinero) y, si la
@@ -19,9 +33,23 @@ export class PaymentsService {
     private readonly progress: ProgressService,
   ) {}
 
-  async checkout(user: AuthenticatedUser, courseId: number, dto: CheckoutDto, now = new Date()) {
+  async checkout(
+    user: AuthenticatedUser,
+    courseId: number,
+    dto: CheckoutDto,
+    now = new Date(),
+  ) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ServiceUnavailableException(
+        'Los pagos en línea no están habilitados. Contacta a la universidad.',
+      );
+    }
     // Antes de cobrar: que el curso se pueda comprar y que la persona pueda entrar (cupo, contraseña…).
-    const { price } = await this.progress.assertCanEnroll(user, courseId, dto.password);
+    const { price } = await this.progress.assertCanEnroll(
+      user,
+      courseId,
+      dto.password,
+    );
     const course = await this.repository.coursePrice(courseId);
 
     if (!course) {
@@ -39,7 +67,12 @@ export class PaymentsService {
     if (paid) {
       await this.progress.enroll(user, courseId, dto.password);
 
-      return { status: 'APPROVED' as const, alreadyPaid: true, enrolled: true, payment: this.present(paid) };
+      return {
+        status: 'APPROVED' as const,
+        alreadyPaid: true,
+        enrolled: true,
+        payment: this.present(paid),
+      };
     }
 
     this.assertCardUsable(dto, now);
@@ -59,16 +92,29 @@ export class PaymentsService {
     });
 
     if (!result.approved) {
-      return { status: 'DECLINED' as const, alreadyPaid: false, enrolled: false, reason: result.reason, payment: this.present(payment) };
+      return {
+        status: 'DECLINED' as const,
+        alreadyPaid: false,
+        enrolled: false,
+        reason: result.reason,
+        payment: this.present(payment),
+      };
     }
 
     await this.progress.enroll(user, courseId, dto.password);
 
-    return { status: 'APPROVED' as const, alreadyPaid: false, enrolled: true, payment: this.present(payment) };
+    return {
+      status: 'APPROVED' as const,
+      alreadyPaid: false,
+      enrolled: true,
+      payment: this.present(payment),
+    };
   }
 
   async mine(user: AuthenticatedUser) {
-    return (await this.repository.mine(user.id)).map((payment) => this.present(payment));
+    return (await this.repository.mine(user.id)).map((payment) =>
+      this.present(payment),
+    );
   }
 
   /** Errores de la tarjeta que el formulario puede corregir, con un mensaje claro cada uno. */
@@ -76,7 +122,9 @@ export class PaymentsService {
     const brand = brandOf(dto.cardNumber);
 
     if (!luhnValid(dto.cardNumber)) {
-      throw new BadRequestException('El número de la tarjeta no es válido: revisa que lo hayas escrito bien');
+      throw new BadRequestException(
+        'El número de la tarjeta no es válido: revisa que lo hayas escrito bien',
+      );
     }
 
     if (isExpired(dto.expMonth, dto.expYear, now)) {
@@ -85,7 +133,9 @@ export class PaymentsService {
 
     if (!cvvValid(dto.cvv, brand)) {
       throw new BadRequestException(
-        brand === 'AMEX' ? 'El código de seguridad de American Express tiene 4 dígitos' : 'El código de seguridad debe tener 3 dígitos',
+        brand === 'AMEX'
+          ? 'El código de seguridad de American Express tiene 4 dígitos'
+          : 'El código de seguridad debe tener 3 dígitos',
       );
     }
   }
@@ -102,7 +152,22 @@ export class PaymentsService {
     throw new Error('No se pudo generar un comprobante único');
   }
 
-  private present(payment: Pick<PaymentRow, 'id' | 'reference' | 'status' | 'amount' | 'currency' | 'cardBrand' | 'cardLast4' | 'payerName' | 'failureReason' | 'createdAt' | 'course'>) {
+  private present(
+    payment: Pick<
+      PaymentRow,
+      | 'id'
+      | 'reference'
+      | 'status'
+      | 'amount'
+      | 'currency'
+      | 'cardBrand'
+      | 'cardLast4'
+      | 'payerName'
+      | 'failureReason'
+      | 'createdAt'
+      | 'course'
+    >,
+  ) {
     return {
       id: payment.id,
       reference: payment.reference,

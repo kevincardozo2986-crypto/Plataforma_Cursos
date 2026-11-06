@@ -74,7 +74,10 @@ export class UsersService {
   }
 
   async updatePasswordHash(id: number, passwordHash: string): Promise<void> {
-    await this.prisma.user.update({ where: { id }, data: { passwordHash } });
+    await this.prisma.user.update({
+      where: { id },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
+    });
   }
 
   async create(data: CreateUserData) {

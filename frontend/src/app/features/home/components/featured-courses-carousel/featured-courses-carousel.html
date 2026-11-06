@@ -34,7 +34,7 @@
           [routerLink]="['/courses', course.id]"
         >
           @if (image(course); as source) {
-            <img [src]="source" alt="" loading="lazy" draggable="false" />
+            <img [src]="source | publicUrl" alt="" loading="lazy" draggable="false" />
           }
           <span class="panel-number" aria-hidden="true">{{
             (index + 1).toString().padStart(2, '0')

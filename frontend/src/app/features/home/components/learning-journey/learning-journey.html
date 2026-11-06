@@ -1,0 +1,144 @@
+<section class="journey" aria-labelledby="journey-title" [class.is-moving]="inView()">
+  <div class="animation-stage">
+    <div class="card-deck" aria-hidden="true">
+      @for (card of cards; track card.theme; let index = $index) {
+        <div [class]="'course-poster ' + card.theme" [style.--card-index]="index">
+          <div class="poster-top">
+            <span>{{ card.category }}</span
+            ><span class="poster-number">{{ card.number }}?04</span>
+          </div>
+          <strong class="poster-title">{{ card.title }}</strong>
+          <div class="poster-art">
+            @switch (card.theme) {
+              @case ('mint') {
+                <svg viewBox="0 0 200 122" fill="none">
+                  <rect x="8" y="8" width="184" height="105" rx="8" fill="#123e37" />
+                  <path d="M8 29h184" stroke="#91c8a7" stroke-opacity=".3" />
+                  <g fill="#a7e9ba">
+                    <circle cx="20" cy="19" r="2" />
+                    <circle cx="29" cy="19" r="2" />
+                    <circle cx="38" cy="19" r="2" />
+                  </g>
+                  <text x="23" y="51" fill="#a7e9ba" font-size="11" font-family="monospace">
+                    const futuro = &#123;
+                  </text>
+                  <text x="34" y="70" fill="#ffe09a" font-size="11" font-family="monospace">
+                    ideas: 'sin l?mites',
+                  </text>
+                  <text x="34" y="89" fill="#a7e9ba" font-size="11" font-family="monospace">
+                    primerPaso: 'hoy'
+                  </text>
+                  <text x="23" y="104" fill="#a7e9ba" font-size="11" font-family="monospace">
+                    &#125;;
+                  </text>
+                </svg>
+              }
+              @case ('orange') {
+                <svg viewBox="0 0 200 122" fill="none">
+                  <path
+                    d="M25 16h151M25 105h151M34 7v107M167 7v107"
+                    stroke="#a7452f"
+                    stroke-opacity=".35"
+                  />
+                  <path
+                    d="M61 24c18-13 36 6 39 21 4-17 24-33 40-19 16 15-1 33-18 36 18 3 34 23 18 38-16 15-37-3-40-20-4 17-24 33-40 18-16-15 1-33 18-36-18-4-33-23-17-38Z"
+                    fill="#ad3f28"
+                  />
+                  <circle cx="100" cy="62" r="13" fill="#ffe4a1" />
+                  <g fill="#ffe4a1" stroke="#ad3f28">
+                    <rect x="30" y="12" width="8" height="8" />
+                    <rect x="163" y="12" width="8" height="8" />
+                    <rect x="30" y="101" width="8" height="8" />
+                    <rect x="163" y="101" width="8" height="8" />
+                  </g>
+                  <path
+                    d="m145 83 4 21 5-7 8-1-17-13Z"
+                    fill="#173c3c"
+                    stroke="#ffe4a1"
+                    stroke-width="2"
+                  />
+                </svg>
+              }
+              @case ('violet') {
+                <svg viewBox="0 0 200 122" fill="none">
+                  <path
+                    d="M21 15v91h165M21 81h165M21 56h165M21 31h165M52 15v91M85 15v91M118 15v91M151 15v91"
+                    stroke="#e7e0fc"
+                    stroke-opacity=".3"
+                  />
+                  <path
+                    d="M27 96 57 77 87 85 119 46 151 57 181 21"
+                    stroke="#d9f5ad"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <g fill="#d9f5ad">
+                    <circle cx="57" cy="77" r="4" />
+                    <circle cx="87" cy="85" r="4" />
+                    <circle cx="119" cy="46" r="4" />
+                    <circle cx="151" cy="57" r="4" />
+                    <circle cx="181" cy="21" r="4" />
+                  </g>
+                  <text x="33" y="43" fill="#fff" font-size="24" font-family="Georgia,serif">
+                    A ? B
+                  </text>
+                </svg>
+              }
+              @case ('blue') {
+                <svg viewBox="0 0 200 122" fill="none">
+                  <ellipse cx="100" cy="61" rx="53" ry="52" stroke="#c3defd" stroke-width="1.5" />
+                  <ellipse cx="100" cy="61" rx="24" ry="52" stroke="#c3defd" stroke-width="1.5" />
+                  <path d="M48 61h104M56 35h88M56 87h88" stroke="#c3defd" stroke-width="1.5" />
+                  <ellipse
+                    cx="100"
+                    cy="61"
+                    rx="88"
+                    ry="22"
+                    transform="rotate(-24 100 61)"
+                    stroke="#a7efcd"
+                    stroke-width="3"
+                    stroke-dasharray="4 4"
+                  />
+                  <path d="m148 21 10 5-10 5 2-5-2-5Z" fill="#a7efcd" />
+                  <path d="m27 88 7-12 7 12-7-4-7 4Z" fill="#fff" />
+                  <circle cx="100" cy="61" r="6" fill="#a7efcd" />
+                </svg>
+              }
+            }
+          </div>
+          <div class="poster-bottom">
+            <img
+              [src]="
+                card.theme === 'mint' || card.theme === 'orange'
+                  ? 'images/campus-virtual-logo.png'
+                  : 'images/campus-virtual-logo-white.png'
+              "
+              alt=""
+              width="86"
+              height="25"
+            /><span>EDUCACI?N<br />CONTINUA ?</span>
+          </div>
+        </div>
+      }
+    </div>
+    <span class="floating-label label-one" aria-hidden="true"
+      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg>A tu ritmo</span
+    >
+    <span class="floating-label label-two" aria-hidden="true"
+      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg>Tu próximo logro</span
+    >
+    <h2 id="journey-title">
+      Hay un mundo por aprender.<br />Y un próximo paso<br /><span>que empieza contigo.</span>
+    </h2>
+  </div>
+  <div class="section-bottom">
+    <p>
+      Explora nuevas ideas. Desarrolla tus habilidades.<br />Haz de la curiosidad tu próximo
+      comienzo.
+    </p>
+    <a routerLink="/courses" class="explore-link"
+      >Descubre los cursos <span aria-hidden="true">↗</span></a
+    >
+  </div>
+</section>

@@ -1,6 +1,6 @@
 :host {
   display: block;
-  min-height: calc(100dvh - 92px);
+  min-height: 100dvh;
 }
 
 /* =========================================
@@ -23,7 +23,7 @@
   justify-content: center;
 
   width: 100%;
-  min-height: calc(100dvh - 92px);
+  min-height: 100dvh;
 
   box-sizing: border-box;
 
@@ -45,7 +45,7 @@
   inset: 0;
   z-index: -3;
 
-  background: url('/images/prueba1.png') center center / cover no-repeat;
+  background: url('../../../../../../public/images/prueba1.png') center center / cover no-repeat;
 
   transform: scale(1.015);
 }
@@ -395,7 +395,7 @@ app-register-form,
   .register-page {
     align-items: flex-start;
 
-    min-height: calc(100dvh - 92px);
+    min-height: 100dvh;
 
     padding: 100px 16px 28px;
 

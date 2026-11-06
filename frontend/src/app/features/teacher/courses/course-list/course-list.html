@@ -25,7 +25,7 @@
             @for (mini of minis(); track mini.id) {
               <span class="mc-mini" [class]="'mc-mini mc-mini--' + colorOf(mini)">
                 @if (mini.imageUrl) {
-                  <img [src]="mini.imageUrl" alt="" />
+                  <img [src]="mini.imageUrl | publicUrl" alt="" />
                 } @else {
                   {{ mono(mini) }}
                 }
@@ -63,7 +63,7 @@
         <section class="mc-resume" aria-label="Continúa donde quedaste">
           <div class="mc-resume__cover" [class]="'mc-resume__cover mc-cover--' + colorOf(draft)">
             @if (draft.imageUrl) {
-              <img [src]="draft.imageUrl" alt="" />
+              <img [src]="draft.imageUrl | publicUrl" alt="" />
             } @else {
               <svg class="mc-shape" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" fill="currentColor" /></svg>
               {{ mono(draft) }}
@@ -128,7 +128,7 @@
             <article class="cv-card mc-card" [class.cv-card--archived]="course.status === 'ARCHIVED'" [class.is-busy]="busyId() === course.id">
               <div class="cv-card__cover" [class]="'cv-card__cover mc-cover--' + colorOf(course)">
                 @if (course.imageUrl) {
-                  <img [src]="course.imageUrl" alt="" loading="lazy" />
+                  <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
                 } @else {
                   <svg class="mc-shape" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" fill="currentColor" /></svg>
                   <span class="cv-card__mono">{{ mono(course) }}</span>
@@ -212,7 +212,7 @@
             <div class="mc-row" [class.is-busy]="busyId() === course.id">
               <span class="mc-row__cover" [class]="'mc-row__cover mc-cover--' + colorOf(course)">
                 @if (course.imageUrl) {
-                  <img [src]="course.imageUrl" alt="" loading="lazy" />
+                  <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
                 } @else {
                   {{ mono(course) }}
                 }

@@ -1,4 +1,5 @@
-﻿import {
+import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
+import {
   afterNextRender,
   Component,
   DestroyRef,
@@ -15,7 +16,7 @@ import { Course } from '../../../../core/courses/courses.models';
 
 @Component({
   selector: 'app-featured-courses-carousel',
-  imports: [RouterLink],
+  imports: [PublicUrlPipe, RouterLink],
   templateUrl: './featured-courses-carousel.html',
   styleUrl: './featured-courses-carousel.scss',
 })

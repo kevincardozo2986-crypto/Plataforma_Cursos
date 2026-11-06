@@ -1,3 +1,4 @@
+import { canonicalMediaHtml } from '../../../core/http/public-url';
 import {
   Component,
   computed,
@@ -533,6 +534,6 @@ export class RichEditor implements ControlValueAccessor {
 
   private emit(html: string): void {
     // Sin nada visible, el campo queda vacío (así «obligatorio» funciona).
-    this.onChange(hasVisibleContent(html) ? html : '');
+    this.onChange(hasVisibleContent(html) ? canonicalMediaHtml(html) : '');
   }
 }

@@ -1,9 +1,12 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map, startWith, Subscription } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
+import { AuthService } from '../../../core/auth/auth.service';
+import { Router } from '@angular/router';
 import { ProfileData, ProfileService, ProfileUpdate } from '../../../core/profile/profile.service';
 import { validateFile } from '../../../core/uploads/upload-rules';
 import { UploadsService } from '../../../core/uploads/uploads.service';
@@ -45,11 +48,13 @@ const optionalUrl = () =>
 /** Perfil del docente: cuenta, nombre público, redes, firma de los certificados y contraseña. */
 @Component({
   selector: 'app-profile-page',
-  imports: [ReactiveFormsModule, Icon],
+  imports: [PublicUrlPipe, ReactiveFormsModule, Icon],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })
 export class ProfilePage {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly api = inject(ProfileService);
   private readonly uploads = inject(UploadsService);
 
@@ -335,7 +340,8 @@ export class ProfilePage {
     this.api.changePassword(currentPassword, newPassword).subscribe({
       next: () => {
         this.passwordForm.reset();
-        this.passwordNotice.set('Contraseña actualizada.');
+        this.auth.logout();
+        void this.router.navigate(['/login']);
         this.savingPassword.set(false);
       },
       error: (error: unknown) => {

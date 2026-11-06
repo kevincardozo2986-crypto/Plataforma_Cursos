@@ -25,7 +25,7 @@
           <div class="photo">
             <span class="photo-frame" [class.busy]="avatarUploading()">
               @if (avatarUrl(); as photo) {
-                <img [src]="photo" [alt]="'Foto de ' + shownName()" />
+                <img [src]="photo | publicUrl" [alt]="'Foto de ' + shownName()" />
               } @else {
                 <span class="initials" aria-hidden="true">{{ initials() }}</span>
               }
@@ -227,7 +227,7 @@
                 <div class="see-card">
                   <span class="see-photo">
                     @if (avatarUrl(); as photo) {
-                      <img [src]="photo" alt="" />
+                      <img [src]="photo | publicUrl" alt="" />
                     } @else {
                       <span class="initials" aria-hidden="true">{{ initials() }}</span>
                     }
@@ -266,7 +266,7 @@
 
           @if (signatureUrl(); as url) {
             <div class="signature">
-              <img [src]="url" alt="Tu firma actual" />
+              <img [src]="url | publicUrl" alt="Tu firma actual" />
             </div>
           } @else {
             <p class="empty-sign">

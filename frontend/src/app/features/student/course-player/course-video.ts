@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -84,6 +85,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
 }
 
 @Component({
+  imports: [PublicUrlPipe],
   selector: 'app-course-video',
   template: `
     @if (native()) {
@@ -92,7 +94,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
         controls
         playsinline
         preload="metadata"
-        [src]="src()"
+        [src]="src() | publicUrl"
         [poster]="poster()"
         [attr.aria-label]="title()"
         (loadedmetadata)="nativeSample(true)"
@@ -110,7 +112,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
       <div #frameHost class="embed-player"></div>
       @if (embedded.provider === 'youtube') {
         <div class="video-actions">
-          <a [href]="originalUrl()" target="_blank" rel="noopener noreferrer"
+          <a [href]="originalUrl() | publicUrl" target="_blank" rel="noopener noreferrer"
             >Abrir en YouTube &#8599;</a
           >
           <button type="button" (click)="switchYouTubeHost()">
@@ -134,7 +136,9 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
         </p>
         <button type="button" (click)="retry()">Reintentar video</button>
         @if (safeLink()) {
-          <a [href]="src()" target="_blank" rel="noopener noreferrer">Abrir original ↗</a>
+          <a [href]="src() | publicUrl" target="_blank" rel="noopener noreferrer"
+            >Abrir original ↗</a
+          >
         }
       </div>
     }
