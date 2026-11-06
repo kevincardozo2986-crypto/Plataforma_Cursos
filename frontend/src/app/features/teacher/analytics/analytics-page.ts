@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -43,7 +44,7 @@ const number = new Intl.NumberFormat('es-CO');
  */
 @Component({
   selector: 'app-analytics-page',
-  imports: [DatePipe, RouterLink, Icon],
+  imports: [TranslatePipe, DatePipe, RouterLink, Icon],
   templateUrl: './analytics-page.html',
   styleUrl: './analytics-page.scss',
 })

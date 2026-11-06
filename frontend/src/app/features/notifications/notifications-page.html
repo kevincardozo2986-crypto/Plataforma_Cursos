@@ -1,12 +1,12 @@
 <section class="panel-page">
   <div class="panel-container narrow">
     <app-page-header
-      title="Notificaciones"
+      [title]="'Notificaciones' | t"
       subtitle="Avisos de tus cursos: preguntas, reseñas, calificaciones y más."
     >
       @if (center.unread() > 0) {
         <button type="button" class="panel-btn panel-btn--ghost" (click)="markAll()">
-          Marcar todas como leídas
+          {{ 'Marcar todas como leídas' | t }}
         </button>
       }
     </app-page-header>
@@ -15,7 +15,7 @@
       <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
     }
 
-    <div class="filters" role="group" aria-label="Qué mostrar">
+    <div class="filters" role="group" [attr.aria-label]="'Qué mostrar' | t">
       <button
         type="button"
         class="chip"
@@ -23,7 +23,7 @@
         [attr.aria-pressed]="!onlyUnread()"
         (click)="setUnread(false)"
       >
-        Todas
+        {{ 'Todas' | t }}
       </button>
       <button
         type="button"
@@ -32,7 +32,7 @@
         [attr.aria-pressed]="onlyUnread()"
         (click)="setUnread(true)"
       >
-        Sin leer
+        {{ 'Sin leer' | t }}
         @if (center.unread() > 0) {
           <span class="count">{{ center.unread() }}</span>
         }
@@ -40,16 +40,18 @@
     </div>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando notificaciones…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando notificaciones…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">🔔</span>
-        <h2>{{ onlyUnread() ? 'Estás al día' : 'No tienes notificaciones' }}</h2>
+        <h2>{{ onlyUnread() ? ('Estás al día' | t) : ('No tienes notificaciones' | t) }}</h2>
         <p>
           {{
             onlyUnread()
-              ? 'No tienes avisos sin leer.'
-              : 'Cuando pase algo en tus cursos, te avisaremos aquí.'
+              ? ('No tienes avisos sin leer.' | t)
+              : ('Cuando pase algo en tus cursos, te avisaremos aquí.' | t)
           }}
         </p>
       </div>
@@ -70,7 +72,7 @@
               </span>
               <span class="when">{{ timeAgo(item.createdAt) }}</span>
               @if (!item.readAt) {
-                <span class="sr-only">Sin leer</span>
+                <span class="sr-only">{{ 'Sin leer' | t }}</span>
               }
             </button>
           </li>
@@ -78,14 +80,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -93,7 +95,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

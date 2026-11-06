@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { publicUrl } from '../../../core/http/public-url';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
@@ -31,12 +32,12 @@ export function allowedMaterialUrl(value: string): boolean {
   );
 }
 @Component({
-  imports: [PublicUrlPipe],
+  imports: [TranslatePipe, PublicUrlPipe],
   selector: 'app-lesson-resource',
   template: `
     <section class="material">
       <header>
-        <span>{{ labels[kind()] }}</span>
+        <span>{{ labels[kind()] | t }}</span>
         <h3>{{ resource().title }}</h3>
       </header>
       @if (allowed()) {

@@ -35,7 +35,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          Abrir POK
+          {{ 'Abrir POK' | t }}
           <svg
             width="14"
             height="14"
@@ -51,7 +51,7 @@
         </a>
       </div>
 
-      <p class="cv-eyebrow rel">Espacio docente / <b>POK</b></p>
+      <p class="cv-eyebrow rel">{{ 'Espacio docente /' | t }} <b>POK</b></p>
       <div class="px-hero__main">
         <div class="px-minis" aria-hidden="true">
           <div class="px-mini px-mini--back">
@@ -72,10 +72,14 @@
           </div>
         </div>
         <div>
-          <h1>Credenciales <em>digitales</em></h1>
+          <h1>
+            {{ 'Credenciales' | t }} <em>{{ 'digitales' | t }}</em>
+          </h1>
           <p class="px-hero__sub">
-            Elige qué recibe cada estudiante al terminar un curso y mira cómo se verá antes de
-            enviarlo.
+            {{
+              'Elige qué recibe cada estudiante al terminar un curso y mira cómo se verá antes de enviarlo.'
+                | t
+            }}
           </p>
         </div>
       </div>
@@ -106,7 +110,7 @@
                 }
               </svg>
             </span>
-            {{ c.organization ? 'Conectado a' : 'Sin conexión con' }} <b>POK</b>
+            {{ c.organization ? ('Conectado a' | t) : ('Sin conexión con' | t) }} <b>POK</b>
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
@@ -124,7 +128,7 @@
                 <path d="M12 8v8M9 11h6" />
               </svg>
             </span>
-            <b>{{ credits() }}</b> créditos
+            <b>{{ credits() }}</b> {{ 'créditos' | t }}
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
@@ -143,7 +147,7 @@
                 <path d="m9 13-1 7 4-2 4 2-1-7" />
               </svg>
             </span>
-            <b>{{ counts().pok }}</b> cursos con POK
+            <b>{{ counts().pok }}</b> {{ 'cursos con POK' | t }}
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
@@ -161,7 +165,7 @@
                 <path d="M4 12h16M14 6l6 6-6 6" />
               </svg>
             </span>
-            <b>{{ unsentTotal() }}</b> en espera
+            <b>{{ unsentTotal() }}</b> {{ 'en espera' | t }}
           </span>
         </div>
       }
@@ -183,18 +187,26 @@
           <path d="M12 10v4M12 17h.01" />
         </svg>
         <p>{{ error() }}</p>
-        <button type="button" class="cv-btn cv-btn--ghost" (click)="load()">Reintentar</button>
+        <button type="button" class="cv-btn cv-btn--ghost" (click)="load()">
+          {{ 'Reintentar' | t }}
+        </button>
       </div>
     }
 
     @if (loading()) {
-      <p class="px-empty" role="status">Consultando POK…</p>
+      <p class="px-empty" role="status">{{ 'Consultando POK…' | t }}</p>
     } @else if (!conn()) {
       <section class="pk-panel">
         <div class="px-empty">
-          <b>POK no está activado.</b> Falta la clave de API en el servidor: quien administra la
-          plataforma debe agregar <code>POK_API_KEY</code> en <code>backend/.env</code> y reiniciar
-          la API. Mientras tanto, los certificados de la plataforma se emiten con normalidad.
+          <b>{{ 'POK no está activado.' | t }}</b>
+          {{
+            'Falta la clave de API en el servidor: quien administra la plataforma debe agregar' | t
+          }}
+          <code>POK_API_KEY</code> en <code>backend/.env</code>
+          {{
+            'y reiniciar la API. Mientras tanto, los certificados de la plataforma se emiten con normalidad.'
+              | t
+          }}
         </div>
       </section>
     } @else {
@@ -214,8 +226,11 @@
             <path d="M12 10v4M12 17h.01" />
           </svg>
           <p>
-            <b>{{ unsentTotal() }} {{ unsentTotal() === 1 ? 'credencial' : 'credenciales' }}</b>
-            {{ unsentTotal() === 1 ? 'espera' : 'esperan' }} ser enviada{{
+            <b
+              >{{ unsentTotal() }}
+              {{ unsentTotal() === 1 ? ('credencial' | t) : ('credenciales' | t) }}</b
+            >
+            {{ unsentTotal() === 1 ? ('espera' | t) : ('esperan' | t) }} ser enviada{{
               unsentTotal() === 1 ? '' : 's'
             }}
             a POK.
@@ -226,14 +241,14 @@
             [disabled]="sending()"
             (click)="sendAll()"
           >
-            {{ sending() ? 'Enviando…' : 'Enviar todas' }}
+            {{ sending() ? ('Enviando…' | t) : 'Enviar todas' }}
           </button>
         </div>
       }
 
       <div class="px-top">
         <!-- Estado de emisión -->
-        <section class="pk-panel px-ready" aria-label="Estado de emisión">
+        <section class="pk-panel px-ready" [attr.aria-label]="'Estado de emisión' | t">
           <div class="px-ready__head">
             <div class="px-ring" [class.is-done]="readyCount() === steps().length">
               <svg viewBox="0 0 96 96" aria-hidden="true">
@@ -248,24 +263,26 @@
                 />
               </svg>
               <div class="px-ring__txt">
-                <div>{{ readyCount() }}/{{ steps().length }}<small>listo</small></div>
+                <div>
+                  {{ readyCount() }}/{{ steps().length }}<small>{{ 'listo' | t }}</small>
+                </div>
               </div>
             </div>
             <div>
               <p class="px-ready__title">
                 {{
                   readyCount() === steps().length
-                    ? '¡Todo listo para emitir!'
+                    ? ('¡Todo listo para emitir!' | t)
                     : missing() === 1
-                      ? 'Te falta 1 paso para emitir'
+                      ? ('Te falta 1 paso para emitir' | t)
                       : 'Te faltan ' + missing() + ' pasos para emitir'
                 }}
               </p>
               <p class="px-ready__sub">
                 {{
                   readyCount() === steps().length
-                    ? 'Las credenciales se envían apenas un estudiante termina el curso.'
-                    : 'Resuelve lo que está marcado y las credenciales saldrán solas.'
+                    ? ('Las credenciales se envían apenas un estudiante termina el curso.' | t)
+                    : ('Resuelve lo que está marcado y las credenciales saldrán solas.' | t)
                 }}
               </p>
             </div>
@@ -330,8 +347,9 @@
                     <div>
                       <div class="px-expand__in">
                         <p class="px-hint">
-                          Para emitir de verdad, en <code>backend/.env</code> pon
-                          <code>POK_SAVE_AS_DRAFT=false</code> y reinicia la API.
+                          {{ 'Para emitir de verdad, en' | t }} <code>backend/.env</code>
+                          {{ 'pon' | t }} <code>POK_SAVE_AS_DRAFT=false</code>
+                          {{ 'y reinicia la API.' | t }}
                         </p>
                       </div>
                     </div>
@@ -343,10 +361,10 @@
         </section>
 
         <!-- Vista previa: la imagen real que genera POK con tu diseño -->
-        <section class="pk-panel px-stage" aria-label="Vista previa de la credencial">
+        <section class="pk-panel px-stage" [attr.aria-label]="'Vista previa de la credencial' | t">
           <div class="px-stage__head">
-            <p>Así la recibe tu estudiante</p>
-            <span class="cv-chip">Credencial POK</span>
+            <p>{{ 'Así la recibe tu estudiante' | t }}</p>
+            <span class="cv-chip">{{ 'Credencial POK' | t }}</span>
           </div>
           <div class="px-stage__body">
             @if (previewTemplateId()) {
@@ -361,15 +379,17 @@
                 }
                 @if (previewLoading()) {
                   <div class="px-preview__wait" role="status">
-                    <span class="px-spin"></span> Generando vista previa…
+                    <span class="px-spin"></span> {{ 'Generando vista previa…' | t }}
                   </div>
                 }
                 <div class="px-preview__shine"></div>
               </div>
             } @else {
               <p class="px-empty">
-                Cuando tengas un diseño en tu cuenta de POK, aquí verás cómo recibe el estudiante su
-                credencial.
+                {{
+                  'Cuando tengas un diseño en tu cuenta de POK, aquí verás cómo recibe el estudiante su credencial.'
+                    | t
+                }}
               </p>
             }
           </div>
@@ -379,8 +399,8 @@
           } @else if (selected(); as course) {
             @if (!isPok(course)) {
               <p class="px-preview__note">
-                Este curso entrega hoy el <b>PDF de la plataforma</b>. Así se vería con POK:
-                cámbialo con el interruptor de la lista.
+                {{ 'Este curso entrega hoy el' | t }} <b>{{ 'PDF de la plataforma' | t }}</b
+                >{{ '. Así se vería con POK: cámbialo con el interruptor de la lista.' | t }}
               </p>
             }
           }
@@ -404,13 +424,13 @@
                 <input
                   type="search"
                   placeholder="Buscar entre {{ templates().length }} diseños"
-                  aria-label="Buscar diseño"
+                  [attr.aria-label]="'Buscar diseño' | t"
                   [value]="designQuery()"
                   (input)="onDesignSearch($event)"
                 />
               </label>
             }
-            <div class="px-designs__list" role="group" aria-label="Diseños de POK">
+            <div class="px-designs__list" role="group" [attr.aria-label]="'Diseños de POK' | t">
               @for (template of shownTemplates(); track template.id) {
                 <button
                   type="button"
@@ -434,7 +454,7 @@
               href="https://pok.tech"
               target="_blank"
               rel="noopener noreferrer"
-              >+ Crear diseño en POK</a
+              >{{ '+ Crear diseño en POK' | t }}</a
             >
             @if (templatesError()) {
               <span class="px-muted" role="alert">{{ templatesError() }}</span>
@@ -444,10 +464,10 @@
       </div>
 
       <!-- Certificado de cada curso -->
-      <section class="pk-panel" aria-label="Certificado de cada curso">
+      <section class="pk-panel" [attr.aria-label]="'Certificado de cada curso' | t">
         <div class="px-list__head">
-          <h2>Certificado de cada curso</h2>
-          <div class="cv-tabs" role="tablist" aria-label="Filtrar cursos">
+          <h2>{{ 'Certificado de cada curso' | t }}</h2>
+          <div class="cv-tabs" role="tablist" [attr.aria-label]="'Filtrar cursos' | t">
             @for (tab of tabs; track tab.id) {
               <button
                 type="button"
@@ -456,7 +476,7 @@
                 [attr.aria-selected]="filter() === tab.id"
                 (click)="setFilter(tab.id)"
               >
-                {{ tab.label }} <span class="cv-tab__count">{{ counts()[tab.id] }}</span>
+                {{ tab.label | t }} <span class="cv-tab__count">{{ counts()[tab.id] }}</span>
               </button>
             }
           </div>
@@ -475,8 +495,10 @@
             <circle cx="12" cy="12" r="9" />
             <path d="M12 11v5M12 8h.01" />
           </svg>
-          Haz clic en un curso para ver su credencial. Si cambias el tipo, quienes ya terminaron
-          conservan lo que recibieron.
+          {{
+            'Haz clic en un curso para ver su credencial. Si cambias el tipo, quienes ya terminaron conservan lo que recibieron.'
+              | t
+          }}
         </p>
 
         @for (course of visibleCourses(); track course.id) {
@@ -499,7 +521,7 @@
               </div>
               <div class="pk-course__text">
                 <p class="pk-course__name">{{ course.title }}</p>
-                <p class="pk-course__meta">{{ statusLabels[course.status] }}</p>
+                <p class="pk-course__meta">{{ statusLabels[course.status] | t }}</p>
               </div>
             </div>
 
@@ -551,7 +573,7 @@
 
             <div>
               @if (!isPok(course)) {
-                <span class="px-muted">Se descarga al terminar</span>
+                <span class="px-muted">{{ 'Se descarga al terminar' | t }}</span>
               } @else if (course.unsent === 0) {
                 <span class="pk-ok">
                   <svg
@@ -567,10 +589,12 @@
                   >
                     <path d="m5 12 5 5 9-10" />
                   </svg>
-                  Al día
+                  {{ 'Al día' | t }}
                 </span>
               } @else {
-                <span class="cv-badge cv-badge--warn">{{ course.unsent }} en espera</span>
+                <span class="cv-badge cv-badge--warn"
+                  >{{ course.unsent }} {{ 'en espera' | t }}</span
+                >
               }
             </div>
 
@@ -583,7 +607,7 @@
                   (click)="send(course)"
                 >
                   @if (busyId() === course.id) {
-                    <span class="px-spin"></span> Enviando
+                    <span class="px-spin"></span> {{ 'Enviando' | t }}
                   } @else {
                     <svg
                       width="14"
@@ -597,7 +621,7 @@
                     >
                       <path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" />
                     </svg>
-                    Enviar {{ course.unsent }}
+                    {{ 'Enviar' | t }} {{ course.unsent }}
                   }
                 </button>
               }

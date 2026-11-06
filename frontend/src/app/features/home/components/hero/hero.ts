@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, afterNextRender, DestroyRef, ElementRef, NgZone, inject } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
@@ -7,7 +8,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 @Component({
   selector: 'app-hero',
 
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
 
   templateUrl: './hero.html',
   styleUrl: './hero.scss',

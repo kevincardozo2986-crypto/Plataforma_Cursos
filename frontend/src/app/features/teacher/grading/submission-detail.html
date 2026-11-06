@@ -1,6 +1,6 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <a class="back" routerLink="/teacher/assignments">← Volver a tareas</a>
+    <a class="back" routerLink="/teacher/assignments">{{ '← Volver a tareas' | t }}</a>
 
     @if (error()) {
       <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
@@ -10,7 +10,9 @@
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando entrega…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando entrega…' | t }}</p>
+      </div>
     } @else if (submission(); as data) {
       <header class="panel-card summary">
         <div>
@@ -19,19 +21,19 @@
             {{ data.student.email }} · {{ data.assignment.title }} · {{ data.course.title }}
           </p>
           <p class="meta panel-muted">
-            Entregada el {{ data.submittedAt | date: "d 'de' MMM y, HH:mm" }}
+            Entregada el {{ data.submittedAt | date: "d ('de' | t) MMM y, HH:mm" }}
             @if (data.assignment.dueAt) {
-              · Fecha límite {{ data.assignment.dueAt | date: "d 'de' MMM y, HH:mm" }}
+              · Fecha límite {{ data.assignment.dueAt | date: "d ('de' | t) MMM y, HH:mm" }}
             }
           </p>
         </div>
 
         <div class="result">
           @if (data.late) {
-            <span class="flag">Entregada tarde</span>
+            <span class="flag">{{ 'Entregada tarde' | t }}</span>
           }
           <span class="state" [class.done]="data.status === 'GRADED'">
-            {{ data.status === 'GRADED' ? 'Calificada' : 'Por calificar' }}
+            {{ data.status === 'GRADED' ? ('Calificada' | t) : ('Por calificar' | t) }}
           </span>
           @if (data.score !== null) {
             <strong class="big">{{ data.score }}/{{ data.maxScore }}</strong>
@@ -40,15 +42,15 @@
       </header>
 
       <section class="panel-card block">
-        <h2>Entrega</h2>
+        <h2>{{ 'Entrega' | t }}</h2>
 
         @if (data.text) {
-          <p class="label">Texto</p>
+          <p class="label">{{ 'Texto' | t }}</p>
           <p class="answer">{{ data.text }}</p>
         }
 
         @if (data.files.length > 0) {
-          <p class="label">Archivos</p>
+          <p class="label">{{ 'Archivos' | t }}</p>
           <ul class="files">
             @for (file of data.files; track file.name) {
               <li>
@@ -60,18 +62,18 @@
                   [disabled]="downloading() === file.name"
                   (click)="download(file)"
                 >
-                  {{ downloading() === file.name ? 'Descargando…' : 'Descargar' }}
+                  {{ downloading() === file.name ? ('Descargando…' | t) : ('Descargar' | t) }}
                 </button>
               </li>
             }
           </ul>
         } @else if (!data.text) {
-          <p class="panel-muted">La entrega no trae contenido.</p>
+          <p class="panel-muted">{{ 'La entrega no trae contenido.' | t }}</p>
         }
       </section>
 
       <form class="panel-card block" (ngSubmit)="save(data.maxScore)">
-        <h2>{{ data.status === 'GRADED' ? 'Corregir la nota' : 'Calificar' }}</h2>
+        <h2>{{ data.status === 'GRADED' ? ('Corregir la nota' | t) : ('Calificar' | t) }}</h2>
 
         <div class="panel-field points">
           <label for="score">Nota (0 a {{ data.maxScore }})</label>
@@ -90,7 +92,7 @@
         </div>
 
         <div class="panel-field">
-          <label for="feedback">Comentario para el estudiante (opcional)</label>
+          <label for="feedback">{{ 'Comentario para el estudiante (opcional)' | t }}</label>
           <textarea
             id="feedback"
             name="feedback"
@@ -103,7 +105,7 @@
 
         <div>
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-            {{ saving() ? 'Guardando…' : 'Guardar calificación' }}
+            {{ saving() ? ('Guardando…' | t) : 'Guardar calificación' }}
           </button>
         </div>
       </form>

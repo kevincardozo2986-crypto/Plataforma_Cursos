@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, effect, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -18,7 +19,7 @@ function readCollapsed(): boolean {
 /** Estructura del área del docente: menú lateral a la izquierda y la página a la derecha. */
 @Component({
   selector: 'app-teacher-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet],
+  imports: [TranslatePipe, RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet],
   templateUrl: './teacher-shell.html',
   styleUrl: './teacher-shell.scss',
 })

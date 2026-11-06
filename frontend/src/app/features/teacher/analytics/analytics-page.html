@@ -3,9 +3,13 @@
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="chart" [size]="26" /></span>
       <div class="hero-copy">
-          <span class="eyebrow">ESPACIO DOCENTE / ANALÍTICAS</span>
-          <h1>Analíticas</h1>
-          <p>Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.</p>
+        <span class="eyebrow">{{ 'ESPACIO DOCENTE / ANALÍTICAS' | t }}</span>
+        <h1>{{ 'Analíticas' | t }}</h1>
+        <p>
+          {{
+            'Cómo van tus cursos, quién avanza y quién se quedó atrás, y qué dicen las reseñas.' | t
+          }}
+        </p>
       </div>
       <button
         type="button"
@@ -14,15 +18,13 @@
         (click)="exportCurrent()"
       >
         <app-icon name="download" [size]="17" />
-        {{ exporting() ? 'Preparando…' : 'Exportar a Excel (CSV)' }}
+        {{ exporting() ? ('Preparando…' | t) : ('Exportar a Excel (CSV)' | t) }}
       </button>
     </header>
 
     <div class="filters">
-      <div class="periods" role="group" aria-label="Periodo">
-        <span class="field-icon" aria-hidden="true"
-          ><app-icon name="calendar" [size]="16"
-        /></span>
+      <div class="periods" role="group" [attr.aria-label]="'Periodo' | t">
+        <span class="field-icon" aria-hidden="true"><app-icon name="calendar" [size]="16" /></span>
         @for (entry of periods; track entry.value) {
           <button
             type="button"
@@ -31,17 +33,16 @@
             [attr.aria-pressed]="period() === entry.value"
             (click)="setPeriod(entry.value)"
           >
-            {{ entry.label }}
+            {{ entry.label | t }}
           </button>
         }
       </div>
 
-
       <label class="course">
-        <span class="sr-only">Curso</span>
+        <span class="sr-only">{{ 'Curso' | t }}</span>
         <span class="select-icon" aria-hidden="true"><app-icon name="book" [size]="16" /></span>
         <select class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id" [selected]="course.id === courseId()">
               {{ course.title }}
@@ -68,14 +69,13 @@
           <span class="tile-icon" aria-hidden="true"
             ><app-icon [name]="tile.icon" [size]="19"
           /></span>
-          <span class="label">{{ tile.label }}</span>
+          <span class="label">{{ tile.label | t }}</span>
           <strong class="value">{{ tile.value }}</strong>
         </li>
       }
     </ul>
 
-
-    <div class="tabs" role="tablist" aria-label="Reportes">
+    <div class="tabs" role="tablist" [attr.aria-label]="'Reportes' | t">
       <button
         type="button"
         role="tab"
@@ -84,7 +84,7 @@
         [attr.aria-selected]="tab() === 'courses'"
         (click)="tab.set('courses')"
       >
-        <app-icon name="book" [size]="17" /> Cursos
+        <app-icon name="book" [size]="17" /> {{ 'Cursos' | t }}
       </button>
       <button
         type="button"
@@ -94,7 +94,7 @@
         [attr.aria-selected]="tab() === 'students'"
         (click)="tab.set('students')"
       >
-        <app-icon name="users" [size]="17" /> Estudiantes
+        <app-icon name="users" [size]="17" /> {{ 'Estudiantes' | t }}
         <span class="count">{{ studentsTotal() }}</span>
       </button>
       <button
@@ -105,7 +105,7 @@
         [attr.aria-selected]="tab() === 'ratings'"
         (click)="tab.set('ratings')"
       >
-        <app-icon name="star" [size]="17" /> Reseñas
+        <app-icon name="star" [size]="17" /> {{ 'Reseñas' | t }}
         <span class="count">{{ ratings()?.count ?? 0 }}</span>
       </button>
     </div>
@@ -113,26 +113,26 @@
     @if (tab() === 'courses') {
       @if (data(); as d) {
         <section class="panel-card block">
-          <h2><app-icon name="trend" [size]="19" /> Inscripciones y finalizaciones</h2>
+          <h2><app-icon name="trend" [size]="19" /> {{ 'Inscripciones y finalizaciones' | t }}</h2>
 
           @if (
             bars().length === 0 || (d.completion.enrolled === 0 && d.completion.completed === 0)
           ) {
             <p class="empty">
-              <app-icon name="calendar" [size]="20" /> No hubo movimiento en este periodo. Prueba
-              con uno más largo.
+              <app-icon name="calendar" [size]="20" />
+              {{ 'No hubo movimiento en este periodo. Prueba con uno más largo.' | t }}
             </p>
           } @else {
-            <ul class="legend" aria-label="Leyenda">
-              <li><span class="key s1"></span> Inscripciones</li>
-              <li><span class="key s2"></span> Finalizaciones</li>
+            <ul class="legend" [attr.aria-label]="'Leyenda' | t">
+              <li><span class="key s1"></span> {{ 'Inscripciones' | t }}</li>
+              <li><span class="key s2"></span> {{ 'Finalizaciones' | t }}</li>
             </ul>
             <div
               class="columns"
               role="img"
               [attr.aria-label]="
                 'Inscripciones y finalizaciones por ' +
-                  (d.bucket === 'month' ? 'mes' : d.bucket === 'week' ? 'semana' : 'día')
+                (d.bucket === 'month' ? 'mes' : d.bucket === 'week' ? 'semana' : ('día' | t))
               "
             >
               @for (bar of bars(); track $index) {
@@ -161,22 +161,22 @@
         </section>
 
         <section class="panel-card block">
-          <h2><app-icon name="list" [size]="19" /> Por curso</h2>
+          <h2><app-icon name="list" [size]="19" /> {{ 'Por curso' | t }}</h2>
 
           @if (d.courseBreakdown.length === 0) {
             <p class="empty">
-              <app-icon name="book" [size]="20" /> Todavía no hay cursos para medir.
+              <app-icon name="book" [size]="20" /> {{ 'Todavía no hay cursos para medir.' | t }}
             </p>
           } @else {
             <div class="table-scroll">
               <table>
                 <thead>
                   <tr>
-                    <th scope="col">Curso</th>
-                    <th scope="col">Inscritos</th>
-                    <th scope="col">Finalización</th>
-                    <th scope="col" class="num">Nota media</th>
-                    <th scope="col" class="num">Calificación</th>
+                    <th scope="col">{{ 'Curso' | t }}</th>
+                    <th scope="col">{{ 'Inscritos' | t }}</th>
+                    <th scope="col">{{ 'Finalización' | t }}</th>
+                    <th scope="col" class="num">{{ 'Nota media' | t }}</th>
+                    <th scope="col" class="num">{{ 'Calificación' | t }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -190,7 +190,7 @@
                           >{{ course.title }}</a
                         >
                         <span class="status" [attr.data-status]="course.status">{{
-                          statusLabels[course.status]
+                          statusLabels[course.status] | t
                         }}</span>
                       </th>
                       <td class="wide">
@@ -236,7 +236,9 @@
           }
         </section>
       } @else if (loading()) {
-        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando analíticas…</p>
+        <p class="empty">
+          <app-icon name="refresh" [size]="18" /> {{ 'Cargando analíticas…' | t }}
+        </p>
       }
     }
 
@@ -244,25 +246,25 @@
       <section class="panel-card block">
         <div class="students-bar">
           <label class="search">
-            <span class="sr-only">Buscar estudiante</span>
+            <span class="sr-only">{{ 'Buscar estudiante' | t }}</span>
             <span class="select-icon" aria-hidden="true"
               ><app-icon name="search" [size]="16"
             /></span>
             <input
               class="panel-input"
               type="search"
-              placeholder="Buscar por nombre o correo"
+              [placeholder]="'Buscar por nombre o correo' | t"
               [value]="search()"
               (input)="onSearch($event)"
             />
           </label>
 
           <label class="state">
-            <span class="sr-only">Estado</span>
+            <span class="sr-only">{{ 'Estado' | t }}</span>
             <select class="panel-select" (change)="setState($event)">
-              <option value="">Todos los estados</option>
+              <option value="">{{ 'Todos los estados' | t }}</option>
               @for (item of states; track item) {
-                <option [value]="item">{{ stateLabels[item] }}</option>
+                <option [value]="item">{{ stateLabels[item] | t }}</option>
               }
             </select>
           </label>
@@ -274,23 +276,25 @@
         </div>
 
         @if (studentsLoading() && students().length === 0) {
-          <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando estudiantes…</p>
+          <p class="empty">
+            <app-icon name="refresh" [size]="18" /> {{ 'Cargando estudiantes…' | t }}
+          </p>
         } @else if (students().length === 0) {
           <p class="empty">
-            <app-icon name="users" [size]="20" /> No hay estudiantes con esos filtros.
+            <app-icon name="users" [size]="20" /> {{ 'No hay estudiantes con esos filtros.' | t }}
           </p>
         } @else {
           <div class="table-scroll" [class.dim]="studentsLoading()">
             <table>
               <thead>
                 <tr>
-                  <th scope="col">Estudiante</th>
-                  <th scope="col">Curso</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Avance</th>
-                  <th scope="col">Última actividad</th>
+                  <th scope="col">{{ 'Estudiante' | t }}</th>
+                  <th scope="col">{{ 'Curso' | t }}</th>
+                  <th scope="col">{{ 'Estado' | t }}</th>
+                  <th scope="col">{{ 'Avance' | t }}</th>
+                  <th scope="col">{{ 'Última actividad' | t }}</th>
                   <th scope="col" class="num">Quizzes</th>
-                  <th scope="col" class="num">Tareas</th>
+                  <th scope="col" class="num">{{ 'Tareas' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -308,7 +312,7 @@
                     <td>{{ row.course.title }}</td>
                     <td>
                       <span class="pill" [attr.data-state]="row.state">{{
-                        stateLabels[row.state]
+                        stateLabels[row.state] | t
                       }}</span>
                     </td>
                     <td class="wide">
@@ -332,7 +336,7 @@
                       @if (row.lastActivityAt) {
                         {{ row.lastActivityAt | date: 'd MMM y' }}
                       } @else {
-                        <span class="muted">Sin actividad</span>
+                        <span class="muted">{{ 'Sin actividad' | t }}</span>
                       }
                     </td>
                     <td class="num">{{ row.quizAverage === null ? '—' : row.quizAverage }}</td>
@@ -346,14 +350,16 @@
           </div>
 
           <div class="pager">
-            <span class="muted">{{ from() }}–{{ to() }} de {{ fmt(studentsTotal()) }}</span>
+            <span class="muted"
+              >{{ from() }}–{{ to() }} {{ 'de' | t }} {{ fmt(studentsTotal()) }}</span
+            >
             <button
               type="button"
               class="panel-btn panel-btn--ghost panel-btn--sm"
               [disabled]="!hasPrev()"
               (click)="page(-1)"
             >
-              <app-icon name="arrow-left" [size]="15" /> Anterior
+              <app-icon name="arrow-left" [size]="15" /> {{ 'Anterior' | t }}
             </button>
             <button
               type="button"
@@ -361,7 +367,7 @@
               [disabled]="!hasNext()"
               (click)="page(1)"
             >
-              Siguiente <app-icon name="chevron-right" [size]="15" />
+              {{ 'Siguiente' | t }} <app-icon name="chevron-right" [size]="15" />
             </button>
           </div>
         }
@@ -372,11 +378,12 @@
       @if (ratings(); as r) {
         <div class="ratings-grid">
           <section class="panel-card block">
-            <h2><app-icon name="star" [size]="19" /> Calificación</h2>
+            <h2><app-icon name="star" [size]="19" /> {{ 'Calificación' | t }}</h2>
 
             @if (r.count === 0) {
               <p class="empty">
-                <app-icon name="star" [size]="20" /> Todavía no hay reseñas en este periodo.
+                <app-icon name="star" [size]="20" />
+                {{ 'Todavía no hay reseñas en este periodo.' | t }}
               </p>
             } @else {
               <div class="big">
@@ -385,7 +392,7 @@
                   stars(Math.round(r.average ?? 0))
                 }}</span>
                 <span class="muted"
-                  >{{ fmt(r.count) }} {{ r.count === 1 ? 'reseña' : 'reseñas' }}</span
+                  >{{ fmt(r.count) }} {{ r.count === 1 ? ('reseña' | t) : ('reseñas' | t) }}</span
                 >
               </div>
 
@@ -404,11 +411,11 @@
           </section>
 
           <section class="panel-card block">
-            <h2><app-icon name="file" [size]="19" /> Reseñas recientes</h2>
+            <h2><app-icon name="file" [size]="19" /> {{ 'Reseñas recientes' | t }}</h2>
 
             @if (r.recent.length === 0) {
               <p class="empty">
-                <app-icon name="info" [size]="20" /> Aquí aparecerán los comentarios.
+                <app-icon name="info" [size]="20" /> {{ 'Aquí aparecerán los comentarios.' | t }}
               </p>
             } @else {
               <ul class="reviews">
@@ -432,13 +439,13 @@
                 }
               </ul>
               <a class="all" routerLink="/teacher/reviews"
-                >Ver y responder todas <app-icon name="chevron-right" [size]="14"
+                >{{ 'Ver y responder todas' | t }} <app-icon name="chevron-right" [size]="14"
               /></a>
             }
           </section>
         </div>
       } @else if (loading()) {
-        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando reseñas…</p>
+        <p class="empty"><app-icon name="refresh" [size]="18" /> {{ 'Cargando reseñas…' | t }}</p>
       }
     }
   </div>

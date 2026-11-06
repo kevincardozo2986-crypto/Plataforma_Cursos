@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -25,14 +26,7 @@ import {
 import { coverColorOf, monogram } from '../courses/course-list/course-list-helpers';
 import { TeacherCourse } from '../courses/teacher-courses.models';
 import { TeacherCoursesService } from '../courses/teacher-courses.service';
-import {
-  Bucket,
-  barPath,
-  bucketLabel,
-  bucketNoun,
-  deltaOf,
-  layoutBars,
-} from './chart';
+import { Bucket, barPath, bucketLabel, bucketNoun, deltaOf, layoutBars } from './chart';
 
 type SortKey = 'title' | 'enrolled' | 'rate';
 
@@ -53,7 +47,7 @@ const RING_LENGTH = 251.33; // 2π · 40
 /** Resumen del docente: indicadores, gráfica de inscripciones y finalizaciones, avisos y tabla por curso. */
 @Component({
   selector: 'app-teacher-stats',
-  imports: [RouterLink, NgTemplateOutlet],
+  imports: [TranslatePipe, RouterLink, NgTemplateOutlet],
   templateUrl: './teacher-stats.html',
   styleUrl: './teacher-stats.scss',
 })
@@ -105,7 +99,9 @@ export class TeacherStats {
     return id === null ? null : (this.courses().find((course) => course.id === id) ?? null);
   });
 
-  readonly selectable = computed(() => this.courses().filter((course) => course.status !== 'DRAFT'));
+  readonly selectable = computed(() =>
+    this.courses().filter((course) => course.status !== 'DRAFT'),
+  );
 
   // --- Indicadores ---
 
@@ -241,7 +237,9 @@ export class TeacherStats {
   });
 
   readonly drafts = computed(() => this.data()?.courses.draft ?? 0);
-  readonly hasHighlights = computed(() => !!this.best() || this.empty().length > 0 || this.drafts() > 0);
+  readonly hasHighlights = computed(
+    () => !!this.best() || this.empty().length > 0 || this.drafts() > 0,
+  );
 
   // --- Tabla por curso ---
 
@@ -359,7 +357,11 @@ export class TeacherStats {
   }
 
   sortAria(key: SortKey): 'ascending' | 'descending' | 'none' {
-    return this.sortKey() === key ? (this.sortDir() === 'asc' ? 'ascending' : 'descending') : 'none';
+    return this.sortKey() === key
+      ? this.sortDir() === 'asc'
+        ? 'ascending'
+        : 'descending'
+      : 'none';
   }
 
   // --- Gráfica: cuadro flotante ---

@@ -1,7 +1,10 @@
 <section class="panel-card resources">
-  <h2>Recursos de la lección</h2>
+  <h2>{{ 'Recursos de la lección' | t }}</h2>
   <p class="panel-muted intro">
-    Agrega enlaces a PDF, videos, audios, imágenes y actividades interactivas para tus estudiantes.
+    {{
+      'Agrega enlaces a PDF, videos, audios, imágenes y actividades interactivas para tus estudiantes.'
+        | t
+    }}
   </p>
 
   @if (error()) {
@@ -11,7 +14,7 @@
   <ul class="list">
     @for (resource of resources(); track resource.id) {
       <li class="item">
-        <span class="type-tag">{{ labels[resource.type] }}</span>
+        <span class="type-tag">{{ labels[resource.type] | t }}</span>
 
         <a class="name" [href]="resource.url | publicUrl" target="_blank" rel="noopener noreferrer">
           {{ resource.title }}
@@ -19,21 +22,21 @@
 
         <span class="item-actions">
           @if (confirmId() === resource.id) {
-            <span class="confirm-text">¿Eliminar?</span>
+            <span class="confirm-text">{{ '¿Eliminar?' | t }}</span>
             <button
               type="button"
               class="panel-btn panel-btn--danger panel-btn--sm"
               [disabled]="busy()"
               (click)="remove(resource)"
             >
-              Sí
+              {{ 'Sí' | t }}
             </button>
             <button
               type="button"
               class="panel-btn panel-btn--ghost panel-btn--sm"
               (click)="confirmId.set(null)"
             >
-              No
+              {{ 'No' | t }}
             </button>
           } @else {
             <button
@@ -41,14 +44,14 @@
               class="panel-btn panel-btn--ghost panel-btn--sm"
               (click)="startEdit(resource)"
             >
-              Editar
+              {{ 'Editar' | t }}
             </button>
             <button
               type="button"
               class="panel-btn panel-btn--danger panel-btn--sm"
               (click)="confirmId.set(resource.id)"
             >
-              Quitar
+              {{ 'Quitar' | t }}
             </button>
           }
         </span>
@@ -59,17 +62,17 @@
   </ul>
 
   <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <h3>{{ editingId() === null ? 'Añadir recurso' : 'Editar recurso' }}</h3>
+    <h3>{{ editingId() === null ? ('Añadir recurso' | t) : ('Editar recurso' | t) }}</h3>
 
     <div class="grid">
       <div class="panel-field">
-        <label for="resource-title">Título</label>
+        <label for="resource-title">{{ 'Título' | t }}</label>
         <input
           id="resource-title"
           class="panel-input"
           type="text"
           formControlName="title"
-          placeholder="Ej. Guía de la clase"
+          [placeholder]="'Ej. Guía de la clase' | t"
           [attr.aria-invalid]="fieldError('title') ? 'true' : null"
         />
         @if (fieldError('title')) {
@@ -78,17 +81,17 @@
       </div>
 
       <div class="panel-field">
-        <label for="resource-type">Tipo</label>
+        <label for="resource-type">{{ 'Tipo' | t }}</label>
         <select id="resource-type" class="panel-select" formControlName="type">
           @for (type of types; track type) {
-            <option [value]="type">{{ labels[type] }}</option>
+            <option [value]="type">{{ labels[type] | t }}</option>
           }
         </select>
       </div>
     </div>
 
     <div class="panel-field">
-      <label for="resource-url">Enlace (URL)</label>
+      <label for="resource-url">{{ 'Enlace (URL)' | t }}</label>
       <input
         id="resource-url"
         class="panel-input"
@@ -105,11 +108,11 @@
     <div class="form-actions">
       @if (editingId() !== null) {
         <button type="button" class="panel-btn panel-btn--ghost" (click)="cancelEdit()">
-          Cancelar
+          {{ 'Cancelar' | t }}
         </button>
       }
       <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
-        {{ editingId() === null ? 'Añadir recurso' : 'Guardar recurso' }}
+        {{ editingId() === null ? ('Añadir recurso' | t) : ('Guardar recurso' | t) }}
       </button>
     </div>
   </form>

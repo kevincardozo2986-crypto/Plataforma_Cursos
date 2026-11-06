@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
@@ -45,7 +46,7 @@ interface MySubmission {
  */
 @Component({
   selector: 'app-student-assignments',
-  imports: [DatePipe, FormsModule, RichHtmlPipe, DocumentField, Icon],
+  imports: [TranslatePipe, DatePipe, FormsModule, RichHtmlPipe, DocumentField, Icon],
   templateUrl: './student-assignments.html',
   styleUrl: './student-assignments.scss',
 })

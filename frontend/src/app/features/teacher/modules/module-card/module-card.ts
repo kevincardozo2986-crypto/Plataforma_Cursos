@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,7 +25,15 @@ import { TeacherModulesService } from '../modules.service';
  */
 @Component({
   selector: 'app-module-card',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, ModuleUnlock, RichEditor, RichHtmlPipe],
+  imports: [
+    TranslatePipe,
+    ReactiveFormsModule,
+    RouterLink,
+    DatePipe,
+    ModuleUnlock,
+    RichEditor,
+    RichHtmlPipe,
+  ],
   templateUrl: './module-card.html',
   styleUrl: './module-card.scss',
 })

@@ -40,6 +40,17 @@ export class LanguageService {
     this.current.set(language);
   }
   translate(text: string): string {
-    return this.language() === 'en' ? (english[text] ?? text) : text;
+    if (this.language() !== 'en') return text;
+    const normalized = text.replace(/\s+/g, ' ').trim();
+    const translated = english[text] ?? english[normalized];
+    if (translated) return translated;
+    // Datos de interfaz calculados (por ejemplo, el número de módulos), no contenido del docente.
+    const count = /^(\d+)\s+(módulos?|lecciones?|cursos?|estudiantes?|horas?|minutos?|días?)$/.exec(
+      normalized,
+    );
+    if (count && english[count[2]]) return `${count[1]} ${english[count[2]]}`;
+    // Unidades producidas por el formateador de duración compartido.
+    if (/^\d+\s*h(?:\s+\d+\s*min)?$/.test(normalized)) return normalized.replace(/\bh\b/, 'hr');
+    return text;
   }
 }

@@ -1,23 +1,28 @@
 <header class="site-header">
   <div class="bar">
-    <a class="brand" [routerLink]="homeRoute()" (click)="closeMenu()" aria-label="Ir al inicio">
+    <a
+      class="brand"
+      [routerLink]="homeRoute()"
+      (click)="closeMenu()"
+      [attr.aria-label]="'Ir al inicio' | t"
+    >
       <img
         class="campus-logo campus-logo--light"
         src="images/campus-virtual-logo.png"
-        alt="Campus Virtual Universidad Santo Tomás"
+        [alt]="'Campus Virtual Universidad Santo Tomás' | t"
         width="2560"
         height="743"
       />
       <img
         class="campus-logo campus-logo--dark"
         src="images/campus-virtual-logo-white.png"
-        alt="Campus Virtual Universidad Santo Tomás"
+        [alt]="'Campus Virtual Universidad Santo Tomás' | t"
         width="1285"
         height="352"
       />
     </a>
 
-    <nav class="links" aria-label="Navegación principal">
+    <nav class="links" [attr.aria-label]="'Navegación principal' | t">
       @for (link of links(); track link.label) {
         @if (link.route && !link.soon) {
           <a
@@ -28,11 +33,11 @@
             [routerLinkActiveOptions]="link.prefix ? prefixMatchOptions : matchOptions"
             ariaCurrentWhenActive="page"
           >
-            {{ link.label }}
+            {{ link.label | t }}
           </a>
         } @else {
-          <span class="pill is-soon" aria-disabled="true" title="Próximamente">
-            {{ link.label }}
+          <span class="pill is-soon" aria-disabled="true" [title]="'Próximamente' | t">
+            {{ link.label | t }}
           </span>
         }
       }
@@ -42,7 +47,7 @@
       @if (auth.user(); as user) {
         <div class="who">
           <strong>{{ user.firstName }}</strong>
-          <small>{{ roleLabel() }}</small>
+          <small>{{ roleLabel() | t }}</small>
         </div>
 
         @if (user.role === 'STUDENT') {
@@ -50,13 +55,17 @@
             <button
               type="button"
               class="avatar avatar-button"
-              aria-label="Abrir opciones de mi cuenta"
+              [attr.aria-label]="'Abrir opciones de mi cuenta' | t"
               [attr.aria-expanded]="accountOpen()"
               aria-controls="student-account-menu"
               (click)="accountOpen.set(!accountOpen())"
             >
               @if (avatarUrl(); as photo) {
-                <img class="avatar-photo" [src]="photo | publicUrl" alt="Tu foto de perfil" />
+                <img
+                  class="avatar-photo"
+                  [src]="photo | publicUrl"
+                  [alt]="'Tu foto de perfil' | t"
+                />
               } @else {
                 {{ initials() }}
               }
@@ -72,7 +81,7 @@
                     }
                   </span>
                   <p>
-                    {{ user.firstName }}<small>{{ roleLabel() }}</small>
+                    {{ user.firstName }}<small>{{ roleLabel() | t }}</small>
                   </p>
                 </div>
                 <button type="button" (click)="openStudentPanel('account')">
@@ -81,14 +90,15 @@
                       <circle cx="12" cy="8" r="4" />
                       <path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg
                   ></span>
-                  <span>Mi cuenta</span><span class="menu-chevron" aria-hidden="true">&#8250;</span>
+                  <span>{{ 'Mi cuenta' | t }}</span
+                  ><span class="menu-chevron" aria-hidden="true">&#8250;</span>
                 </button>
                 <button type="button" (click)="openStudentPanel('notifications')">
                   <span class="menu-icon"
                     ><svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" /></svg
                   ></span>
-                  <span>Notificaciones</span
+                  <span>{{ 'Notificaciones' | t }}</span
                   ><span class="menu-chevron" aria-hidden="true">&#8250;</span>
                 </button>
                 <div class="account-divider"></div>
@@ -97,7 +107,7 @@
                     ><svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M9 4H4v16h5m6-12 4 4-4 4m-7-4h13" /></svg
                   ></span>
-                  <span>Cerrar sesi&#243;n</span>
+                  <span>{{ 'Cerrar sesión' | t }}</span>
                 </button>
               </div>
             }
@@ -106,8 +116,8 @@
           <a
             class="avatar avatar-link"
             routerLink="/teacher/profile"
-            aria-label="Ir a mi perfil"
-            title="Mi perfil"
+            [attr.aria-label]="'Ir a mi perfil' | t"
+            [title]="'Mi perfil' | t"
           >
             @if (avatarUrl(); as photo) {
               <img [src]="photo | publicUrl" alt="" />
@@ -117,8 +127,8 @@
           </a>
         }
       } @else {
-        <a class="login-link" routerLink="/login">Iniciar sesión</a>
-        <a class="register-button" routerLink="/register">Crear cuenta</a>
+        <a class="login-link" routerLink="/login">{{ 'Iniciar sesión' | t }}</a>
+        <a class="register-button" routerLink="/register">{{ 'Crear cuenta' | t }}</a>
       }
 
       <button
@@ -126,7 +136,9 @@
         class="icon-button"
         (click)="toggleDark()"
         [attr.aria-pressed]="settings.darkMode()"
-        [attr.aria-label]="settings.darkMode() ? 'Desactivar modo oscuro' : 'Activar modo oscuro'"
+        [attr.aria-label]="
+          settings.darkMode() ? ('Desactivar modo oscuro' | t) : ('Activar modo oscuro' | t)
+        "
       >
         @if (settings.darkMode()) {
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -146,7 +158,12 @@
         <app-notification-bell />
       }
       @if (auth.user() && auth.user()?.role !== 'STUDENT') {
-        <button type="button" class="icon-button" (click)="logout()" aria-label="Cerrar sesión">
+        <button
+          type="button"
+          class="icon-button"
+          (click)="logout()"
+          [attr.aria-label]="'Cerrar sesión' | t"
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M10 17l5-5-5-5" />
             <path d="M15 12H3" />
@@ -160,7 +177,7 @@
         class="icon-button mobile-toggle"
         (click)="toggleMenu()"
         [attr.aria-expanded]="menuOpen()"
-        aria-label="Abrir menú"
+        [attr.aria-label]="'Abrir menú' | t"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           @if (menuOpen()) {
@@ -174,20 +191,20 @@
   </div>
 
   @if (menuOpen()) {
-    <nav class="mobile-menu" aria-label="Menú móvil">
+    <nav class="mobile-menu" [attr.aria-label]="'Menú móvil' | t">
       @for (link of links(); track link.label) {
         @if (link.route && !link.soon) {
           <a [routerLink]="link.route" [fragment]="link.fragment" (click)="closeMenu()">
-            {{ link.label }}
+            {{ link.label | t }}
           </a>
         } @else {
-          <span class="is-soon" aria-disabled="true">{{ link.label }} · Próximamente</span>
+          <span class="is-soon" aria-disabled="true">{{ link.label | t }} · Próximamente</span>
         }
       }
 
       @if (!auth.user()) {
-        <a routerLink="/login" (click)="closeMenu()">Iniciar sesión</a>
-        <a routerLink="/register" (click)="closeMenu()">Crear cuenta</a>
+        <a routerLink="/login" (click)="closeMenu()">{{ 'Iniciar sesión' | t }}</a>
+        <a routerLink="/register" (click)="closeMenu()">{{ 'Crear cuenta' | t }}</a>
       }
     </nav>
   }

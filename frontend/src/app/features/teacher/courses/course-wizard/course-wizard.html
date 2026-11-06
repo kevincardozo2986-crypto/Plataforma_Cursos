@@ -1,19 +1,23 @@
 <section class="panel-page">
   <div class="panel-container">
     @if (wizard.loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando curso…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando curso…' | t }}</p>
+      </div>
     } @else if (!wizard.course()) {
       @if (wizard.loadError()) {
         <p class="panel-alert panel-alert--error" role="alert">{{ wizard.loadError() }}</p>
       }
-      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
+      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">{{
+        'Volver a mis cursos' | t
+      }}</a>
     } @else {
       @if (wizard.course(); as course) {
         <!-- Barra con los botones permanentes -->
         <header class="bar">
           <div class="bar-title">
             <a class="back" routerLink="/teacher/courses"
-              ><app-icon name="arrow-left" [size]="15" /> Mis cursos</a
+              ><app-icon name="arrow-left" [size]="15" /> {{ 'Mis cursos' | t }}</a
             >
             <div class="title-row">
               <span class="title-icon" aria-hidden="true"
@@ -32,7 +36,7 @@
               (click)="wizard.saveDraft()"
             >
               <app-icon name="save" [size]="16" />
-              {{ wizard.isPublished() ? 'Guardar cambios' : 'Guardar borrador' }}
+              {{ wizard.isPublished() ? ('Guardar cambios' | t) : 'Guardar borrador' }}
             </button>
 
             @if (wizard.isPublished()) {
@@ -42,7 +46,7 @@
                 [disabled]="wizard.saving()"
                 (click)="wizard.unpublish()"
               >
-                <app-icon name="eye" [size]="16" /> Pasar a borrador
+                <app-icon name="eye" [size]="16" /> {{ 'Pasar a borrador' | t }}
               </button>
             } @else {
               <button
@@ -51,14 +55,14 @@
                 [disabled]="wizard.saving()"
                 (click)="wizard.publish()"
               >
-                <app-icon name="check-circle" [size]="16" /> Enviar
+                <app-icon name="check-circle" [size]="16" /> {{ 'Enviar' | t }}
               </button>
             }
           </div>
         </header>
 
         <!-- Los tres pasos -->
-        <nav class="stepper" aria-label="Pasos del curso">
+        <nav class="stepper" [attr.aria-label]="'Pasos del curso' | t">
           <ol>
             @for (step of steps; track step.path; let i = $index) {
               <li>
@@ -74,7 +78,7 @@
                   </span>
                   <span class="step-text">
                     <strong
-                      ><span class="step-index">Paso {{ i + 1 }}</span> {{ step.label }}</strong
+                      ><span class="step-index">Paso {{ i + 1 }}</span> {{ step.label | t }}</strong
                     >
                     <small>{{ step.hint }}</small>
                   </span>
@@ -85,19 +89,19 @@
         </nav>
 
         @if (!wizard.isPublished()) {
-          <div class="checklist" aria-label="Lo que falta para enviar">
+          <div class="checklist" [attr.aria-label]="'Lo que falta para enviar' | t">
             <div class="checklist-top">
               <span class="checklist-title">
-                <app-icon name="clipboard" [size]="16" /> Para enviar el curso
+                <app-icon name="clipboard" [size]="16" /> {{ 'Para enviar el curso' | t }}
               </span>
               <span class="checklist-count"
-                >{{ doneCount() }} de {{ wizard.checklist().length }}</span
+                >{{ doneCount() }} {{ 'de' | t }} {{ wizard.checklist().length }}</span
               >
             </div>
             <div
               class="bar-track"
               role="progressbar"
-              aria-label="Avance para enviar"
+              [attr.aria-label]="'Avance para enviar' | t"
               [attr.aria-valuenow]="progress()"
               aria-valuemin="0"
               aria-valuemax="100"
@@ -108,8 +112,10 @@
               @for (item of wizard.checklist(); track item.label) {
                 <span class="check" [class.done]="item.done">
                   <app-icon [name]="item.done ? 'check-circle' : 'x-circle'" [size]="15" />
-                  {{ item.label }}
-                  <span class="visually-hidden">{{ item.done ? '(listo)' : '(falta)' }}</span>
+                  {{ item.label | t }}
+                  <span class="visually-hidden">{{
+                    item.done ? ('(listo)' | t) : ('(falta)' | t)
+                  }}</span>
                 </span>
               }
             </div>

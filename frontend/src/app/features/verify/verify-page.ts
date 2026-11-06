@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -10,7 +11,7 @@ import { formatDuration } from '../../core/utils/format-duration';
 /** Página pública (sin sesión) para comprobar un certificado con su código. */
 @Component({
   selector: 'app-verify-page',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, DatePipe],
   templateUrl: './verify-page.html',
   styleUrl: './verify-page.scss',
 })

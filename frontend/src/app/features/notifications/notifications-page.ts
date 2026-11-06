@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { Component, computed, inject, signal } from '@angular/core';
 
 import { apiErrorMessage } from '../../core/http/api-error';
@@ -14,7 +15,7 @@ const PAGE_SIZE = 20;
 /** Todas las notificaciones de quien tiene la sesión (docente, estudiante o administrador). */
 @Component({
   selector: 'app-notifications-page',
-  imports: [PageHeader],
+  imports: [TranslatePipe, PageHeader],
   templateUrl: './notifications-page.html',
   styleUrl: './notifications-page.scss',
 })

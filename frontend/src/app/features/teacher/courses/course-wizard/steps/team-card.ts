@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../../core/i18n/translate.pipe';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -28,13 +29,13 @@ const MAX_INSTRUCTORS = 10;
  */
 @Component({
   selector: 'app-team-card',
-  imports: [FormsModule, Icon],
+  imports: [TranslatePipe, FormsModule, Icon],
   template: `
     <section class="wz-card tone-blue" aria-labelledby="team-title">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="users" [size]="19" /></span>
         <div>
-          <h2 id="team-title">Equipo docente</h2>
+          <h2 id="team-title">{{ 'Equipo docente' | t }}</h2>
           <p>Los instructores gestionan el curso contigo: contenido, calificaciones y anuncios.</p>
         </div>
       </header>
@@ -70,9 +71,11 @@ const MAX_INSTRUCTORS = 10;
                     [disabled]="busy()"
                     (click)="remove(member)"
                   >
-                    Sí
+                    {{ 'Sí' | t }}
                   </button>
-                  <button type="button" class="mini" (click)="confirmId.set(null)">No</button>
+                  <button type="button" class="mini" (click)="confirmId.set(null)">
+                    {{ 'No' | t }}
+                  </button>
                 } @else {
                   <button
                     type="button"
@@ -93,9 +96,11 @@ const MAX_INSTRUCTORS = 10;
                     [disabled]="busy()"
                     (click)="leave(member)"
                   >
-                    Sí
+                    {{ 'Sí' | t }}
                   </button>
-                  <button type="button" class="mini" (click)="confirmId.set(null)">No</button>
+                  <button type="button" class="mini" (click)="confirmId.set(null)">
+                    {{ 'No' | t }}
+                  </button>
                 } @else {
                   <button type="button" class="mini danger" (click)="confirmId.set(member.id)">
                     Salirme
@@ -131,12 +136,12 @@ const MAX_INSTRUCTORS = 10;
                 class="panel-btn panel-btn--primary"
                 [disabled]="busy() || !canAdd()"
               >
-                <app-icon name="plus" [size]="16" /> Agregar
+                <app-icon name="plus" [size]="16" /> {{ 'Agregar' | t }}
               </button>
             </div>
             <p class="hint">
               Debe tener una cuenta de docente activa. Le llegará una notificación.
-              {{ data.instructors.length }} de {{ max }}.
+              {{ data.instructors.length }} {{ 'de' | t }} {{ max }}.
             </p>
           </form>
         } @else {

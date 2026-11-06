@@ -6,42 +6,44 @@
       <a
         class="back"
         [routerLink]="auth.user()?.role === 'STUDENT' ? '/student/dashboard' : '/courses'"
-        >&#8592; {{ auth.user()?.role === 'STUDENT' ? 'Mi aprendizaje' : 'Explorar cursos' }}</a
+        >&#8592;
+        {{ auth.user()?.role === 'STUDENT' ? ('Mi aprendizaje' | t) : ('Explorar cursos' | t) }}</a
       >
-      <span aria-hidden="true">/</span><span>Detalle del curso</span>
+      <span aria-hidden="true">/</span><span>{{ 'Detalle del curso' | t }}</span>
     </div>
     @if (error()) {
-      <p role="alert">No pudimos cargar este curso. Puede que ya no esté disponible.</p>
+      <p role="alert">{{ 'No pudimos cargar este curso. Puede que ya no esté disponible.' | t }}</p>
     } @else if (course(); as item) {
       <header class="course-heading">
-        <span class="category">{{ item.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
+        <span class="category">{{ item.category?.name ?? ('EDUCACIÓN CONTINUA' | t) }}</span>
         <h1>{{ item.title || item.name }}</h1>
         <div class="course-meta">
-          <span>{{ levelLabels[item.level || ''] || 'Todos los niveles' }}</span>
-          <span>{{ item.modules?.length ?? 0 }} m&#243;dulos</span>
-          <span>{{ lessonCount() }} lecciones</span>
+          <span>{{ levelLabels[item.level || ''] || 'Todos los niveles' | t }}</span>
+          <span>{{ item.modules?.length ?? 0 }} {{ 'módulos' | t }}</span>
+          <span>{{ lessonCount() }} {{ 'lecciones' | t }}</span>
           @if (item.durationMinutes) {
-            <span>{{ formatDuration(item.durationMinutes) }}</span>
+            <span>{{ formatDuration(item.durationMinutes) | t }}</span>
           }
         </div>
         @if (item.teacher) {
           <p class="heading-teacher">
-            Con <strong>{{ item.teacher.firstName }} {{ item.teacher.lastName }}</strong>
+            {{ 'Con' | t }}
+            <strong>{{ item.teacher.firstName }} {{ item.teacher.lastName }}</strong>
           </p>
         }
       </header>
-      <nav class="course-navigation" aria-label="Secciones del curso">
-        <a [routerLink]="[]" fragment="course-content">Contenido del curso</a>
-        <a [routerLink]="[]" fragment="course-about">Acerca del curso</a>
+      <nav class="course-navigation" [attr.aria-label]="'Secciones del curso' | t">
+        <a [routerLink]="[]" fragment="course-content">{{ 'Contenido del curso' | t }}</a>
+        <a [routerLink]="[]" fragment="course-about">{{ 'Acerca del curso' | t }}</a>
         @if (item.teacher) {
-          <a [routerLink]="[]" fragment="course-teachers">Equipo docente</a>
+          <a [routerLink]="[]" fragment="course-teachers">{{ 'Equipo docente' | t }}</a>
         }
       </nav>
       <div class="detail-layout">
         <div class="course-information">
           @if (item.introVideoUrl; as video) {
             <section class="intro-video" aria-labelledby="intro-title">
-              <h2 id="intro-title">Conoce el curso</h2>
+              <h2 id="intro-title">{{ 'Conoce el curso' | t }}</h2>
               <app-course-video
                 [src]="video"
                 [autoplay]="true"
@@ -49,7 +51,10 @@
                 [title]="'Video introductorio de ' + (item.title || item.name)"
               />
               <p class="intro-hint">
-                La introducci?n comienza sin sonido. Puedes activarlo desde los controles del video.
+                {{
+                  'La introducción comienza sin sonido. Puedes activarlo desde los controles del video.'
+                    | t
+                }}
               </p>
             </section>
           } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
@@ -57,15 +62,16 @@
           }
           <section class="information-section curriculum-section" id="course-content">
             <div class="section-title">
-              <h2>Contenido del curso</h2>
-              <span>{{ lessonCount() }} lecciones</span>
+              <h2>{{ 'Contenido del curso' | t }}</h2>
+              <span>{{ lessonCount() }} {{ 'lecciones' | t }}</span>
             </div>
             @for (module of item.modules ?? []; track module.id; let index = $index) {
               <details class="module" [open]="index === 0">
                 <summary>
                   <span class="module-number">{{ index + 1 < 10 ? '0' : '' }}{{ index + 1 }}</span>
                   <span class="module-title"
-                    >{{ module.title }}<small>{{ module.lessons.length }} lecciones</small></span
+                    >{{ module.title
+                    }}<small>{{ module.lessons.length }} {{ 'lecciones' | t }}</small></span
                   >
                   <span class="module-chevron" aria-hidden="true">&#8964;</span>
                 </summary>
@@ -77,13 +83,13 @@
                     <li>
                       {{ lesson.title }}
                       @if (lesson.durationMinutes) {
-                        <small>{{ formatDuration(lesson.durationMinutes) }}</small>
+                        <small>{{ formatDuration(lesson.durationMinutes) | t }}</small>
                       }
                     </li>
                   }
                 </ol>
                 @if (!module.lessons.length) {
-                  <p>Este módulo aún no tiene lecciones.</p>
+                  <p>{{ 'Este módulo aún no tiene lecciones.' | t }}</p>
                 }
               </details>
             } @empty {
@@ -91,7 +97,7 @@
             }
           </section>
           <section class="information-section" id="course-about">
-            <h2>Acerca de este curso</h2>
+            <h2>{{ 'Acerca de este curso' | t }}</h2>
             <div
               class="rich-text"
               [innerHTML]="
@@ -101,31 +107,31 @@
           </section>
           @if (item.whatYouWillLearn) {
             <section class="information-section">
-              <h2>Qué aprenderás</h2>
+              <h2>{{ 'Qué aprenderás' | t }}</h2>
               <div class="rich-text" [innerHTML]="item.whatYouWillLearn | richHtml"></div>
             </section>
           }
           @if (item.audience) {
             <section class="information-section">
-              <h2>A quién está dirigido</h2>
+              <h2>{{ 'A quién está dirigido' | t }}</h2>
               <div class="rich-text" [innerHTML]="item.audience | richHtml"></div>
             </section>
           }
           @if (item.requirements) {
             <section class="information-section">
-              <h2>Requisitos</h2>
+              <h2>{{ 'Requisitos' | t }}</h2>
               <div class="rich-text" [innerHTML]="item.requirements | richHtml"></div>
             </section>
           }
           @if (item.materials) {
             <section class="information-section">
-              <h2>Materiales incluidos</h2>
+              <h2>{{ 'Materiales incluidos' | t }}</h2>
               <div class="rich-text" [innerHTML]="item.materials | richHtml"></div>
             </section>
           }
           @if (item.teacher) {
             <section class="information-section" id="course-teachers">
-              <h2>Equipo docente</h2>
+              <h2>{{ 'Equipo docente' | t }}</h2>
               <p>{{ item.teacher.firstName }} {{ item.teacher.lastName }}</p>
               @for (instructor of item.instructors ?? []; track instructor.id) {
                 <p>{{ instructor.firstName }} {{ instructor.lastName }}</p>
@@ -135,64 +141,66 @@
         </div>
         <aside class="enrollment-card" aria-labelledby="enroll-title">
           <span class="card-eyebrow">{{
-            progress() ? 'MI APRENDIZAJE' : 'DA EL SIGUIENTE PASO'
+            progress() ? ('MI APRENDIZAJE' | t) : ('DA EL SIGUIENTE PASO' | t)
           }}</span>
           <h2 id="enroll-title">
-            {{ progress() ? 'Tu progreso en este curso' : 'Aprende a tu ritmo' }}
+            {{ progress() ? ('Tu progreso en este curso' | t) : ('Aprende a tu ritmo' | t) }}
           </h2>
           @if (!progress()) {
             <strong class="course-price">{{ price(item.price) }}</strong>
           }
           <dl>
             <div>
-              <dt>Nivel</dt>
-              <dd>{{ levelLabels[item.level || ''] || 'No especificado' }}</dd>
+              <dt>{{ 'Nivel' | t }}</dt>
+              <dd>{{ levelLabels[item.level || ''] || 'No especificado' | t }}</dd>
             </div>
             <div>
-              <dt>Módulos</dt>
+              <dt>{{ 'Módulos' | t }}</dt>
               <dd>{{ item.modules?.length ?? 0 }}</dd>
             </div>
             @if (item.durationMinutes) {
               <div>
-                <dt>Duración estimada</dt>
-                <dd>{{ formatDuration(item.durationMinutes) }}</dd>
+                <dt>{{ 'Duración estimada' | t }}</dt>
+                <dd>{{ formatDuration(item.durationMinutes) | t }}</dd>
               </div>
             }
             @if (item.maxStudents) {
               <div>
-                <dt>Capacidad del curso</dt>
-                <dd>{{ item.maxStudents }} estudiantes</dd>
+                <dt>{{ 'Capacidad del curso' | t }}</dt>
+                <dd>{{ item.maxStudents }} {{ 'estudiantes' | t }}</dd>
               </div>
             }
           </dl>
           @if (!auth.user()) {
-            <p>Inicia sesión como estudiante para inscribirte.</p>
-            <a class="login" routerLink="/login">Iniciar sesión →</a>
+            <p>{{ 'Inicia sesión como estudiante para inscribirte.' | t }}</p>
+            <a class="login" routerLink="/login">{{ 'Iniciar sesión →' | t }}</a>
           } @else if (auth.user()?.role === 'STUDENT') {
             @if (checking()) {
-              <p role="status">Comprobando tu inscripción…</p>
+              <p role="status">{{ 'Comprobando tu inscripción…' | t }}</p>
             } @else if (progress(); as current) {
               <p class="enrolled">
                 {{
                   current.status === 'COMPLETED'
-                    ? 'Ya completaste este curso'
-                    : 'Ya estás inscrito en este curso'
+                    ? ('Ya completaste este curso' | t)
+                    : ('Ya estás inscrito en este curso' | t)
                 }}
               </p>
               <label for="course-progress">Tu progreso: {{ current.percent }}%</label
               ><progress id="course-progress" [value]="current.percent" max="100"></progress
-              ><a class="login" [routerLink]="[]" fragment="course-content"
-                >Ver contenido del curso &#8594;</a
-              >
+              ><a class="login" [routerLink]="[]" fragment="course-content">{{
+                'Ver contenido del curso →' | t
+              }}</a>
             } @else if (enrollmentKnown() && coursePrice(item) > 0) {
               <button class="login" type="button" (click)="checkoutOpen.set(true)">
                 Comprar curso · {{ price(item.price) }}
               </button>
-              <p class="sim-note">Pago simulado con tarjeta de prueba: no se cobra dinero real.</p>
+              <p class="sim-note">
+                {{ 'Pago simulado con tarjeta de prueba: no se cobra dinero real.' | t }}
+              </p>
             } @else if (enrollmentKnown()) {
               <form (ngSubmit)="enroll()">
                 @if (item.visibility === 'PASSWORD') {
-                  <label for="course-password">Contraseña del curso</label
+                  <label for="course-password">{{ 'Contraseña del curso' | t }}</label
                   ><input
                     id="course-password"
                     name="password"
@@ -209,12 +217,12 @@
                   type="submit"
                   [disabled]="submitting() || (item.visibility === 'PASSWORD' && !password)"
                 >
-                  {{ submitting() ? 'Inscribiendo…' : 'Inscribirme en este curso' }}
+                  {{ submitting() ? ('Inscribiendo…' | t) : ('Inscribirme en este curso' | t) }}
                 </button>
               </form>
             } @else {
               <button class="login" type="button" (click)="checkEnrollment()">
-                Reintentar comprobación
+                {{ 'Reintentar comprobación' | t }}
               </button>
             }
             @if (enrollmentError()) {
@@ -224,7 +232,7 @@
               <p class="enrolled" role="status">{{ enrollmentNotice() }}</p>
             }
           } @else {
-            <p>Las inscripciones están disponibles para cuentas de estudiante.</p>
+            <p>{{ 'Las inscripciones están disponibles para cuentas de estudiante.' | t }}</p>
           }
         </aside>
         <!-- Fuera de la tarjeta: sigue abierto mostrando el comprobante aunque la tarjeta pase a «inscrito». -->
@@ -240,7 +248,7 @@
         }
       </div>
     } @else {
-      <p role="status">Cargando el curso…</p>
+      <p role="status">{{ 'Cargando el curso…' | t }}</p>
     }
   </main>
 }

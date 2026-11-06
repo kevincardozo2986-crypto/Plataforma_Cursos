@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -24,6 +25,7 @@ import { CourseWizardService } from '../course-wizard/course-wizard.service';
 @Component({
   selector: 'app-course-content',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     RouterLink,
     PageHeader,

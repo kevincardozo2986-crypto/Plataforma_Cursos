@@ -1,14 +1,18 @@
 <section class="panel-page">
   <div class="panel-container">
     <a class="back" routerLink="/teacher/certificates">
-      <app-icon name="arrow-left" [size]="16" /> Volver a certificados
+      <app-icon name="arrow-left" [size]="16" /> {{ 'Volver a certificados' | t }}
     </a>
 
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="award" [size]="26" /></span>
       <div class="hero-copy">
-        <h1>{{ id === null ? 'Nueva plantilla' : 'Editar plantilla' }}</h1>
-        <p>Lo que cambies se ve a la derecha al instante. El PDF final lo genera el servidor.</p>
+        <h1>{{ id === null ? ('Nueva plantilla' | t) : ('Editar plantilla' | t) }}</h1>
+        <p>
+          {{
+            'Lo que cambies se ve a la derecha al instante. El PDF final lo genera el servidor.' | t
+          }}
+        </p>
       </div>
     </header>
 
@@ -26,7 +30,7 @@
     @if (loading()) {
       <div class="panel-card loading">
         <app-icon name="refresh" [size]="18" />
-        <p class="panel-muted">Cargando plantilla…</p>
+        <p class="panel-muted">{{ 'Cargando plantilla…' | t }}</p>
       </div>
     } @else {
       <div class="layout">
@@ -35,34 +39,38 @@
           <section class="panel-card block" aria-labelledby="b-content">
             <h2 id="b-content" class="block-title">
               <span class="num">1</span>
-              <app-icon name="file" [size]="19" /> Contenido
+              <app-icon name="file" [size]="19" /> {{ 'Contenido' | t }}
             </h2>
 
             <div class="panel-field">
-              <label for="name">Nombre de la plantilla</label>
+              <label for="name">{{ 'Nombre de la plantilla' | t }}</label>
               <input
                 id="name"
                 class="panel-input"
                 formControlName="name"
-                placeholder="Ej. Certificado azul de cursos"
+                [placeholder]="'Ej. Certificado azul de cursos' | t"
                 [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
               />
-              <p class="panel-hint">Solo lo ves tú, para reconocerla en la lista.</p>
+              <p class="panel-hint">{{ 'Solo lo ves tú, para reconocerla en la lista.' | t }}</p>
               @if (form.controls.name.touched && form.controls.name.invalid) {
-                <p class="panel-field-error">Escribe un nombre de 2 a 100 caracteres.</p>
+                <p class="panel-field-error">
+                  {{ 'Escribe un nombre de 2 a 100 caracteres.' | t }}
+                </p>
               }
             </div>
 
             <div class="panel-field">
-              <label for="title">Título del certificado</label>
+              <label for="title">{{ 'Título del certificado' | t }}</label>
               <input id="title" class="panel-input" formControlName="title" />
               @if (form.controls.title.touched && form.controls.title.invalid) {
-                <p class="panel-field-error">El título debe tener de 2 a 80 caracteres.</p>
+                <p class="panel-field-error">
+                  {{ 'El título debe tener de 2 a 80 caracteres.' | t }}
+                </p>
               }
             </div>
 
             <div class="panel-field">
-              <label for="body">Texto</label>
+              <label for="body">{{ 'Texto' | t }}</label>
               <textarea
                 #bodyBox
                 id="body"
@@ -70,11 +78,17 @@
                 formControlName="body"
                 rows="5"
               ></textarea>
-              <div class="tokens" role="group" aria-label="Insertar un dato automático">
-                <span class="panel-hint"><app-icon name="plus" [size]="13" /> Insertar:</span>
+              <div
+                class="tokens"
+                role="group"
+                [attr.aria-label]="'Insertar un dato automático' | t"
+              >
+                <span class="panel-hint"
+                  ><app-icon name="plus" [size]="13" /> {{ 'Insertar:' | t }}</span
+                >
                 @for (item of placeholders; track item.token) {
                   <button type="button" class="token" (click)="insert(item.token)">
-                    {{ item.label }}
+                    {{ item.label | t }}
                   </button>
                 }
               </div>
@@ -84,21 +98,27 @@
                 </p>
               }
               @if (form.controls.body.touched && form.controls.body.invalid) {
-                <p class="panel-field-error">El texto debe tener de 10 a 600 caracteres.</p>
+                <p class="panel-field-error">
+                  {{ 'El texto debe tener de 10 a 600 caracteres.' | t }}
+                </p>
               }
               <p class="tip">
                 <app-icon name="info" [size]="15" />
                 <span>
-                  El nombre y la cédula del estudiante salen siempre bajo «Se otorga a». El curso,
-                  la fecha, la duración y el docente solo salen si los incluyes en este texto.
+                  {{
+                    'El nombre y la cédula del estudiante salen siempre bajo «Se otorga a». El curso, la fecha, la duración y el docente solo salen si los incluyes en este texto.'
+                      | t
+                  }}
                 </span>
               </p>
               @if (missingCourse()) {
                 <p class="tip warn" role="status">
                   <app-icon name="warning" [size]="15" />
                   <span>
-                    Tu texto no menciona el curso: el certificado no diría de qué curso es. Usa el
-                    botón «Curso» para incluirlo.
+                    {{
+                      'Tu texto no menciona el curso: el certificado no diría de qué curso es. Usa el botón «Curso» para incluirlo.'
+                        | t
+                    }}
                   </span>
                 </p>
               }
@@ -109,11 +129,11 @@
           <section class="panel-card block" aria-labelledby="b-design">
             <h2 id="b-design" class="block-title">
               <span class="num">2</span>
-              <app-icon name="palette" [size]="19" /> Diseño y color
+              <app-icon name="palette" [size]="19" /> {{ 'Diseño y color' | t }}
             </h2>
 
             <fieldset class="layouts">
-              <legend>Elige un diseño</legend>
+              <legend>{{ 'Elige un diseño' | t }}</legend>
               <div class="layout-options">
                 @for (option of layouts; track option) {
                   <label
@@ -148,14 +168,16 @@
 
             @if (isImage()) {
               <div class="bg-box">
-                <h3 class="bg-title"><app-icon name="eye" [size]="16" /> Tu imagen de fondo</h3>
+                <h3 class="bg-title">
+                  <app-icon name="eye" [size]="16" /> {{ 'Tu imagen de fondo' | t }}
+                </h3>
 
                 @if (backgroundUrl(); as image) {
                   <div class="bg-current">
-                    <img [src]="image | publicUrl" alt="Tu imagen de fondo" />
+                    <img [src]="image | publicUrl" [alt]="'Tu imagen de fondo' | t" />
                     <div class="bg-actions">
                       <label class="panel-btn panel-btn--ghost panel-btn--sm file">
-                        <app-icon name="refresh" [size]="15" /> Cambiar imagen
+                        <app-icon name="refresh" [size]="15" /> {{ 'Cambiar imagen' | t }}
                         <input
                           type="file"
                           accept="image/png,image/jpeg,image/webp"
@@ -168,18 +190,18 @@
                         class="panel-btn panel-btn--ghost panel-btn--sm danger"
                         (click)="removeBackground()"
                       >
-                        <app-icon name="trash" [size]="15" /> Quitar
+                        <app-icon name="trash" [size]="15" /> {{ 'Quitar' | t }}
                       </button>
                     </div>
                   </div>
                 } @else {
                   <label class="bg-drop file" [class.busy]="uploading()">
                     <app-icon name="download" [size]="26" />
-                    <strong>Sube tu plantilla</strong>
-                    <span
-                      >JPG, PNG o WebP. Mejor apaisada (A4: 297 × 210 mm, p. ej. 3508 × 2480
-                      px).</span
-                    >
+                    <strong>{{ 'Sube tu plantilla' | t }}</strong>
+                    <span>{{
+                      'JPG, PNG o WebP. Mejor apaisada (A4: 297 × 210 mm, p. ej. 3508 × 2480 px).'
+                        | t
+                    }}</span>
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
@@ -216,21 +238,22 @@
                 <p class="tip">
                   <app-icon name="bulb" [size]="15" />
                   <span>
-                    El texto va en el centro de la hoja, así que deja libre esa zona (y un hueco
-                    abajo para la firma). Si tu imagen es muy recargada, sube el velo o cambia el
-                    color del texto en «Tipografía y estilo».
+                    {{
+                      'El texto va en el centro de la hoja, así que deja libre esa zona (y un hueco abajo para la firma). Si tu imagen es muy recargada, sube el velo o cambia el color del texto en «Tipografía y estilo».'
+                        | t
+                    }}
                   </span>
                 </p>
               </div>
             }
 
             <div class="panel-field">
-              <label for="accentColor">Color principal</label>
+              <label for="accentColor">{{ 'Color principal' | t }}</label>
               <div class="color-row">
                 <input
                   class="color-picker"
                   type="color"
-                  aria-label="Elegir color"
+                  [attr.aria-label]="'Elegir color' | t"
                   [value]="preview().color"
                   (input)="
                     form.controls.accentColor.setValue($any($event.target).value.toUpperCase());
@@ -246,7 +269,9 @@
                 />
               </div>
               @if (form.controls.accentColor.touched && form.controls.accentColor.invalid) {
-                <p class="panel-field-error">Escribe un color como #1F3A8A (6 dígitos).</p>
+                <p class="panel-field-error">
+                  {{ 'Escribe un color como #1F3A8A (6 dígitos).' | t }}
+                </p>
               }
             </div>
           </section>
@@ -255,7 +280,7 @@
           <section class="panel-card block" aria-labelledby="b-type">
             <h2 id="b-type" class="block-title">
               <span class="num">3</span>
-              <app-icon name="type" [size]="19" /> Tipografía y estilo
+              <app-icon name="type" [size]="19" /> {{ 'Tipografía y estilo' | t }}
             </h2>
 
             <div class="fonts">
@@ -269,7 +294,7 @@
               />
               <app-font-picker
                 inputId="bodyFont"
-                label="Texto"
+                [label]="'Texto' | t"
                 [value]="form.controls.bodyFont.value"
                 (valueChange)="
                   form.controls.bodyFont.setValue($event); form.controls.bodyFont.markAsDirty()
@@ -279,28 +304,30 @@
             <p class="tip">
               <app-icon name="bulb" [size]="15" />
               <span>
-                Puedes combinarlas: por ejemplo, el nombre en cursiva y el texto en una serif. ¿No
-                está la tuya? Súbela desde la lista; solo la verás tú.
+                {{
+                  'Puedes combinarlas: por ejemplo, el nombre en cursiva y el texto en una serif. ¿No está la tuya? Súbela desde la lista; solo la verás tú.'
+                    | t
+                }}
               </span>
             </p>
 
             <fieldset class="styles">
-              <legend>Estilo de cada texto</legend>
+              <legend>{{ 'Estilo de cada texto' | t }}</legend>
 
               @for (part of parts; track part.key) {
                 <div class="style-row">
                   <strong class="style-name">{{ part.label }}</strong>
 
                   <label class="mini">
-                    <span><app-icon name="bold" [size]="13" /> Negrita</span>
+                    <span><app-icon name="bold" [size]="13" /> {{ 'Negrita' | t }}</span>
                     <select
                       class="panel-select"
                       [value]="boldValue(part.key)"
                       (change)="setBold(part.key, $any($event.target).value)"
                     >
-                      <option value="auto">Automática</option>
-                      <option value="yes">Sí</option>
-                      <option value="no">No</option>
+                      <option value="auto">{{ 'Automática' | t }}</option>
+                      <option value="yes">{{ 'Sí' | t }}</option>
+                      <option value="no">{{ 'No' | t }}</option>
                     </select>
                   </label>
 
@@ -311,7 +338,7 @@
                     [attr.aria-pressed]="text(part.key).italic === true"
                     (click)="setText(part.key, 'italic', text(part.key).italic ? undefined : true)"
                   >
-                    <app-icon name="italic" [size]="15" /> Cursiva
+                    <app-icon name="italic" [size]="15" /> {{ 'Cursiva' | t }}
                   </button>
 
                   <label class="mini grow">
@@ -327,7 +354,7 @@
                   </label>
 
                   <div class="mini">
-                    <span>Color</span>
+                    <span>{{ 'Color' | t }}</span>
                     <span class="color-cell">
                       <input
                         type="color"
@@ -343,10 +370,10 @@
                           class="link"
                           (click)="setText(part.key, 'color', undefined)"
                         >
-                          Quitar
+                          {{ 'Quitar' | t }}
                         </button>
                       } @else {
-                        <small>del diseño</small>
+                        <small>{{ 'del diseño' | t }}</small>
                       }
                     </span>
                   </div>
@@ -359,33 +386,37 @@
                   [checked]="style().showDocument !== false"
                   (change)="setShowDocument($any($event.target).checked)"
                 />
-                <span>Mostrar la cédula bajo el nombre</span>
+                <span>{{ 'Mostrar la cédula bajo el nombre' | t }}</span>
               </label>
 
               <p class="tip">
                 <app-icon name="info" [size]="15" />
                 <span>
-                  «Automática» pone negrita en el título y el nombre si la tipografía la tiene. Si
-                  la fuerzas en una que no la tiene, se engrosa el trazo. Si el texto se agranda
-                  mucho, se achica solo para no tocar la firma.
+                  {{
+                    '«Automática» pone negrita en el título y el nombre si la tipografía la tiene. Si la fuerzas en una que no la tiene, se engrosa el trazo. Si el texto se agranda mucho, se achica solo para no tocar la firma.'
+                      | t
+                  }}
                 </span>
               </p>
 
               @if (hasStyle()) {
                 <button type="button" class="link reset" (click)="resetStyle()">
-                  <app-icon name="refresh" [size]="13" /> Restablecer estilo
+                  <app-icon name="refresh" [size]="13" /> {{ 'Restablecer estilo' | t }}
                 </button>
               }
             </fieldset>
 
             <fieldset class="moves">
-              <legend>Posición de los textos</legend>
+              <legend>{{ 'Posición de los textos' | t }}</legend>
 
               <p class="tip">
                 <app-icon name="info" [size]="15" />
                 <span>
-                  <strong>Arrastra</strong> cada texto en la vista previa para moverlo. Con el
-                  teclado: selecciónalo y usa las flechas (con Mayús, de 10 en 10).
+                  <strong>{{ 'Arrastra' | t }}</strong>
+                  {{
+                    'cada texto en la vista previa para moverlo. Con el teclado: selecciónalo y usa las flechas (con Mayús, de 10 en 10).'
+                      | t
+                  }}
                 </span>
               </p>
 
@@ -422,14 +453,14 @@
                     [disabled]="offsetOf(part.key).x === 0 && offsetOf(part.key).y === 0"
                     (click)="resetOffset(part.key)"
                   >
-                    Volver
+                    {{ 'Volver' | t }}
                   </button>
                 </div>
               }
 
               @if (hasOffsets()) {
                 <button type="button" class="link reset" (click)="resetOffsets()">
-                  <app-icon name="refresh" [size]="13" /> Poner todos en su sitio
+                  <app-icon name="refresh" [size]="13" /> {{ 'Poner todos en su sitio' | t }}
                 </button>
               }
             </fieldset>
@@ -437,8 +468,8 @@
             <p class="tip">
               <app-icon name="pen" [size]="15" />
               <span>
-                La firma sale de tu perfil.
-                <a routerLink="/teacher/profile">Cambiar mi firma</a>
+                {{ 'La firma sale de tu perfil.' | t }}
+                <a routerLink="/teacher/profile">{{ 'Cambiar mi firma' | t }}</a>
               </span>
             </p>
           </section>
@@ -446,7 +477,7 @@
           <div class="buttons">
             <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
               <app-icon name="save" [size]="17" />
-              {{ saving() ? 'Guardando…' : 'Guardar plantilla' }}
+              {{ saving() ? ('Guardando…' | t) : 'Guardar plantilla' }}
             </button>
             <button
               type="button"
@@ -454,12 +485,12 @@
               [disabled]="saving()"
               (click)="openPdf()"
             >
-              <app-icon name="file" [size]="17" /> Guardar y ver PDF
+              <app-icon name="file" [size]="17" /> {{ 'Guardar y ver PDF' | t }}
             </button>
           </div>
         </form>
 
-        <aside class="preview-col" aria-label="Vista previa">
+        <aside class="preview-col" [attr.aria-label]="'Vista previa' | t">
           <span class="preview-label"><app-icon name="eye" [size]="14" /> VISTA PREVIA</span>
 
           <app-certificate-preview
@@ -480,7 +511,7 @@
 
           <p class="tip">
             <app-icon name="file" [size]="15" />
-            <span>Con «Guardar y ver PDF» ves el documento real, con tu firma.</span>
+            <span>{{ 'Con «Guardar y ver PDF» ves el documento real, con tu firma.' | t }}</span>
           </p>
         </aside>
       </div>

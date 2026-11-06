@@ -4,7 +4,9 @@
   aria-haspopup="true"
   [attr.aria-expanded]="open()"
   [attr.aria-label]="
-    center.unread() > 0 ? 'Notificaciones, ' + center.unread() + ' sin leer' : 'Notificaciones'
+    center.unread() > 0
+      ? 'Notificaciones, ' + center.unread() + ' sin leer'
+      : ('Notificaciones' | t)
   "
   (click)="toggle()"
 >
@@ -19,21 +21,23 @@
 </button>
 
 @if (open()) {
-  <div class="menu" role="region" aria-label="Notificaciones">
+  <div class="menu" role="region" [attr.aria-label]="'Notificaciones' | t">
     <div class="menu-head">
-      <strong>Notificaciones</strong>
+      <strong>{{ 'Notificaciones' | t }}</strong>
       @if (center.unread() > 0) {
-        <button type="button" class="link" (click)="markAll()">Marcar todas como leídas</button>
+        <button type="button" class="link" (click)="markAll()">
+          {{ 'Marcar todas como leídas' | t }}
+        </button>
       }
     </div>
 
     <div class="menu-body">
       @if (loading() && items().length === 0) {
-        <p class="state">Cargando…</p>
+        <p class="state">{{ 'Cargando…' | t }}</p>
       } @else if (error()) {
-        <p class="state">No pudimos cargar tus notificaciones.</p>
+        <p class="state">{{ 'No pudimos cargar tus notificaciones.' | t }}</p>
       } @else if (items().length === 0) {
-        <p class="state">No tienes notificaciones todavía.</p>
+        <p class="state">{{ 'No tienes notificaciones todavía.' | t }}</p>
       } @else {
         <ul>
           @for (item of items(); track item.id) {
@@ -51,7 +55,7 @@
                   <span class="when">{{ timeAgo(item.createdAt) }}</span>
                 </span>
                 @if (!item.readAt) {
-                  <span class="sr-only">Sin leer</span>
+                  <span class="sr-only">{{ 'Sin leer' | t }}</span>
                 }
               </button>
             </li>
@@ -60,6 +64,6 @@
       }
     </div>
 
-    <a class="menu-foot" routerLink="/notifications" (click)="close()">Ver todas</a>
+    <a class="menu-foot" routerLink="/notifications" (click)="close()">{{ 'Ver todas' | t }}</a>
   </div>
 }

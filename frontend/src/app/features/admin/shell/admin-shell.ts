@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, effect, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
@@ -16,7 +17,7 @@ function readCollapsed(): boolean {
 /** Estructura del área del administrador: menú lateral y la página. Usa los estilos del panel docente. */
 @Component({
   selector: 'app-admin-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [TranslatePipe, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-shell.html',
   styleUrl: '../../teacher/shell/teacher-shell.scss',
 })

@@ -4,10 +4,10 @@
       @for (card of cards; track card.theme; let index = $index) {
         <div [class]="'course-poster ' + card.theme" [style.--card-index]="index">
           <div class="poster-top">
-            <span>{{ card.category }}</span
+            <span>{{ card.category | t }}</span
             ><span class="poster-number">{{ card.number }}?04</span>
           </div>
-          <strong class="poster-title">{{ card.title }}</strong>
+          <strong class="poster-title">{{ card.title | t }}</strong>
           <div class="poster-art">
             @switch (card.theme) {
               @case ('mint') {
@@ -117,28 +117,33 @@
               alt=""
               width="86"
               height="25"
-            /><span>EDUCACI?N<br />CONTINUA ?</span>
+            /><span>{{ 'EDUCACIÓN' | t }}<br />{{ 'CONTINUA' | t }} ↗</span>
           </div>
         </div>
       }
     </div>
     <span class="floating-label label-one" aria-hidden="true"
-      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg>A tu ritmo</span
+      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg
+      >{{ 'A tu ritmo' | t }}</span
     >
     <span class="floating-label label-two" aria-hidden="true"
-      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg>Tu próximo logro</span
+      ><svg viewBox="0 0 24 24"><path d="m3 2 6 19 4-8 8-4L3 2Z" /></svg
+      >{{ 'Tu próximo logro' | t }}</span
     >
     <h2 id="journey-title">
-      Hay un mundo por aprender.<br />Y un próximo paso<br /><span>que empieza contigo.</span>
+      {{ 'Hay un mundo por aprender.' | t }}<br />{{ 'Y un próximo paso' | t }}<br /><span>{{
+        'que empieza contigo.' | t
+      }}</span>
     </h2>
   </div>
   <div class="section-bottom">
     <p>
-      Explora nuevas ideas. Desarrolla tus habilidades.<br />Haz de la curiosidad tu próximo
-      comienzo.
+      {{ 'Explora nuevas ideas. Desarrolla tus habilidades.' | t }}<br />{{
+        'Haz de la curiosidad tu próximo comienzo.' | t
+      }}
     </p>
     <a routerLink="/courses" class="explore-link"
-      >Descubre los cursos <span aria-hidden="true">↗</span></a
+      >{{ 'Descubre los cursos' | t }} <span aria-hidden="true">↗</span></a
     >
   </div>
 </section>

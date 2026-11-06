@@ -1,22 +1,24 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <a class="back" routerLink="/teacher/discussions">← Volver a discusiones</a>
+    <a class="back" routerLink="/teacher/discussions">{{ '← Volver a discusiones' | t }}</a>
 
     @if (error()) {
       <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando…' | t }}</p>
+      </div>
     } @else if (thread(); as root) {
       <article class="panel-card root">
         <div class="top">
           <span class="kind" [class.comment]="root.kind === 'COMMENT'">
-            {{ root.kind === 'QUESTION' ? 'Pregunta' : 'Comentario de lección' }}
+            {{ root.kind === 'QUESTION' ? ('Pregunta' | t) : ('Comentario de lección' | t) }}
           </span>
           @if (root.kind === 'QUESTION') {
             <span class="state" [class.done]="root.answered">
-              {{ root.answered ? 'Respondida' : 'Sin responder' }}
+              {{ root.answered ? ('Respondida' | t) : ('Sin responder' | t) }}
             </span>
           }
         </div>
@@ -30,28 +32,28 @@
           @if (root.lesson) {
             · {{ root.lesson.title }}
           }
-          · {{ root.createdAt | date: "d 'de' MMM y, HH:mm" }}
+          · {{ root.createdAt | date: "d ('de' | t) MMM y, HH:mm" }}
         </p>
 
         <p class="text">{{ root.body }}</p>
 
         <div class="actions">
           @if (confirmDelete() === 'root') {
-            <span class="confirm-text">¿Eliminar esto y todas sus respuestas?</span>
+            <span class="confirm-text">{{ '¿Eliminar esto y todas sus respuestas?' | t }}</span>
             <button
               type="button"
               class="panel-btn panel-btn--danger panel-btn--sm"
               [disabled]="deleting()"
               (click)="remove()"
             >
-              Sí, eliminar
+              {{ 'Sí, eliminar' | t }}
             </button>
             <button
               type="button"
               class="panel-btn panel-btn--ghost panel-btn--sm"
               (click)="cancelDelete()"
             >
-              Cancelar
+              {{ 'Cancelar' | t }}
             </button>
           } @else {
             <button
@@ -59,7 +61,7 @@
               class="panel-btn panel-btn--ghost panel-btn--sm danger"
               (click)="askDelete('root')"
             >
-              Eliminar
+              {{ 'Eliminar' | t }}
             </button>
           }
         </div>
@@ -67,7 +69,7 @@
 
       <h2 class="replies-title">
         {{ root.replies.length }}
-        {{ root.replies.length === 1 ? 'respuesta' : 'respuestas' }}
+        {{ root.replies.length === 1 ? ('respuesta' | t) : ('respuestas' | t) }}
       </h2>
 
       <ul class="replies">
@@ -77,11 +79,11 @@
               <strong>{{ item.author.firstName }} {{ item.author.lastName }}</strong>
               @if (isStaff(item.author)) {
                 <span class="badge">{{
-                  item.author.role === 'ADMIN' ? 'Administrador' : 'Docente'
+                  item.author.role === 'ADMIN' ? ('Administrador' | t) : ('Docente' | t)
                 }}</span>
               }
               <span class="panel-muted when">{{
-                item.createdAt | date: "d 'de' MMM y, HH:mm"
+                item.createdAt | date: "d ('de' | t) MMM y, HH:mm"
               }}</span>
             </div>
 
@@ -89,21 +91,21 @@
 
             <div class="actions">
               @if (confirmDelete() === item.id) {
-                <span class="confirm-text">¿Eliminar esta respuesta?</span>
+                <span class="confirm-text">{{ '¿Eliminar esta respuesta?' | t }}</span>
                 <button
                   type="button"
                   class="panel-btn panel-btn--danger panel-btn--sm"
                   [disabled]="deleting()"
                   (click)="remove()"
                 >
-                  Sí, eliminar
+                  {{ 'Sí, eliminar' | t }}
                 </button>
                 <button
                   type="button"
                   class="panel-btn panel-btn--ghost panel-btn--sm"
                   (click)="cancelDelete()"
                 >
-                  Cancelar
+                  {{ 'Cancelar' | t }}
                 </button>
               } @else {
                 <button
@@ -111,7 +113,7 @@
                   class="panel-btn panel-btn--ghost panel-btn--sm danger"
                   (click)="askDelete(item.id)"
                 >
-                  Eliminar
+                  {{ 'Eliminar' | t }}
                 </button>
               }
             </div>
@@ -120,20 +122,24 @@
       </ul>
 
       <form class="panel-card answer" novalidate (ngSubmit)="send()">
-        <label for="reply">Tu respuesta</label>
+        <label for="reply">{{ 'Tu respuesta' | t }}</label>
         <textarea
           id="reply"
           class="panel-textarea"
           rows="4"
           [formControl]="reply"
-          placeholder="Escribe una respuesta clara; le llegará una notificación al estudiante."
+          [placeholder]="
+            'Escribe una respuesta clara; le llegará una notificación al estudiante.' | t
+          "
         ></textarea>
         @if (reply.touched && reply.invalid) {
-          <p class="panel-field-error">Escribe una respuesta (máximo 5000 caracteres).</p>
+          <p class="panel-field-error">
+            {{ 'Escribe una respuesta (máximo 5000 caracteres).' | t }}
+          </p>
         }
         <div>
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="sending()">
-            {{ sending() ? 'Enviando…' : 'Responder' }}
+            {{ sending() ? ('Enviando…' | t) : 'Responder' }}
           </button>
         </div>
       </form>

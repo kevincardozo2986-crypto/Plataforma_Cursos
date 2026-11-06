@@ -13,7 +13,7 @@
         <path d="M4 7h16M4 12h16M4 17h16" />
       }
     </svg>
-    Menú del docente
+    {{ 'Menú del docente' | t }}
   </button>
 
   <aside id="teacher-sidebar" class="sidebar" [class.open]="open()">
@@ -37,14 +37,14 @@
       </button>
     </div>
 
-    <nav aria-label="Panel del docente">
+    <nav [attr.aria-label]="'Panel del docente' | t">
       <ul class="menu">
         @for (item of available; track item.path) {
           <ng-container *ngTemplateOutlet="entry; context: { $implicit: item }" />
         }
       </ul>
 
-      <p id="upcoming-title" class="group-title">Próximamente</p>
+      <p id="upcoming-title" class="group-title">{{ 'Próximamente' | t }}</p>
 
       <ul class="menu muted" aria-labelledby="upcoming-title">
         @for (item of upcoming; track item.path) {
@@ -77,7 +77,7 @@
           <path [attr.d]="d" />
         }
       </svg>
-      <span>{{ item.label }}</span>
+      <span>{{ item.label | t }}</span>
     </a>
 
     @if (item.children && parent.isActive) {

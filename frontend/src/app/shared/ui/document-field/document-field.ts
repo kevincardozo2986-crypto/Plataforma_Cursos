@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, computed, DestroyRef, inject, input, model, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 
@@ -20,7 +21,7 @@ import { Icon } from '../icon/icon';
  */
 @Component({
   selector: 'app-document-field',
-  imports: [Icon],
+  imports: [TranslatePipe, Icon],
   template: `
     @if (files().length > 0) {
       <ul class="docs">
@@ -36,7 +37,7 @@ import { Icon } from '../icon/icon';
                 type="button"
                 class="remove"
                 [attr.aria-label]="'Quitar ' + file.originalName"
-                title="Quitar"
+                [title]="'Quitar' | t"
                 (click)="remove(file)"
               >
                 <app-icon name="x" [size]="16" />

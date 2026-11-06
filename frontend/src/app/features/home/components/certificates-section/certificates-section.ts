@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -12,7 +13,7 @@ const MODELS = [
 
 @Component({
   selector: 'app-certificates-section',
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   templateUrl: './certificates-section.html',
   styleUrl: './certificates-section.scss',
 })

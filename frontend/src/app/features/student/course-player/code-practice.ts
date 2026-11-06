@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import {
   Component,
   ElementRef,
@@ -18,7 +19,7 @@ export function buildPracticeDocument(html: string, css: string, js: string): st
 }
 @Component({
   selector: 'app-code-practice',
-  imports: [FormsModule],
+  imports: [TranslatePipe, FormsModule],
   template: `
     <div class="practice-heading">
       <div>
@@ -32,7 +33,7 @@ export function buildPracticeDocument(html: string, css: string, js: string): st
         <button class="run" (click)="run()">&#9654; Ejecutar web</button>
       } @else {
         <button class="run" (click)="download()">
-          Descargar {{ selected() === 'Java' ? 'Main.java' : 'main.py' }}
+          {{ 'Descargar' | t }} {{ selected() === 'Java' ? 'Main.java' : 'main.py' }}
         </button>
       }
     </div>
@@ -49,7 +50,7 @@ export function buildPracticeDocument(html: string, css: string, js: string): st
             </button>
           }
         </div>
-        <label class="sr-only" for="practice-code">Código {{ selected() }}</label
+        <label class="sr-only" for="practice-code">{{ 'Código' | t }} {{ selected() }}</label
         ><textarea
           id="practice-code"
           spellcheck="false"
@@ -63,7 +64,7 @@ export function buildPracticeDocument(html: string, css: string, js: string): st
         <p class="storage" role="status">{{ notice() }}</p>
       </section>
       <section class="result">
-        <header>Vista previa</header>
+        <header>{{ 'Vista previa' | t }}</header>
         @if (!webLanguage()) {
           <div class="empty-preview">
             <div>

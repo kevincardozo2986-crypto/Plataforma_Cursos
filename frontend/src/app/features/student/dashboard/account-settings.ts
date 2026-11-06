@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { RouterLink } from '@angular/router';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
@@ -11,7 +12,7 @@ import { apiErrorMessage } from '../../../core/http/api-error';
 
 @Component({
   selector: 'app-account-settings',
-  imports: [PublicUrlPipe, FormsModule, RouterLink],
+  imports: [TranslatePipe, PublicUrlPipe, FormsModule, RouterLink],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.scss',
 })

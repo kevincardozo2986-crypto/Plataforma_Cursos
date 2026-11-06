@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -27,7 +28,7 @@ export const WIZARD_STEPS: WizardStep[] = [
  */
 @Component({
   selector: 'app-course-wizard',
-  imports: [RouterOutlet, RouterLink, StatusBadge, Icon],
+  imports: [TranslatePipe, RouterOutlet, RouterLink, StatusBadge, Icon],
   providers: [CourseWizardService],
   templateUrl: './course-wizard.html',
   styleUrl: './course-wizard.scss',

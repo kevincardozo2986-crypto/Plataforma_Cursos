@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -25,7 +26,7 @@ const PAGE_SIZE = 20;
 /** Certificados del docente: sus plantillas y los certificados ya emitidos en sus cursos. */
 @Component({
   selector: 'app-certificates-page',
-  imports: [RouterLink, DatePipe, Icon, CertificatePreview],
+  imports: [TranslatePipe, RouterLink, DatePipe, Icon, CertificatePreview],
   templateUrl: './certificates-page.html',
   styleUrl: './certificates-page.scss',
 })

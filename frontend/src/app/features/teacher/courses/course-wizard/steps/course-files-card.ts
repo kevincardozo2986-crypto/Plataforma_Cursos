@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../../core/i18n/translate.pipe';
 import { Component, effect, inject, input, signal, untracked } from '@angular/core';
 
 import { CourseFile, CourseFilesService } from '../../../../../core/courses/course-files.service';
@@ -22,7 +23,7 @@ const MAX_FILES = 20;
  */
 @Component({
   selector: 'app-course-files-card',
-  imports: [Icon],
+  imports: [TranslatePipe, Icon],
   template: `
     <section class="wz-card tone-orange" aria-labelledby="files-title">
       <header class="wz-head">
@@ -34,7 +35,7 @@ const MAX_FILES = 20;
       </header>
 
       @if (loading()) {
-        <p class="muted"><app-icon name="refresh" [size]="15" /> Cargando…</p>
+        <p class="muted"><app-icon name="refresh" [size]="15" /> {{ 'Cargando…' | t }}</p>
       } @else {
         @if (files().length > 0) {
           <ul class="files">
@@ -49,7 +50,7 @@ const MAX_FILES = 20;
                   type="button"
                   class="icon"
                   [attr.aria-label]="'Descargar ' + file.originalName"
-                  title="Descargar"
+                  [title]="'Descargar' | t"
                   (click)="download(file)"
                 >
                   <app-icon name="download" [size]="16" />
@@ -63,13 +64,15 @@ const MAX_FILES = 20;
                   >
                     Sí, quitar
                   </button>
-                  <button type="button" class="mini" (click)="confirmId.set(null)">No</button>
+                  <button type="button" class="mini" (click)="confirmId.set(null)">
+                    {{ 'No' | t }}
+                  </button>
                 } @else {
                   <button
                     type="button"
                     class="icon danger"
                     [attr.aria-label]="'Quitar ' + file.originalName"
-                    title="Quitar"
+                    [title]="'Quitar' | t"
                     (click)="confirmId.set(file.id)"
                   >
                     <app-icon name="trash" [size]="16" />

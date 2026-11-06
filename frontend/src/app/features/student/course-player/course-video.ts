@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -85,7 +86,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
 }
 
 @Component({
-  imports: [PublicUrlPipe],
+  imports: [TranslatePipe, PublicUrlPipe],
   selector: 'app-course-video',
   template: `
     @if (native()) {
@@ -108,7 +109,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
         (seeked)="nativeSample(true)"
         (error)="failed.set(true)"
       >
-        Tu navegador no puede reproducir este video.
+        {{ 'Tu navegador no puede reproducir este video.' | t }}
       </video>
     } @else if (embed(); as embedded) {
       <div #frameHost class="embed-player"></div>

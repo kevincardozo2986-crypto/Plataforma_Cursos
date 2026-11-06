@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
@@ -35,7 +36,7 @@ const RING = 251.33;
  * curso (el PDF de la plataforma o la credencial digital de POK, nunca las dos).
  */
 @Component({
-  imports: [PublicUrlPipe],
+  imports: [TranslatePipe, PublicUrlPipe],
   selector: 'app-pok-page',
   templateUrl: './pok-page.html',
   styleUrl: './pok-page.scss',

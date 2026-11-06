@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import { CheckoutDialog } from './checkout-dialog/checkout-dialog';
@@ -42,6 +43,7 @@ interface CourseProgress {
 @Component({
   selector: 'app-course-detail-page',
   imports: [
+    TranslatePipe,
     PublicUrlPipe,
     RouterLink,
     FormsModule,

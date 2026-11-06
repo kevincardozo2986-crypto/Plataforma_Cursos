@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -43,7 +44,7 @@ type QuestionGroup = FormGroup<{
 /** Crear (desde un módulo) o editar una evaluación con sus preguntas, de cinco tipos. */
 @Component({
   selector: 'app-evaluation-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor],
+  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, PageHeader, RichEditor],
   templateUrl: './evaluation-form.html',
   styleUrl: './evaluation-form.scss',
 })

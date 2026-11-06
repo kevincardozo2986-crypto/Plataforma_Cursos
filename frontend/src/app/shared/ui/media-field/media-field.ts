@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import {
   Component,
@@ -31,7 +32,7 @@ import { UploadsService } from '../../../core/uploads/uploads.service';
  */
 @Component({
   selector: 'app-media-field',
-  imports: [PublicUrlPipe, ReactiveFormsModule],
+  imports: [TranslatePipe, PublicUrlPipe, ReactiveFormsModule],
   templateUrl: './media-field.html',
   styleUrl: './media-field.scss',
 })

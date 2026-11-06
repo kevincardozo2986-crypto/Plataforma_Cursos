@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Course, CoursesResponse } from '../../../core/courses/courses.models';
 import { StreakFlame } from './streak-flame';
@@ -31,7 +32,15 @@ interface StudentNotification {
 
 @Component({
   selector: 'app-student-dashboard',
-  imports: [PublicUrlPipe, RouterLink, StudentIcon, StudyStreak, AccountSettings, StreakFlame],
+  imports: [
+    TranslatePipe,
+    PublicUrlPipe,
+    RouterLink,
+    StudentIcon,
+    StudyStreak,
+    AccountSettings,
+    StreakFlame,
+  ],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss',
 })

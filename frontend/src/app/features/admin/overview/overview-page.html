@@ -3,9 +3,9 @@
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="shield" [size]="26" /></span>
       <div class="hero-copy">
-        <span class="eyebrow">ADMINISTRACIÓN</span>
-        <h1>Resumen de la plataforma</h1>
-        <p>Cuentas, cursos y actividad de todo el campus.</p>
+        <span class="eyebrow">{{ 'ADMINISTRACIÓN' | t }}</span>
+        <h1>{{ 'Resumen de la plataforma' | t }}</h1>
+        <p>{{ 'Cuentas, cursos y actividad de todo el campus.' | t }}</p>
       </div>
     </header>
 
@@ -16,7 +16,7 @@
     }
 
     @if (loading()) {
-      <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando…</p>
+      <p class="empty"><app-icon name="refresh" [size]="18" /> {{ 'Cargando…' | t }}</p>
     } @else if (data(); as d) {
       <ul class="tiles">
         @for (tile of tiles(); track tile.label) {
@@ -24,7 +24,7 @@
             <span class="tile-icon" aria-hidden="true"
               ><app-icon [name]="tile.icon" [size]="19"
             /></span>
-            <span class="label">{{ tile.label }}</span>
+            <span class="label">{{ tile.label | t }}</span>
             <strong class="value">{{ tile.value }}</strong>
             <span class="note">{{ tile.note }}</span>
           </li>
@@ -33,11 +33,11 @@
 
       <div class="grid">
         <section class="panel-card block">
-          <h2><app-icon name="users" [size]="19" /> Quién usa la plataforma</h2>
+          <h2><app-icon name="users" [size]="19" /> {{ 'Quién usa la plataforma' | t }}</h2>
           <ul class="roles">
             @for (row of roles(); track row.role) {
               <li>
-                <span class="role-name">{{ roleLabels[row.role] }}s</span>
+                <span class="role-name">{{ roleLabels[row.role] | t }}s</span>
                 <span class="meter"
                   ><span
                     class="meter-fill"
@@ -50,35 +50,35 @@
             }
           </ul>
           <a class="more" routerLink="/admin/users"
-            >Ver todos los usuarios <app-icon name="chevron-right" [size]="14"
+            >{{ 'Ver todos los usuarios' | t }} <app-icon name="chevron-right" [size]="14"
           /></a>
         </section>
 
         <section class="panel-card block">
-          <h2><app-icon name="book" [size]="19" /> Cursos por estado</h2>
+          <h2><app-icon name="book" [size]="19" /> {{ 'Cursos por estado' | t }}</h2>
           <ul class="states">
             <li>
-              <span class="pill" data-tone="ok">{{ statusLabels.PUBLISHED }}</span>
+              <span class="pill" data-tone="ok">{{ statusLabels.PUBLISHED | t }}</span>
               <strong>{{ fmt(d.courses.PUBLISHED) }}</strong>
             </li>
             <li>
-              <span class="pill" data-tone="warn">{{ statusLabels.DRAFT }}</span>
+              <span class="pill" data-tone="warn">{{ statusLabels.DRAFT | t }}</span>
               <strong>{{ fmt(d.courses.DRAFT) }}</strong>
             </li>
             <li>
-              <span class="pill">{{ statusLabels.ARCHIVED }}</span>
+              <span class="pill">{{ statusLabels.ARCHIVED | t }}</span>
               <strong>{{ fmt(d.courses.ARCHIVED) }}</strong>
             </li>
           </ul>
           <a class="more" routerLink="/admin/courses"
-            >Ver todos los cursos <app-icon name="chevron-right" [size]="14"
+            >{{ 'Ver todos los cursos' | t }} <app-icon name="chevron-right" [size]="14"
           /></a>
         </section>
       </div>
 
       <div class="grid">
         <section class="panel-card block">
-          <h2><app-icon name="user" [size]="19" /> Cuentas recientes</h2>
+          <h2><app-icon name="user" [size]="19" /> {{ 'Cuentas recientes' | t }}</h2>
           <ul class="recent">
             @for (user of d.recentUsers; track user.id) {
               <li>
@@ -87,7 +87,7 @@
                   <strong>{{ user.firstName }} {{ user.lastName }}</strong>
                   <small class="muted">{{ user.email }}</small>
                 </span>
-                <span class="pill" data-tone="accent">{{ roleLabels[user.role] }}</span>
+                <span class="pill" data-tone="accent">{{ roleLabels[user.role] | t }}</span>
                 <span class="muted when">{{ user.createdAt | date: 'd MMM' }}</span>
               </li>
             }
@@ -95,7 +95,7 @@
         </section>
 
         <section class="panel-card block">
-          <h2><app-icon name="list" [size]="19" /> Cursos recientes</h2>
+          <h2><app-icon name="list" [size]="19" /> {{ 'Cursos recientes' | t }}</h2>
           <ul class="recent">
             @for (course of d.recentCourses; track course.id) {
               <li>
@@ -104,7 +104,7 @@
                   <small class="muted">{{ course.teacher }}</small>
                 </span>
                 <span class="pill" [attr.data-tone]="tone(course.status)">{{
-                  statusLabels[course.status]
+                  statusLabels[course.status] | t
                 }}</span>
                 <span class="muted when">{{ course.createdAt | date: 'd MMM' }}</span>
               </li>

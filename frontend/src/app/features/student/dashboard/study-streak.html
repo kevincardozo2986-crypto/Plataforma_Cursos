@@ -4,36 +4,40 @@
       <app-streak-flame [active]="(streak()?.days ?? 0) > 0" />
     </div>
     <div>
-      <h2 id="streak-title">Racha de estudio</h2>
+      <h2 id="streak-title">{{ 'Racha de estudio' | t }}</h2>
       @if (loading()) {
-        <p class="hint" role="status">Cargando tu racha…</p>
+        <p class="hint" role="status">{{ 'Cargando tu racha…' | t }}</p>
       } @else if (error()) {
-        <button class="retry" (click)="load()">Reintentar cargar la racha</button>
+        <button class="retry" (click)="load()">{{ 'Reintentar cargar la racha' | t }}</button>
       } @else if (streak(); as data) {
         <p class="days">
-          {{ data.days }} <span>{{ data.days === 1 ? 'día' : 'días' }}</span>
+          {{ data.days }} <span>{{ data.days === 1 ? ('día' | t) : ('días' | t) }}</span>
         </p>
         <p class="hint">
           {{
             data.studiedToday
-              ? '¡Hoy también sumaste! Sigue así.'
+              ? ('¡Hoy también sumaste! Sigue así.' | t)
               : data.days
-                ? 'Completa una lección hoy y sigue sumando.'
-                : 'Completa una lección y enciende tu racha.'
+                ? ('Completa una lección hoy y sigue sumando.' | t)
+                : ('Completa una lección y enciende tu racha.' | t)
           }}
         </p>
       }
     </div>
   </div>
-  <div class="week-heading"><span>Esta semana</span><span>Lunes a domingo</span></div>
+  <div class="week-heading">
+    <span>{{ 'Esta semana' | t }}</span
+    ><span>{{ 'Lunes a domingo' | t }}</span>
+  </div>
   @if (error()) {
     <div class="weekly-notice" role="alert">
-      No pudimos consultar tu actividad. <button class="retry" (click)="load()">Reintentar</button>
+      {{ 'No pudimos consultar tu actividad.' | t }}
+      <button class="retry" (click)="load()">{{ 'Reintentar' | t }}</button>
     </div>
   } @else if (loading()) {
-    <p class="weekly-notice" role="status">Cargando tu actividad...</p>
+    <p class="weekly-notice" role="status">{{ 'Cargando tu actividad...' | t }}</p>
   }
-  <div class="week" aria-label="Actividad de esta semana, de lunes a domingo">
+  <div class="week" [attr.aria-label]="'Actividad de esta semana, de lunes a domingo' | t">
     @for (day of week(); track day.date) {
       <div
         class="day"
@@ -55,9 +59,9 @@
         <span class="day-fire" aria-hidden="true">
           <app-streak-flame [active]="day.completed || day.today" />
         </span>
-        <span class="day-date">{{ day.today ? 'Hoy' : day.date.slice(8) }}</span>
+        <span class="day-date">{{ day.today ? ('Hoy' | t) : day.date.slice(8) }}</span>
       </div>
     }
   </div>
-  <p class="rule">Suma un día al completar una lección · Hora de Colombia</p>
+  <p class="rule">{{ 'Suma un día al completar una lección · Hora de Colombia' | t }}</p>
 </section>

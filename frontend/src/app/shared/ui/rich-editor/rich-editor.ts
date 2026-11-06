@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { canonicalMediaHtml } from '../../../core/http/public-url';
 import {
   Component,
@@ -136,6 +137,7 @@ function pretty(html: string): string {
  * a limpiarlo al guardar, así que aquí solo se evita que algo se ejecute en pantalla.
  */
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-rich-editor',
   templateUrl: './rich-editor.html',
   styleUrl: './rich-editor.scss',

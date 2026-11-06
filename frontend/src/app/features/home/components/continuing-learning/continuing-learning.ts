@@ -1,13 +1,19 @@
-﻿import { afterNextRender, Component, DestroyRef, ElementRef, inject, NgZone } from '@angular/core';
+import { computed } from '@angular/core';
+import { LanguageService } from '../../../../core/i18n/language.service';
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
+import { afterNextRender, Component, DestroyRef, ElementRef, inject, NgZone } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-continuing-learning',
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   templateUrl: './continuing-learning.html',
   styleUrl: './continuing-learning.scss',
 })
 export class ContinuingLearning {
+  private readonly language = inject(LanguageService);
+  readonly firstLine = computed(() => [...this.language.translate('APRENDER NO')]);
+  readonly secondLine = computed(() => [...this.language.translate('TIENE LÍMITES')]);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);

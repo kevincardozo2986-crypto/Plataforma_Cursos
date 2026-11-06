@@ -5,19 +5,19 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="pen" [size]="19" /></span>
         <div>
-          <h2>Título y dirección</h2>
-          <p>Lo primero que verán tus estudiantes.</p>
+          <h2>{{ 'Título y dirección' | t }}</h2>
+          <p>{{ 'Lo primero que verán tus estudiantes.' | t }}</p>
         </div>
       </header>
 
       <div class="panel-field">
-        <label for="title">Título del curso</label>
+        <label for="title">{{ 'Título del curso' | t }}</label>
         <input
           id="title"
           class="panel-input"
           type="text"
           formControlName="title"
-          placeholder="Ej. Introducción a la programación"
+          [placeholder]="'Ej. Introducción a la programación' | t"
           [attr.aria-invalid]="errorOf('title') ? 'true' : null"
         />
         @if (errorOf('title')) {
@@ -26,7 +26,7 @@
       </div>
 
       <div class="panel-field">
-        <label for="slug">Dirección del curso</label>
+        <label for="slug">{{ 'Dirección del curso' | t }}</label>
         <div class="slug-row">
           <span class="slug-prefix" aria-hidden="true"
             ><app-icon name="link" [size]="15" /> /cursos/</span
@@ -46,13 +46,15 @@
           <p class="panel-field-error">{{ errorOf('slug') }}</p>
         }
         @if (autoSlug()) {
-          <p class="panel-hint">Se escribe sola a partir del título. Puedes cambiarla.</p>
+          <p class="panel-hint">
+            {{ 'Se escribe sola a partir del título. Puedes cambiarla.' | t }}
+          </p>
         } @else {
           <!-- Siempre disponible, también cuando la dirección escrita a mano es inválida. -->
           <p class="panel-hint">
-            Dirección personalizada.
+            {{ 'Dirección personalizada.' | t }}
             <button type="button" class="link-btn" (click)="regenerateSlug()">
-              Generarla desde el título
+              {{ 'Generarla desde el título' | t }}
             </button>
           </p>
         }
@@ -64,19 +66,21 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="file" [size]="19" /></span>
         <div>
-          <h2>Descripción</h2>
-          <p>Cuéntales de qué trata y por qué vale la pena.</p>
+          <h2>{{ 'Descripción' | t }}</h2>
+          <p>{{ 'Cuéntales de qué trata y por qué vale la pena.' | t }}</p>
         </div>
       </header>
 
       <div class="panel-field">
-        <label for="description" class="visually-hidden">¿De qué trata el curso?</label>
+        <label for="description" class="visually-hidden">{{ '¿De qué trata el curso?' | t }}</label>
         <app-rich-editor
           inputId="description"
-          label="¿De qué trata el curso?"
+          [label]="'¿De qué trata el curso?' | t"
           formControlName="description"
           [minHeight]="260"
-          placeholder="Cuéntales a los estudiantes qué van a aprender y por qué vale la pena."
+          [placeholder]="
+            'Cuéntales a los estudiantes qué van a aprender y por qué vale la pena.' | t
+          "
         />
       </div>
     </section>
@@ -86,8 +90,8 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="eye" [size]="19" /></span>
         <div>
-          <h2>Imagen y video</h2>
-          <p>Una buena miniatura hace que más gente entre al curso.</p>
+          <h2>{{ 'Imagen y video' | t }}</h2>
+          <p>{{ 'Una buena miniatura hace que más gente entre al curso.' | t }}</p>
         </div>
       </header>
 
@@ -95,7 +99,7 @@
         kind="image"
         inputId="imageUrl"
         label="Miniatura del curso"
-        placeholder="Pega un enlace o sube un archivo"
+        [placeholder]="'Pega un enlace o sube un archivo' | t"
         hint="JPG, PNG, GIF o WebP, hasta 50 MB."
         [control]="form.controls.imageUrl"
         [error]="errorOf('imageUrl')"
@@ -105,7 +109,7 @@
         kind="video"
         inputId="introVideoUrl"
         label="Video introductorio (opcional)"
-        placeholder="Pega un enlace o sube un archivo"
+        [placeholder]="'Pega un enlace o sube un archivo' | t"
         hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace de YouTube o Vimeo."
         [control]="form.controls.introVideoUrl"
         [error]="errorOf('introVideoUrl')"
@@ -113,35 +117,35 @@
     </section>
   </div>
 
-  <aside class="wz-side" aria-label="Ajustes del curso">
+  <aside class="wz-side" [attr.aria-label]="'Ajustes del curso' | t">
     <!-- Opciones generales -->
     <section class="wz-card tone-teal">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="layout" [size]="19" /></span>
-        <h2>Opciones generales</h2>
+        <h2>{{ 'Opciones generales' | t }}</h2>
       </header>
 
       <div class="panel-field">
-        <label for="level">Nivel de dificultad</label>
+        <label for="level">{{ 'Nivel de dificultad' | t }}</label>
         <select id="level" class="panel-select" formControlName="level">
           @for (level of levels; track level) {
-            <option [value]="level">{{ levelLabels[level] }}</option>
+            <option [value]="level">{{ levelLabels[level] | t }}</option>
           }
         </select>
       </div>
 
       <div class="panel-field">
-        <label for="category">Categoría</label>
+        <label for="category">{{ 'Categoría' | t }}</label>
         <select id="category" class="panel-select" formControlName="categoryId">
           @if (canClearCategory) {
-            <option [ngValue]="null">Sin categoría</option>
+            <option [ngValue]="null">{{ 'Sin categoría' | t }}</option>
           }
           @for (category of categories(); track category.id) {
             <option [ngValue]="category.id">{{ category.name }}</option>
           }
         </select>
         @if (categories().length === 0) {
-          <p class="panel-hint">Aún no hay categorías creadas.</p>
+          <p class="panel-hint">{{ 'Aún no hay categorías creadas.' | t }}</p>
         }
       </div>
 
@@ -149,8 +153,8 @@
         <input type="checkbox" formControlName="publicContent" />
         <span class="track" aria-hidden="true"></span>
         <span>
-          <strong>Curso público</strong>
-          <small>El contenido se puede ver sin inscribirse.</small>
+          <strong>{{ 'Curso público' | t }}</strong>
+          <small>{{ 'El contenido se puede ver sin inscribirse.' | t }}</small>
         </span>
       </label>
 
@@ -158,8 +162,8 @@
         <input type="checkbox" formControlName="qaEnabled" />
         <span class="track" aria-hidden="true"></span>
         <span>
-          <strong>Preguntas y respuestas</strong>
-          <small>Los estudiantes pueden preguntar dentro del curso.</small>
+          <strong>{{ 'Preguntas y respuestas' | t }}</strong>
+          <small>{{ 'Los estudiantes pueden preguntar dentro del curso.' | t }}</small>
         </span>
       </label>
     </section>
@@ -168,18 +172,20 @@
     <section class="wz-card tone-green">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="award" [size]="19" /></span>
-        <h2>Precio</h2>
+        <h2>{{ 'Precio' | t }}</h2>
       </header>
 
       <fieldset class="wz-choices two">
-        <legend class="visually-hidden">Tipo de precio</legend>
+        <legend class="visually-hidden">{{ 'Tipo de precio' | t }}</legend>
 
         <label class="wz-choice">
           <input type="radio" formControlName="pricing" value="FREE" />
           <span class="wz-choice-icon" aria-hidden="true"
             ><app-icon name="check-circle" [size]="17"
           /></span>
-          <span><strong>Gratis</strong></span>
+          <span
+            ><strong>{{ 'Gratis' | t }}</strong></span
+          >
         </label>
 
         <label class="wz-choice">
@@ -187,13 +193,15 @@
           <span class="wz-choice-icon" aria-hidden="true"
             ><app-icon name="star" [size]="17"
           /></span>
-          <span><strong>De pago</strong></span>
+          <span
+            ><strong>{{ 'De pago' | t }}</strong></span
+          >
         </label>
       </fieldset>
 
       @if (isPaid()) {
         <div class="panel-field">
-          <label for="price">Precio del curso</label>
+          <label for="price">{{ 'Precio del curso' | t }}</label>
           <input
             id="price"
             class="panel-input"
@@ -216,11 +224,11 @@
     <section class="wz-card tone-amber">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="lock" [size]="19" /></span>
-        <h2>Quién puede entrar</h2>
+        <h2>{{ 'Quién puede entrar' | t }}</h2>
       </header>
 
       <fieldset class="wz-choices">
-        <legend class="visually-hidden">Visibilidad del curso</legend>
+        <legend class="visually-hidden">{{ 'Visibilidad del curso' | t }}</legend>
 
         @for (visibility of visibilities; track visibility) {
           <label class="wz-choice">
@@ -238,7 +246,7 @@
 
       @if (needsPassword()) {
         <div class="panel-field">
-          <label for="accessPassword">Contraseña del curso</label>
+          <label for="accessPassword">{{ 'Contraseña del curso' | t }}</label>
           <input
             id="accessPassword"
             class="panel-input"
@@ -254,40 +262,44 @@
             <p class="panel-field-error">{{ errorOf('accessPassword') }}</p>
           } @else if (hasSavedPassword()) {
             <p class="panel-hint">
-              Ya hay una contraseña guardada. Escribe otra solo si quieres cambiarla.
+              {{ 'Ya hay una contraseña guardada. Escribe otra solo si quieres cambiarla.' | t }}
             </p>
           }
         </div>
       }
 
       <div class="panel-field">
-        <label for="maxStudents"><app-icon name="users" [size]="14" /> Cupo máximo</label>
+        <label for="maxStudents"
+          ><app-icon name="users" [size]="14" /> {{ 'Cupo máximo' | t }}</label
+        >
         <input
           id="maxStudents"
           class="panel-input"
           type="number"
           min="1"
           formControlName="maxStudents"
-          placeholder="Sin límite"
+          [placeholder]="'Sin límite' | t"
           [attr.aria-invalid]="errorOf('maxStudents') ? 'true' : null"
         />
         @if (errorOf('maxStudents')) {
           <p class="panel-field-error">{{ errorOf('maxStudents') }}</p>
         } @else {
-          <p class="panel-hint">Vacío = sin límite de inscripciones.</p>
+          <p class="panel-hint">{{ 'Vacío = sin límite de inscripciones.' | t }}</p>
         }
       </div>
     </section>
     <section class="wz-card tone-violet">
-      <h2>Práctica de programación</h2>
+      <h2>{{ 'Práctica de programación' | t }}</h2>
       <label class="wz-switch"
         ><input type="checkbox" formControlName="programmingEnabled" /><span
           class="track"
           aria-hidden="true"
         ></span
-        ><span>Este es un curso de programación</span></label
+        ><span>{{ 'Este es un curso de programación' | t }}</span></label
       >
-      <p class="panel-muted">Activa el editor de código para los estudiantes de este curso.</p>
+      <p class="panel-muted">
+        {{ 'Activa el editor de código para los estudiantes de este curso.' | t }}
+      </p>
     </section>
   </aside>
 </form>

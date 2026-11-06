@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -15,7 +16,7 @@ import {
 /** Una pregunta o comentario con sus respuestas, para responder y moderar. */
 @Component({
   selector: 'app-discussion-thread',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, DatePipe],
   templateUrl: './discussion-thread.html',
   styleUrl: './discussion-thread.scss',
 })

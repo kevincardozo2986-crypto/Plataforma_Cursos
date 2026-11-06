@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -54,7 +55,7 @@ function storedView(): View {
  */
 @Component({
   selector: 'app-course-list',
-  imports: [RouterLink, NgTemplateOutlet, PublicUrlPipe],
+  imports: [TranslatePipe, RouterLink, NgTemplateOutlet, PublicUrlPipe],
   templateUrl: './course-list.html',
   styleUrl: './course-list.scss',
 })
@@ -210,7 +211,9 @@ export class CourseList {
 
     if (!open) {
       // El foco pasa al primer elemento del menú, para usarlo con teclado.
-      setTimeout(() => this.host.nativeElement.querySelector<HTMLElement>('.mc-menu button')?.focus());
+      setTimeout(() =>
+        this.host.nativeElement.querySelector<HTMLElement>('.mc-menu button')?.focus(),
+      );
     }
   }
 
@@ -329,9 +332,8 @@ export class CourseList {
     this.api.setStatus(course.id, restoring ? 'PUBLISHED' : 'ARCHIVED').subscribe({
       next: (updated) => {
         this.setLocalStatus(course.id, updated.status);
-        this.showToast(
-          restoring ? `${label} se restauró.` : `${label} se archivó.`,
-          () => this.revertStatus(course.id, previous),
+        this.showToast(restoring ? `${label} se restauró.` : `${label} se archivó.`, () =>
+          this.revertStatus(course.id, previous),
         );
       },
       error: (error: unknown) => {

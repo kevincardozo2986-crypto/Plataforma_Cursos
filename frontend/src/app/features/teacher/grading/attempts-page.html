@@ -1,8 +1,8 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">ESPACIO DOCENTE / CUESTIONARIOS</span>
+    <span class="eyebrow">{{ 'ESPACIO DOCENTE / CUESTIONARIOS' | t }}</span>
     <app-page-header
-      title="Intentos del cuestionario"
+      [title]="'Intentos del cuestionario' | t"
       subtitle="Revisa las respuestas abiertas de tus estudiantes y ponles nota."
     />
 
@@ -11,7 +11,7 @@
     }
 
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Estado">
+      <div class="filters" role="group" [attr.aria-label]="'Estado' | t">
         @for (entry of filters; track entry.value) {
           <button
             type="button"
@@ -20,15 +20,15 @@
             [attr.aria-pressed]="filter() === entry.value"
             (click)="setFilter(entry.value)"
           >
-            {{ entry.label }}
+            {{ entry.label | t }}
           </button>
         }
       </div>
 
       <div class="panel-field course">
-        <label for="course-filter">Curso</label>
+        <label for="course-filter">{{ 'Curso' | t }}</label>
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id">{{ course.title }}</option>
           }
@@ -37,16 +37,20 @@
     </div>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando intentos…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando intentos…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">✓</span>
-        <h2>{{ filter() === 'PENDING_REVIEW' ? 'Todo revisado' : 'No hay intentos' }}</h2>
+        <h2>
+          {{ filter() === 'PENDING_REVIEW' ? ('Todo revisado' | t) : ('No hay intentos' | t) }}
+        </h2>
         <p>
           {{
             filter() === 'PENDING_REVIEW'
-              ? 'No tienes quizzes esperando revisión.'
-              : 'Cuando tus estudiantes presenten un quiz, aparecerá aquí.'
+              ? ('No tienes quizzes esperando revisión.' | t)
+              : ('Cuando tus estudiantes presenten un quiz, aparecerá aquí.' | t)
           }}
         </p>
       </div>
@@ -61,13 +65,13 @@
                 >
                 <p class="meta panel-muted">
                   {{ item.evaluation.title }} · {{ item.course.title }} ·
-                  {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }}
+                  {{ item.createdAt | date: "d ('de' | t) MMM y, HH:mm" }}
                 </p>
               </div>
 
               <div class="side">
                 <span class="state" [class.done]="item.status === 'GRADED'">
-                  {{ item.status === 'GRADED' ? 'Calificado' : 'Por revisar' }}
+                  {{ item.status === 'GRADED' ? ('Calificado' | t) : ('Por revisar' | t) }}
                 </span>
                 <span class="score" [class.fail]="item.status === 'GRADED' && !item.passed">
                   {{ item.score }}%{{ item.status === 'PENDING_REVIEW' ? ' (provisional)' : '' }}
@@ -79,14 +83,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -94,7 +98,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

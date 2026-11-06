@@ -1,6 +1,18 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe, DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, HostListener, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  HostListener,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, concatMap, from } from 'rxjs';
 
@@ -52,7 +64,7 @@ interface Dot {
  */
 @Component({
   selector: 'app-inscritos-page',
-  imports: [DatePipe, RouterLink],
+  imports: [TranslatePipe, DatePipe, RouterLink],
   templateUrl: './inscritos-page.html',
   styleUrl: './inscritos-page.scss',
 })
@@ -110,7 +122,9 @@ export class InscritosPage {
 
     for (const row of this.rows()) seen.set(row.course.id, row.course.title);
 
-    return [...seen].map(([id, title]) => ({ id, title })).sort((a, b) => a.title.localeCompare(b.title, 'es'));
+    return [...seen]
+      .map(([id, title]) => ({ id, title }))
+      .sort((a, b) => a.title.localeCompare(b.title, 'es'));
   });
 
   /** Los inscritos del curso elegido (o de todos): es la base del panorama. */
@@ -122,7 +136,9 @@ export class InscritosPage {
 
   readonly counts = computed(() => countByState(this.base()));
   readonly average = computed(() => averagePct(this.base()));
-  readonly activeThisWeek = computed(() => this.base().filter((row) => row.days !== null && row.days <= 7).length);
+  readonly activeThisWeek = computed(
+    () => this.base().filter((row) => row.days !== null && row.days <= 7).length,
+  );
   readonly neverStarted = computed(() => this.counts().new);
   readonly risk = computed(() => riskOf(this.base(), this.reminded()));
   readonly courseCount = computed(() => new Set(this.base().map((row) => row.course.id)).size);
@@ -136,7 +152,9 @@ export class InscritosPage {
   readonly filtered = computed(() => {
     const state = this.state();
     const query = this.query();
-    const list = this.base().filter((row) => (state === 'all' || row.ix === state) && matchesQuery(row, query));
+    const list = this.base().filter(
+      (row) => (state === 'all' || row.ix === state) && matchesQuery(row, query),
+    );
 
     return sortRows(list, this.sortKey(), this.sortDir());
   });
@@ -160,17 +178,26 @@ export class InscritosPage {
   });
 
   readonly allChecked = computed(
-    () => this.pageRows().length > 0 && this.pageRows().every((row) => this.selected().has(row.enrollmentId)),
+    () =>
+      this.pageRows().length > 0 &&
+      this.pageRows().every((row) => this.selected().has(row.enrollmentId)),
   );
   readonly someChecked = computed(
-    () => !this.allChecked() && this.pageRows().some((row) => this.selected().has(row.enrollmentId)),
+    () =>
+      !this.allChecked() && this.pageRows().some((row) => this.selected().has(row.enrollmentId)),
   );
-  readonly selectedRows = computed(() => this.rows().filter((row) => this.selected().has(row.enrollmentId)));
+  readonly selectedRows = computed(() =>
+    this.rows().filter((row) => this.selected().has(row.enrollmentId)),
+  );
 
-  readonly openRow = computed(() => this.rows().find((row) => row.enrollmentId === this.openId()) ?? null);
+  readonly openRow = computed(
+    () => this.rows().find((row) => row.enrollmentId === this.openId()) ?? null,
+  );
 
   /** Inactivos del grupo que se está mirando (para el aviso «Recordar a todos»). */
-  readonly idleRows = computed(() => this.base().filter((row) => row.ix === 'idle' && !this.reminded().has(row.enrollmentId)));
+  readonly idleRows = computed(() =>
+    this.base().filter((row) => row.ix === 'idle' && !this.reminded().has(row.enrollmentId)),
+  );
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -199,30 +226,30 @@ export class InscritosPage {
 
     const all: StudentRow[] = [];
     const next = (offset: number): void => {
-      this.analytics
-        .students({ period: 'all', limit: FETCH_PAGE, offset })
-        .subscribe({
-          next: (page) => {
-            all.push(...page.items);
+      this.analytics.students({ period: 'all', limit: FETCH_PAGE, offset }).subscribe({
+        next: (page) => {
+          all.push(...page.items);
 
-            if (all.length < page.total && all.length < FETCH_MAX && page.items.length > 0) {
-              next(offset + FETCH_PAGE);
+          if (all.length < page.total && all.length < FETCH_MAX && page.items.length > 0) {
+            next(offset + FETCH_PAGE);
 
-              return;
-            }
+            return;
+          }
 
-            const now = new Date();
+          const now = new Date();
 
-            // Las inscripciones canceladas no se muestran: ya no son parte del grupo.
-            this.rows.set(all.filter((row) => row.state !== 'CANCELLED').map((row) => toIxRow(row, now)));
-            this.applyCourseFromRoute();
-            this.loading.set(false);
-          },
-          error: (error: unknown) => {
-            this.error.set(apiErrorMessage(error, 'No pudimos cargar a tus inscritos.'));
-            this.loading.set(false);
-          },
-        });
+          // Las inscripciones canceladas no se muestran: ya no son parte del grupo.
+          this.rows.set(
+            all.filter((row) => row.state !== 'CANCELLED').map((row) => toIxRow(row, now)),
+          );
+          this.applyCourseFromRoute();
+          this.loading.set(false);
+        },
+        error: (error: unknown) => {
+          this.error.set(apiErrorMessage(error, 'No pudimos cargar a tus inscritos.'));
+          this.loading.set(false);
+        },
+      });
     };
 
     next(0);

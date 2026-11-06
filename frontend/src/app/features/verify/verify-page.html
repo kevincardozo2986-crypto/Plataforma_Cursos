@@ -1,14 +1,16 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">VERIFICACIÓN</span>
-    <h1>Verificar un certificado</h1>
+    <span class="eyebrow">{{ 'VERIFICACIÓN' | t }}</span>
+    <h1>{{ 'Verificar un certificado' | t }}</h1>
     <p class="panel-muted lead">
-      Escribe el código que aparece al pie del certificado para comprobar que es auténtico.
+      {{
+        'Escribe el código que aparece al pie del certificado para comprobar que es auténtico.' | t
+      }}
     </p>
 
     <form class="panel-card search" (ngSubmit)="submit()">
       <div class="panel-field">
-        <label for="code">Código del certificado</label>
+        <label for="code">{{ 'Código del certificado' | t }}</label>
         <input
           id="code"
           class="panel-input code-input"
@@ -19,7 +21,7 @@
         />
       </div>
       <button type="submit" class="panel-btn panel-btn--primary" [disabled]="loading()">
-        {{ loading() ? 'Comprobando…' : 'Verificar' }}
+        {{ loading() ? ('Comprobando…' | t) : ('Verificar' | t) }}
       </button>
     </form>
 
@@ -32,12 +34,14 @@
       >
         <div class="badge" aria-hidden="true">{{ certificate.valid ? '✓' : '✕' }}</div>
         <h2>
-          {{ certificate.valid ? 'Certificado válido' : 'Este certificado fue revocado' }}
+          {{
+            certificate.valid ? ('Certificado válido' | t) : ('Este certificado fue revocado' | t)
+          }}
         </h2>
 
         @if (!certificate.valid) {
           <p class="panel-muted">
-            Existió, pero ya no es válido
+            {{ 'Existió, pero ya no es válido' | t }}
             @if (certificate.revokedAt) {
               (revocado el {{ certificate.revokedAt | date: 'dd/MM/yyyy' }})
             }
@@ -47,29 +51,29 @@
 
         <dl>
           <div>
-            <dt>Otorgado a</dt>
+            <dt>{{ 'Otorgado a' | t }}</dt>
             <dd>{{ certificate.studentName }}</dd>
           </div>
           <div>
-            <dt>Curso</dt>
+            <dt>{{ 'Curso' | t }}</dt>
             <dd>{{ certificate.courseTitle }}</dd>
           </div>
           @if (formatDuration(certificate.courseMinutes)) {
             <div>
-              <dt>Duración</dt>
-              <dd>{{ formatDuration(certificate.courseMinutes) }}</dd>
+              <dt>{{ 'Duración' | t }}</dt>
+              <dd>{{ formatDuration(certificate.courseMinutes) | t }}</dd>
             </div>
           }
           <div>
-            <dt>Docente</dt>
+            <dt>{{ 'Docente' | t }}</dt>
             <dd>{{ certificate.instructorName }}</dd>
           </div>
           <div>
-            <dt>Fecha de emisión</dt>
+            <dt>{{ 'Fecha de emisión' | t }}</dt>
             <dd>{{ certificate.issuedAt | date: 'dd/MM/yyyy' }}</dd>
           </div>
           <div>
-            <dt>Código</dt>
+            <dt>{{ 'Código' | t }}</dt>
             <dd class="mono">{{ certificate.code }}</dd>
           </div>
         </dl>
@@ -79,20 +83,24 @@
     @if (notFound()) {
       <div class="panel-card result invalid" role="alert">
         <div class="badge" aria-hidden="true">?</div>
-        <h2>No encontramos ese código</h2>
+        <h2>{{ 'No encontramos ese código' | t }}</h2>
         <p class="panel-muted">
-          Revisa que esté completo (formato CC-XXXX-XXXX-XXXX). Si lo copiaste de un documento, un
-          carácter mal leído cambia el resultado.
+          {{
+            'Revisa que esté completo (formato CC-XXXX-XXXX-XXXX). Si lo copiaste de un documento, un carácter mal leído cambia el resultado.'
+              | t
+          }}
         </p>
       </div>
     }
 
     @if (failed()) {
       <p class="panel-alert panel-alert--error" role="alert">
-        No pudimos conectar con el servidor. Inténtalo de nuevo en unos minutos.
+        {{ 'No pudimos conectar con el servidor. Inténtalo de nuevo en unos minutos.' | t }}
       </p>
     }
 
-    <p class="back"><a routerLink="/">← Volver al inicio</a></p>
+    <p class="back">
+      <a routerLink="/">{{ '← Volver al inicio' | t }}</a>
+    </p>
   </div>
 </section>

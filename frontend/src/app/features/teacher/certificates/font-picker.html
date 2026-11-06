@@ -1,5 +1,5 @@
 <div class="picker">
-  <span class="label" [id]="inputId() + '-label'">{{ label() }}</span>
+  <span class="label" [id]="inputId() + '-label'">{{ label() | t }}</span>
 
   <button
     type="button"
@@ -11,7 +11,7 @@
     (click)="toggle()"
   >
     <span class="name" [style.font-family]="family(current())">{{ current().label }}</span>
-    <span class="chip">{{ current().category === 'Mía' ? 'Mía' : current().category }}</span>
+    <span class="chip">{{ current().category === 'Mía' ? ('Mía' | t) : current().category }}</span>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
   </button>
 
@@ -24,9 +24,13 @@
           @for (option of group.items; track option.key) {
             <div class="row" role="presentation">
               @if (confirmDeleteId() !== null && confirmDeleteId() === option.id) {
-                <span class="confirm">¿Borrar «{{ option.label }}»?</span>
-                <button type="button" class="mini danger" (click)="remove(option)">Sí</button>
-                <button type="button" class="mini" (click)="confirmDeleteId.set(null)">No</button>
+                <span class="confirm">¿Borrar «{{ option.label | t }}»?</span>
+                <button type="button" class="mini danger" (click)="remove(option)">
+                  {{ 'Sí' | t }}
+                </button>
+                <button type="button" class="mini" (click)="confirmDeleteId.set(null)">
+                  {{ 'No' | t }}
+                </button>
               } @else {
                 <button
                   type="button"
@@ -37,7 +41,7 @@
                   [style.font-family]="family(option)"
                   (click)="select(option)"
                 >
-                  {{ option.label }}
+                  {{ option.label | t }}
                   @if (option.key === value()) {
                     <span class="check" aria-hidden="true">✓</span>
                   }
@@ -61,7 +65,7 @@
 
       <div class="foot">
         <label class="upload" [class.busy]="uploading()">
-          {{ uploading() ? 'Subiendo…' : '＋ Subir mi tipografía' }}
+          {{ uploading() ? ('Subiendo…' | t) : '＋ Subir mi tipografía' }}
           <input
             type="file"
             accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"
@@ -69,7 +73,9 @@
             (change)="onFile($event)"
           />
         </label>
-        <span class="hint">.ttf, .otf, .woff o .woff2 · hasta 2 MB · solo la ves tú</span>
+        <span class="hint">{{
+          '.ttf, .otf, .woff o .woff2 · hasta 2 MB · solo la ves tú' | t
+        }}</span>
 
         @if (error()) {
           <p class="msg error" role="alert">{{ error() }}</p>

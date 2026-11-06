@@ -1,13 +1,13 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">ESPACIO DOCENTE / ANUNCIOS</span>
+    <span class="eyebrow">{{ 'ESPACIO DOCENTE / ANUNCIOS' | t }}</span>
     <app-page-header
-      title="Anuncios"
+      [title]="'Anuncios' | t"
       subtitle="Comunica novedades a los estudiantes inscritos en tus cursos."
     >
       @if (!composing()) {
         <button type="button" class="panel-btn panel-btn--primary" (click)="openComposer()">
-          <span aria-hidden="true">＋</span> Nuevo anuncio
+          <span aria-hidden="true">＋</span> {{ 'Nuevo anuncio' | t }}
         </button>
       }
     </app-page-header>
@@ -21,17 +21,17 @@
 
     @if (composing()) {
       <form class="panel-card composer" [formGroup]="composer" novalidate (ngSubmit)="publish()">
-        <h2>Nuevo anuncio</h2>
+        <h2>{{ 'Nuevo anuncio' | t }}</h2>
 
         <div class="panel-field">
-          <label for="new-course">Curso</label>
+          <label for="new-course">{{ 'Curso' | t }}</label>
           <select
             id="new-course"
             class="panel-select"
             [value]="composer.controls.courseId.value ?? ''"
             (change)="setComposerCourse($event)"
           >
-            <option value="">Elige un curso…</option>
+            <option value="">{{ 'Elige un curso…' | t }}</option>
             @for (course of courses(); track course.id) {
               <option
                 [value]="course.id"
@@ -42,48 +42,48 @@
             }
           </select>
           @if (composer.controls.courseId.touched && composer.controls.courseId.invalid) {
-            <p class="panel-field-error">Elige a qué curso va el anuncio.</p>
+            <p class="panel-field-error">{{ 'Elige a qué curso va el anuncio.' | t }}</p>
           }
         </div>
 
         <div class="panel-field">
-          <label for="new-title">Título</label>
+          <label for="new-title">{{ 'Título' | t }}</label>
           <input
             id="new-title"
             class="panel-input"
             formControlName="title"
-            placeholder="Ej. Cambio de horario"
+            [placeholder]="'Ej. Cambio de horario' | t"
           />
           @if (composer.controls.title.touched && composer.controls.title.invalid) {
-            <p class="panel-field-error">Escribe un título (máximo 150 caracteres).</p>
+            <p class="panel-field-error">{{ 'Escribe un título (máximo 150 caracteres).' | t }}</p>
           }
         </div>
 
         <div class="panel-field">
-          <label for="new-body">Mensaje</label>
+          <label for="new-body">{{ 'Mensaje' | t }}</label>
           <app-rich-editor
             inputId="new-body"
             label="Mensaje del anuncio"
             [minHeight]="200"
             formControlName="body"
-            placeholder="Escribe el anuncio para tus estudiantes…"
+            [placeholder]="'Escribe el anuncio para tus estudiantes…' | t"
           />
           @if (composer.controls.body.touched && composer.controls.body.invalid) {
-            <p class="panel-field-error">Escribe el mensaje.</p>
+            <p class="panel-field-error">{{ 'Escribe el mensaje.' | t }}</p>
           }
         </div>
 
         <label class="check">
           <input type="checkbox" formControlName="notify" />
-          <span>Avisar a los estudiantes con una notificación</span>
+          <span>{{ 'Avisar a los estudiantes con una notificación' | t }}</span>
         </label>
 
         <div class="buttons">
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="publishing()">
-            {{ publishing() ? 'Publicando…' : 'Publicar anuncio' }}
+            {{ publishing() ? ('Publicando…' | t) : ('Publicar anuncio' | t) }}
           </button>
           <button type="button" class="panel-btn panel-btn--ghost" (click)="closeComposer()">
-            Cancelar
+            {{ 'Cancelar' | t }}
           </button>
         </div>
       </form>
@@ -91,9 +91,9 @@
 
     <div class="toolbar">
       <div class="panel-field">
-        <label for="course-filter">Filtrar por curso</label>
+        <label for="course-filter">{{ 'Filtrar por curso' | t }}</label>
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id">{{ course.title }}</option>
           }
@@ -102,12 +102,14 @@
     </div>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando anuncios…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando anuncios…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">✉</span>
-        <h2>Aún no hay anuncios</h2>
-        <p>Publica el primero para que tus estudiantes se enteren de las novedades.</p>
+        <h2>{{ 'Aún no hay anuncios' | t }}</h2>
+        <p>{{ 'Publica el primero para que tus estudiantes se enteren de las novedades.' | t }}</p>
       </div>
     } @else {
       <ul class="list">
@@ -116,7 +118,7 @@
             @if (editingId() === item.id) {
               <form [formGroup]="editor" novalidate (ngSubmit)="saveEdit(item)" class="edit">
                 <div class="panel-field">
-                  <label [for]="'edit-title-' + item.id">Título</label>
+                  <label [for]="'edit-title-' + item.id">{{ 'Título' | t }}</label>
                   <input
                     [id]="'edit-title-' + item.id"
                     class="panel-input"
@@ -124,7 +126,7 @@
                   />
                 </div>
                 <div class="panel-field">
-                  <label [for]="'edit-body-' + item.id">Mensaje</label>
+                  <label [for]="'edit-body-' + item.id">{{ 'Mensaje' | t }}</label>
                   <app-rich-editor
                     [inputId]="'edit-body-' + item.id"
                     label="Mensaje del anuncio"
@@ -138,14 +140,14 @@
                     class="panel-btn panel-btn--primary panel-btn--sm"
                     [disabled]="saving()"
                   >
-                    {{ saving() ? 'Guardando…' : 'Guardar' }}
+                    {{ saving() ? ('Guardando…' | t) : ('Guardar' | t) }}
                   </button>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm"
                     (click)="cancelEdit()"
                   >
-                    Cancelar
+                    {{ 'Cancelar' | t }}
                   </button>
                 </div>
               </form>
@@ -154,9 +156,9 @@
                 <h3>{{ item.title }}</h3>
                 <p class="meta panel-muted">
                   {{ item.course.title }} · {{ item.author.firstName }} {{ item.author.lastName }} ·
-                  {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }}
+                  {{ item.createdAt | date: "d ('de' | t) MMM y, HH:mm" }}
                   @if (item.updatedAt !== item.createdAt) {
-                    · editado
+                    {{ '· editado' | t }}
                   }
                 </p>
               </header>
@@ -165,21 +167,21 @@
 
               <div class="actions">
                 @if (confirmDeleteId() === item.id) {
-                  <span class="confirm-text">¿Eliminar este anuncio?</span>
+                  <span class="confirm-text">{{ '¿Eliminar este anuncio?' | t }}</span>
                   <button
                     type="button"
                     class="panel-btn panel-btn--danger panel-btn--sm"
                     [disabled]="busyId() === item.id"
                     (click)="remove(item)"
                   >
-                    Sí, eliminar
+                    {{ 'Sí, eliminar' | t }}
                   </button>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm"
                     (click)="cancelDelete()"
                   >
-                    Cancelar
+                    {{ 'Cancelar' | t }}
                   </button>
                 } @else {
                   <button
@@ -187,14 +189,14 @@
                     class="panel-btn panel-btn--ghost panel-btn--sm"
                     (click)="edit(item)"
                   >
-                    Editar
+                    {{ 'Editar' | t }}
                   </button>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm danger"
                     (click)="askDelete(item.id)"
                   >
-                    Eliminar
+                    {{ 'Eliminar' | t }}
                   </button>
                 }
               </div>
@@ -204,14 +206,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -219,7 +221,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

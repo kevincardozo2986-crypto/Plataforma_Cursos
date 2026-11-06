@@ -22,7 +22,7 @@
           <path d="M12 7v5l3 2" />
         </svg>
 
-        {{ course().duration }}
+        {{ course().duration | t }}
       </span>
 
       <span>
@@ -32,7 +32,7 @@
           <path d="M16 19v-7" />
         </svg>
 
-        {{ course().level }}
+        {{ course().level | t }}
       </span>
     </div>
 
@@ -46,7 +46,7 @@
 
     <div class="course-footer">
       <div class="price">
-        <small>Valor del curso</small>
+        <small>{{ 'Valor del curso' | t }}</small>
 
         <strong>
           {{ formatPrice(course().price) }}
@@ -54,7 +54,7 @@
       </div>
 
       <button type="button" class="view-course" (click)="selected.emit(course().id)">
-        Ver curso
+        {{ 'Ver curso' | t }}
 
         <span aria-hidden="true"> → </span>
       </button>

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
@@ -10,7 +11,7 @@ import { TeacherCoursesService } from '../teacher-courses.service';
  */
 @Component({
   selector: 'app-course-draft-entry',
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   template: `
     <section class="panel-page">
       <div class="panel-container">
@@ -18,11 +19,11 @@ import { TeacherCoursesService } from '../teacher-courses.service';
           <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
           <div class="actions">
             <button type="button" class="panel-btn panel-btn--primary" (click)="create()">
-              Reintentar
+              {{ 'Reintentar' | t }}
             </button>
-            <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses"
-              >Volver a mis cursos</a
-            >
+            <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">{{
+              'Volver a mis cursos' | t
+            }}</a>
           </div>
         } @else {
           <div class="panel-card">

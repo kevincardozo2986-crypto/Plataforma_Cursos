@@ -3,30 +3,38 @@
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="award" [size]="26" /></span>
       <div class="hero-copy">
-        <span class="eyebrow">ESPACIO DOCENTE / CERTIFICADOS</span>
-        <h1>Certificados</h1>
+        <span class="eyebrow">{{ 'ESPACIO DOCENTE / CERTIFICADOS' | t }}</span>
+        <h1>{{ 'Certificados' | t }}</h1>
         <p>
-          Diseña tus plantillas, asígnalas a un curso y se emiten solas cuando un estudiante lo
-          termina.
+          {{
+            'Diseña tus plantillas, asígnalas a un curso y se emiten solas cuando un estudiante lo termina.'
+              | t
+          }}
         </p>
       </div>
       <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new">
-        <app-icon name="plus" [size]="17" /> Nueva plantilla
+        <app-icon name="plus" [size]="17" /> {{ 'Nueva plantilla' | t }}
       </a>
     </header>
 
-    <ol class="steps" aria-label="Cómo funcionan los certificados">
+    <ol class="steps" [attr.aria-label]="'Cómo funcionan los certificados' | t">
       <li>
         <span class="step-icon" aria-hidden="true"><app-icon name="palette" [size]="18" /></span>
-        <span><strong>1. Diseña</strong> una plantilla</span>
+        <span
+          ><strong>{{ '1. Diseña' | t }}</strong> {{ 'una plantilla' | t }}</span
+        >
       </li>
       <li>
         <span class="step-icon" aria-hidden="true"><app-icon name="book" [size]="18" /></span>
-        <span><strong>2. Asígnala</strong> a un curso</span>
+        <span
+          ><strong>{{ '2. Asígnala' | t }}</strong> {{ 'a un curso' | t }}</span
+        >
       </li>
       <li>
         <span class="step-icon" aria-hidden="true"><app-icon name="cap" [size]="18" /></span>
-        <span><strong>3. Se emite sola</strong> al terminar</span>
+        <span
+          ><strong>{{ '3. Se emite sola' | t }}</strong> {{ 'al terminar' | t }}</span
+        >
       </li>
     </ol>
 
@@ -41,7 +49,7 @@
       </p>
     }
 
-    <div class="tabs" role="tablist" aria-label="Certificados">
+    <div class="tabs" role="tablist" [attr.aria-label]="'Certificados' | t">
       <button
         type="button"
         role="tab"
@@ -50,7 +58,7 @@
         [attr.aria-selected]="tab() === 'templates'"
         (click)="show('templates')"
       >
-        <app-icon name="layout" [size]="17" /> Plantillas
+        <app-icon name="layout" [size]="17" /> {{ 'Plantillas' | t }}
         <span class="count">{{ templates().length }}</span>
       </button>
       <button
@@ -61,7 +69,7 @@
         [attr.aria-selected]="tab() === 'issued'"
         (click)="show('issued')"
       >
-        <app-icon name="cap" [size]="17" /> Emitidos
+        <app-icon name="cap" [size]="17" /> {{ 'Emitidos' | t }}
         @if (tab() === 'issued' || total() > 0) {
           <span class="count">{{ total() }}</span>
         }
@@ -72,20 +80,22 @@
       @if (loadingTemplates()) {
         <div class="panel-card loading">
           <app-icon name="refresh" [size]="18" />
-          <p class="panel-muted">Cargando plantillas…</p>
+          <p class="panel-muted">{{ 'Cargando plantillas…' | t }}</p>
         </div>
       } @else if (templates().length === 0) {
         <div class="panel-card empty">
           <span class="empty-icon" aria-hidden="true"
             ><app-icon name="sparkles" [size]="32"
           /></span>
-          <h2>Crea tu primera plantilla</h2>
+          <h2>{{ 'Crea tu primera plantilla' | t }}</h2>
           <p>
-            Elige un diseño, una tipografía y un color, y escribe el texto. Luego la asignas a un
-            curso desde el paso «Adicional» del asistente.
+            {{
+              'Elige un diseño, una tipografía y un color, y escribe el texto. Luego la asignas a un curso desde el paso «Adicional» del asistente.'
+                | t
+            }}
           </p>
           <a class="panel-btn panel-btn--primary" routerLink="/teacher/certificates/new">
-            <app-icon name="plus" [size]="17" /> Crear plantilla
+            <app-icon name="plus" [size]="17" /> {{ 'Crear plantilla' | t }}
           </a>
         </div>
       } @else {
@@ -125,9 +135,9 @@
                     <app-icon name="book" [size]="13" />
                     @if (template._count?.courses) {
                       {{ template._count?.courses }}
-                      {{ template._count?.courses === 1 ? 'curso' : 'cursos' }}
+                      {{ template._count?.courses === 1 ? ('curso' | t) : ('cursos' | t) }}
                     } @else {
-                      Sin asignar
+                      {{ 'Sin asignar' | t }}
                     }
                   </li>
                   <li class="chip-info">
@@ -143,43 +153,43 @@
 
               <div class="card-actions">
                 @if (confirmDeleteId() === template.id) {
-                  <span class="confirm-text">¿Eliminar esta plantilla?</span>
+                  <span class="confirm-text">{{ '¿Eliminar esta plantilla?' | t }}</span>
                   <button
                     type="button"
                     class="panel-btn panel-btn--danger panel-btn--sm"
                     [disabled]="busyId() === template.id"
                     (click)="remove(template)"
                   >
-                    <app-icon name="trash" [size]="15" /> Sí, eliminar
+                    <app-icon name="trash" [size]="15" /> {{ 'Sí, eliminar' | t }}
                   </button>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm"
                     (click)="cancelDelete()"
                   >
-                    Cancelar
+                    {{ 'Cancelar' | t }}
                   </button>
                 } @else {
                   <a
                     class="panel-btn panel-btn--primary panel-btn--sm"
                     [routerLink]="['/teacher/certificates', template.id]"
                   >
-                    <app-icon name="edit" [size]="15" /> Editar
+                    <app-icon name="edit" [size]="15" /> {{ 'Editar' | t }}
                   </a>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm"
-                    title="Ver el PDF de ejemplo"
+                    [title]="'Ver el PDF de ejemplo' | t"
                     [disabled]="busyId() === template.id"
                     (click)="preview(template)"
                   >
-                    <app-icon name="file" [size]="15" /> Ver PDF
+                    <app-icon name="file" [size]="15" /> {{ 'Ver PDF' | t }}
                   </button>
                   <button
                     type="button"
                     class="panel-btn panel-btn--ghost panel-btn--sm icon-only danger"
-                    aria-label="Eliminar plantilla"
-                    title="Eliminar plantilla"
+                    [attr.aria-label]="'Eliminar plantilla' | t"
+                    [title]="'Eliminar plantilla' | t"
                     (click)="askDelete(template.id)"
                   >
                     <app-icon name="trash" [size]="16" />
@@ -195,9 +205,9 @@
         <span class="toolbar-icon" aria-hidden="true"><app-icon name="filter" [size]="18" /></span>
 
         <div class="panel-field">
-          <label for="course-filter">Curso</label>
+          <label for="course-filter">{{ 'Curso' | t }}</label>
           <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-            <option value="">Todos mis cursos</option>
+            <option value="">{{ 'Todos mis cursos' | t }}</option>
             @for (course of courses(); track course.id) {
               <option [value]="course.id">{{ course.title }}</option>
             }
@@ -205,32 +215,37 @@
         </div>
 
         <div class="panel-field">
-          <label for="status-filter">Estado</label>
+          <label for="status-filter">{{ 'Estado' | t }}</label>
           <select id="status-filter" class="panel-select" (change)="setStatus($event)">
-            <option value="">Todos</option>
-            <option value="VALID">Vigentes</option>
-            <option value="REVOKED">Revocados</option>
+            <option value="">{{ 'Todos' | t }}</option>
+            <option value="VALID">{{ 'Vigentes' | t }}</option>
+            <option value="REVOKED">{{ 'Revocados' | t }}</option>
           </select>
         </div>
 
         <p class="toolbar-hint panel-muted">
           <app-icon name="bulb" [size]="15" />
-          ¿Un nombre mal escrito? Usa «Corregir». ¿Mejoraste la plantilla? «Actualizar diseño».
+          {{
+            '¿Un nombre mal escrito? Usa «Corregir». ¿Mejoraste la plantilla? «Actualizar diseño».'
+              | t
+          }}
         </p>
       </div>
 
       @if (loadingIssued()) {
         <div class="panel-card loading">
           <app-icon name="refresh" [size]="18" />
-          <p class="panel-muted">Cargando certificados…</p>
+          <p class="panel-muted">{{ 'Cargando certificados…' | t }}</p>
         </div>
       } @else if (issued().length === 0) {
         <div class="panel-card empty">
           <span class="empty-icon" aria-hidden="true"><app-icon name="award" [size]="32" /></span>
-          <h2>Aún no hay certificados emitidos</h2>
+          <h2>{{ 'Aún no hay certificados emitidos' | t }}</h2>
           <p>
-            Cuando un estudiante termine un curso que tenga una plantilla asignada, su certificado
-            aparecerá aquí.
+            {{
+              'Cuando un estudiante termine un curso que tenga una plantilla asignada, su certificado aparecerá aquí.'
+                | t
+            }}
           </p>
         </div>
       } @else {
@@ -239,13 +254,15 @@
             <table>
               <thead>
                 <tr>
-                  <th>Estudiante</th>
-                  <th>Curso</th>
-                  <th>Código</th>
-                  <th>Emitido</th>
-                  <th>Estado</th>
+                  <th>{{ 'Estudiante' | t }}</th>
+                  <th>{{ 'Curso' | t }}</th>
+                  <th>{{ 'Código' | t }}</th>
+                  <th>{{ 'Emitido' | t }}</th>
+                  <th>{{ 'Estado' | t }}</th>
                   <th>POK</th>
-                  <th><span class="sr-only">Acciones</span></th>
+                  <th>
+                    <span class="sr-only">{{ 'Acciones' | t }}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -264,7 +281,7 @@
                             {{
                               item.studentDocument
                                 ? 'Doc. ' + item.studentDocument
-                                : 'Sin documento'
+                                : ('Sin documento' | t)
                             }}
                           </span>
                         </div>
@@ -279,103 +296,105 @@
                           [name]="item.status === 'VALID' ? 'check-circle' : 'ban'"
                           [size]="13"
                         />
-                        {{ item.status === 'VALID' ? 'Vigente' : 'Revocado' }}
+                        {{ item.status === 'VALID' ? ('Vigente' | t) : ('Revocado' | t) }}
                       </span>
                     </td>
                     <td>
                       @let pok = item.pokStatus ?? 'NONE';
                       @if (item.provider !== 'POK') {
-                        <span class="muted" title="Certificado de la plataforma">—</span>
+                        <span class="muted" [title]="'Certificado de la plataforma' | t">—</span>
                       } @else {
-                      <span class="pill pok" [attr.data-pok]="pok" [title]="item.pokError ?? ''">
-                        {{ pokLabels[pok] }}
-                      </span>
-                      @if (pok === 'FAILED' || pok === 'NONE' || pok === 'PENDING') {
-                        <button
-                          type="button"
-                          class="panel-btn panel-btn--ghost panel-btn--sm icon-only pok-retry"
-                          [disabled]="busyId() === item.id || item.status !== 'VALID'"
-                          [attr.aria-label]="
-                            pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'
-                          "
-                          [title]="pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'"
-                          (click)="syncPok(item)"
-                        >
-                          <app-icon name="refresh" [size]="15" />
-                        </button>
-                      }
+                        <span class="pill pok" [attr.data-pok]="pok" [title]="item.pokError ?? ''">
+                          {{ pokLabels[pok] | t }}
+                        </span>
+                        @if (pok === 'FAILED' || pok === 'NONE' || pok === 'PENDING') {
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm icon-only pok-retry"
+                            [disabled]="busyId() === item.id || item.status !== 'VALID'"
+                            [attr.aria-label]="
+                              pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'
+                            "
+                            [title]="
+                              pok === 'PENDING' ? 'Consultar el estado en POK' : 'Enviar a POK'
+                            "
+                            (click)="syncPok(item)"
+                          >
+                            <app-icon name="refresh" [size]="15" />
+                          </button>
+                        }
                       }
                     </td>
                     <td class="row-actions">
                       @if (confirmRefreshId() === item.id) {
-                        <span class="confirm-text neutral"
-                          >¿Usar el diseño actual de la plantilla? Cambia su aspecto.</span
-                        >
+                        <span class="confirm-text neutral">{{
+                          '¿Usar el diseño actual de la plantilla? Cambia su aspecto.' | t
+                        }}</span>
                         <button
                           type="button"
                           class="panel-btn panel-btn--primary panel-btn--sm"
                           [disabled]="busyId() === item.id"
                           (click)="refresh(item)"
                         >
-                          <app-icon name="check" [size]="15" /> Sí
+                          <app-icon name="check" [size]="15" /> {{ 'Sí' | t }}
                         </button>
                         <button
                           type="button"
                           class="panel-btn panel-btn--ghost panel-btn--sm"
                           (click)="cancelRefresh()"
                         >
-                          No
+                          {{ 'No' | t }}
                         </button>
                       } @else if (confirmRevokeId() === item.id) {
-                        <span class="confirm-text">¿Revocar?</span>
+                        <span class="confirm-text">{{ '¿Revocar?' | t }}</span>
                         <button
                           type="button"
                           class="panel-btn panel-btn--danger panel-btn--sm"
                           [disabled]="busyId() === item.id"
                           (click)="revoke(item)"
                         >
-                          Sí
+                          {{ 'Sí' | t }}
                         </button>
                         <button
                           type="button"
                           class="panel-btn panel-btn--ghost panel-btn--sm"
                           (click)="cancelRevoke()"
                         >
-                          No
+                          {{ 'No' | t }}
                         </button>
                       } @else {
                         @if (item.provider !== 'POK') {
-                        <button
-                          type="button"
-                          class="panel-btn panel-btn--ghost panel-btn--sm"
-                          [disabled]="busyId() === item.id"
-                          (click)="download(item)"
-                        >
-                          <app-icon name="download" [size]="15" /> PDF
-                        </button>
-                        <button
-                          type="button"
-                          class="panel-btn panel-btn--ghost panel-btn--sm"
-                          title="Corregir el nombre o el documento"
-                          (click)="startEdit(item)"
-                        >
-                          <app-icon name="edit" [size]="15" /> Corregir
-                        </button>
-                        <button
-                          type="button"
-                          class="panel-btn panel-btn--ghost panel-btn--sm"
-                          title="Aplicar la plantilla actual del curso a este certificado"
-                          (click)="askRefresh(item.id)"
-                        >
-                          <app-icon name="refresh" [size]="15" /> Actualizar diseño
-                        </button>
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm"
+                            [disabled]="busyId() === item.id"
+                            (click)="download(item)"
+                          >
+                            <app-icon name="download" [size]="15" /> PDF
+                          </button>
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm"
+                            [title]="'Corregir el nombre o el documento' | t"
+                            (click)="startEdit(item)"
+                          >
+                            <app-icon name="edit" [size]="15" /> {{ 'Corregir' | t }}
+                          </button>
+                          <button
+                            type="button"
+                            class="panel-btn panel-btn--ghost panel-btn--sm"
+                            [title]="'Aplicar la plantilla actual del curso a este certificado' | t"
+                            (click)="askRefresh(item.id)"
+                          >
+                            <app-icon name="refresh" [size]="15" /> {{ 'Actualizar diseño' | t }}
+                          </button>
                         }
                         @if (item.status === 'VALID') {
                           <button
                             type="button"
                             class="panel-btn panel-btn--ghost panel-btn--sm icon-only danger"
-                            aria-label="Revocar certificado"
-                            title="Revocar certificado"
+                            [attr.aria-label]="'Revocar certificado' | t"
+                            [title]="'Revocar certificado' | t"
                             (click)="askRevoke(item.id)"
                           >
                             <app-icon name="ban" [size]="16" />
@@ -390,7 +409,8 @@
                         <form class="edit-form" (submit)="$event.preventDefault(); saveEdit(item)">
                           <label>
                             <span
-                              ><app-icon name="user" [size]="14" /> Nombre en el certificado</span
+                              ><app-icon name="user" [size]="14" />
+                              {{ 'Nombre en el certificado' | t }}</span
                             >
                             <input
                               class="panel-input"
@@ -401,8 +421,8 @@
                           </label>
                           <label>
                             <span
-                              ><app-icon name="hash" [size]="14" /> Documento (vacío =
-                              quitarlo)</span
+                              ><app-icon name="hash" [size]="14" />
+                              {{ 'Documento (vacío = quitarlo)' | t }}</span
                             >
                             <input
                               class="panel-input"
@@ -416,22 +436,25 @@
                             class="panel-btn panel-btn--primary panel-btn--sm"
                             [disabled]="busyId() === item.id"
                           >
-                            <app-icon name="save" [size]="15" /> Guardar
+                            <app-icon name="save" [size]="15" /> {{ 'Guardar' | t }}
                           </button>
                           <button
                             type="button"
                             class="panel-btn panel-btn--ghost panel-btn--sm"
                             (click)="cancelEdit()"
                           >
-                            Cancelar
+                            {{ 'Cancelar' | t }}
                           </button>
                         </form>
                         @if (editError()) {
                           <p class="panel-field-error" role="alert">{{ editError() }}</p>
                         }
                         <p class="panel-hint">
-                          <app-icon name="info" [size]="13" /> El código de verificación no cambia,
-                          así que el enlace sigue valiendo.
+                          <app-icon name="info" [size]="13" />
+                          {{
+                            'El código de verificación no cambia, así que el enlace sigue valiendo.'
+                              | t
+                          }}
                         </p>
                       </td>
                     </tr>
@@ -442,14 +465,14 @@
           </div>
 
           <div class="pager">
-            <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+            <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
             <button
               type="button"
               class="panel-btn panel-btn--ghost panel-btn--sm"
               [disabled]="!hasPrev()"
               (click)="page(-1)"
             >
-              <app-icon name="arrow-left" [size]="15" /> Anterior
+              <app-icon name="arrow-left" [size]="15" /> {{ 'Anterior' | t }}
             </button>
             <button
               type="button"
@@ -457,7 +480,7 @@
               [disabled]="!hasNext()"
               (click)="page(1)"
             >
-              Siguiente <app-icon name="chevron-right" [size]="15" />
+              {{ 'Siguiente' | t }} <app-icon name="chevron-right" [size]="15" />
             </button>
           </div>
         </div>

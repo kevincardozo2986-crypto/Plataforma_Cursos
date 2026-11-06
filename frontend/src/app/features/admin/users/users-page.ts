@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -28,7 +29,7 @@ export function generatePassword(length = 12): string {
 /** Cuentas de la plataforma: buscar, crear, cambiar el rol y activar o desactivar el acceso. */
 @Component({
   selector: 'app-admin-users',
-  imports: [PublicUrlPipe, DatePipe, FormsModule, Icon],
+  imports: [TranslatePipe, PublicUrlPipe, DatePipe, FormsModule, Icon],
   templateUrl: './users-page.html',
   styleUrls: ['../admin-common.scss', './users-page.scss'],
 })

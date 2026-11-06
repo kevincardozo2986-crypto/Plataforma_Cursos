@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -17,7 +18,7 @@ const number = new Intl.NumberFormat('es-CO');
 /** Las cifras de toda la plataforma y lo más reciente. */
 @Component({
   selector: 'app-admin-overview',
-  imports: [DatePipe, RouterLink, Icon],
+  imports: [TranslatePipe, DatePipe, RouterLink, Icon],
   templateUrl: './overview-page.html',
   styleUrls: ['../admin-common.scss', './overview-page.scss'],
 })

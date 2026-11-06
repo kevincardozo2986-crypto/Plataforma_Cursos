@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import {
   afterNextRender,
@@ -16,7 +17,7 @@ import { Course } from '../../../../core/courses/courses.models';
 
 @Component({
   selector: 'app-featured-courses-carousel',
-  imports: [PublicUrlPipe, RouterLink],
+  imports: [TranslatePipe, PublicUrlPipe, RouterLink],
   templateUrl: './featured-courses-carousel.html',
   styleUrl: './featured-courses-carousel.scss',
 })

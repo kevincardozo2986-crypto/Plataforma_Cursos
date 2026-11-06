@@ -7,6 +7,9 @@ import { LanguageService } from './language.service';
 import { LoginPage } from '../../features/auth/pages/login/login-page';
 import { LoginForm } from '../../features/auth/components/login-form/login-form';
 import { AccessibilityMenu } from '../../shared/ui/accessibility-menu/accessibility-menu';
+import { SiteHeader } from '../../shared/layout/site-header/site-header';
+import { CourseCard } from '../../features/home/components/course-card/course-card';
+import { RegisterForm } from '../../features/auth/components/register-form/register-form';
 
 describe('Application language', () => {
   beforeEach(() => {
@@ -81,5 +84,64 @@ describe('Application language', () => {
     page.detectChanges();
     await page.whenStable();
     expect(TestBed.inject(LanguageService).language()).toBe('es');
+  });
+
+  it('cambia navegación, catálogo y registro, preservando los textos del curso y sus rutas', async () => {
+    const header = TestBed.createComponent(SiteHeader);
+    const card = TestBed.createComponent(CourseCard);
+    const register = TestBed.createComponent(RegisterForm);
+    card.componentRef.setInput('course', {
+      id: '7',
+      title: 'Control interno de la universidad',
+      category: 'Administración pública',
+      description: 'Contenido original escrito por el docente.',
+      image: '/images/example.png',
+      duration: '3 módulos',
+      level: 'Intermedio',
+      price: 0,
+    });
+    for (const fixture of [header, card, register]) {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+    const language = TestBed.inject(LanguageService);
+    language.setLanguage('en');
+    for (const fixture of [header, card, register]) fixture.detectChanges();
+    expect(header.nativeElement.querySelector('.login-link').textContent.trim()).toBe('Sign in');
+    expect(header.nativeElement.querySelector('.links').textContent).toContain('Home');
+    expect(header.nativeElement.querySelector('.login-link').getAttribute('href')).toBe('/login');
+    expect(card.nativeElement.querySelector('.view-course').textContent).toContain('View course');
+    expect(card.nativeElement.querySelector('.course-meta').textContent).toContain('3 modules');
+    expect(card.nativeElement.querySelector('.course-meta').textContent).toContain('Intermediate');
+    expect(card.nativeElement.querySelector('h3').textContent.trim()).toBe(
+      'Control interno de la universidad',
+    );
+    expect(card.nativeElement.querySelector('.course-content > p').textContent.trim()).toBe(
+      'Contenido original escrito por el docente.',
+    );
+    expect(register.nativeElement.querySelector('label[for="firstName"]').textContent.trim()).toBe(
+      'First name',
+    );
+    language.setLanguage('es');
+    header.detectChanges();
+    card.detectChanges();
+    register.detectChanges();
+    expect(header.nativeElement.querySelector('.login-link').textContent.trim()).toBe(
+      'Iniciar sesión',
+    );
+    expect(card.nativeElement.querySelector('.view-course').textContent).toContain('Ver curso');
+    expect(register.nativeElement.querySelector('label[for="firstName"]').textContent.trim()).toBe(
+      'Nombre',
+    );
+  });
+
+  it('normaliza espacios y conserva texto desconocido sin modificar contenido del usuario', () => {
+    const language = TestBed.inject(LanguageService);
+    language.setLanguage('en');
+    expect(language.translate('  Explorar\n cursos  ')).toBe('Explore courses');
+    expect(language.translate('12 módulos')).toBe('12 modules');
+    expect(language.translate('Texto propio del docente')).toBe('Texto propio del docente');
+    expect(language.translate('Campus')).toBe('Campus');
+    expect(language.translate('Virtual')).toBe('Virtual');
   });
 });

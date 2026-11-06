@@ -11,13 +11,15 @@
       @switch (summary().kind) {
         @case ('date') {
           Se abre el
-          <strong>{{ courseModule().unlockAt | date: "d 'de' MMMM 'de' y, h:mm a" }}</strong>
+          <strong>{{
+            courseModule().unlockAt | date: "d ('de' | t) MMMM ('de' | t) y, h:mm a"
+          }}</strong>
         }
         @case ('days') {
           Se abre
           <strong
             >{{ courseModule().unlockAfterDays }}
-            {{ courseModule().unlockAfterDays === 1 ? 'día' : 'días' }}</strong
+            {{ courseModule().unlockAfterDays === 1 ? ('día' | t) : ('días' | t) }}</strong
           >
           después de inscribirse
         }
@@ -41,7 +43,7 @@
 
     @if (configurable() && !editing()) {
       <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="start()">
-        <app-icon name="edit" [size]="14" /> Apertura
+        <app-icon name="edit" [size]="14" /> {{ 'Apertura' | t }}
       </button>
     }
   </div>
@@ -109,18 +111,18 @@
 
       <div class="actions">
         <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="clear()">
-          Quitar el ajuste
+          {{ 'Quitar el ajuste' | t }}
         </button>
         <span class="spacer"></span>
         <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="cancel()">
-          Cancelar
+          {{ 'Cancelar' | t }}
         </button>
         <button
           type="submit"
           class="panel-btn panel-btn--primary panel-btn--sm"
           [disabled]="saving()"
         >
-          <app-icon name="save" [size]="14" /> {{ saving() ? 'Guardando…' : 'Guardar' }}
+          <app-icon name="save" [size]="14" /> {{ saving() ? ('Guardando…' | t) : ('Guardar' | t) }}
         </button>
       </div>
     </form>

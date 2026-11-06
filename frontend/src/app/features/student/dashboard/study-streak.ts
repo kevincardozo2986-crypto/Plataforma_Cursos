@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { StreakFlame } from './streak-flame';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, DestroyRef, inject, signal, output } from '@angular/core';
@@ -10,7 +11,7 @@ interface Streak {
 }
 @Component({
   selector: 'app-study-streak',
-  imports: [StreakFlame],
+  imports: [TranslatePipe, StreakFlame],
   templateUrl: './study-streak.html',
   styleUrl: './study-streak.scss',
 })

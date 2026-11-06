@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ interface Reply {
 }
 @Component({
   selector: 'app-question-thread',
-  imports: [FormsModule],
+  imports: [TranslatePipe, FormsModule],
   template: `
     <button class="toggle" [attr.aria-expanded]="expanded()" (click)="toggle()">
       {{ expanded() ? 'Ocultar conversación' : toggleLabel() }}
@@ -25,7 +26,7 @@ interface Reply {
             <article>
               <strong>{{ reply.author?.firstName }} {{ reply.author?.lastName }}</strong>
               @if (reply.author?.role === 'TEACHER' || reply.author?.role === 'ADMIN') {
-                <small>Docente</small>
+                <small>{{ 'Docente' | t }}</small>
               }
               <p>{{ reply.body }}</p>
             </article>
@@ -33,7 +34,7 @@ interface Reply {
             <p class="empty">Aún no hay respuestas. Puedes añadir información a la pregunta.</p>
           }
           <form #form="ngForm" (ngSubmit)="send()">
-            <label [for]="'reply-' + postId()">Tu respuesta</label
+            <label [for]="'reply-' + postId()">{{ 'Tu respuesta' | t }}</label
             ><textarea
               [id]="'reply-' + postId()"
               name="body"
@@ -44,13 +45,13 @@ interface Reply {
               placeholder="Participa con respeto y comparte lo que sabes..."
             ></textarea
             ><button [disabled]="form.invalid || saving()">
-              {{ saving() ? 'Enviando...' : 'Enviar respuesta' }}
+              {{ saving() ? ('Enviando...' | t) : 'Enviar respuesta' }}
             </button>
           </form>
         }
         @if (error()) {
           <p class="error" role="alert">{{ error() }}</p>
-          <button class="toggle" (click)="load()">Volver a cargar</button>
+          <button class="toggle" (click)="load()">{{ 'Volver a cargar' | t }}</button>
         }
       </div>
     }

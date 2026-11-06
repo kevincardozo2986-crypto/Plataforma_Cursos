@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +17,7 @@ import { fileSize, parseGrade } from './grade-input';
 /** Una entrega de tarea: el texto y los archivos del estudiante, y la nota. */
 @Component({
   selector: 'app-submission-detail',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [TranslatePipe, FormsModule, RouterLink, DatePipe],
   templateUrl: './submission-detail.html',
   styleUrl: './grading-detail.scss',
 })
