@@ -1,6 +1,6 @@
 # Frontend — Plataforma de cursos
 
-Aplicación Angular con componentes standalone, SCSS y soporte SSR.
+Aplicación Angular 22 con componentes standalone, signals, SCSS y soporte SSR. Tiene tres áreas: pública y estudiante, docente y administrador.
 
 ## Comandos
 
@@ -25,8 +25,10 @@ El servidor de desarrollo usa `http://localhost:4200`. El backend debe estar ini
 | `src/app/features/auth/` | Páginas y componentes de login y registro. |
 | `src/app/features/home/pages/` | Composición de la portada pública y del catálogo. |
 | `src/app/features/home/components/` | Secciones visuales de la portada y componentes del catálogo. |
-| `src/app/features/teacher/` | Panel docente, cursos, módulos, lecciones, recursos y evaluaciones. |
-| `src/app/features/admin/` | Rutas del administrador. |
+| `src/app/features/student/` | Panel «Mi aprendizaje» y aula del curso (`course-player`: video, recursos, quizzes, tareas, preguntas y certificado). |
+| `src/app/features/teacher/` | Panel docente: `summary` (Resumen), `inscritos`, `courses` (Mis cursos y asistente de creación), `modules`, `lessons`, `resources`, `evaluations`, `assignments`, `grading`, `announcements`, `discussions`, `reviews`, `analytics`, `certificates`, `pok`, `profile`. |
+| `src/app/features/admin/` | Panel del administrador: resumen, usuarios, cursos y categorías. |
+| `src/app/features/notifications/`, `src/app/features/verify/` | Página de notificaciones y verificación pública de certificados. |
 | `src/app/shared/layout/` | Encabezado y estructura común de las páginas. |
 | `src/app/shared/ui/` | Elementos de interfaz reutilizables. |
 | `public/images/` | Imágenes y recursos visuales. |
@@ -36,12 +38,26 @@ El servidor de desarrollo usa `http://localhost:4200`. El backend debe estar ini
 ## Rutas y sesión
 
 - `/`: portada informativa; docentes y administradores con sesión se redirigen al panel.
-- `/courses`: catálogo público de cursos.
+- `/courses` y `/courses/:id`: catálogo público y detalle; con la inscripción hecha, el detalle muestra el aula.
 - `/login` y `/register`: acceso y registro.
-- `/teacher`: panel y herramientas para docentes y administradores.
-- `/admin`: rutas restringidas al administrador.
+- `/student/dashboard`: «Mi aprendizaje» (solo estudiantes).
+- `/teacher/...`: `dashboard`, `summary`, `students` (Inscritos), `analytics`, `courses` (Mis cursos), `courses/new` y `courses/:id/edit/...` (asistente), evaluaciones, tareas, `quiz-attempts`, `assignments`, `announcements`, `discussions`, `reviews`, `certificates`, `pok` y `profile`. Para docentes y administradores.
+- `/admin/...`: `overview`, `users`, `courses` y `categories` (solo administradores).
+- `/notifications`, `/verificar` y `/verificar/:code`: notificaciones y verificación pública de certificados.
 
 El login envía `identifier` (correo o documento) y `password`. El token se guarda en `sessionStorage` o en `localStorage` si se selecciona Recordarme. La contraseña no se almacena. Los permisos del frontend complementan las verificaciones del backend.
+
+## Pantallas rediseñadas del docente
+
+Resumen, Inscritos, Mis cursos y POK comparten una misma familia visual: encabezado `px-hero`, tarjetas, etiquetas y avisos. Cada una define sus **tokens de color en `:host`** (para no pisar el resto de la aplicación) y el **modo oscuro** con la clase `html.a11y-dark`. La lógica pura (orden, filtros, formatos, escalas de la gráfica) vive en archivos `*-helpers.ts` / `chart.ts` con pruebas, y las páginas usan signals y `computed`.
+
+## Ver la credencial de POK
+
+En el aula, el botón «Generar certificado» pide la credencial; mientras POK la emite (estado «Pendiente») la pantalla consulta sola cada 3 segundos y muestra «Ver mi credencial en POK» en cuanto queda lista.
+
+## URLs públicas
+
+Las imágenes y archivos propios (`/api/uploads/...`) pasan por `PublicUrlPipe` (`core/http/public-url.pipe.ts`), que aplica la base pública cuando la aplicación se publica bajo un subpath. Las URLs externas no se modifican.
 
 ## Estilos y movimiento
 

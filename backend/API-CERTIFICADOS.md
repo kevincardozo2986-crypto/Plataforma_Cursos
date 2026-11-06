@@ -3,6 +3,8 @@
 Un docente diseña **plantillas**, la **asigna a un curso**, y cuando un estudiante termina todas las lecciones el sistema le emite
 su certificado automáticamente, con un código para verificarlo y un PDF descargable.
 
+> **Nota:** un curso **sin plantilla asignada** también emite certificado, con el **diseño predeterminado** de la plataforma. Además, cada curso entrega una sola vía: el PDF de la plataforma o la credencial digital de POK (ver `API-POK.md`).
+
 Flujo del docente (el "Create Your Certificate In 3 Steps" del PDF de análisis):
 1. **Diseñar** la plantilla (`POST /certificate-templates`) y verla (`GET /certificate-templates/:id/preview`).
 2. **Asignarla** a un curso: `PATCH /courses/:id` con `{ "certificateTemplateId": 12 }` (en el paso "Additional" del asistente).
