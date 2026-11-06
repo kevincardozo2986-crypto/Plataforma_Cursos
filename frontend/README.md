@@ -1,4 +1,4 @@
-# Frontend — Plataforma de cursos
+﻿# Frontend — Plataforma de cursos
 
 Aplicación Angular 22 con componentes standalone, signals, SCSS y soporte SSR. Tiene tres áreas: pública y estudiante, docente y administrador.
 
@@ -70,7 +70,7 @@ Prettier usa la configuración de `.prettierrc`. Ejecutar `npm run format` despu
 
 ## Idioma
 
-`core/i18n/language.service.ts` mantiene la preferencia de idioma. Las traducciones están en `core/i18n/translations.ts`; los componentes que traducen texto importan `TranslatePipe` (`t`). Los nombres y logos institucionales se conservan como recursos de marca.
+`core/i18n/language.service.ts` mantiene la preferencia de idioma. Las traducciones están en `core/i18n/translations.ts`; los componentes que traducen texto importan `TranslatePipe` (`t`). Los nombres y logos institucionales se conservan como recursos de ma rca.
 
 ## SSR
 

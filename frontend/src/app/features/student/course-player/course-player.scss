@@ -1611,3 +1611,20 @@ app-course-video {
 .classroom-topbar .breadcrumb {
   min-width: 0;
 }
+
+/* Contenido de la lección en la pantalla grande (no en la pestaña Descripción) */
+.lesson-reader{padding:clamp(20px,3.2vw,40px);color:var(--ink);background:var(--surface)}
+.lesson-reader--below{border-top:1px solid var(--border)}
+.lesson-reader .eyebrow{display:block;margin-bottom:6px;color:#008c9f;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.lesson-reader>h2{margin:0 0 18px;font-size:clamp(1.3rem,2.2vw,1.9rem);font-weight:800;letter-spacing:-.03em;line-height:1.2}
+.lesson-reader--below>h2{font-size:1.05rem}
+.lesson-reader__body{min-width:0;font-size:1.02rem;line-height:1.8;overflow-wrap:anywhere}
+.lesson-reader__body ::ng-deep :is(p,ul,ol,blockquote,pre,table,figure){margin:0 0 1em}
+.lesson-reader__body ::ng-deep :is(h2,h3,h4){margin:1.5em 0 .5em;line-height:1.25}
+.lesson-reader__body ::ng-deep :is(img,video){display:block;max-width:100%;height:auto;border-radius:12px}
+.lesson-reader__body ::ng-deep iframe{display:block;width:100%!important;height:auto!important;min-height:clamp(380px,62vh,720px);aspect-ratio:16/9;margin:0 0 1em;border:0;border-radius:12px;background:#f2f6fc}
+.lesson-reader__body ::ng-deep pre{padding:14px 16px;overflow-x:auto;border-radius:10px;background:#0c1d34;color:#e5f0ff}
+.lesson-reader__body ::ng-deep table{display:block;max-width:100%;overflow-x:auto}
+.lesson-reader__body ::ng-deep :is(th,td){padding:8px 12px;border:1px solid var(--border)}
+:host-context(.a11y-dark) .lesson-reader{--ink:#e8edf3;--muted:#9aa6b5;--surface:#151d27;--border:#263241}
+@media (max-width:720px){.lesson-reader__body{font-size:.96rem}.lesson-reader__body ::ng-deep iframe{min-height:260px}}

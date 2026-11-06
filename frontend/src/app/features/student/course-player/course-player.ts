@@ -225,6 +225,15 @@ export class CoursePlayer {
   readonly lessonDescription = computed(() =>
     withoutMainVideo(this.lesson()?.content ?? '', this.currentVideo()),
   );
+  /** ¿La lección trae algo más que el video (texto, imágenes, páginas incrustadas)? Se muestra en la pantalla grande. */
+  readonly hasLessonContent = computed(() => {
+    const html = this.lessonDescription();
+
+    return (
+      /<(iframe|img|video|audio|table|object)/i.test(html) ||
+      html.replace(/<[^>]*>/g, '').replace(/&nbsp;|\s/g, '').length > 0
+    );
+  });
   readonly canComplete = computed(
     () => !this.currentVideo() || this.videoState()?.eligible === true,
   );

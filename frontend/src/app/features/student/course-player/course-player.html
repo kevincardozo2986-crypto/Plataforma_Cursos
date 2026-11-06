@@ -118,6 +118,18 @@
           @if (watchError()) {
             <p class="stage-message" role="alert">{{ watchError() }}</p>
           }
+          @if (hasLessonContent()) {
+            <article class="lesson-reader lesson-reader--below" aria-label="Contenido de la lección">
+              <h2>Contenido de la lecci&#243;n</h2>
+              <div class="lesson-reader__body" [innerHTML]="lessonDescription() | richHtml"></div>
+            </article>
+          }
+        } @else if (hasLessonContent()) {
+          <article class="lesson-reader" aria-label="Contenido de la lección">
+            <span class="eyebrow">{{ selected()?.moduleTitle }}</span>
+            <h2>{{ current.title }}</h2>
+            <div class="lesson-reader__body" [innerHTML]="lessonDescription() | richHtml"></div>
+          </article>
         } @else {
           <div
             class="lesson-cover"
@@ -138,7 +150,7 @@
                   ><app-student-icon name="play" />Abrir video de la lecci&#243;n &#8599;</a
                 >
               } @else {
-                <p>Encontrar&#225;s el contenido de esta lecci&#243;n en la descripci&#243;n.</p>
+                <p>El docente a&#250;n no ha agregado contenido a esta lecci&#243;n.</p>
               }
             </div>
           </div>
@@ -326,20 +338,6 @@
           }
           @case ('description') {
             <div class="description-grid">
-              <section>
-                <h3>Sobre esta lecci&#243;n</h3>
-                @if (lessonDescription()) {
-                  <div class="rich-text" [innerHTML]="lessonDescription() | richHtml"></div>
-                } @else {
-                  <p class="empty-message">
-                    {{
-                      loading()
-                        ? 'Cargando contenido...'
-                        : 'El docente aún no ha agregado una descripción para esta lección.'
-                    }}
-                  </p>
-                }
-              </section>
               <section class="course-overview">
                 <h3>Sobre el curso</h3>
                 @if (course().description) {
