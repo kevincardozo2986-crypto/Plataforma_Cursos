@@ -451,9 +451,35 @@ export class CoursePlayer {
     const id = this.lesson()?.id;
     if (id && this.currentVideo()) this.watchSamples.next({ id, sample });
   }
-  refreshGraduation(): void {
+  /** Mientras POK emite la credencial (Pendiente), se vuelve a preguntar sola hasta que quede lista. */
+  private pokTimer: ReturnType<typeof setTimeout> | null = null;
+  private pokChecks = 0;
+  private readonly stopPokWatch = this.destroyRef.onDestroy(() => {
+    if (this.pokTimer) clearTimeout(this.pokTimer);
+  });
+  private watchPokCredential(state: Graduation): void {
+    if (this.pokTimer) clearTimeout(this.pokTimer);
+    this.pokTimer = null;
+    const certificate = state.certificate;
+    if (certificate?.pokStatus !== 'PENDING') {
+      this.pokChecks = 0;
+      return;
+    }
+    if (this.pokChecks >= 20) return; // ~1 minuto: después basta con el botón
+    this.pokChecks += 1;
+    this.pokTimer = setTimeout(() => {
+      this.http
+        .post('/api/certificates/' + certificate.id + '/pok/sync', {})
+        .pipe(
+          catchError(() => of(null)),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe(() => this.refreshGraduation(true));
+    }, 3000);
+  }
+  refreshGraduation(silent = false): void {
     this.graduationRequest?.unsubscribe();
-    this.graduationLoading.set(true);
+    if (!silent) this.graduationLoading.set(true);
     this.graduationError.set('');
     this.graduationRequest = this.http
       .get<Graduation>('/api/certificates/courses/' + this.course().id + '/completion')
@@ -462,7 +488,10 @@ export class CoursePlayer {
         finalize(() => this.graduationLoading.set(false)),
       )
       .subscribe({
-        next: (state) => this.graduation.set(state),
+        next: (state) => {
+          this.graduation.set(state);
+          this.watchPokCredential(state);
+        },
         error: (e) =>
           this.graduationError.set(
             apiErrorMessage(e, 'No pudimos consultar las notas y el certificado.'),
@@ -499,7 +528,10 @@ export class CoursePlayer {
         finalize(() => this.pokBusy.set(false)),
       )
       .subscribe({
-        next: () => this.refreshGraduation(),
+        next: () => {
+          this.pokChecks = 0;
+          this.refreshGraduation();
+        },
         error: (e) =>
           this.graduationError.set(
             apiErrorMessage(e, 'No pudimos pedir tu credencial digital. Intenta de nuevo.'),

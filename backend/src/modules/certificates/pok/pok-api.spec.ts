@@ -12,6 +12,7 @@ import {
   statusFromState,
   templatesOf,
   verifyWebhook,
+  customParametersFor,
   documentParameters,
   parametersOf,
 } from './pok-api.js';
@@ -332,5 +333,32 @@ describe('documento del estudiante en el diseño de POK', () => {
 
     expect(body.customization.template.customParameters).toEqual({ 'p-doc': '123' });
     expect(body.receiver.identification).toBe('123');
+  });
+});
+
+describe('nombre del curso en el diseño de POK', () => {
+  const parameters = [
+    { id: 'p-doc', label: 'Documento Id' },
+    { id: 'p-curso', label: 'Curso' },
+    { id: 'p-nom', label: 'Nombre del curso' },
+    { id: 'p-horas', label: 'Número de horas' },
+    { id: 'p-cursor', label: 'Cursor' },
+  ];
+
+  it('llena «Curso» y «Nombre del curso» con el título y «Documento Id» con el documento', () => {
+    expect(customParametersFor(parameters, { document: '123', courseTitle: ' Álgebra  I ' })).toEqual({
+      'p-curso': 'Álgebra I',
+      'p-nom': 'Álgebra I',
+      'p-doc': '123',
+    });
+  });
+
+  it('sin documento solo llena el curso; sin título solo el documento; no toca otros campos', () => {
+    expect(customParametersFor(parameters, { document: null, courseTitle: 'X' })).toEqual({ 'p-curso': 'X', 'p-nom': 'X' });
+    expect(customParametersFor(parameters, { document: '9', courseTitle: '  ' })).toEqual({ 'p-doc': '9' });
+  });
+
+  it('un campo que pide el documento del curso no recibe el nombre del curso', () => {
+    expect(customParametersFor([{ id: 'a', label: 'Documento del curso' }], { document: '5', courseTitle: 'X' })).toEqual({ a: '5' });
   });
 });

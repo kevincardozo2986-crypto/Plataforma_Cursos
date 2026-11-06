@@ -61,6 +61,18 @@ export class PokPage {
   readonly connection = signal<PokConnection | null>(null);
   readonly templates = signal<PokTemplate[]>([]);
   readonly templatesError = signal('');
+  /** Texto del buscador de diseños (la cuenta puede tener cientos). */
+  readonly designQuery = signal('');
+  readonly shownTemplates = computed(() => {
+    const term = this.designQuery().trim().toLowerCase();
+    const all = this.templates();
+
+    return term ? all.filter((template) => template.name.toLowerCase().includes(term)) : all;
+  });
+
+  onDesignSearch(event: Event): void {
+    this.designQuery.set((event.target as HTMLInputElement).value);
+  }
   readonly courses = signal<PokCourse[]>([]);
   readonly error = signal('');
   readonly toast = signal('');

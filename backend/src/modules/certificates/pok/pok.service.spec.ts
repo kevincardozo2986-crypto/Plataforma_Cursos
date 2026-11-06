@@ -50,7 +50,7 @@ function build(env: Record<string, string> = { POK_API_KEY: 'k' }) {
     organization: vi.fn().mockResolvedValue({ name: 'ORG', availableCredits: 3 }),
     listTemplates: vi.fn().mockResolvedValue([{ id: 't1', name: 'Uno', tags: [] }]),
     findTemplate: vi.fn().mockResolvedValue({ found: true, id: 't1', name: 'Uno' }),
-    templateParameters: vi.fn().mockResolvedValue([{ id: 'p-doc', label: 'Documento Id' }]),
+    templateParameters: vi.fn().mockResolvedValue([{ id: 'p-doc', label: 'Documento Id' }, { id: 'p-curso', label: 'Curso' }]),
   };
   const service = new PokService(repository as unknown as CertificatesRepository, access as unknown as CourseAccessService);
 
@@ -81,7 +81,7 @@ describe('PokService.emit', () => {
 
     await service.emit(19);
 
-    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({ 'p-doc': '123' });
+    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({ 'p-doc': '123', 'p-curso': expect.any(String) });
   });
 
   it('si POK no devuelve los parámetros del diseño, emite igual (sin ellos)', async () => {

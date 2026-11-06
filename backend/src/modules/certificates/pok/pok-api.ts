@@ -95,6 +95,25 @@ export function documentParameters(parameters: PokTemplateParameter[], document:
   return Object.fromEntries(parameters.filter((parameter) => DOCUMENT_LABEL.test(parameter.label)).map((parameter) => [parameter.id, value]));
 }
 
+/** Un campo del diseño que pide el nombre del curso: «Curso», «Nombre del curso», «Nombre curso»… */
+const COURSE_LABEL = /(?<![\p{L}\d])curso(?![\p{L}\d])/iu;
+
+/**
+ * Todos los valores que podemos llenar en los campos propios del diseño: el documento del estudiante y el nombre del
+ * curso (por si el diseño no lo trae fijo). Un campo que parezca de documento nunca recibe el curso.
+ */
+export function customParametersFor(
+  parameters: PokTemplateParameter[],
+  values: { document: string | null; courseTitle: string },
+): Record<string, string> {
+  const title = clean(values.courseTitle, 150);
+  const course = title
+    ? Object.fromEntries(parameters.filter((p) => COURSE_LABEL.test(p.label) && !DOCUMENT_LABEL.test(p.label)).map((p) => [p.id, title]))
+    : {};
+
+  return { ...course, ...documentParameters(parameters, values.document) };
+}
+
 /** El cuerpo de `POST /credential`. La llave de idempotencia evita emitir dos veces el mismo certificado. */
 export function buildCredentialBody(
   input: CredentialInput,

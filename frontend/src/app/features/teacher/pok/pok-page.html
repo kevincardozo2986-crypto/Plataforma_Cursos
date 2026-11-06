@@ -248,17 +248,30 @@
           }
 
           <div class="px-designs">
-            @for (template of templates(); track template.id) {
-              <button
-                type="button"
-                class="px-dz"
-                [attr.aria-pressed]="previewTemplateId() === template.id"
-                [disabled]="busyId() === selected()?.id"
-                (click)="choosePreview(template.id)"
-              >
-                <span class="px-dz__sw"></span>{{ template.name }}
-              </button>
+            @if (templates().length > 6) {
+              <label class="px-designs__search">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                <input type="search" placeholder="Buscar entre {{ templates().length }} diseños" aria-label="Buscar diseño" [value]="designQuery()" (input)="onDesignSearch($event)" />
+              </label>
             }
+            <div class="px-designs__list" role="group" aria-label="Diseños de POK">
+              @for (template of shownTemplates(); track template.id) {
+                <button
+                  type="button"
+                  class="px-dz"
+                  [attr.aria-pressed]="previewTemplateId() === template.id"
+                  [disabled]="busyId() === selected()?.id"
+                  [attr.title]="template.name"
+                  (click)="choosePreview(template.id)"
+                >
+                  <span class="px-dz__sw"></span><span class="px-dz__name">{{ template.name }}</span>
+                </button>
+              } @empty {
+                @if (templates().length > 0) {
+                  <span class="px-muted">Ningún diseño coincide con «{{ designQuery() }}».</span>
+                }
+              }
+            </div>
             <a class="px-dz px-dz--new" href="https://pok.tech" target="_blank" rel="noopener noreferrer">+ Crear diseño en POK</a>
             @if (templatesError()) {
               <span class="px-muted" role="alert">{{ templatesError() }}</span>

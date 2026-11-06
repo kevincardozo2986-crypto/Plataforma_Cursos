@@ -8,7 +8,7 @@ import {
   advanceStatus,
   buildCredentialBody,
   buildPreviewBody,
-  documentParameters,
+  customParametersFor,
   type PokConfig,
   PokClient,
   pokConfig,
@@ -85,9 +85,10 @@ export class PokService {
 
       const client = this.clientFor(config);
       // El documento del estudiante va en los campos del diseño que lo piden («Documento Id», «Cédula»…).
-      const customParameters = certificate.studentDocument
-        ? documentParameters(await client.templateParameters(templateId), certificate.studentDocument)
-        : {};
+      const customParameters = customParametersFor(await client.templateParameters(templateId), {
+        document: certificate.studentDocument,
+        courseTitle: certificate.courseTitle,
+      });
       const result = await client.emit(
         buildCredentialBody(
           {
@@ -191,7 +192,7 @@ export class PokService {
 
     const client = this.clientFor(config);
     // Un documento de ejemplo, para ver dónde saldrá el del estudiante.
-    const customParameters = documentParameters(await client.templateParameters(templateId), '1234567890');
+    const customParameters = customParametersFor(await client.templateParameters(templateId), { document: '1234567890', courseTitle: title });
     const url = await client.preview(buildPreviewBody({ courseTitle: title, templateId, customParameters }, config));
 
     if (!url) {
