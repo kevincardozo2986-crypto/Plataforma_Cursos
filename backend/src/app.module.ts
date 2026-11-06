@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
+import { validateSecurityConfig } from './security/security.config.js';
 import { createObserveModule } from '@nestjs/observe';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.js';
 import { DatabaseModule } from './database/database.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -37,6 +40,7 @@ export const observeEnabled = Boolean(
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateSecurityConfig,
     }),
 
     DatabaseModule,
@@ -75,6 +79,12 @@ export const observeEnabled = Boolean(
     CertificatesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: PrismaExceptionFilter,
+    },
+  ],
 })
 export class AppModule { }

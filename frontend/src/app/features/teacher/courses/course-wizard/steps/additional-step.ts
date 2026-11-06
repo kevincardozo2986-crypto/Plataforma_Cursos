@@ -3,8 +3,9 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { forkJoin, map, Observable, switchMap, tap } from 'rxjs';
 
+import { PokService, PokTemplate } from '../../../../../core/pok/pok.service';
 import { Icon } from '../../../../../shared/ui/icon/icon';
 import { CourseFilesCard } from './course-files-card';
 import { TeamCard } from './team-card';
@@ -46,6 +47,18 @@ export class AdditionalStep {
 
   /** Mis plantillas de certificado, para elegir cuál se emite al completar el curso. */
   readonly templates = signal<CertificateTemplate[]>([]);
+
+  // --- Credencial digital POK (solo si el servidor la tiene activada) ---
+  private readonly pok = inject(PokService);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly pokEnabled = signal(false);
+  readonly pokTemplates = signal<PokTemplate[]>([]);
+  /** Vía del certificado: se emite el de la plataforma o la credencial de POK, nunca los dos. */
+  readonly mode = signal<'PLATFORM' | 'POK'>('PLATFORM');
+  /** Diseño de POK elegido (solo cuando la vía es POK). */
+  readonly pokTemplateId = signal('');
+  readonly pokError = signal('');
+  private pokInitial = '';
 
   /** Lo que todavía no existe en el asistente; se muestra como aviso, sin enlaces falsos. */
   readonly upcoming = [
@@ -105,11 +118,13 @@ export class AdditionalStep {
       .pipe(takeUntilDestroyed())
       .subscribe({ next: (templates) => this.templates.set(templates) });
 
+    this.loadPok();
+
     // Un aviso de un intento anterior ya no aplica en cuanto se vuelve a editar.
     this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.wizard.clearMessages());
 
     const unregister = this.wizard.register(() => this.save());
-    inject(DestroyRef).onDestroy(unregister);
+    this.destroyRef.onDestroy(unregister);
   }
 
   isSelected(id: number): boolean {
@@ -131,6 +146,54 @@ export class AdditionalStep {
     this.form.controls.certificateTemplateId.markAsDirty();
   }
 
+  /** Si POK está activo, carga sus diseños y el que ya tiene este curso. Si POK falla, el paso sigue funcionando. */
+  private loadPok(): void {
+    this.pok
+      .status()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (connection) => {
+          if (!connection.enabled) return;
+
+          this.pokEnabled.set(true);
+
+          // Dentro de una respuesta asíncrona ya no hay contexto de inyección: se pasa el DestroyRef.
+          forkJoin({ templates: this.pok.templates(), courses: this.pok.courses() })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: ({ templates, courses }) => {
+                const chosen = courses.find((item) => item.id === this.course.id)?.pokTemplateId ?? '';
+
+                this.pokTemplates.set(templates);
+                this.pokTemplateId.set(chosen);
+                this.pokInitial = chosen;
+                this.mode.set(chosen ? 'POK' : 'PLATFORM');
+              },
+              error: () => this.pokError.set('No pudimos cargar los diseños de POK. Recarga la página.'),
+            });
+        },
+        // POK es un complemento: si no responde, el resto del paso no se ve afectado.
+        error: () => undefined,
+      });
+  }
+
+  /** Cambia de vía; al pasar a POK deja elegido el primer diseño para que no quede vacío. */
+  setMode(mode: 'PLATFORM' | 'POK'): void {
+    this.mode.set(mode);
+    this.pokError.set('');
+    this.wizard.clearMessages();
+
+    if (mode === 'POK' && !this.pokTemplateId() && this.pokTemplates().length > 0) {
+      this.pokTemplateId.set(this.pokTemplates()[0].id);
+    }
+  }
+
+  onPokTemplate(event: Event): void {
+    this.pokTemplateId.set((event.target as HTMLSelectElement).value);
+    this.pokError.set('');
+    this.wizard.clearMessages();
+  }
+
   durationError(): string {
     const { hours, minutes } = this.form.controls;
     const touched = hours.touched || minutes.touched || hours.dirty || minutes.dirty;
@@ -146,7 +209,35 @@ export class AdditionalStep {
       return null;
     }
 
-    return this.api.update(this.course.id, toAdditionalUpdate(this.form.getRawValue()));
+    // Una sola vía: con POK no hay plantilla de la plataforma (se quita), y con la plataforma no hay POK.
+    const usePok = this.pokEnabled() && this.mode() === 'POK';
+
+    if (usePok && !this.pokTemplateId()) {
+      this.pokError.set('Elige un diseño de POK o cambia al certificado de la plataforma.');
+
+      return null;
+    }
+
+    const value = this.form.getRawValue();
+    const update = this.api.update(
+      this.course.id,
+      toAdditionalUpdate(usePok ? { ...value, certificateTemplateId: null } : value),
+    );
+    const wanted = usePok ? this.pokTemplateId() : '';
+
+    if (!this.pokEnabled() || wanted === this.pokInitial) {
+      return update;
+    }
+
+    // La vía de POK se guarda aparte (otro módulo); si falla, el paso muestra el error.
+    return update.pipe(
+      switchMap((saved) =>
+        this.pok.setTemplate(this.course.id, wanted || null).pipe(
+          tap(() => (this.pokInitial = wanted)),
+          map(() => saved),
+        ),
+      ),
+    );
   }
 
   /** Sin el propio curso, y conservando como opción un prerrequisito ya elegido aunque ya no sea del usuario. */

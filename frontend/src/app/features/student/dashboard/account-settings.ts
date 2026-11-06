@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { RouterLink } from '@angular/router';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +11,7 @@ import { apiErrorMessage } from '../../../core/http/api-error';
 
 @Component({
   selector: 'app-account-settings',
-  imports: [FormsModule, RouterLink],
+  imports: [PublicUrlPipe, FormsModule, RouterLink],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.scss',
 })

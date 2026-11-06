@@ -40,7 +40,19 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+        algorithms: ['HS256'],
+        issuer: 'plataforma-cursos',
+        audience: 'plataforma-cursos-web',
       });
+
+      if (
+        !Number.isSafeInteger(payload.sub) ||
+        payload.sub <= 0 ||
+        !Number.isSafeInteger(payload.version) ||
+        payload.version! < 0
+      ) {
+        throw new UnauthorizedException('Token inválido');
+      }
 
       const user = await this.usersService.findById(payload.sub);
 
@@ -52,7 +64,7 @@ export class JwtAuthGuard implements CanActivate {
         throw new UnauthorizedException('La cuenta se encuentra inactiva');
       }
 
-      if ((payload.version ?? 0) !== user.sessionVersion) {
+      if (payload.version !== user.sessionVersion) {
         throw new UnauthorizedException(
           'La contrasena cambio. Inicia sesion nuevamente.',
         );

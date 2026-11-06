@@ -152,7 +152,7 @@
 
                 @if (backgroundUrl(); as image) {
                   <div class="bg-current">
-                    <img [src]="image" alt="Tu imagen de fondo" />
+                    <img [src]="image | publicUrl" alt="Tu imagen de fondo" />
                     <div class="bg-actions">
                       <label class="panel-btn panel-btn--ghost panel-btn--sm file">
                         <app-icon name="refresh" [size]="15" /> Cambiar imagen

@@ -16,6 +16,7 @@ function build() {
     markRead: vi.fn().mockResolvedValue(1),
     exists: vi.fn().mockResolvedValue(1),
     markAllRead: vi.fn().mockResolvedValue(4),
+    createOnce: vi.fn().mockResolvedValue(1),
   };
   const service = new NotificationsService(repository as unknown as NotificationsRepository);
 
@@ -107,5 +108,26 @@ describe('NotificationsService', () => {
     const { service } = build();
 
     await expect(service.markAllRead(user)).resolves.toEqual({ marked: 4 });
+  });
+});
+
+describe('NotificationsService.notifyOnce', () => {
+  it('crea el aviso la primera vez y dice false cuando ya existía uno con esa llave', async () => {
+    const { service, repository } = build();
+
+    expect(await service.notifyOnce(5, data, 'k:1')).toBe(true);
+    expect(repository.createOnce).toHaveBeenCalledWith(5, data, 'k:1');
+
+    repository.createOnce.mockResolvedValue(0);
+
+    expect(await service.notifyOnce(5, data, 'k:1')).toBe(false);
+  });
+
+  it('un error de base de datos se propaga (quien lo pide necesita saber que no salió)', async () => {
+    const { service, repository } = build();
+
+    repository.createOnce.mockRejectedValue(new Error('base caída'));
+
+    await expect(service.notifyOnce(5, data, 'k:1')).rejects.toThrow('base caída');
   });
 });

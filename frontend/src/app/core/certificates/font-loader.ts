@@ -1,3 +1,4 @@
+import { publicUrl } from '../http/public-url';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -58,7 +59,9 @@ export class FontLoader {
         // Las de la plataforma son públicas y cambian poco: el navegador las pide por su cuenta.
         // Las propias piden sesión: se bajan con ella y se le entregan ya leídas.
         const source: string | ArrayBuffer =
-          option.category === 'Mía' ? await firstValueFrom(this.fonts.file(url)) : `url(${url})`;
+          option.category === 'Mía'
+            ? await firstValueFrom(this.fonts.file(url))
+            : `url(${publicUrl(url)})`;
         const face = new FontFace(family, source, { weight });
 
         await face.load();

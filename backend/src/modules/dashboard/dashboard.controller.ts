@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
@@ -7,7 +7,11 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { DashboardService } from './dashboard.service.js';
-import { DashboardQueryDto, StudentsQueryDto } from './dto/dashboard-query.dto.js';
+import {
+  DashboardQueryDto,
+  RequestReviewsQueryDto,
+  StudentsQueryDto,
+} from './dto/dashboard-query.dto.js';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,6 +36,36 @@ export class DashboardController {
     @Query() query: StudentsQueryDto,
   ) {
     return this.dashboard.students(user, query);
+  }
+
+  /** Una inscripción en detalle: sus lecciones en orden, su actividad por semana y lo último que hizo. */
+  @Get('teacher/students/:enrollmentId')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  studentDetail(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.dashboard.studentDetail(user, enrollmentId);
+  }
+
+  /** Le recuerda al estudiante que siga su curso (un aviso en la plataforma; máximo uno al día por persona y curso). */
+  @Post('teacher/students/:enrollmentId/remind')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  remind(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.dashboard.remind(user, enrollmentId);
+  }
+
+  /** Invita a reseñar a quienes terminaron y aún no lo hicieron: `?courseId=` para un solo curso. */
+  @Post('teacher/request-reviews')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  requestReviews(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: RequestReviewsQueryDto,
+  ) {
+    return this.dashboard.requestReviews(user, query);
   }
 
   /** Reparto de las reseñas por estrellas y las más recientes: `?period=&courseId=`. */

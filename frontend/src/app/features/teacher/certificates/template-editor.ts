@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -42,7 +43,7 @@ import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './cert
 /** Crear o editar una plantilla de certificado, con una vista previa que se actualiza al escribir. */
 @Component({
   selector: 'app-template-editor',
-  imports: [ReactiveFormsModule, RouterLink, Icon, CertificatePreview, FontPicker],
+  imports: [PublicUrlPipe, ReactiveFormsModule, RouterLink, Icon, CertificatePreview, FontPicker],
   templateUrl: './template-editor.html',
   styleUrl: './template-editor.scss',
 })

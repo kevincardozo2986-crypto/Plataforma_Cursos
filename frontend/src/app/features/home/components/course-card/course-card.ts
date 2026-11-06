@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import { Component, input, output } from '@angular/core';
 
 export interface Course {
@@ -14,7 +15,7 @@ export interface Course {
 
 @Component({
   selector: 'app-course-card',
-  imports: [],
+  imports: [PublicUrlPipe],
   templateUrl: './course-card.html',
   styleUrl: './course-card.scss',
 })

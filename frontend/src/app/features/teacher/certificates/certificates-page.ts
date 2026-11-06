@@ -8,6 +8,7 @@ import {
   CertificateTemplate,
   IssuedCertificate,
   LAYOUT_LABELS,
+  POK_LABELS,
 } from '../../../core/certificates/certificates.models';
 import { CertificatesService } from '../../../core/certificates/certificates.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -178,6 +179,32 @@ export class CertificatesPage {
 
   cancelRevoke(): void {
     this.confirmRevokeId.set(null);
+  }
+
+  readonly pokLabels = POK_LABELS;
+
+  /** Reintenta el envío a POK (o consulta su estado) y refleja el resultado en la fila. */
+  syncPok(certificate: IssuedCertificate): void {
+    this.begin(certificate.id);
+
+    this.api.syncPok(certificate.id).subscribe({
+      next: (result) => {
+        this.issued.update((list) =>
+          list.map((item) =>
+            item.id === certificate.id
+              ? { ...item, pokStatus: result.pokStatus, pokError: result.pokError }
+              : item,
+          ),
+        );
+        this.notice.set(
+          result.pokStatus === 'FAILED'
+            ? `POK rechazó el certificado de ${certificate.studentName}: ${result.pokError ?? 'sin detalle'}.`
+            : `Certificado de ${certificate.studentName} en POK: ${POK_LABELS[result.pokStatus].toLowerCase()}.`,
+        );
+        this.busyId.set(null);
+      },
+      error: (error: unknown) => this.fail(error, 'No pudimos consultar POK.'),
+    });
   }
 
   revoke(certificate: IssuedCertificate): void {

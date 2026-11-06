@@ -764,6 +764,18 @@ progress::-moz-progress-bar {
 .notification-list a {
   color: #a7e7ff;
 }
+.pok-line[data-pok='FAILED'] {
+  color: #ff9aa8;
+}
+.pok-line .link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .muted {
   font-size: 0.78rem;
   line-height: 1.7;

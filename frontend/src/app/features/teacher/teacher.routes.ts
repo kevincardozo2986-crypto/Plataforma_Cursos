@@ -54,8 +54,7 @@ export const TEACHER_ROUTES: Routes = [
       {
         path: 'students',
         title: 'Inscritos',
-        data: { view: 'students' },
-        loadComponent: () => import('./analytics/analytics-page').then((m) => m.AnalyticsPage),
+        loadComponent: () => import('./inscritos/inscritos-page').then((m) => m.InscritosPage),
       },
 
       {
@@ -214,6 +213,12 @@ export const TEACHER_ROUTES: Routes = [
         title: 'Certificados',
         loadComponent: () =>
           import('./certificates/certificates-page').then((m) => m.CertificatesPage),
+      },
+
+      {
+        path: 'pok',
+        title: 'POK',
+        loadComponent: () => import('./pok/pok-page').then((m) => m.PokPage),
       },
 
       {

@@ -1,7 +1,8 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Course, CoursesResponse } from '../../../core/courses/courses.models';
 import { StreakFlame } from './streak-flame';
 import { CertificatesService } from '../../../core/certificates/certificates.service';
-import { MyCertificate } from '../../../core/certificates/certificates.models';
+import { MyCertificate, POK_LABELS } from '../../../core/certificates/certificates.models';
 import { AccountSettings } from './account-settings';
 import { StudyStreak } from './study-streak';
 import { HttpClient } from '@angular/common/http';
@@ -30,7 +31,7 @@ interface StudentNotification {
 
 @Component({
   selector: 'app-student-dashboard',
-  imports: [RouterLink, StudentIcon, StudyStreak, AccountSettings, StreakFlame],
+  imports: [PublicUrlPipe, RouterLink, StudentIcon, StudyStreak, AccountSettings, StreakFlame],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss',
 })
@@ -163,6 +164,27 @@ export class StudentDashboard {
   readonly certificatesLoading = signal(false);
   readonly certificatesError = signal('');
   readonly downloadingCertificate = signal<number | null>(null);
+  readonly pokLabels = POK_LABELS;
+  readonly syncingPok = signal<number | null>(null);
+
+  /** Consulta a POK el estado de la credencial (o reintenta enviarla si falló). */
+  syncPok(certificate: MyCertificate): void {
+    if (this.syncingPok() !== null) return;
+    this.syncingPok.set(certificate.id);
+    this.certificateService.syncPok(certificate.id).subscribe({
+      next: (result) => {
+        this.certificates.update((list) =>
+          list.map((item) =>
+            item.id === certificate.id
+              ? { ...item, pokStatus: result.pokStatus, pokUrl: result.pokUrl }
+              : item,
+          ),
+        );
+        this.syncingPok.set(null);
+      },
+      error: () => this.syncingPok.set(null),
+    });
+  }
   readonly downloadError = signal('');
   readonly validCertificates = computed(() =>
     this.certificates().filter((item) => item.status === 'VALID'),

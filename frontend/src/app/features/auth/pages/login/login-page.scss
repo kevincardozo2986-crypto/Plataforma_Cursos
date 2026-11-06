@@ -1,6 +1,6 @@
 :host {
   display: block;
-  min-height: calc(100dvh - 92px);
+  min-height: 100dvh;
 }
 
 .login-page {
@@ -16,7 +16,7 @@
   isolation: isolate;
 
   width: 100%;
-  min-height: calc(100dvh - 92px);
+  min-height: 100dvh;
 
   display: flex;
   align-items: center;
@@ -40,7 +40,7 @@
   inset: 0;
   z-index: -3;
 
-  background: url('/images/prueba1.png') center center / cover no-repeat;
+  background: url('../../../../../../public/images/prueba1.png') center center / cover no-repeat;
 
   transform: scale(1.015);
 }
@@ -384,7 +384,7 @@ app-login-links {
 
 @media (max-width: 760px) {
   .login-page {
-    min-height: calc(100dvh - 92px);
+    min-height: 100dvh;
 
     align-items: flex-start;
 

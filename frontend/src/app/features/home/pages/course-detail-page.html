@@ -47,7 +47,7 @@
                   controls
                   playsinline
                   preload="metadata"
-                  [src]="video"
+                  [src]="video | publicUrl"
                   [poster]="item.imageUrl || item.image || item.thumbnail || ''"
                   [attr.aria-label]="'Video introductorio de ' + (item.title || item.name)"
                   (error)="videoError.set(true)"
@@ -60,13 +60,17 @@
                   </p>
                 }
               } @else {
-                <a class="login" [href]="video" target="_blank" rel="noopener noreferrer"
+                <a
+                  class="login"
+                  [href]="video | publicUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   >Ver video introductorio ↗</a
                 >
               }
             </section>
           } @else if (item.imageUrl || item.image || item.thumbnail; as image) {
-            <img [src]="image" [alt]="item.title || item.name || 'Imagen del curso'" />
+            <img [src]="image | publicUrl" [alt]="item.title || item.name || 'Imagen del curso'" />
           }
           <section class="information-section curriculum-section" id="course-content">
             <div class="section-title">
@@ -107,7 +111,9 @@
             <h2>Acerca de este curso</h2>
             <div
               class="rich-text"
-              [innerHTML]="item.description || 'El docente aún no ha agregado una descripción.'"
+              [innerHTML]="
+                item.description || 'El docente aún no ha agregado una descripción.' | richHtml
+              "
             ></div>
           </section>
           @if (item.whatYouWillLearn) {

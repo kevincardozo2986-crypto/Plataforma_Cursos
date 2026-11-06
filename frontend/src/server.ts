@@ -10,6 +10,17 @@ import { join } from 'node:path';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+app.disable('x-powered-by');
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    "base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'",
+  );
+  next();
+});
 const angularApp = new AngularNodeAppEngine();
 
 /**
@@ -28,6 +39,7 @@ const angularApp = new AngularNodeAppEngine();
  * Serve static files from /browser
  */
 app.use(
+  process.env['APP_BASE_PATH'] || '/',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,

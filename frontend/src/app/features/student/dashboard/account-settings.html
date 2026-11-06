@@ -9,7 +9,7 @@
   <section class="photo-section" aria-label="Foto de perfil">
     <span class="profile-photo">
       @if (auth.user()?.avatarUrl; as photo) {
-        <img [src]="photo" alt="Tu foto de perfil" />
+        <img [src]="photo | publicUrl" alt="Tu foto de perfil" />
       } @else {
         {{ auth.user()?.firstName?.charAt(0) }}{{ auth.user()?.lastName?.charAt(0) }}
       }

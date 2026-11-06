@@ -92,7 +92,7 @@ html:is(.a11y-dark, .a11y-contrast) .login-card .error-message {
 
 @font-face {
   font-family: 'Satisfy';
-  src: url('/fonts/satisfy/Satisfy-Regular.ttf') format('truetype');
+  src: url('../public/fonts/satisfy/Satisfy-Regular.ttf') format('truetype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;

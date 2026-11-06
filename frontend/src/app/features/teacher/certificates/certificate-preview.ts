@@ -1,3 +1,4 @@
+import { publicUrl } from '../../../core/http/public-url';
 import { Component, computed, effect, ElementRef, inject, input, output } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
@@ -94,7 +95,7 @@ export class CertificatePreview {
     const url = this.background();
 
     return this.layout() === 'IMAGE' && url && /^\/api\/uploads\/[a-f0-9]{32}\.\w+$/.test(url)
-      ? `url("${url}")`
+      ? `url("${publicUrl(url)}")`
       : null;
   });
 

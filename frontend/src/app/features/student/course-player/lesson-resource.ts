@@ -1,3 +1,5 @@
+import { publicUrl } from '../../../core/http/public-url';
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 export interface LearningResource {
@@ -29,6 +31,7 @@ export function allowedMaterialUrl(value: string): boolean {
   );
 }
 @Component({
+  imports: [PublicUrlPipe],
   selector: 'app-lesson-resource',
   template: `
     <section class="material">
@@ -41,7 +44,7 @@ export function allowedMaterialUrl(value: string): boolean {
           @case ('pdf') {
             <iframe
               class="document"
-              [src]="frameUrl()"
+              [src]="frameUrl() | publicUrl"
               [title]="resource().title"
               sandbox="allow-same-origin"
               referrerpolicy="no-referrer"
@@ -54,7 +57,7 @@ export function allowedMaterialUrl(value: string): boolean {
               ><audio
                 controls
                 preload="metadata"
-                [src]="resource().url"
+                [src]="resource().url | publicUrl"
                 (error)="failed.set(true)"
               ></audio>
             </div>
@@ -64,13 +67,13 @@ export function allowedMaterialUrl(value: string): boolean {
               controls
               playsinline
               preload="metadata"
-              [src]="resource().url"
+              [src]="resource().url | publicUrl"
               (error)="failed.set(true)"
             ></video>
           }
           @case ('image') {
             <img
-              [src]="resource().url"
+              [src]="resource().url | publicUrl"
               [alt]="resource().title"
               loading="lazy"
               (error)="failed.set(true)"
@@ -79,7 +82,7 @@ export function allowedMaterialUrl(value: string): boolean {
           @case ('interactive') {
             <iframe
               class="activity"
-              [src]="frameUrl()"
+              [src]="frameUrl() | publicUrl"
               [title]="resource().title"
               sandbox="allow-scripts allow-forms"
               referrerpolicy="no-referrer"
@@ -96,7 +99,7 @@ export function allowedMaterialUrl(value: string): boolean {
         @if (failed()) {
           <p role="alert">No pudimos reproducir este archivo. Prueba con el enlace original.</p>
         }
-        <a [href]="resource().url" target="_blank" rel="noopener noreferrer"
+        <a [href]="resource().url | publicUrl" target="_blank" rel="noopener noreferrer"
           >Abrir material original <span aria-hidden="true">↗</span></a
         >
       } @else {
@@ -224,7 +227,9 @@ export class LessonResource {
   readonly kind = computed(() => materialKind(this.resource()));
   readonly allowed = computed(() => allowedMaterialUrl(this.resource().url));
   readonly frameUrl = computed(() =>
-    this.allowed() ? this.sanitizer.bypassSecurityTrustResourceUrl(this.resource().url) : null,
+    this.allowed()
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(publicUrl(this.resource().url))
+      : null,
   );
   readonly failed = signal(false);
   readonly labels: Record<MaterialKind, string> = {

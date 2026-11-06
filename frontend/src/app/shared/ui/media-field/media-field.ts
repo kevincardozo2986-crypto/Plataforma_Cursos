@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import {
   Component,
   computed,
@@ -30,7 +31,7 @@ import { UploadsService } from '../../../core/uploads/uploads.service';
  */
 @Component({
   selector: 'app-media-field',
-  imports: [ReactiveFormsModule],
+  imports: [PublicUrlPipe, ReactiveFormsModule],
   templateUrl: './media-field.html',
   styleUrl: './media-field.scss',
 })

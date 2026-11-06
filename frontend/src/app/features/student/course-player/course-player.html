@@ -124,7 +124,7 @@
             [class.has-image]="course().imageUrl || course().image || course().thumbnail"
           >
             @if (course().imageUrl || course().image || course().thumbnail; as image) {
-              <img [src]="image" alt="" />
+              <img [src]="image | publicUrl" alt="" />
             }
             <div class="cover-content">
               <span class="eyebrow">{{ selected()?.moduleTitle }}</span>
@@ -132,7 +132,7 @@
               @if (current.videoUrl) {
                 <a
                   class="external-video"
-                  [href]="current.videoUrl"
+                  [href]="current.videoUrl | publicUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   ><app-student-icon name="play" />Abrir video de la lecci&#243;n &#8599;</a
@@ -607,7 +607,37 @@
             Ver {{ pendingGrades() }} requisitos pendientes &#8594;
           </button>
         }
-        @if (state.eligible && state.certificateEnabled) {
+        @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
+          <!-- Este curso entrega la credencial digital de POK (no hay PDF de la plataforma) -->
+          <p class="finished">&#161;Lo lograste! Tu credencial digital la emite POK.</p>
+          @if (state.certificate; as cert) {
+            <p>
+              Estado: <strong>{{ pokLabels[cert.pokStatus ?? 'NONE'] }}</strong>
+            </p>
+            @if (cert.pokUrl && (cert.pokStatus === 'EMITTED' || cert.pokStatus === 'ACCEPTED')) {
+              <a class="certificate-download pok-view" [href]="cert.pokUrl | publicUrl" target="_blank" rel="noopener noreferrer">
+                Ver mi credencial en POK
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>
+              </a>
+            }
+          }
+          @if (
+            state.certificate?.pokStatus !== 'EMITTED' &&
+            state.certificate?.pokStatus !== 'ACCEPTED'
+          ) {
+            <button
+              class="primary certificate-download"
+              (click)="requestPokCredential()"
+              [disabled]="pokBusy()"
+            >
+              {{
+                pokBusy()
+                  ? 'Consultando...'
+                  : 'Generar certificado'
+              }}
+            </button>
+          }
+        } @else if (state.eligible && state.certificateEnabled) {
           <p class="finished">&#161;Lo lograste! Tu certificado est&#225; listo.</p>
           <button
             class="primary certificate-download"

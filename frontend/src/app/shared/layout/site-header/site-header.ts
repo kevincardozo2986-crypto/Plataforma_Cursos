@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import {
   Component,
   computed,
@@ -18,7 +19,7 @@ import { headerLinksFor, ROLE_LABELS } from './header-links';
 
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink, RouterLinkActive, NotificationBell],
+  imports: [PublicUrlPipe, RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './site-header.html',
   styleUrl: './site-header.scss',
 })

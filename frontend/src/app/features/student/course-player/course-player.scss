@@ -1428,6 +1428,28 @@ app-course-video {
   background: #fff;
   color: #1846a4;
 }
+/* «Ver mi credencial en POK»: un enlace con forma de botón, igual de ancho que el principal. */
+.graduation-card .pok-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(8, 20, 60, 0.25);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.graduation-card .pok-view:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(8, 20, 60, 0.32);
+}
+.graduation-card .pok-view:focus-visible {
+  outline: 2px solid #a7e1ff;
+  outline-offset: 2px;
+}
 @keyframes classroom-enter {
   from {
     opacity: 0;

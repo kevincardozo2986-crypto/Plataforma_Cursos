@@ -1,0 +1,1339 @@
+{
+ "run": "E2E15d01ffe",
+ "started": "2026-11-06T12:24:00.813Z",
+ "finished": "2026-11-06T12:25:14.118Z",
+ "base": "http://localhost:3000",
+ "pass": 262,
+ "fail": 2,
+ "skipped": 1,
+ "results": [
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro con datos válidos crea la cuenta (rol estudiante)",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: correo repetido → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: documento repetido → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: contraseña corta → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: correo inválido → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: sin documento → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Registro: no se puede elegir el rol (se ignora o se rechaza)",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Inicio de sesión con correo",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Inicio de sesión con documento (cédula)",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Contraseña incorrecta → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Cuenta inexistente → 401 (mismo mensaje que contraseña mala)",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "/auth/me sin token → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "/auth/me con token inválido → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "/auth/me no expone el hash ni el documento de otros",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Cambiar contraseña: la actual incorrecta → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Cambiar contraseña: igual a la actual → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Cambiar contraseña: nueva demasiado corta → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Cambiar contraseña: válida → la vieja deja de servir y la nueva sí",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Recuperación por correo (código enviado y confirmado)",
+   "status": "SKIP",
+   "detail": "el servidor de correo (SMTP_USER/SMTP_PASSWORD) no está configurado; sin él no hay forma de recibir el código"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Recuperación de contraseña por correo: pedir código",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Confirmar un código de recuperación falso → 400/401 (nunca cambia la clave)",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Pedir código estando en sesión (cambio de contraseña) responde sin romperse",
+   "status": "PASS"
+  },
+  {
+   "section": "1. Registro, inicio de sesión y contraseña",
+   "name": "Confirmar código falso en sesión → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Un estudiante no entra a /admin/* (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Un docente no entra a /admin/* (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Sin sesión → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Resumen de la plataforma trae usuarios, cursos, inscripciones y certificados",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Lista de cuentas: paginada, con búsqueda y filtro por rol",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "La lista de cuentas nunca trae contraseñas",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Crear una cuenta con rol elegido; la persona puede entrar con la clave inicial",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Crear cuenta con correo repetido → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Cambiar el rol surte efecto al instante",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Desactivar una cuenta bloquea el acceso y cierra sus sesiones abiertas",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Reactivarla permite volver a entrar",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Un admin no puede cambiar su propia cuenta (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Rol o estado inválido → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Cuenta inexistente → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "2. Administración (solo admin)",
+   "name": "Lista de todos los cursos (con autor y conteos) y filtro por estado",
+   "status": "PASS"
+  },
+  {
+   "section": "2b. Categorías",
+   "name": "Un docente crea una categoría",
+   "status": "PASS"
+  },
+  {
+   "section": "2b. Categorías",
+   "name": "Un estudiante no puede crear categorías (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "2b. Categorías",
+   "name": "Nombre repetido → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "2b. Categorías",
+   "name": "Listado y detalle son públicos",
+   "status": "PASS"
+  },
+  {
+   "section": "2b. Categorías",
+   "name": "Editar una categoría",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Subir una imagen PNG (docente) → devuelve una URL de la plataforma",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "La imagen subida se puede pedir públicamente y llega como imagen",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Un estudiante no puede subir imágenes de curso (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Un archivo que no es imagen renombrado a .png se rechaza (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Subir sin archivo → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Sin sesión no se sube nada (401)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Un estudiante sube un documento (entrega de tarea)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Los documentos son privados: no se piden por /uploads/ (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Un ejecutable renombrado a .pdf se rechaza por su contenido (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Una extensión no permitida (.exe) → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Subir foto de perfil (avatar) como estudiante",
+   "status": "PASS"
+  },
+  {
+   "section": "3. Subida de archivos",
+   "name": "Subir un video real (generado con ffmpeg) y esperar a que se procese",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "GET /profile trae cuenta, perfil y preferencias por defecto (sin hash)",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "PATCH /profile guarda nombre, teléfono, ocupación y bio",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Preferencias de accesibilidad: tema, tamaño, contraste, filtro de color",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Valores inválidos de perfil → 400 con mensaje",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Redes sociales con https se guardan; null las quita",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Foto de perfil: una imagen subida se acepta; una URL externa se rechaza (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Firma del docente: solo docentes (estudiante 403), con imagen subida",
+   "status": "PASS"
+  },
+  {
+   "section": "3b. Perfil y ajustes",
+   "name": "Perfil público del docente: sin correo, teléfono ni documento",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Crear un borrador vacío (POST /courses/draft)",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Pedir otro borrador mientras el primero está sin tocar devuelve el mismo (no llena la lista de vacíos)",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Un estudiante no puede crear cursos (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Publicar un borrador sin título/descripción/módulos → 400 diciendo qué falta",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Editar datos del curso: título, descripción HTML, nivel, precio, categoría, imagen",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Validaciones del curso: precio negativo, nivel inválido, título corto → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Una imagen externa o archivo inexistente como portada se rechaza o se acepta con URL https válida",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Crear módulos y listarlos en orden",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Editar y reordenar un módulo (position)",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Crear lecciones con contenido HTML (se limpia), video y duración",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Lección con video de un archivo subido y con URL peligrosa → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Editar una lección y verla",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Recursos de una lección: crear (enlace), editar, listar y borrar",
+   "status": "PASS"
+  },
+  {
+   "section": "4. El docente crea y publica un curso",
+   "name": "Archivos descargables del curso: subir, adjuntar, listar y quitar",
+   "status": "PASS"
+  },
+  {
+   "section": "4b. Evaluaciones y tareas (creación)",
+   "name": "Crear un quiz con los 5 tipos de pregunta",
+   "status": "PASS"
+  },
+  {
+   "section": "4b. Evaluaciones y tareas (creación)",
+   "name": "Reglas de pregunta: MULTIPLE con una sola correcta → 400 con mensaje",
+   "status": "PASS"
+  },
+  {
+   "section": "4b. Evaluaciones y tareas (creación)",
+   "name": "Quiz con pregunta abierta (ensayo)",
+   "status": "PASS"
+  },
+  {
+   "section": "4b. Evaluaciones y tareas (creación)",
+   "name": "Crear tareas: una con fecha límite y adjunto del docente, otra vencida sin entregas tardías",
+   "status": "PASS"
+  },
+  {
+   "section": "4b. Evaluaciones y tareas (creación)",
+   "name": "maxScore fuera de rango → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "Un curso en borrador NO aparece en el catálogo ni se puede abrir (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "Publicar el curso",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "El catálogo público lo muestra, con filtros por texto, nivel y categoría",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "Detalle público: temario con títulos, sin contenido de lecciones ni correo del docente",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "Paginación del catálogo: page y limit",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "GET /courses/manage: el docente ve sus cursos (con isOwner y cifras de biblioteca)",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "GET /courses/manage/:id trae el árbol de contenido completo",
+   "status": "PASS"
+  },
+  {
+   "section": "4c. Publicar y el catálogo público",
+   "name": "El admin gestiona cualquier curso",
+   "status": "PASS"
+  },
+  {
+   "section": "4d. Varios instructores",
+   "name": "Agregar un instructor por correo → le llega INSTRUCTOR_ADDED",
+   "status": "PASS"
+  },
+  {
+   "section": "4d. Varios instructores",
+   "name": "Repetir el instructor, agregar al autor, a un estudiante o un correo sin cuenta",
+   "status": "PASS"
+  },
+  {
+   "section": "4d. Varios instructores",
+   "name": "El instructor ve el curso en sus cursos (isOwner=false) y puede editarlo",
+   "status": "PASS"
+  },
+  {
+   "section": "4d. Varios instructores",
+   "name": "El instructor NO puede borrar el curso ni agregar instructores (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "4d. Varios instructores",
+   "name": "El instructor se sale solo ({ left: true }) y pierde el acceso",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Sin inscripción: la lección, los recursos, el quiz y la tarea dan 403 NOT_ENROLLED",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Sin sesión no se abre el contenido (401)",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "El docente y el admin sí abren el contenido (vista previa)",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Un docente no puede inscribirse (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "No se puede inscribir a un curso inexistente (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Inscribirse a un curso gratis → 201",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Inscribirse de nuevo → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Mis inscripciones incluye el curso, con su avance",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Ya inscrito: abre lecciones, recursos, quiz, tarea y archivos del curso",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "Otro estudiante no inscrito no descarga los archivos del curso (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "5. Acceso al contenido e inscripciones",
+   "name": "El docente ve la lista de inscritos del curso; un estudiante no (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Una lección con video no se completa sin verlo (exige ver el 90 %): 403",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Las lecciones siguientes quedan bloqueadas hasta terminar el video anterior (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Ver el video de verdad (progreso real en el tiempo) permite completar la lección y abre la siguiente",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Saltar el video de un salto (posición al final sin reproducir) NO cuenta como visto",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Marcar una lección como completada y ver el avance del curso",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Completar dos veces no duplica (idempotente)",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Desmarcar una lección",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Progreso del video: guardar la posición y retomarla",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Progreso de video inválido (duración 0 o posición negativa) → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Racha de estudio (GET /enrollments/streak)",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Un docente o sin sesión no marca avances (403/401)",
+   "status": "PASS"
+  },
+  {
+   "section": "5b. Avance del estudiante",
+   "name": "Un estudiante no inscrito no puede marcar una lección (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "5c. Cancelar y reinscribirse",
+   "name": "Cancelar la inscripción: se pierde el acceso al contenido; reinscribirse lo devuelve",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Un curso en borrador o archivado no admite inscripciones (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Curso con contraseña: sin ella, con una mala y con la correcta",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Curso privado: no sale en el catálogo ni admite inscripción",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Cupo máximo: el último cupo se llena y el siguiente es rechazado",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Cursos recomendados (prerrequisitos): se guardan y se muestran, pero NO bloquean la inscripción (decisión de diseño)",
+   "status": "PASS"
+  },
+  {
+   "section": "5d. Reglas de acceso a un curso",
+   "name": "Contenido público: sin inscribirse se puede leer cuando el curso lo permite",
+   "status": "PASS"
+  },
+  {
+   "section": "5e. Liberación gradual de módulos",
+   "name": "SEQUENTIAL: el 2.º módulo está bloqueado hasta terminar el 1.º",
+   "status": "PASS"
+  },
+  {
+   "section": "5e. Liberación gradual de módulos",
+   "name": "BY_DATE: un módulo con fecha futura queda bloqueado con reason DATE",
+   "status": "PASS"
+  },
+  {
+   "section": "5e. Liberación gradual de módulos",
+   "name": "AFTER_DAYS: se abre N días después de inscribirse (reason DAYS)",
+   "status": "PASS"
+  },
+  {
+   "section": "5e. Liberación gradual de módulos",
+   "name": "PREREQUISITES: un círculo (A pide B y B pide A) se rechaza con 400",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "El estudiante ve el quiz SIN las respuestas correctas",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "El docente sí ve cuáles son las correctas",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "Intento con todo correcto (incluye \"  PARIS \" sin tildes ni mayúsculas) → 100 y aprobado",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "Intento con todo mal → reprobado",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "Mis intentos se listan",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "Responder la misma pregunta dos veces → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "6. Quizzes",
+   "name": "Un estudiante no inscrito no presenta el quiz (403) y un docente tampoco",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Pregunta abierta → el intento queda PENDING_REVIEW (provisional, no aprobado)",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Respuesta abierta en blanco → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Bandeja del docente: lista los pendientes y filtra por estado",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Detalle del intento (solo docente) con lo escrito por el estudiante",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Calificar: puntos fuera de rango → 400; válidos → GRADED y aviso GRADED_QUIZ al estudiante",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Un estudiante no califica (403); otro docente no ve este intento",
+   "status": "PASS"
+  },
+  {
+   "section": "6b. Quiz con pregunta abierta y revisión del docente",
+   "name": "Editar el quiz (reemplaza preguntas) no rompe la revisión de intentos ya hechos",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "El estudiante ve la tarea con el adjunto del docente y su estado (mySubmission null)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Entregar con texto y un archivo propio",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Entrega vacía (sin texto ni archivos) → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "No se puede adjuntar un archivo subido por otra persona (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Reenviar mientras no esté calificada reemplaza la entrega",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Sin entrega previa, submission/mine → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Tarea vencida sin entregas tardías → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Tarea vencida CON entregas tardías → se acepta y queda late=true",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Bandeja del docente: entregas pendientes y detalle con archivos",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Otra persona no descarga la entrega (404)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Calificar: fuera de rango → 400; válida → GRADED con aviso GRADED_ASSIGNMENT",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Una entrega calificada ya no se puede cambiar (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Se puede corregir la nota",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "El estudiante ve su nota en la lista del módulo (mySubmission)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "Un estudiante no ve la bandeja de entregas (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "6c. Tareas",
+   "name": "No se baja el puntaje máximo por debajo de una nota puesta (400)",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "El docente publica un anuncio con aviso a los inscritos (HTML se limpia)",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "El estudiante inscrito recibe la notificación ANNOUNCEMENT y ve el anuncio",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "Un estudiante NO inscrito no ve anuncios de ese curso (403 o vacío) y no recibe aviso",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "Un estudiante no publica anuncios (403); un docente ajeno tampoco",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "Anuncio sin texto visible → 400; silencioso (notify=false) no avisa",
+   "status": "PASS"
+  },
+  {
+   "section": "7. Anuncios",
+   "name": "Editar y borrar un anuncio",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "El estudiante inscrito hace una pregunta (con lección) y el docente recibe NEW_QUESTION",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Pregunta con lección de otro curso o título corto → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Un estudiante no inscrito no pregunta ni lee (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Las preguntas sin responder aparecen en la bandeja del docente (answered=false)",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Una respuesta de OTRO ESTUDIANTE no marca la pregunta como respondida",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "El docente responde → answered=true y el estudiante recibe NEW_REPLY",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "No se responde a una respuesta (400/404)",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Comentario en una lección y listado por tipo",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Solo el autor edita; el docente puede moderar (borrar)",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Borrar la respuesta del docente devuelve la pregunta a \"sin responder\"",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Con P y R desactivado no se hacen preguntas (403) pero sí comentarios",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Texto plano: el HTML de una pregunta no se interpreta (se guarda como texto)",
+   "status": "PASS"
+  },
+  {
+   "section": "7b. Preguntas, respuestas y comentarios",
+   "name": "Borrar la pregunta borra también sus respuestas",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Un no inscrito no reseña (403) y un docente tampoco (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Calificación fuera de 1–5 → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "El estudiante inscrito reseña; el docente recibe NEW_REVIEW (solo la primera vez)",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Mi reseña: se ve la última versión; sin reseña → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Público: resumen (promedio y distribución) y lista con nombre abreviado",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Reseñas de un curso sin reseñas: average null (no \"0\")",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "El docente ve las reseñas de sus cursos con el nombre completo; un estudiante no (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Borrar mi reseña",
+   "status": "PASS"
+  },
+  {
+   "section": "8. Reseñas",
+   "name": "Reseñas de un curso en borrador (no público) → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "9. Notificaciones",
+   "name": "Contador de no leídas coincide con la lista",
+   "status": "PASS"
+  },
+  {
+   "section": "9. Notificaciones",
+   "name": "Marcar una como leída baja el contador; una ajena → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "9. Notificaciones",
+   "name": "Marcar todas como leídas",
+   "status": "PASS"
+  },
+  {
+   "section": "9. Notificaciones",
+   "name": "Cada usuario ve solo las suyas; sin sesión → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "9. Notificaciones",
+   "name": "Paginación y filtro de no leídas",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Crear una plantilla con tipografías y estilo",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Marcador mal escrito ({{estudiante}}) → 400 listando los válidos; color inválido → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "IMAGE sin imagen de fondo → 400; con imagen subida → 201",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Listar y ver mis plantillas; otro docente no las ve ni usa (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Editar una plantilla",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Vista previa en PDF (A4) de los 12 diseños",
+   "status": "PASS"
+  },
+  {
+   "section": "10. Plantillas de certificado",
+   "name": "Catálogo de tipografías (biblioteca de 28 + estándar)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Asignar la plantilla al curso (certificatesIssued = 0 al no haber terminados)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "No se puede usar la plantilla de otro docente (403/400)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Antes de terminar: completion dice que falta contenido y claim se rechaza",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Al completar la última lección se emite solo el certificado y llega CERTIFICATE_ISSUED",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Completar de nuevo no duplica el certificado",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Descargar el PDF: lo baja su dueño y el docente; otra persona recibe 404",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Verificación pública: válida, sin datos privados; minúsculas funcionan; código falso 404",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "El docente lista los certificados emitidos y corrige el nombre (el código no cambia)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Actualizar el diseño del certificado con la plantilla actual",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Una plantilla en uso no se borra (409)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Un curso SIN plantilla emite igual, con el diseño predeterminado de la plataforma",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Asignar una plantilla a un curso cuyos estudiantes ya tienen certificado no duplica (certificatesIssued 0)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Revocar: verify → valid:false; el dueño ya no descarga (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "10b. Emisión del certificado",
+   "name": "Quitar el certificado del curso (null) y borrar la plantilla cuando nadie la usa",
+   "status": "PASS"
+  },
+  {
+   "section": "10c. Credenciales POK (solo lectura: no se emite nada real)",
+   "name": "GET /pok/status responde con la organización conectada",
+   "status": "PASS"
+  },
+  {
+   "section": "10c. Credenciales POK (solo lectura: no se emite nada real)",
+   "name": "Los estudiantes no ven la configuración de POK (403) ni sin sesión (401)",
+   "status": "PASS"
+  },
+  {
+   "section": "10c. Credenciales POK (solo lectura: no se emite nada real)",
+   "name": "Listar los diseños de POK y ver la vista previa real (PNG)",
+   "status": "PASS"
+  },
+  {
+   "section": "10c. Credenciales POK (solo lectura: no se emite nada real)",
+   "name": "Elegir el diseño de POK para un curso y verlo en /pok/courses (sin emitir)",
+   "status": "PASS"
+  },
+  {
+   "section": "10c. Credenciales POK (solo lectura: no se emite nada real)",
+   "name": "El webhook de POK rechaza llamadas sin firma válida",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Un estudiante no entra al dashboard (403); sin sesión 401",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Métricas con periodo 7d: agrupa por day, con series completas",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Métricas con periodo 30d: agrupa por week, con series completas",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Métricas con periodo 90d: agrupa por week, con series completas",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Métricas con periodo 1y: agrupa por month, con series completas",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Métricas con periodo all: agrupa por month, con series completas",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Periodo inválido → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "\"previous\" solo en periodos finitos y sin filtro de curso",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Con courseId solo cuenta ese curso; un curso ajeno → 403",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Cada docente ve solo lo suyo; el admin ve todo",
+   "status": "PASS"
+  },
+  {
+   "section": "11. Dashboard del docente",
+   "name": "Los quizzes/tareas pendientes de revisión se cuentan",
+   "status": "PASS"
+  },
+  {
+   "section": "11b. Inscritos y recordatorios",
+   "name": "Lista de estudiantes con avance, estado y semanas; filtros por estado y búsqueda",
+   "status": "PASS"
+  },
+  {
+   "section": "11b. Inscritos y recordatorios",
+   "name": "Detalle de una inscripción: lecciones, semanas y línea de tiempo",
+   "status": "PASS"
+  },
+  {
+   "section": "11b. Inscritos y recordatorios",
+   "name": "Recordatorio: 201 al estudiante activo, 409 el mismo día, 400 a quien ya terminó, 403 a docente ajeno",
+   "status": "PASS"
+  },
+  {
+   "section": "11b. Inscritos y recordatorios",
+   "name": "Reseñas del dashboard: reparto por estrellas",
+   "status": "PASS"
+  },
+  {
+   "section": "11b. Inscritos y recordatorios",
+   "name": "Pedir reseñas a quienes terminaron: avisa una sola vez; un docente ajeno 403",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Un curso de pago no admite inscripción directa (402)",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Tarjeta que no pasa Luhn → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Tarjeta vencida → 400; CVV inválido → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "El importe lo decide el servidor: enviar \"amount\" → 400",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Tarjeta rechazada (fondos insuficientes): DECLINED, no se inscribe, deja comprobante",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Pago aprobado: APPROVED, queda inscrito y solo se guardan marca y últimos 4",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Pagar otra vez estando inscrito → 409",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Mis comprobantes: el rechazado y el aprobado, el más reciente primero",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Cancelar y reinscribirse NO cobra de nuevo (alreadyPaid)",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Mastercard y otra tarjeta válida se aprueban",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Pagar un curso gratis → 400; un docente o sin sesión no paga (403/401)",
+   "status": "PASS"
+  },
+  {
+   "section": "12. Pagos simulados",
+   "name": "Pagar un curso inexistente o en borrador → 404",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Un docente ajeno no edita, borra ni gestiona el curso de otro (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Un estudiante no gestiona nada del docente (403)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Todas las rutas privadas exigen sesión (401 sin token)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Las rutas públicas sí abren sin sesión: catálogo, detalle, categorías, reseñas, verificación",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "No se puede elevar el propio rol por el perfil ni el registro (se ignora o 400)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Asignación masiva: cambiar teacherId/status/slug de un curso por PATCH no funciona",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Inyección SQL / caracteres raros en búsquedas no rompen nada (sin 500)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Ids malformados (texto, negativos, enormes) → 4xx, nunca 500",
+   "status": "FAIL",
+   "detail": "/courses/99999999999999999999 → 500"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Cuerpos inválidos o enormes → 400/413, nunca 500",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Token manipulado o de otra firma → 401",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Fuerza bruta: muchos intentos fallidos seguidos no tumban el servidor y no dan 500",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Carga concurrente: 30 lecturas del catálogo en paralelo responden 200",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Borrar una categoría: docente 403; admin sí (sus cursos quedan sin categoría)",
+   "status": "PASS"
+  },
+  {
+   "section": "13. Seguridad: permisos entre usuarios y entradas maliciosas",
+   "name": "Con la sesión cerrada por el admin (cuenta inactiva) el token ya no sirve",
+   "status": "PASS"
+  },
+  {
+   "section": "interfaz",
+   "name": "La sección «interfaz» se interrumpió",
+   "status": "FAIL",
+   "detail": "Error: Failed to launch the browser process:  Code: 0 |  | stderr:"
+  },
+  {
+   "section": "14. Borrar cursos",
+   "name": "Un curso con estudiantes inscritos no se borra: hay que archivarlo (409)",
+   "status": "PASS"
+  },
+  {
+   "section": "14. Borrar cursos",
+   "name": "Un curso sin inscritos se borra con su contenido; después da 404 y no sale en ningún listado",
+   "status": "PASS"
+  },
+  {
+   "section": "14. Borrar cursos",
+   "name": "Borrar un curso inexistente → 404; el admin sí puede borrar uno ajeno sin inscritos",
+   "status": "PASS"
+  },
+  {
+   "section": "14. Borrar cursos",
+   "name": "Un docente puede ver y editar sus borradores sin que aparezcan al público",
+   "status": "PASS"
+  }
+ ]
+}

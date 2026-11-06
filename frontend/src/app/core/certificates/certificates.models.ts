@@ -143,6 +143,20 @@ export interface CertificateTemplateInput {
   backgroundUrl: string | null;
 }
 
+/** Estado de la credencial digital del certificado en POK (https://pok.tech). NONE = no se envió. */
+export type PokStatus = 'NONE' | 'PENDING' | 'EMITTED' | 'ACCEPTED' | 'FAILED';
+
+/** Quién emite un certificado: la plataforma (PDF propio) o POK (credencial digital). Es uno u otro. */
+export type CertificateProvider = 'PLATFORM' | 'POK';
+
+export const POK_LABELS: Record<PokStatus, string> = {
+  NONE: 'Sin enviar',
+  PENDING: 'Pendiente',
+  EMITTED: 'Emitida',
+  ACCEPTED: 'Aceptada',
+  FAILED: 'Falló',
+};
+
 export interface IssuedCertificate {
   id: number;
   code: string;
@@ -154,6 +168,9 @@ export interface IssuedCertificate {
   issuedAt: string;
   revokedAt: string | null;
   user: { id: number; email: string };
+  provider?: CertificateProvider;
+  pokStatus?: PokStatus;
+  pokError?: string | null;
 }
 
 export interface IssuedPage {
@@ -169,6 +186,19 @@ export interface MyCertificate {
   courseTitle: string;
   instructorName: string;
   issuedAt: string;
+  provider?: CertificateProvider;
+  pokStatus?: PokStatus;
+  /** Página pública de la credencial en POK. */
+  pokUrl?: string | null;
+  /** ¿POK está activado en el servidor? Si no, no se ofrece pedir la credencial. */
+  pokAvailable?: boolean;
+}
+
+/** Respuesta de POST /certificates/:id/pok/sync. */
+export interface PokSync {
+  pokStatus: PokStatus;
+  pokError: string | null;
+  pokUrl: string | null;
 }
 
 /** Respuesta pública de GET /certificates/verify/:code. */

@@ -27,6 +27,9 @@ import { RolesGuard } from './guards/roles.guard.js';
 
         signOptions: {
           expiresIn: '1h',
+          algorithm: 'HS256',
+          issuer: 'plataforma-cursos',
+          audience: 'plataforma-cursos-web',
         },
       }),
     }),

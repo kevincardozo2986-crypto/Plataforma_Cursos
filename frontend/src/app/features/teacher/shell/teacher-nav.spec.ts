@@ -22,6 +22,7 @@ describe('TEACHER_NAV', () => {
       'Tareas',
       'Zoom',
       'Certificados',
+      'POK',
       'Analíticas',
     ]);
   });

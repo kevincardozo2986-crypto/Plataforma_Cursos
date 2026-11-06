@@ -9,6 +9,7 @@ import {
   IssuedCertificate,
   IssuedPage,
   MyCertificate,
+  PokSync,
   Verification,
 } from './certificates.models';
 
@@ -81,6 +82,11 @@ export class CertificatesService {
   /** Vuelve a copiar la plantilla actual del curso (diseño, tipografías, firma) en el certificado. */
   refresh(id: number): Observable<IssuedCertificate> {
     return this.http.post<IssuedCertificate>(`/api/certificates/${id}/refresh`, {});
+  }
+
+  /** POK: reintenta el envío (si falló) o consulta el estado de la credencial. */
+  syncPok(id: number): Observable<PokSync> {
+    return this.http.post<PokSync>(`/api/certificates/${id}/pok/sync`, {});
   }
 
   pdf(id: number): Observable<Blob> {

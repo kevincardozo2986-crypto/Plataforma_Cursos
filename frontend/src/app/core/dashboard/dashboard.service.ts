@@ -13,7 +13,7 @@ export const PERIODS: { value: Period; label: string }[] = [
 ];
 
 export interface SeriesPoint {
-  /** `2026-10-06` (por día) o `2026-10` (por mes). */
+  /** `2026-10-06` (por día; en semanas, el lunes) o `2026-10` (por mes). */
   date: string;
   enrollments: number;
   completions: number;
@@ -56,9 +56,17 @@ export interface TeacherDashboard {
   quizzes: { attempts: number; averageScore: number; passRate: number; pendingReview: number };
   assignments: { pendingGrading: number };
   rating: Rating;
-  bucket: 'day' | 'month';
+  /** Estudiantes e inscripciones del periodo anterior; null en «Todo» o con un curso filtrado. */
+  previous: { students: number; enrollments: number } | null;
+  bucket: 'day' | 'week' | 'month';
   series: SeriesPoint[];
   courseBreakdown: CourseBreakdown[];
+}
+
+/** Respuesta de pedir reseñas: cuántos terminaron sin reseñar y a cuántos se les avisó ahora. */
+export interface ReviewRequestResult {
+  eligible: number;
+  sent: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -73,5 +81,12 @@ export class DashboardService {
     }
 
     return this.http.get<TeacherDashboard>('/api/dashboard/teacher', { params });
+  }
+
+  /** Invita a reseñar a quienes terminaron y aún no lo hicieron (todos mis cursos o uno). */
+  requestReviews(courseId?: number | null): Observable<ReviewRequestResult> {
+    const params = courseId ? new HttpParams().set('courseId', courseId) : new HttpParams();
+
+    return this.http.post<ReviewRequestResult>('/api/dashboard/teacher/request-reviews', {}, { params });
   }
 }

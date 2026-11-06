@@ -104,10 +104,27 @@ export class CoursesService {
       user.role === Role.ADMIN ? undefined : user.id,
     );
 
-    return courses.map((course) => ({
-      ...course,
-      isOwner: this.access.isOwner(user, course),
-    }));
+    const stats = new Map(
+      (await this.repository.libraryStats(courses.map((course) => course.id))).map((row) => [
+        row.id,
+        row,
+      ]),
+    );
+
+    return courses.map((course) => {
+      const row = stats.get(course.id);
+
+      return {
+        ...course,
+        isOwner: this.access.isOwner(user, course),
+        library: {
+          enrolled: row?.enrolled ?? 0,
+          avgProgress: row?.avgProgress ?? 0,
+          lessons: row?.lessons ?? 0,
+          certificate: row?.pok ? ('POK' as const) : ('PLATFORM' as const),
+        },
+      };
+    });
   }
 
   async findManaged(user: AuthenticatedUser, id: number) {

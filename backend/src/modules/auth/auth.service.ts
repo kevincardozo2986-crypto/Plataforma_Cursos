@@ -12,6 +12,10 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { UserStatus } from '../../generated/prisma/enums.js';
 
+// Hash ficticio para que una cuenta inexistente también haga la comparación costosa.
+const DUMMY_PASSWORD_HASH =
+  '$2b$12$VP5MrUWFffE9JXocFOsmZ.kb1gpciL3Klpr8xCgcrh6sFUcKiU5s2';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -57,21 +61,12 @@ export class AuthService {
       ? await this.usersService.findByEmail(identifier.toLowerCase())
       : await this.usersService.findByDocument(identifier);
 
-    if (!user) {
-      throw new UnauthorizedException('Identificador o contraseña incorrectos');
-    }
-
-    // No permitir acceso a usuarios inactivos
-    if (user.status === UserStatus.INACTIVE) {
-      throw new UnauthorizedException('La cuenta se encuentra inactiva');
-    }
-
     const passwordMatches = await bcrypt.compare(
       dto.password,
-      user.passwordHash,
+      user?.passwordHash ?? DUMMY_PASSWORD_HASH,
     );
 
-    if (!passwordMatches) {
+    if (!user || user.status === UserStatus.INACTIVE || !passwordMatches) {
       throw new UnauthorizedException('Identificador o contraseña incorrectos');
     }
 

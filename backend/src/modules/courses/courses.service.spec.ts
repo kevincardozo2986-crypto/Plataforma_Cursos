@@ -50,6 +50,7 @@ function build() {
     updateStatus: vi.fn(),
     delete: vi.fn(),
     listManaged: vi.fn().mockResolvedValue([]),
+    libraryStats: vi.fn().mockResolvedValue([]),
   };
   const access = {
     assertCanManage: vi.fn().mockResolvedValue({}),
@@ -427,6 +428,34 @@ describe('CoursesService', () => {
       const result = await service.listManaged(teacher);
 
       expect(result.map((c) => c.isOwner)).toEqual([true, false]);
+    });
+
+    it('agrega a cada curso sus inscritos, avance, lecciones y tipo de certificado', async () => {
+      const { service, repository } = build();
+      repository.listManaged.mockResolvedValue([
+        { id: 1, teacherId: 7 },
+        { id: 2, teacherId: 7 },
+      ]);
+      repository.libraryStats.mockResolvedValue([
+        { id: 1, enrolled: 34, avgProgress: 62, lessons: 8, pok: true },
+      ]);
+
+      const result = await service.listManaged(teacher);
+
+      expect(repository.libraryStats).toHaveBeenCalledWith([1, 2]);
+      expect(result[0].library).toEqual({
+        enrolled: 34,
+        avgProgress: 62,
+        lessons: 8,
+        certificate: 'POK',
+      });
+      // Sin fila de cifras (curso nuevo): ceros y certificado de la plataforma.
+      expect(result[1].library).toEqual({
+        enrolled: 0,
+        avgProgress: 0,
+        lessons: 0,
+        certificate: 'PLATFORM',
+      });
     });
 
     it('el profesor ve solo sus cursos', async () => {

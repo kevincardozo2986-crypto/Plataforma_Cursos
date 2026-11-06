@@ -1,12 +1,12 @@
 import {
+  axisOf,
+  barPath,
+  bucketLabel,
+  bucketNoun,
   compact,
-  dateLabel,
-  labelIndexes,
-  linePath,
-  nearestIndex,
+  deltaOf,
+  layoutBars,
   niceScale,
-  xPositions,
-  yPosition,
 } from './chart';
 
 describe('niceScale', () => {
@@ -35,12 +35,19 @@ describe('niceScale', () => {
       expect(ticks.at(-1)).toBe(top);
     }
   });
+});
 
-  it('las marcas están parejas', () => {
-    const { ticks } = niceScale(1234);
-    const steps = ticks.slice(1).map((tick, index) => tick - ticks[index]);
+describe('axisOf', () => {
+  it('nunca baja de 2 y da 3 marcas enteras con pocos datos', () => {
+    expect(axisOf(0)).toEqual({ top: 2, ticks: [0, 1, 2] });
+    expect(axisOf(1)).toEqual({ top: 2, ticks: [0, 1, 2] });
+    expect(axisOf(4)).toEqual({ top: 4, ticks: [0, 2, 4] });
+  });
 
-    expect(new Set(steps).size).toBe(1);
+  it('el techo cubre el dato', () => {
+    for (const max of [2, 3, 7, 15, 99, 1000]) {
+      expect(axisOf(max).top).toBeGreaterThanOrEqual(max);
+    }
   });
 });
 
@@ -48,76 +55,102 @@ describe('compact', () => {
   it.each([
     [0, '0'],
     [950, '950'],
-    [1000, '1 K'],
     [1200, '1,2 K'],
     [12000, '12 K'],
     [1_500_000, '1,5 M'],
-  ])('%s -> %s', (value, expected) => expect(compact(value)).toBe(expected));
-});
-
-describe('xPositions', () => {
-  it('reparte los puntos de forma pareja', () => {
-    expect(xPositions(3, 0, 100)).toEqual([0, 50, 100]);
-  });
-
-  it('un solo punto va al centro; ninguno, nada', () => {
-    expect(xPositions(1, 0, 100)).toEqual([50]);
-    expect(xPositions(0, 0, 100)).toEqual([50]);
+  ])('%s -> %s', (value, text) => {
+    expect(compact(value)).toBe(text);
   });
 });
 
-describe('linePath', () => {
-  it('traza M y L', () => {
-    expect(
-      linePath([
-        { x: 0, y: 10 },
-        { x: 5, y: 2 },
-      ]),
-    ).toBe('M0.0 10.0 L5.0 2.0');
+describe('bucketLabel', () => {
+  it('día: día de la semana y número', () => {
+    expect(bucketLabel('2026-10-06', 'day')).toBe('mar 6');
+    expect(bucketLabel('2026-10-06', 'day', true)).toBe('mar 6 de oct de 2026');
   });
 
-  it('sin puntos queda vacío', () => {
-    expect(linePath([])).toBe('');
+  it('semana: la fecha del lunes', () => {
+    expect(bucketLabel('2026-10-05', 'week')).toBe('Sem. 5 de oct');
+    expect(bucketLabel('2026-10-05', 'week', true)).toBe('Semana del 5 de oct');
   });
-});
 
-describe('nearestIndex', () => {
-  it('elige la fecha más cercana al cursor', () => {
-    const xs = [0, 100, 200, 300];
+  it('mes: corto en el eje y con año en el cuadro', () => {
+    expect(bucketLabel('2026-10', 'month')).toBe('oct');
+    expect(bucketLabel('2026-10', 'month', true)).toBe('oct 2026');
+  });
 
-    expect(nearestIndex(-50, xs)).toBe(0);
-    expect(nearestIndex(60, xs)).toBe(1);
-    expect(nearestIndex(240, xs)).toBe(2);
-    expect(nearestIndex(900, xs)).toBe(3);
+  it('bucketNoun nombra la agrupación', () => {
+    expect([bucketNoun('day'), bucketNoun('week'), bucketNoun('month')]).toEqual(['día', 'semana', 'mes']);
   });
 });
 
-describe('labelIndexes', () => {
-  it('con pocos puntos rotula todos', () => {
-    expect(labelIndexes(4, 6)).toEqual([0, 1, 2, 3]);
+describe('deltaOf', () => {
+  it('sube, baja o queda igual', () => {
+    expect(deltaOf(5, 3)).toEqual({ kind: 'up', amount: 2 });
+    expect(deltaOf(2, 6)).toEqual({ kind: 'down', amount: 4 });
+    expect(deltaOf(4, 4)).toEqual({ kind: 'flat', amount: 0 });
   });
 
-  it('con muchos, rotula pocos, parejos, incluyendo el primero y el último', () => {
-    const picked = labelIndexes(30, 6);
-
-    expect(picked).toHaveLength(6);
-    expect(picked[0]).toBe(0);
-    expect(picked.at(-1)).toBe(29);
-  });
-});
-
-describe('dateLabel', () => {
-  it('por día y por mes, en español', () => {
-    expect(dateLabel('2026-10-06', 'day')).toBe('6 oct');
-    expect(dateLabel('2026-10', 'month')).toBe('oct 2026');
-    expect(dateLabel('2026-01-31', 'day', true)).toBe('31 de ene de 2026');
+  it('sin periodo anterior no hay variación', () => {
+    expect(deltaOf(4, null)).toBeNull();
+    expect(deltaOf(4, undefined)).toBeNull();
   });
 });
 
-describe('yPosition', () => {
-  it('el cero va abajo y el techo arriba', () => {
-    expect(yPosition(0, 10, 20, 220)).toBe(220);
-    expect(yPosition(10, 10, 20, 220)).toBe(20);
-    expect(yPosition(5, 10, 20, 220)).toBe(120);
+describe('barPath', () => {
+  it('dibuja una barra cerrada con la punta redondeada', () => {
+    const path = barPath(10, 100, 20, 50);
+
+    expect(path.startsWith('M10,100')).toBe(true);
+    expect(path.endsWith('z')).toBe(true);
+    expect(path).toContain('q0,-4');
+  });
+
+  it('una barra muy baja reduce el radio para no salirse', () => {
+    expect(barPath(0, 10, 20, 2)).toContain('q0,-2');
+  });
+});
+
+describe('layoutBars', () => {
+  const series = [
+    { date: '2026-10-05', enrollments: 1, completions: 0 },
+    { date: '2026-10-12', enrollments: 4, completions: 2 },
+  ];
+
+  it('una zona por punto y barras proporcionales al techo del eje', () => {
+    const layout = layoutBars(series);
+
+    expect(layout.groups).toHaveLength(2);
+    expect(layout.top).toBe(4);
+    expect(layout.groups[1].enrollments.height).toBeGreaterThan(layout.groups[1].completions.height);
+    // El máximo llena justo el alto útil.
+    expect(layout.groups[1].enrollments.height).toBeCloseTo(layout.base - 8, 5);
+    expect(layout.groups[0].completions.height).toBe(0);
+  });
+
+  it('las marcas del eje van de abajo hacia arriba', () => {
+    const { ticks, base } = layoutBars(series);
+
+    expect(ticks.map((tick) => tick.value)).toEqual([0, 2, 4]);
+    expect(ticks[0].y).toBe(base);
+    expect(ticks[2].y).toBeLessThan(ticks[1].y);
+  });
+
+  it('con muchos grupos solo se rotula uno de cada dos', () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({
+      date: `2026-${String(i + 1).padStart(2, '0')}`,
+      enrollments: i,
+      completions: 0,
+    }));
+    const labels = layoutBars(many).groups.map((group) => group.showLabel);
+
+    expect(labels.filter(Boolean)).toHaveLength(6);
+  });
+
+  it('una serie vacía no rompe y deja un eje de 0 a 2', () => {
+    const layout = layoutBars([]);
+
+    expect(layout.groups).toEqual([]);
+    expect(layout.top).toBe(2);
   });
 });

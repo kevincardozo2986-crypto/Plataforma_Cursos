@@ -1,0 +1,346 @@
+:host {
+  display: block;
+}
+.journey {
+  container-type: inline-size;
+  --travel-x: clamp(85px, 34cqw, 470px);
+  max-width: 1600px;
+  margin: 28px auto;
+  padding: 32px clamp(22px, 5vw, 80px) 36px;
+  overflow: hidden;
+  color: #102b40;
+  background: #f6f7f9;
+  border-radius: 30px;
+}
+.animation-stage {
+  position: relative;
+  min-height: 565px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 15px;
+  isolation: isolate;
+}
+h2 {
+  position: relative;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(2.2rem, 4.5vw, 4.4rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1.12;
+}
+h2 > span {
+  color: #8a949f;
+}
+.card-deck {
+  position: absolute;
+  top: 145px;
+  left: 50%;
+  width: 195px;
+  height: 265px;
+  margin-left: -97.5px;
+  z-index: 2;
+  perspective: 1100px;
+  pointer-events: none;
+}
+.course-poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 17px;
+  border-radius: 14px;
+  box-shadow:
+    0 16px 28px #172e4829,
+    inset 0 0 0 1px #ffffff38;
+  backface-visibility: hidden;
+  will-change: transform;
+  animation: deck-cycle 12s cubic-bezier(0.4, 0, 0.25, 1) infinite;
+  animation-delay: calc(var(--card-index) * -3s);
+  animation-play-state: paused;
+}
+.poster-top,
+.poster-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.poster-top {
+  font-size: 0.48rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+}
+.poster-number {
+  font-family: monospace;
+  font-size: 0.5rem;
+  opacity: 0.7;
+}
+.poster-title {
+  display: block;
+  white-space: pre-line;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  margin-top: 9px;
+}
+.poster-bottom {
+  padding-top: 10px;
+  border-top: 1px solid currentColor;
+}
+.poster-bottom img {
+  width: 82px;
+  height: 24px;
+  object-fit: contain;
+}
+.poster-bottom > span {
+  font-size: 0.39rem;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+.poster-art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding-block: 5px;
+}
+.poster-art svg {
+  width: 100%;
+  max-height: 110px;
+  overflow: visible;
+}
+.mint {
+  background: #c8dfcc;
+  color: #173e37;
+}
+.orange {
+  background: #f2bc79;
+  color: #763723;
+}
+.orange .poster-title {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  font-size: 1.82rem;
+}
+.violet {
+  background: #624e9b;
+  color: #fff6e5;
+}
+.violet .poster-title {
+  font-style: italic;
+}
+.blue {
+  background: #2059d1;
+  color: #fff;
+}
+.blue .poster-title {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+}
+.floating-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.65rem;
+  z-index: 3;
+  animation: label-drift 7s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.floating-label svg {
+  position: absolute;
+  top: -17px;
+  left: -9px;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  stroke: #f6f7f9;
+  stroke-width: 1;
+}
+.label-one {
+  background: #173b37;
+  top: 278px;
+  left: 18%;
+  rotate: -11deg;
+}
+.label-two {
+  background: #2460ef;
+  top: 333px;
+  right: 10%;
+  rotate: 10deg;
+  animation-delay: -3s;
+}
+.section-bottom {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 19px;
+  padding-top: 24px;
+}
+.section-bottom p {
+  margin: 0;
+  text-align: center;
+  color: #667382;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+.explore-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 52px;
+  padding: 14px 28px;
+  border: 1px solid #102b40;
+  border-radius: 999px;
+  background: #102b40;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+.explore-link:hover {
+  background: #2450a0;
+  border-color: #2450a0;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px #102b4030;
+}
+.explore-link:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+.explore-link:focus-visible {
+  outline: 3px solid #2164ed;
+  outline-offset: 5px;
+}
+.explore-link > span {
+  font-size: 1.2rem;
+  transition: transform 220ms ease;
+}
+.explore-link:hover > span {
+  transform: translate(2px, -2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .explore-link,
+  .explore-link > span {
+    transition: none;
+  }
+}
+.is-moving :is(.course-poster, .floating-label) {
+  animation-play-state: running;
+}
+@keyframes deck-cycle {
+  0% {
+    transform: translate3d(0, 12px, 100px) rotate(-8deg) rotateY(-12deg) rotateX(0deg) scale(1);
+    z-index: 4;
+  }
+  16% {
+    transform: translate3d(calc(-1 * var(--travel-x)), -105px, -80px) rotate(-125deg)
+      rotateY(168deg) rotateX(25deg) scale(0.8);
+    z-index: 1;
+  }
+  32% {
+    transform: translate3d(var(--travel-x), -70px, 100px) rotate(130deg) rotateY(348deg)
+      rotateX(-20deg) scale(1.08);
+    z-index: 5;
+  }
+  50% {
+    transform: translate3d(var(--travel-x), 155px, -110px) rotate(280deg) rotateY(528deg)
+      rotateX(30deg) scale(0.75);
+    z-index: 2;
+  }
+  68% {
+    transform: translate3d(calc(-1 * var(--travel-x)), 185px, 80px) rotate(440deg) rotateY(708deg)
+      rotateX(-25deg) scale(1.05);
+    z-index: 5;
+  }
+  84% {
+    transform: translate3d(calc(-0.25 * var(--travel-x)), -85px, -60px) rotate(605deg)
+      rotateY(888deg) rotateX(20deg) scale(0.85);
+    z-index: 2;
+  }
+  100% {
+    transform: translate3d(0, 12px, 100px) rotate(712deg) rotateY(1068deg) rotateX(0deg) scale(1);
+    z-index: 4;
+  }
+}
+@keyframes label-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+:host-context(.a11y-dark) .journey {
+  background: #102438;
+  color: #f4f7fc;
+}
+:host-context(.a11y-dark) h2 > span,
+:host-context(.a11y-dark) .section-bottom p {
+  color: #b5c7d8;
+}
+:host-context(.a11y-contrast) .journey {
+  border: 2px solid currentColor;
+}
+@media (max-width: 700px) {
+  .journey {
+    --travel-x: 27cqw;
+    margin: 16px 12px;
+    padding: 22px 18px 25px;
+    border-radius: 22px;
+  }
+  .animation-stage {
+    min-height: 465px;
+    padding-bottom: 8px;
+  }
+  h2 {
+    font-size: clamp(1.8rem, 7vw, 3rem);
+  }
+  .card-deck {
+    top: 155px;
+    scale: 0.66;
+    transform-origin: top center;
+  }
+  .label-one {
+    left: 1%;
+    top: 253px;
+  }
+  .label-two {
+    right: 0;
+    top: 298px;
+  }
+  .floating-label {
+    font-size: 0.52rem;
+    padding: 5px 8px;
+  }
+  .section-bottom p {
+    font-size: 0.76rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-poster,
+  .floating-label {
+    animation: none;
+    will-change: auto;
+  }
+  .course-poster {
+    transform: translateX(calc((var(--card-index) - 1.5) * 12px))
+      rotate(calc((var(--card-index) - 1.5) * 9deg));
+    z-index: var(--card-index);
+  }
+}
