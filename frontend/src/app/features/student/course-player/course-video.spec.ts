@@ -69,4 +69,39 @@ describe('Embedded course video lifecycle', () => {
     expect(new URL(frames.at(-1)!.src).hostname).toBe('www.youtube.com');
     expect(new URL(frames.at(-1)!.src).pathname).toBe('/embed/GcmZj5ZhSow');
   });
+
+  it('reproduce la introducción de YouTube sin sonido y conserva las lecciones sin autoplay', async () => {
+    const { fixture, player, frames } = await build();
+    expect(new URL(player.frameUrl()!).searchParams.has('autoplay')).toBe(false);
+    fixture.componentRef.setInput('autoplay', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const address = new URL(frames.at(-1)!.src);
+    expect(address.searchParams.get('autoplay')).toBe('1');
+    expect(address.searchParams.get('mute')).toBe('1');
+    expect(address.searchParams.get('playsinline')).toBe('1');
+    expect(fixture.nativeElement.querySelector('.video-actions')).toBeNull();
+  });
+
+  it('muestra archivos de video directamente con autoplay silenciado y controles', () => {
+    const fixture = TestBed.createComponent(CourseVideo);
+    fixture.componentRef.setInput('src', '/api/uploads/' + 'a'.repeat(32) + '.mp4');
+    fixture.componentRef.setInput('autoplay', true);
+    fixture.detectChanges();
+    const video = fixture.nativeElement.querySelector('video') as HTMLVideoElement;
+    expect(video.autoplay).toBe(true);
+    expect(video.muted).toBe(true);
+    expect(video.controls).toBe(true);
+    expect(video.playsInline).toBe(true);
+  });
+
+  it('usa el parámetro muted del reproductor de Vimeo', () => {
+    const fixture = TestBed.createComponent(CourseVideo);
+    fixture.componentRef.setInput('src', 'https://vimeo.com/123456789');
+    fixture.componentRef.setInput('autoplay', true);
+    const address = new URL(fixture.componentInstance.frameUrl()!);
+    expect(address.hostname).toBe('player.vimeo.com');
+    expect(address.searchParams.get('autoplay')).toBe('1');
+    expect(address.searchParams.get('muted')).toBe('1');
+  });
 });

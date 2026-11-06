@@ -1,8 +1,13 @@
 :host {
   display: block;
+  min-width: 0;
+  height: 100%;
 }
 
 .course-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
 
   border: 1px solid #e7edf3;
@@ -32,6 +37,7 @@
    ========================================= */
 
 .course-image {
+  flex-shrink: 0;
   position: relative;
 
   height: 190px;
@@ -120,6 +126,10 @@
    ========================================= */
 
 .course-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
   padding: 20px 20px 19px;
 }
 
@@ -166,6 +176,12 @@
    ========================================= */
 
 .course-content h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-height: 4.05em;
   margin: 0;
 
   color: #0a3158;
@@ -183,7 +199,12 @@
    ========================================= */
 
 .course-content > p {
-  min-height: 45px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-height: 4.8em;
 
   margin: 9px 0 18px;
 
@@ -199,6 +220,7 @@
    ========================================= */
 
 .course-footer {
+  margin-top: auto;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;

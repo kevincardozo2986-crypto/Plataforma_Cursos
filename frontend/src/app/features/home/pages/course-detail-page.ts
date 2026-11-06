@@ -2,6 +2,7 @@ import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import { CheckoutDialog } from './checkout-dialog/checkout-dialog';
 import { CoursePlayer } from '../../student/course-player/course-player';
+import { CourseVideo } from '../../student/course-player/course-video';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,7 +13,6 @@ import { Course } from '../../../core/courses/courses.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { formatDuration } from '../../../core/utils/format-duration';
-import { isPlayableVideoUrl } from '../../../core/uploads/upload-rules';
 
 export interface CourseDetail extends Course {
   teacher?: { firstName: string; lastName: string };
@@ -41,7 +41,15 @@ interface CourseProgress {
 
 @Component({
   selector: 'app-course-detail-page',
-  imports: [PublicUrlPipe, RouterLink, FormsModule, CoursePlayer, RichHtmlPipe, CheckoutDialog],
+  imports: [
+    PublicUrlPipe,
+    RouterLink,
+    FormsModule,
+    CoursePlayer,
+    CourseVideo,
+    RichHtmlPipe,
+    CheckoutDialog,
+  ],
   templateUrl: './course-detail-page.html',
   styleUrl: './course-detail-page.scss',
 })
@@ -50,9 +58,7 @@ export class CourseDetailPage {
   private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  readonly isPlayableVideoUrl = isPlayableVideoUrl;
   readonly formatDuration = formatDuration;
-  readonly videoError = signal(false);
   readonly course = signal<CourseDetail | null>(null);
   readonly error = signal(false);
   readonly lessonCount = computed(
@@ -83,7 +89,6 @@ export class CourseDetailPage {
           this.enrollmentNotice.set('');
           this.password = '';
           this.submitting.set(false);
-          this.videoError.set(false);
           return this.http
             .get<CourseDetail>('/api/courses/' + encodeURIComponent(params.get('id') || ''))
             .pipe(
