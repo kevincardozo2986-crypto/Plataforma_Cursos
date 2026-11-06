@@ -62,7 +62,7 @@
               "sourceMap": true
             },
             "subpath": {
-              "baseHref": "/cursos-virtuales/"
+              "baseHref": "/cursos_virtuales_mooc/"
             }
           },
           "defaultConfiguration": "production"
