@@ -40,6 +40,7 @@ Prueba completa del sistema (API y navegador, con los tres roles; crea y borra s
 - `PORT`: puerto HTTP; por defecto, `3000`.
 - `DATABASE_URL`: conexión PostgreSQL requerida por Prisma.
 - `JWT_SECRET`: secreto para firmar las sesiones (en producción, aleatorio de al menos 32 bytes).
+- `ADMIN_*`: administrador inicial (`admin@campus.com` / `Admin2026*` por defecto). Se crea al arrancar solo si el correo no existe; `ADMIN_BOOTSTRAP=false` lo desactiva y en producción exige `ADMIN_PASSWORD`.
 - `OBSERVE_APP_KEY` y `OBSERVE_APP_SECRET`: credenciales opcionales de NestJS Observe. La observabilidad permanece desactivada si falta alguna.
 - `APP_URL`: dirección pública de la aplicación (se usa en el enlace de verificación de los certificados). Por defecto, `http://localhost:4200`.
 - `CORS_ORIGINS`, `TRUSTED_PROXIES`, `NODE_ENV`: seguridad y despliegue; con `NODE_ENV=production` se validan al arrancar (ver [../deploy/SECURITY.md](../deploy/SECURITY.md)).

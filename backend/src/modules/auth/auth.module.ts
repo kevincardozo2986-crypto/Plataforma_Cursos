@@ -1,4 +1,5 @@
 import { ActivityNotificationsModule } from '../notifications/activity-notifications.module.js';
+import { AdminBootstrapService } from './admin-bootstrap.service.js';
 import { RecoveryRateGuard } from './recovery-rate.guard.js';
 import { PasswordMailer } from './password-mailer.service.js';
 import { PasswordResetService } from './password-reset.service.js';
@@ -37,6 +38,7 @@ import { RolesGuard } from './guards/roles.guard.js';
   controllers: [AuthController],
   providers: [
     AuthService,
+    AdminBootstrapService,
     PasswordMailer,
     PasswordResetService,
     RecoveryRateGuard,
