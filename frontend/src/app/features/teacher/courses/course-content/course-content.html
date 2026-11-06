@@ -1,12 +1,16 @@
 <section [class.panel-page]="!embedded()">
   <div [class.panel-container]="!embedded()">
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando contenido…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando contenido…' | t }}</p>
+      </div>
     } @else if (!course()) {
       @if (error()) {
         <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
       }
-      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Volver a mis cursos</a>
+      <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">{{
+        'Volver a mis cursos' | t
+      }}</a>
     } @else {
       @if (course(); as current) {
         <!-- Dentro del asistente, la cabecera y el estado los pone el asistente. -->
@@ -15,12 +19,14 @@
             [title]="current.title"
             [subtitle]="modules().length + ' módulos · ' + lessonCount() + ' lecciones'"
           >
-            <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">Mis cursos</a>
+            <a class="panel-btn panel-btn--ghost" routerLink="/teacher/courses">{{
+              'Mis cursos' | t
+            }}</a>
             <a
               class="panel-btn panel-btn--ghost"
               [routerLink]="['/teacher/courses', current.id, 'edit']"
             >
-              Datos del curso
+              {{ 'Datos del curso' | t }}
             </a>
           </app-page-header>
 
@@ -28,11 +34,17 @@
             <div class="status-info">
               <app-status-badge [status]="current.status" />
               @if (current.status === 'PUBLISHED') {
-                <span class="panel-muted">Los estudiantes ya pueden ver y cursar este curso.</span>
+                <span class="panel-muted">{{
+                  'Los estudiantes ya pueden ver y cursar este curso.' | t
+                }}</span>
               } @else if (modules().length === 0) {
-                <span class="panel-muted">Crea al menos un módulo para poder publicarlo.</span>
+                <span class="panel-muted">{{
+                  'Crea al menos un módulo para poder publicarlo.' | t
+                }}</span>
               } @else {
-                <span class="panel-muted">Cuando el contenido esté listo, publícalo.</span>
+                <span class="panel-muted">{{
+                  'Cuando el contenido esté listo, publícalo.' | t
+                }}</span>
               }
             </div>
 
@@ -43,7 +55,7 @@
                 [disabled]="busy()"
                 (click)="setStatus('DRAFT')"
               >
-                Pasar a borrador
+                {{ 'Pasar a borrador' | t }}
               </button>
             } @else {
               <button
@@ -52,7 +64,7 @@
                 [disabled]="busy() || modules().length === 0"
                 (click)="setStatus('PUBLISHED')"
               >
-                Publicar curso
+                {{ 'Publicar curso' | t }}
               </button>
             }
           </div>
@@ -104,16 +116,16 @@
 
         @if (adding()) {
           <form class="panel-card add-form" [formGroup]="form" (ngSubmit)="addModule()" novalidate>
-            <h2><app-icon name="plus" [size]="18" /> Nuevo módulo</h2>
+            <h2><app-icon name="plus" [size]="18" /> {{ 'Nuevo módulo' | t }}</h2>
 
             <div class="panel-field">
-              <label for="new-module-title">Título</label>
+              <label for="new-module-title">{{ 'Título' | t }}</label>
               <input
                 id="new-module-title"
                 class="panel-input"
                 type="text"
                 formControlName="title"
-                placeholder="Ej. Introducción"
+                [placeholder]="'Ej. Introducción' | t"
                 [attr.aria-invalid]="titleError() ? 'true' : null"
               />
               @if (titleError()) {
@@ -122,22 +134,22 @@
             </div>
 
             <div class="panel-field">
-              <label for="new-module-description">Descripción (opcional)</label>
+              <label for="new-module-description">{{ 'Descripción (opcional)' | t }}</label>
               <app-rich-editor
                 inputId="new-module-description"
                 label="Descripción del módulo"
                 [minHeight]="130"
                 formControlName="description"
-                placeholder="De qué trata este módulo y qué se logra al terminarlo."
+                [placeholder]="'De qué trata este módulo y qué se logra al terminarlo.' | t"
               />
             </div>
 
             <div class="form-actions">
               <button type="button" class="panel-btn panel-btn--ghost" (click)="adding.set(false)">
-                Cancelar
+                {{ 'Cancelar' | t }}
               </button>
               <button type="submit" class="panel-btn panel-btn--primary" [disabled]="busy()">
-                <app-icon name="check" [size]="16" /> Crear módulo
+                <app-icon name="check" [size]="16" /> {{ 'Crear módulo' | t }}
               </button>
             </div>
           </form>
@@ -147,7 +159,7 @@
             class="panel-btn panel-btn--primary add-module"
             (click)="startAdding()"
           >
-            <app-icon name="plus" [size]="17" /> Añadir módulo
+            <app-icon name="plus" [size]="17" /> {{ 'Añadir módulo' | t }}
           </button>
         }
       }

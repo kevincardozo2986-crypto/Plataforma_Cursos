@@ -3,9 +3,9 @@
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="book" [size]="26" /></span>
       <div class="hero-copy">
-        <span class="eyebrow">ADMINISTRACIÓN / CURSOS</span>
-        <h1>Cursos</h1>
-        <p>Todos los cursos de la plataforma, de cualquier docente.</p>
+        <span class="eyebrow">{{ 'ADMINISTRACIÓN / CURSOS' | t }}</span>
+        <h1>{{ 'Cursos' | t }}</h1>
+        <p>{{ 'Todos los cursos de la plataforma, de cualquier docente.' | t }}</p>
       </div>
     </header>
 
@@ -22,22 +22,22 @@
 
     <div class="toolbar">
       <label class="search">
-        <span class="sr-only">Buscar</span>
+        <span class="sr-only">{{ 'Buscar' | t }}</span>
         <app-icon name="search" [size]="16" />
         <input
           class="panel-input"
           type="search"
-          placeholder="Buscar por título o docente"
+          [placeholder]="'Buscar por título o docente' | t"
           [value]="q()"
           (input)="onSearch($event)"
         />
       </label>
       <label>
-        <span class="sr-only">Estado</span>
+        <span class="sr-only">{{ 'Estado' | t }}</span>
         <select class="panel-select" (change)="setStatus($event)">
-          <option value="">Todos los estados</option>
+          <option value="">{{ 'Todos los estados' | t }}</option>
           @for (item of statuses; track item) {
-            <option [value]="item">{{ statusLabels[item] }}</option>
+            <option [value]="item">{{ statusLabels[item] | t }}</option>
           }
         </select>
       </label>
@@ -45,20 +45,24 @@
 
     <div class="panel-card table-card">
       @if (loading() && courses().length === 0) {
-        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando cursos…</p>
+        <p class="empty"><app-icon name="refresh" [size]="18" /> {{ 'Cargando cursos…' | t }}</p>
       } @else if (courses().length === 0) {
-        <p class="empty"><app-icon name="book" [size]="20" /> No hay cursos con esos filtros.</p>
+        <p class="empty">
+          <app-icon name="book" [size]="20" /> {{ 'No hay cursos con esos filtros.' | t }}
+        </p>
       } @else {
         <div class="table-scroll" [class.dim]="loading()">
           <table>
             <thead>
               <tr>
-                <th scope="col">Curso</th>
-                <th scope="col">Docente</th>
-                <th scope="col">Estado</th>
-                <th scope="col" class="num">Inscritos</th>
-                <th scope="col">Creado</th>
-                <th scope="col"><span class="sr-only">Acciones</span></th>
+                <th scope="col">{{ 'Curso' | t }}</th>
+                <th scope="col">{{ 'Docente' | t }}</th>
+                <th scope="col">{{ 'Estado' | t }}</th>
+                <th scope="col" class="num">{{ 'Inscritos' | t }}</th>
+                <th scope="col">{{ 'Creado' | t }}</th>
+                <th scope="col">
+                  <span class="sr-only">{{ 'Acciones' | t }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -72,8 +76,8 @@
                       >{{ course.title }}</a
                     >
                     <small class="muted">
-                      {{ course.category?.name ?? 'Sin categoría' }} · {{ course.modules }}
-                      {{ course.modules === 1 ? 'módulo' : 'módulos' }}
+                      {{ course.category?.name ?? ('Sin categoría' | t) }} · {{ course.modules }}
+                      {{ course.modules === 1 ? ('módulo' | t) : ('módulos' | t) }}
                     </small>
                   </th>
                   <td>
@@ -84,7 +88,7 @@
                   </td>
                   <td>
                     <span class="pill" [attr.data-tone]="tone(course.status)">{{
-                      statusLabels[course.status]
+                      statusLabels[course.status] | t
                     }}</span>
                   </td>
                   <td class="num">{{ course.enrollments }}</td>
@@ -94,10 +98,10 @@
                       <span class="confirm-text"
                         >¿{{
                           pending()?.status === 'ARCHIVED'
-                            ? 'Archivarlo'
+                            ? ('Archivarlo' | t)
                             : pending()?.status === 'PUBLISHED'
-                              ? 'Publicarlo'
-                              : 'Pasarlo a borrador'
+                              ? ('Publicarlo' | t)
+                              : ('Pasarlo a borrador' | t)
                         }}?</span
                       >
                       <button
@@ -106,14 +110,14 @@
                         [disabled]="busyId() === course.id"
                         (click)="confirm(course)"
                       >
-                        Sí
+                        {{ 'Sí' | t }}
                       </button>
                       <button
                         type="button"
                         class="panel-btn panel-btn--ghost panel-btn--sm"
                         (click)="cancel()"
                       >
-                        No
+                        {{ 'No' | t }}
                       </button>
                     } @else {
                       @for (target of targets(course); track target.status) {
@@ -122,15 +126,15 @@
                           class="panel-btn panel-btn--ghost panel-btn--sm"
                           (click)="ask(course, target.status)"
                         >
-                          <app-icon [name]="target.icon" [size]="15" /> {{ target.label }}
+                          <app-icon [name]="target.icon" [size]="15" /> {{ target.label | t }}
                         </button>
                       }
                       <a
                         class="panel-btn panel-btn--ghost panel-btn--sm"
                         [routerLink]="['/teacher/courses', course.id, 'edit']"
-                        title="Abrir el asistente del curso"
+                        [title]="'Abrir el asistente del curso' | t"
                       >
-                        <app-icon name="edit" [size]="15" /> Editar
+                        <app-icon name="edit" [size]="15" /> {{ 'Editar' | t }}
                       </a>
                     }
                   </td>
@@ -141,14 +145,14 @@
         </div>
 
         <div class="pager">
-          <span class="muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+          <span class="muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
           <button
             type="button"
             class="panel-btn panel-btn--ghost panel-btn--sm"
             [disabled]="!hasPrev()"
             (click)="page(-1)"
           >
-            <app-icon name="arrow-left" [size]="15" /> Anterior
+            <app-icon name="arrow-left" [size]="15" /> {{ 'Anterior' | t }}
           </button>
           <button
             type="button"
@@ -156,7 +160,7 @@
             [disabled]="!hasNext()"
             (click)="page(1)"
           >
-            Siguiente <app-icon name="chevron-right" [size]="15" />
+            {{ 'Siguiente' | t }} <app-icon name="chevron-right" [size]="15" />
           </button>
         </div>
       }

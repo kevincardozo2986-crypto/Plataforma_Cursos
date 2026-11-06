@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 
@@ -13,7 +14,7 @@ import { TeacherModulesService } from '../modules.service';
  */
 @Component({
   selector: 'app-module-unlock',
-  imports: [DatePipe, Icon],
+  imports: [TranslatePipe, DatePipe, Icon],
   templateUrl: './module-unlock.html',
   styleUrl: './module-unlock.scss',
 })

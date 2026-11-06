@@ -1,19 +1,23 @@
 <section class="hero education-hero" aria-labelledby="hero-title">
   <div class="hero-intro">
     <h1 id="hero-title">
-      Aprende hoy.<br /><span>Transforma<br />lo que sigue.</span>
+      {{ 'Aprende hoy.' | t }}<br /><span
+        >{{ 'Transforma' | t }}<br />{{ 'lo que sigue.' | t }}</span
+      >
     </h1>
     <p class="education-description">
-      Programas y cursos para fortalecer tus habilidades, ampliar tus conocimientos y seguir
-      avanzando en tu vida profesional.
+      {{
+        'Programas y cursos para fortalecer tus habilidades, ampliar tus conocimientos y seguir avanzando en tu vida profesional.'
+          | t
+      }}
     </p>
     <div class="hero-actions">
-      <a class="primary-action" routerLink="/courses">Explorar cursos </a>
+      <a class="primary-action" routerLink="/courses">{{ 'Explorar cursos' | t }} </a>
       @if (!auth.user()) {
-        <a class="secondary-action" routerLink="/register">Crear mi cuenta</a>
+        <a class="secondary-action" routerLink="/register">{{ 'Crear mi cuenta' | t }}</a>
       }
     </div>
-    <div class="hero-highlights" aria-label="Tu experiencia de aprendizaje">
+    <div class="hero-highlights" [attr.aria-label]="'Tu experiencia de aprendizaje' | t">
       <div class="hero-highlight">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
@@ -23,7 +27,10 @@
             stroke-linejoin="round"
           />
         </svg>
-        <div><strong>A tu ritmo</strong><span>Aprende paso a paso</span></div>
+        <div>
+          <strong>{{ 'A tu ritmo' | t }}</strong
+          ><span>{{ 'Aprende paso a paso' | t }}</span>
+        </div>
       </div>
       <div class="hero-highlight">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -44,7 +51,10 @@
             stroke-linejoin="round"
           />
         </svg>
-        <div><strong>En línea</strong><span>Desde donde estés</span></div>
+        <div>
+          <strong>{{ 'En línea' | t }}</strong
+          ><span>{{ 'Desde donde estés' | t }}</span>
+        </div>
       </div>
       <div class="hero-highlight">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -56,7 +66,9 @@
             stroke-linejoin="round"
           />
         </svg>
-        <div><strong>Santoto</strong><span>Campus Virtual</span></div>
+        <div>
+          <strong>Santoto</strong><span>{{ 'Campus Virtual' | t }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -73,13 +85,13 @@
       <img
         class="education-man"
         src="images/education-man-cutout.png"
-        alt="Estudiante sosteniendo un libro"
+        [alt]="'Estudiante sosteniendo un libro' | t"
         fetchpriority="high"
       />
       <img
         class="education-woman"
         src="images/education-woman-cutout.png"
-        alt="Estudiante sosteniendo sus libros"
+        [alt]="'Estudiante sosteniendo sus libros' | t"
         fetchpriority="high"
       />
     </div>
@@ -94,8 +106,8 @@
             stroke-linejoin="round"
           /></svg
       ></span>
-      <h2>Encuentra tu<br />próximo reto.</h2>
-      <p>Explora el catálogo y elige lo que quieres aprender.</p>
+      <h2>{{ 'Encuentra tu' | t }}<br />{{ 'próximo reto.' | t }}</h2>
+      <p>{{ 'Explora el catálogo y elige lo que quieres aprender.' | t }}</p>
     </article>
     <article class="benefit-card benefit-pace">
       <span class="benefit-icon" aria-hidden="true"
@@ -104,8 +116,8 @@
           <rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor" />
           <rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor" /></svg
       ></span>
-      <h2>Aprende<br />a tu ritmo.</h2>
-      <p>Un espacio para seguir creciendo, desde donde estés.</p>
+      <h2>{{ 'Aprende' | t }}<br />{{ 'a tu ritmo.' | t }}</h2>
+      <p>{{ 'Un espacio para seguir creciendo, desde donde estés.' | t }}</p>
     </article>
     <article class="benefit-card benefit-campus">
       <span class="benefit-icon" aria-hidden="true"
@@ -118,8 +130,8 @@
             stroke-linejoin="round"
           /></svg
       ></span>
-      <h2>Conocimiento<br />que te acompaña.</h2>
-      <p>Tu siguiente paso empieza en el Campus Virtual.</p>
+      <h2>{{ 'Conocimiento' | t }}<br />{{ 'que te acompaña.' | t }}</h2>
+      <p>{{ 'Tu siguiente paso empieza en el Campus Virtual.' | t }}</p>
     </article>
   </div>
 </section>

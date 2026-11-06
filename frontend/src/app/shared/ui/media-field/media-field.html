@@ -1,5 +1,5 @@
 <div class="panel-field">
-  <label [attr.for]="inputId()">{{ label() }}</label>
+  <label [attr.for]="inputId()">{{ label() | t }}</label>
 
   <div class="controls">
     <input
@@ -21,7 +21,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />
       </svg>
-      Subir archivo
+      {{ 'Subir archivo' | t }}
     </button>
 
     <input
@@ -48,7 +48,7 @@
       </div>
       <p>
         Subiendo «{{ fileName() }}»… {{ percent() }}%
-        <button type="button" class="text-btn" (click)="cancel()">Cancelar</button>
+        <button type="button" class="text-btn" (click)="cancel()">{{ 'Cancelar' | t }}</button>
       </p>
     </div>
   } @else if (uploadError()) {
@@ -60,7 +60,7 @@
   @if (error()) {
     <p class="panel-field-error">{{ error() }}</p>
   } @else if (hint()) {
-    <p class="panel-hint">{{ hint() }}</p>
+    <p class="panel-hint">{{ hint() | t }}</p>
   }
 
   <!-- Vista previa -->
@@ -72,17 +72,17 @@
           <path d="m3 16 5-5 4 4 3-3 6 6" />
           <path d="M4 4l16 16" />
         </svg>
-        <p>No pudimos mostrar la imagen.</p>
-        <small
-          >Revisa que el enlace sea público y apunte directamente a un archivo de imagen, o sube uno
-          desde tu equipo.</small
-        >
+        <p>{{ 'No pudimos mostrar la imagen.' | t }}</p>
+        <small>{{
+          'Revisa que el enlace sea público y apunte directamente a un archivo de imagen, o sube uno desde tu equipo.'
+            | t
+        }}</small>
       </div>
     } @else {
       <img
         class="preview"
         [src]="previewUrl() | publicUrl"
-        alt="Vista previa de la imagen"
+        [alt]="'Vista previa de la imagen' | t"
         (error)="previewFailed.set(true)"
       />
     }
@@ -90,7 +90,7 @@
     <iframe
       class="preview embed"
       [src]="src | publicUrl"
-      title="Vista previa del video"
+      [title]="'Vista previa del video' | t"
       loading="lazy"
       allowfullscreen
       referrerpolicy="strict-origin-when-cross-origin"
@@ -103,8 +103,10 @@
           <path d="m16 10 5-3v10l-5-3" />
           <path d="M4 4l16 16" />
         </svg>
-        <p>No se puede reproducir este video aquí.</p>
-        <small>Prueba con un archivo MP4 o WebM, o sube el video desde tu equipo.</small>
+        <p>{{ 'No se puede reproducir este video aquí.' | t }}</p>
+        <small>{{
+          'Prueba con un archivo MP4 o WebM, o sube el video desde tu equipo.' | t
+        }}</small>
       </div>
     } @else {
       <video
@@ -114,12 +116,12 @@
         [src]="videoSrc() | publicUrl"
         (error)="previewFailed.set(true)"
       >
-        Tu navegador no puede reproducir este video.
+        {{ 'Tu navegador no puede reproducir este video.' | t }}
       </video>
     }
   }
 
   @if (previewUrl() || uploaded()) {
-    <button type="button" class="text-btn clear" (click)="clear()">Quitar</button>
+    <button type="button" class="text-btn clear" (click)="clear()">{{ 'Quitar' | t }}</button>
   }
 </div>

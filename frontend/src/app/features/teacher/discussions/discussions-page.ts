@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -32,7 +33,7 @@ const VIEWS: {
 /** Bandeja de preguntas y comentarios de los estudiantes en los cursos del docente. */
 @Component({
   selector: 'app-discussions-page',
-  imports: [RouterLink, DatePipe, PageHeader],
+  imports: [TranslatePipe, RouterLink, DatePipe, PageHeader],
   templateUrl: './discussions-page.html',
   styleUrl: './discussions-page.scss',
 })

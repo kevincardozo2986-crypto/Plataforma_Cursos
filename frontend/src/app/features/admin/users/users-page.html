@@ -3,12 +3,12 @@
     <header class="hero">
       <span class="hero-icon" aria-hidden="true"><app-icon name="users" [size]="26" /></span>
       <div class="hero-copy">
-        <span class="eyebrow">ADMINISTRACIÓN / USUARIOS</span>
-        <h1>Usuarios</h1>
-        <p>Quién tiene cuenta, con qué rol, y quién puede entrar.</p>
+        <span class="eyebrow">{{ 'ADMINISTRACIÓN / USUARIOS' | t }}</span>
+        <h1>{{ 'Usuarios' | t }}</h1>
+        <p>{{ 'Quién tiene cuenta, con qué rol, y quién puede entrar.' | t }}</p>
       </div>
       <button type="button" class="panel-btn panel-btn--primary" (click)="openCreate()">
-        <app-icon name="plus" [size]="17" /> Crear cuenta
+        <app-icon name="plus" [size]="17" /> {{ 'Crear cuenta' | t }}
       </button>
     </header>
 
@@ -25,11 +25,11 @@
 
     @if (creating()) {
       <form class="panel-card create" novalidate (submit)="$event.preventDefault(); create()">
-        <h2><app-icon name="plus" [size]="19" /> Nueva cuenta</h2>
+        <h2><app-icon name="plus" [size]="19" /> {{ 'Nueva cuenta' | t }}</h2>
 
         <div class="grid">
           <label class="field">
-            <span>Nombre</span>
+            <span>{{ 'Nombre' | t }}</span>
             <input
               class="panel-input"
               name="firstName"
@@ -38,7 +38,7 @@
             />
           </label>
           <label class="field">
-            <span>Apellido</span>
+            <span>{{ 'Apellido' | t }}</span>
             <input
               class="panel-input"
               name="lastName"
@@ -47,7 +47,7 @@
             />
           </label>
           <label class="field">
-            <span>Correo</span>
+            <span>{{ 'Correo' | t }}</span>
             <input
               class="panel-input"
               type="email"
@@ -58,7 +58,7 @@
             />
           </label>
           <label class="field">
-            <span>Documento</span>
+            <span>{{ 'Documento' | t }}</span>
             <input
               class="panel-input"
               name="document"
@@ -67,7 +67,7 @@
             />
           </label>
           <label class="field">
-            <span>Teléfono (opcional)</span>
+            <span>{{ 'Teléfono (opcional)' | t }}</span>
             <input
               class="panel-input"
               type="tel"
@@ -77,7 +77,7 @@
             />
           </label>
           <label class="field">
-            <span>Rol</span>
+            <span>{{ 'Rol' | t }}</span>
             <select
               class="panel-select"
               name="role"
@@ -86,13 +86,13 @@
             >
               @for (item of roles; track item) {
                 <option [value]="item" [selected]="form().role === item">
-                  {{ roleLabels[item] }}
+                  {{ roleLabels[item] | t }}
                 </option>
               }
             </select>
           </label>
           <div class="field wide">
-            <span>Contraseña inicial</span>
+            <span>{{ 'Contraseña inicial' | t }}</span>
             <div class="pass-row">
               <input
                 class="panel-input mono"
@@ -107,16 +107,17 @@
                 class="panel-btn panel-btn--ghost"
                 (click)="showPassword.set(!showPassword())"
               >
-                <app-icon name="eye" [size]="16" /> {{ showPassword() ? 'Ocultar' : 'Ver' }}
+                <app-icon name="eye" [size]="16" />
+                {{ showPassword() ? ('Ocultar' | t) : ('Ver' | t) }}
               </button>
               <button type="button" class="panel-btn panel-btn--ghost" (click)="regenerate()">
-                <app-icon name="refresh" [size]="16" /> Generar otra
+                <app-icon name="refresh" [size]="16" /> {{ 'Generar otra' | t }}
               </button>
             </div>
-            <small class="muted"
-              >Se guarda cifrada y no se puede volver a ver: cópiala y compártela con la
-              persona.</small
-            >
+            <small class="muted">{{
+              'Se guarda cifrada y no se puede volver a ver: cópiala y compártela con la persona.'
+                | t
+            }}</small>
           </div>
         </div>
 
@@ -126,10 +127,11 @@
 
         <div class="form-actions">
           <button type="button" class="panel-btn panel-btn--ghost" (click)="closeCreate()">
-            Cancelar
+            {{ 'Cancelar' | t }}
           </button>
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-            <app-icon name="save" [size]="16" /> {{ saving() ? 'Creando…' : 'Crear cuenta' }}
+            <app-icon name="save" [size]="16" />
+            {{ saving() ? ('Creando…' | t) : ('Crear cuenta' | t) }}
           </button>
         </div>
       </form>
@@ -137,51 +139,55 @@
 
     <div class="toolbar">
       <label class="search">
-        <span class="sr-only">Buscar</span>
+        <span class="sr-only">{{ 'Buscar' | t }}</span>
         <app-icon name="search" [size]="16" />
         <input
           class="panel-input"
           type="search"
-          placeholder="Buscar por nombre, correo o documento"
+          [placeholder]="'Buscar por nombre, correo o documento' | t"
           [value]="q()"
           (input)="onSearch($event)"
         />
       </label>
       <label>
-        <span class="sr-only">Rol</span>
+        <span class="sr-only">{{ 'Rol' | t }}</span>
         <select class="panel-select" (change)="setRole($event)">
-          <option value="">Todos los roles</option>
+          <option value="">{{ 'Todos los roles' | t }}</option>
           @for (item of roles; track item) {
-            <option [value]="item">{{ roleLabels[item] }}</option>
+            <option [value]="item">{{ roleLabels[item] | t }}</option>
           }
         </select>
       </label>
       <label>
-        <span class="sr-only">Estado</span>
+        <span class="sr-only">{{ 'Estado' | t }}</span>
         <select class="panel-select" (change)="setStatus($event)">
-          <option value="">Todos los estados</option>
-          <option value="ACTIVE">Con acceso</option>
-          <option value="INACTIVE">Sin acceso</option>
+          <option value="">{{ 'Todos los estados' | t }}</option>
+          <option value="ACTIVE">{{ 'Con acceso' | t }}</option>
+          <option value="INACTIVE">{{ 'Sin acceso' | t }}</option>
         </select>
       </label>
     </div>
 
     <div class="panel-card table-card">
       @if (loading() && users().length === 0) {
-        <p class="empty"><app-icon name="refresh" [size]="18" /> Cargando cuentas…</p>
+        <p class="empty"><app-icon name="refresh" [size]="18" /> {{ 'Cargando cuentas…' | t }}</p>
       } @else if (users().length === 0) {
-        <p class="empty"><app-icon name="users" [size]="20" /> No hay cuentas con esos filtros.</p>
+        <p class="empty">
+          <app-icon name="users" [size]="20" /> {{ 'No hay cuentas con esos filtros.' | t }}
+        </p>
       } @else {
         <div class="table-scroll" [class.dim]="loading()">
           <table>
             <thead>
               <tr>
-                <th scope="col">Persona</th>
-                <th scope="col">Rol</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Actividad</th>
-                <th scope="col">Desde</th>
-                <th scope="col"><span class="sr-only">Acciones</span></th>
+                <th scope="col">{{ 'Persona' | t }}</th>
+                <th scope="col">{{ 'Rol' | t }}</th>
+                <th scope="col">{{ 'Estado' | t }}</th>
+                <th scope="col">{{ 'Actividad' | t }}</th>
+                <th scope="col">{{ 'Desde' | t }}</th>
+                <th scope="col">
+                  <span class="sr-only">{{ 'Acciones' | t }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -200,7 +206,7 @@
                         <strong>
                           {{ user.firstName }} {{ user.lastName }}
                           @if (isMe(user)) {
-                            <span class="me">Tú</span>
+                            <span class="me">{{ 'Tú' | t }}</span>
                           }
                         </strong>
                         <small class="muted">{{ user.email }} · {{ user.document }}</small>
@@ -209,7 +215,7 @@
                   </th>
                   <td>
                     @if (isMe(user)) {
-                      <span class="pill" data-tone="accent">{{ roleLabels[user.role] }}</span>
+                      <span class="pill" data-tone="accent">{{ roleLabels[user.role] | t }}</span>
                     } @else {
                       <select
                         class="panel-select role-select"
@@ -218,7 +224,7 @@
                       >
                         @for (item of roles; track item) {
                           <option [value]="item" [selected]="user.role === item">
-                            {{ roleLabels[item] }}
+                            {{ roleLabels[item] | t }}
                           </option>
                         }
                       </select>
@@ -229,15 +235,15 @@
                       class="pill"
                       [attr.data-tone]="user.status === 'ACTIVE' ? 'ok' : 'danger'"
                     >
-                      {{ user.status === 'ACTIVE' ? 'Con acceso' : 'Sin acceso' }}
+                      {{ user.status === 'ACTIVE' ? ('Con acceso' | t) : ('Sin acceso' | t) }}
                     </span>
                   </td>
                   <td class="muted small">
                     @if (user.role === 'STUDENT') {
                       {{ user.enrollments }}
-                      {{ user.enrollments === 1 ? 'inscripción' : 'inscripciones' }}
+                      {{ user.enrollments === 1 ? ('inscripción' | t) : ('inscripciones' | t) }}
                     } @else {
-                      {{ user.courses }} {{ user.courses === 1 ? 'curso' : 'cursos' }}
+                      {{ user.courses }} {{ user.courses === 1 ? ('curso' | t) : ('cursos' | t) }}
                       @if (user.instructing > 0) {
                         · instructor en {{ user.instructing }}
                       }
@@ -246,15 +252,15 @@
                   <td class="nowrap muted small">{{ user.createdAt | date: 'd MMM y' }}</td>
                   <td class="actions">
                     @if (isMe(user)) {
-                      <span class="muted small">Es tu cuenta</span>
+                      <span class="muted small">{{ 'Es tu cuenta' | t }}</span>
                     } @else if (pending()?.id === user.id) {
                       <span class="confirm-text">
                         @if (pending()?.role; as role) {
                           ¿Hacerlo {{ roleLabels[role].toLowerCase() }}?
                         } @else if (pending()?.status === 'INACTIVE') {
-                          ¿Quitarle el acceso?
+                          {{ '¿Quitarle el acceso?' | t }}
                         } @else {
-                          ¿Devolverle el acceso?
+                          {{ '¿Devolverle el acceso?' | t }}
                         }
                       </span>
                       <button
@@ -263,14 +269,14 @@
                         [disabled]="busyId() === user.id"
                         (click)="confirm(user)"
                       >
-                        Sí
+                        {{ 'Sí' | t }}
                       </button>
                       <button
                         type="button"
                         class="panel-btn panel-btn--ghost panel-btn--sm"
                         (click)="cancel()"
                       >
-                        No
+                        {{ 'No' | t }}
                       </button>
                     } @else {
                       <button
@@ -283,7 +289,7 @@
                           [name]="user.status === 'ACTIVE' ? 'ban' : 'check-circle'"
                           [size]="15"
                         />
-                        {{ user.status === 'ACTIVE' ? 'Quitar acceso' : 'Dar acceso' }}
+                        {{ user.status === 'ACTIVE' ? ('Quitar acceso' | t) : ('Dar acceso' | t) }}
                       </button>
                     }
                   </td>
@@ -294,14 +300,14 @@
         </div>
 
         <div class="pager">
-          <span class="muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+          <span class="muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
           <button
             type="button"
             class="panel-btn panel-btn--ghost panel-btn--sm"
             [disabled]="!hasPrev()"
             (click)="page(-1)"
           >
-            <app-icon name="arrow-left" [size]="15" /> Anterior
+            <app-icon name="arrow-left" [size]="15" /> {{ 'Anterior' | t }}
           </button>
           <button
             type="button"
@@ -309,7 +315,7 @@
             [disabled]="!hasNext()"
             (click)="page(1)"
           >
-            Siguiente <app-icon name="chevron-right" [size]="15" />
+            {{ 'Siguiente' | t }} <app-icon name="chevron-right" [size]="15" />
           </button>
         </div>
       }

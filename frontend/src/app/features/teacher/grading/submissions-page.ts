@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,7 +21,7 @@ const PAGE_SIZE = 20;
 /** Entregas de tareas de los estudiantes, para revisarlas y calificarlas. */
 @Component({
   selector: 'app-submissions-page',
-  imports: [RouterLink, DatePipe, PageHeader],
+  imports: [TranslatePipe, RouterLink, DatePipe, PageHeader],
   templateUrl: './submissions-page.html',
   styleUrl: './grading-list.scss',
 })

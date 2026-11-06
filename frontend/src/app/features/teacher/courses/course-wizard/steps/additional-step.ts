@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../../core/i18n/translate.pipe';
 import { RichEditor } from '../../../../../shared/ui/rich-editor/rich-editor';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,7 +25,15 @@ interface CandidateCourse {
 /** Paso 3: qué aprenderá el estudiante, a quién va dirigido, duración, requisitos y prerrequisitos. */
 @Component({
   selector: 'app-additional-step',
-  imports: [RichEditor, ReactiveFormsModule, RouterLink, Icon, TeamCard, CourseFilesCard],
+  imports: [
+    TranslatePipe,
+    RichEditor,
+    ReactiveFormsModule,
+    RouterLink,
+    Icon,
+    TeamCard,
+    CourseFilesCard,
+  ],
   templateUrl: './additional-step.html',
   styleUrl: './additional-step.scss',
 })
@@ -162,14 +171,16 @@ export class AdditionalStep {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
               next: ({ templates, courses }) => {
-                const chosen = courses.find((item) => item.id === this.course.id)?.pokTemplateId ?? '';
+                const chosen =
+                  courses.find((item) => item.id === this.course.id)?.pokTemplateId ?? '';
 
                 this.pokTemplates.set(templates);
                 this.pokTemplateId.set(chosen);
                 this.pokInitial = chosen;
                 this.mode.set(chosen ? 'POK' : 'PLATFORM');
               },
-              error: () => this.pokError.set('No pudimos cargar los diseños de POK. Recarga la página.'),
+              error: () =>
+                this.pokError.set('No pudimos cargar los diseños de POK. Recarga la página.'),
             });
         },
         // POK es un complemento: si no responde, el resto del paso no se ve afectado.

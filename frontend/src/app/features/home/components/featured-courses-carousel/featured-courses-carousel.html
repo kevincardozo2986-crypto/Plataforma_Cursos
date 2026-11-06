@@ -1,27 +1,33 @@
 ﻿<section class="featured-section" aria-labelledby="featured-title">
   <header>
     <div>
-      <span class="eyebrow">DESCUBRE</span>
-      <h2 id="featured-title">Cursos para<br />seguir avanzando.</h2>
+      <span class="eyebrow">{{ 'DESCUBRE' | t }}</span>
+      <h2 id="featured-title">{{ 'Cursos para' | t }}<br />{{ 'seguir avanzando.' | t }}</h2>
     </div>
-    <a routerLink="/courses">Ver todos los cursos <span aria-hidden="true">↗</span></a>
+    <a routerLink="/courses">{{ 'Ver todos los cursos' | t }} <span aria-hidden="true">↗</span></a>
   </header>
   <div
     class="course-track"
     tabindex="0"
     role="region"
-    aria-label="Cursos destacados"
+    [attr.aria-label]="'Cursos destacados' | t"
     [attr.aria-busy]="loading()"
   >
     @if (loading()) {
-      <p class="track-state" role="status">Preparando tu próxima oportunidad de aprender…</p>
+      <p class="track-state" role="status">
+        {{ 'Preparando tu próxima oportunidad de aprender…' | t }}
+      </p>
     } @else if (error()) {
       <p class="track-state" role="status">
-        No pudimos cargar los cursos. <a routerLink="/courses">Ir al catálogo →</a>
+        {{ 'No pudimos cargar los cursos.' | t }}
+        <a routerLink="/courses">{{ 'Ir al catálogo →' | t }}</a>
       </p>
     } @else if (courses().length === 0) {
       <p class="track-state">
-        La próxima oferta está en preparación. Aquí encontrarás los cursos cuando estén publicados.
+        {{
+          'La próxima oferta está en preparación. Aquí encontrarás los cursos cuando estén publicados.'
+            | t
+        }}
       </p>
     } @else {
       @for (course of courses(); track course.id; let index = $index) {
@@ -42,23 +48,23 @@
           <span class="panel-meta"
             >{{
               course.level === 'ADVANCED'
-                ? 'Avanzado'
+                ? ('Avanzado' | t)
                 : course.level === 'INTERMEDIATE'
-                  ? 'Intermedio'
-                  : 'Básico'
+                  ? ('Intermedio' | t)
+                  : ('Básico' | t)
             }}
             @if (course._count) {
-              · {{ course._count.modules }} módulos
+              · {{ course._count.modules }} {{ 'módulos' | t }}
             }
           </span>
           <span class="panel-art" aria-hidden="true"></span>
           <div class="panel-copy">
-            <span class="category">{{ course.category?.name ?? 'EDUCACIÓN CONTINUA' }}</span>
-            <h3>{{ course.title || course.name || 'Explora este curso' }}</h3>
+            <span class="category">{{ course.category?.name ?? ('EDUCACIÓN CONTINUA' | t) }}</span>
+            <h3>{{ course.title || course.name || ('Explora este curso' | t) }}</h3>
             <p class="secondary">
-              {{ course.description || 'Encuentra una nueva oportunidad para aprender.' }}
+              {{ course.description || ('Encuentra una nueva oportunidad para aprender.' | t) }}
             </p>
-            <span class="explore">Explorar <span aria-hidden="true">↗</span></span>
+            <span class="explore">{{ 'Explorar' | t }} <span aria-hidden="true">↗</span></span>
           </div>
         </a>
       }

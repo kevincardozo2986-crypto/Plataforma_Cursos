@@ -1,62 +1,88 @@
 <div class="dashboard">
   <div class="student-shell">
-    <aside class="profile-sidebar" aria-label="Perfil del estudiante">
-      <a class="campus-brand" routerLink="/student/dashboard" aria-label="Campus Virtual, inicio">
-        <img class="campus-logo--light" src="images/campus-virtual-logo.png" alt="Campus Virtual" />
+    <aside class="profile-sidebar" [attr.aria-label]="'Perfil del estudiante' | t">
+      <a
+        class="campus-brand"
+        routerLink="/student/dashboard"
+        [attr.aria-label]="'Campus Virtual, inicio' | t"
+      >
+        <img
+          class="campus-logo--light"
+          src="images/campus-virtual-logo.png"
+          [alt]="'Campus Virtual' | t"
+        />
         <img
           class="campus-logo--dark"
           src="images/campus-virtual-logo-white.png"
-          alt="Campus Virtual"
+          [alt]="'Campus Virtual' | t"
         />
       </a>
       <div class="profile-person">
-        <button class="profile-avatar" (click)="panel.set('account')" aria-label="Editar mi perfil">
+        <button
+          class="profile-avatar"
+          (click)="panel.set('account')"
+          [attr.aria-label]="'Editar mi perfil' | t"
+        >
           @if (auth.user()?.avatarUrl; as photo) {
-            <img [src]="photo | publicUrl" alt="Tu foto de perfil" />
+            <img [src]="photo | publicUrl" [alt]="'Tu foto de perfil' | t" />
           } @else {
             <span>{{ initials() }}</span>
           }
           <span class="profile-online" aria-hidden="true"></span>
         </button>
-        <span class="profile-role">TU ESPACIO PERSONAL</span>
+        <span class="profile-role">{{ 'TU ESPACIO PERSONAL' | t }}</span>
         <h2>{{ firstName() }} {{ auth.user()?.lastName }}</h2>
         <p class="profile-email">{{ auth.user()?.email }}</p>
-        <span class="role-badge"><span aria-hidden="true"></span> Estudiante</span>
+        <span class="role-badge"><span aria-hidden="true"></span> {{ 'Estudiante' | t }}</span>
       </div>
-      <nav class="profile-links" aria-label="Navegaci&#243;n del estudiante">
+      <nav class="profile-links" [attr.aria-label]="'Navegación del estudiante' | t">
         <a class="selected" routerLink="/student/dashboard" aria-current="page"
-          ><app-student-icon name="home" />Mi aprendizaje</a
+          ><app-student-icon name="home" />{{ 'Mi aprendizaje' | t }}</a
         >
         <button (click)="showAll(); panel.set('courses')">
-          <app-student-icon name="book" />Mis cursos
+          <app-student-icon name="book" />{{ 'Mis cursos' | t }}
           <span class="nav-count">{{ enrollments().length }}</span>
         </button>
-        <button (click)="openCertificates()"><app-student-icon name="award" />Certificados</button>
-        <button (click)="panel.set('account')"><app-student-icon name="user" />Mi perfil</button>
+        <button (click)="openCertificates()">
+          <app-student-icon name="award" />{{ 'Certificados' | t }}
+        </button>
+        <button (click)="panel.set('account')">
+          <app-student-icon name="user" />{{ 'Mi perfil' | t }}
+        </button>
       </nav>
       <div class="profile-footer">
-        <p>Un paso m&#225;s cerca<br /><strong>de tu pr&#243;ximo logro.</strong></p>
+        <p>
+          {{ 'Un paso más cerca' | t }}<br /><strong>{{ 'de tu próximo logro.' | t }}</strong>
+        </p>
         <a class="explore-button" routerLink="/courses"
-          >Explorar cursos <app-student-icon name="arrow" /></a
+          >{{ 'Explorar cursos' | t }} <app-student-icon name="arrow" /></a
         ><button class="logout-button" (click)="logout()">
-          <app-student-icon name="logout" />Cerrar sesi&#243;n
+          <app-student-icon name="logout" />{{ 'Cerrar sesión' | t }}
         </button>
       </div>
     </aside>
     <main class="dashboard-main">
       <header class="dashboard-bar">
         <div>
-          <span class="eyebrow">CAMPUS VIRTUAL</span>
+          <span class="eyebrow">{{ 'CAMPUS VIRTUAL' | t }}</span>
           <h1>
             &#161;Qu&#233; bueno verte, {{ firstName() }}!
             <span class="greeting-spark" aria-hidden="true">&#10022;</span>
           </h1>
-          <p>Tu siguiente gran paso empieza aqu&#237;.</p>
+          <p>{{ 'Tu siguiente gran paso empieza aquí.' | t }}</p>
         </div>
         <div class="bar-actions">
-          <button class="icon-button" (click)="openNotifications()" aria-label="Ver notificaciones">
+          <button
+            class="icon-button"
+            (click)="openNotifications()"
+            [attr.aria-label]="'Ver notificaciones' | t"
+          >
             <app-student-icon name="bell" /></button
-          ><button class="icon-button" (click)="panel.set('settings')" aria-label="Preferencias">
+          ><button
+            class="icon-button"
+            (click)="panel.set('settings')"
+            [attr.aria-label]="'Preferencias' | t"
+          >
             <app-student-icon name="settings" />
           </button>
         </div>
@@ -64,26 +90,26 @@
       <section class="continue-section" aria-labelledby="continue-title">
         <div class="section-heading">
           <div>
-            <span class="eyebrow">SIGUE ADELANTE</span>
-            <h2 id="continue-title">Contin&#250;a con tus cursos</h2>
+            <span class="eyebrow">{{ 'SIGUE ADELANTE' | t }}</span>
+            <h2 id="continue-title">{{ 'Continúa con tus cursos' | t }}</h2>
           </div>
           <div class="section-actions">
             <button class="text-button" (click)="showAll(); panel.set('courses')">
-              Ver todos <app-student-icon name="arrow" />
+              {{ 'Ver todos' | t }} <app-student-icon name="arrow" />
             </button>
             @if (coursePages() > 1) {
-              <div class="pagination" aria-label="P&#225;ginas de mis cursos">
+              <div class="pagination" [attr.aria-label]="'Páginas de mis cursos' | t">
                 <button
                   [disabled]="currentCoursePage() === 0"
                   (click)="coursePage.set(currentCoursePage() - 1)"
-                  aria-label="Cursos anteriores"
+                  [attr.aria-label]="'Cursos anteriores' | t"
                 >
                   &#8592;</button
                 ><span>{{ currentCoursePage() + 1 }}/{{ coursePages() }}</span
                 ><button
                   [disabled]="currentCoursePage() + 1 >= coursePages()"
                   (click)="coursePage.set(currentCoursePage() + 1)"
-                  aria-label="Cursos siguientes"
+                  [attr.aria-label]="'Cursos siguientes' | t"
                 >
                   &#8594;
                 </button>
@@ -93,11 +119,11 @@
         </div>
         <div class="continuing-grid">
           @if (loading()) {
-            <div class="empty-state" role="status">Preparando tus cursos...</div>
+            <div class="empty-state" role="status">{{ 'Preparando tus cursos...' | t }}</div>
           } @else if (error()) {
             <div class="empty-state" role="alert">
               <p>{{ error() }}</p>
-              <button class="text-button" (click)="load()">Reintentar</button>
+              <button class="text-button" (click)="load()">{{ 'Reintentar' | t }}</button>
             </div>
           } @else {
             @for (item of continuingCourses(); track item.id) {
@@ -113,15 +139,15 @@
                 <div class="continue-copy">
                   <span class="course-label">{{
                     item.status === 'COMPLETED'
-                      ? 'COMPLETADO'
+                      ? ('COMPLETADO' | t)
                       : item.progress.completedLessons
-                        ? 'EN CURSO'
-                        : 'TU PRÓXIMO PASO'
+                        ? ('EN CURSO' | t)
+                        : ('TU PRÓXIMO PASO' | t)
                   }}</span>
                   <h3>{{ item.course.title }}</h3>
                   <p>
-                    {{ item.progress.completedLessons }} de
-                    {{ item.progress.totalLessons }} lecciones
+                    {{ item.progress.completedLessons }} {{ 'de' | t }}
+                    {{ item.progress.totalLessons }} {{ 'lecciones' | t }}
                   </p>
                   <div class="progress-line">
                     <progress
@@ -145,16 +171,16 @@
           }
         </div>
       </section>
-      <aside class="activity-panel" aria-label="Racha y progreso">
+      <aside class="activity-panel" [attr.aria-label]="'Racha y progreso' | t">
         <div class="activity-title">
           <div>
-            <span class="eyebrow">CADA D&#205;A CUENTA</span>
-            <h2>Tu racha</h2>
+            <span class="eyebrow">{{ 'CADA DÍA CUENTA' | t }}</span>
+            <h2>{{ 'Tu racha' | t }}</h2>
           </div>
           <div class="streak-total">
             <app-streak-flame [active]="(streakDays() ?? 0) > 0" /><span
               ><strong>{{ streakDays() ?? '&#8212;' }}</strong
-              ><small>d&#237;as</small></span
+              ><small>{{ 'días' | t }}</small></span
             >
           </div>
         </div>
@@ -169,12 +195,14 @@
             <strong>{{ loading() || error() ? '&#8212;' : overallProgress() + '%' }}</strong>
           </div>
           <div>
-            <h3>Tu progreso general</h3>
-            <p>{{ completed().length }} de {{ enrollments().length }} cursos completados</p>
+            <h3>{{ 'Tu progreso general' | t }}</h3>
+            <p>
+              {{ completed().length }} {{ 'de' | t }} {{ enrollments().length }} cursos completados
+            </p>
           </div>
         </div>
         <button class="certificate-shortcut" (click)="openCertificates()">
-          <app-student-icon name="award" /><span>Tus certificados</span
+          <app-student-icon name="award" /><span>{{ 'Tus certificados' | t }}</span
           ><strong>{{
             certificatesLoading() || certificatesError() ? '&#8212;' : validCertificates().length
           }}</strong
@@ -184,26 +212,26 @@
       <section class="recommendations-section" aria-labelledby="recommendations-title">
         <div class="section-heading">
           <div>
-            <span class="eyebrow">NO DEJES DE DESCUBRIR</span>
-            <h2 id="recommendations-title">Te podr&#237;a interesar</h2>
+            <span class="eyebrow">{{ 'NO DEJES DE DESCUBRIR' | t }}</span>
+            <h2 id="recommendations-title">{{ 'Te podría interesar' | t }}</h2>
           </div>
           <div class="section-actions">
             <a class="text-button" routerLink="/courses"
-              >Ver cat&#225;logo <app-student-icon name="arrow"
+              >{{ 'Ver catálogo' | t }} <app-student-icon name="arrow"
             /></a>
             @if (recommendationPages() > 1) {
-              <div class="pagination" aria-label="P&#225;ginas de sugerencias">
+              <div class="pagination" [attr.aria-label]="'Páginas de sugerencias' | t">
                 <button
                   [disabled]="currentRecommendationPage() === 0"
                   (click)="recommendationPage.set(currentRecommendationPage() - 1)"
-                  aria-label="Sugerencias anteriores"
+                  [attr.aria-label]="'Sugerencias anteriores' | t"
                 >
                   &#8592;</button
                 ><span>{{ currentRecommendationPage() + 1 }}/{{ recommendationPages() }}</span
                 ><button
                   [disabled]="currentRecommendationPage() + 1 >= recommendationPages()"
                   (click)="recommendationPage.set(currentRecommendationPage() + 1)"
-                  aria-label="Sugerencias siguientes"
+                  [attr.aria-label]="'Sugerencias siguientes' | t"
                 >
                   &#8594;
                 </button>
@@ -213,11 +241,15 @@
         </div>
         <div class="recommendation-grid">
           @if (recommendationsLoading()) {
-            <div class="empty-state" role="status">Buscando nuevos cursos para ti...</div>
+            <div class="empty-state" role="status">
+              {{ 'Buscando nuevos cursos para ti...' | t }}
+            </div>
           } @else if (recommendationsError()) {
             <div class="empty-state" role="alert">
               <p>{{ recommendationsError() }}</p>
-              <button class="text-button" (click)="loadRecommendations()">Reintentar</button>
+              <button class="text-button" (click)="loadRecommendations()">
+                {{ 'Reintentar' | t }}
+              </button>
             </div>
           } @else {
             @for (item of suggestedCourses(); track item.id) {
@@ -227,18 +259,20 @@
                     <img [src]="cover | publicUrl" alt="" loading="lazy" />
                   } @else {
                     <span class="cover-letter">{{
-                      (item.title || item.name || 'Curso').charAt(0).toUpperCase()
+                      (item.title || item.name || ('Curso' | t)).charAt(0).toUpperCase()
                     }}</span>
                   }
                   <span class="level-badge">{{ levelLabels[item.level || ''] || 'Para ti' }}</span>
                 </div>
                 <div class="recommendation-copy">
                   <span class="course-label">{{
-                    item.category?.name || 'EXPLORA ALGO NUEVO'
+                    item.category?.name || ('EXPLORA ALGO NUEVO' | t)
                   }}</span>
                   <h3>{{ item.title || item.name }}</h3>
                   <div class="recommendation-footer">
-                    <span>{{ item.price && +item.price > 0 ? 'Ver curso' : 'Gratis' }}</span
+                    <span>{{
+                      item.price && +item.price > 0 ? ('Ver curso' | t) : ('Gratis' | t)
+                    }}</span
                     ><span class="round-arrow" aria-hidden="true">&#8599;</span>
                   </div>
                 </div></a
@@ -253,37 +287,41 @@
         </div>
       </section>
       <footer class="dashboard-footer">
-        <span>Aprende a tu ritmo. Construye tu futuro.</span
-        ><span>CAMPUS VIRTUAL <span aria-hidden="true">&#10022;</span></span>
+        <span>{{ 'Aprende a tu ritmo. Construye tu futuro.' | t }}</span
+        ><span>{{ 'CAMPUS VIRTUAL' | t }} <span aria-hidden="true">&#10022;</span></span>
       </footer>
     </main>
   </div>
   @if (panel(); as currentPanel) {
-    <button class="panel-backdrop" aria-label="Cerrar panel" (click)="closePanel()"></button>
-    <aside class="top-panel" aria-label="Panel del estudiante">
+    <button
+      class="panel-backdrop"
+      [attr.aria-label]="'Cerrar panel' | t"
+      (click)="closePanel()"
+    ></button>
+    <aside class="top-panel" [attr.aria-label]="'Panel del estudiante' | t">
       <header>
         <h2>
           {{
             currentPanel === 'courses'
-              ? 'Mis cursos'
+              ? ('Mis cursos' | t)
               : currentPanel === 'certificates'
-                ? 'Mis certificados'
+                ? ('Mis certificados' | t)
                 : currentPanel === 'account'
-                  ? 'Mi cuenta'
+                  ? ('Mi cuenta' | t)
                   : currentPanel === 'settings'
-                    ? 'Preferencias'
-                    : 'Notificaciones'
+                    ? ('Preferencias' | t)
+                    : ('Notificaciones' | t)
           }}
         </h2>
-        <button class="icon-button" aria-label="Cerrar panel" (click)="closePanel()">
+        <button class="icon-button" [attr.aria-label]="'Cerrar panel' | t" (click)="closePanel()">
           <app-student-icon name="close" />
         </button>
       </header>
       @if (currentPanel === 'courses') {
         <label class="search"
           ><app-student-icon name="search" /><input
-            aria-label="Buscar mis cursos"
-            placeholder="Buscar un curso..."
+            [attr.aria-label]="'Buscar mis cursos' | t"
+            [placeholder]="'Buscar un curso...' | t"
             [value]="query()"
             (input)="query.set($any($event.target).value)"
         /></label>
@@ -303,10 +341,10 @@
         </ul>
       } @else if (currentPanel === 'certificates') {
         @if (certificatesLoading()) {
-          <p role="status">Cargando certificados…</p>
+          <p role="status">{{ 'Cargando certificados…' | t }}</p>
         } @else if (certificatesError()) {
           <p role="alert">{{ certificatesError() }}</p>
-          <button class="button soft" (click)="loadCertificates()">Reintentar</button>
+          <button class="button soft" (click)="loadCertificates()">{{ 'Reintentar' | t }}</button>
         } @else {
           <ul class="notification-list">
             @for (certificate of validCertificates(); track certificate.id) {
@@ -319,14 +357,17 @@
                   (!certificate.pokStatus || certificate.pokStatus === 'NONE')
                 ) {
                   <p class="pok-line">
-                    <strong>Credencial digital de POK:</strong> aún no la tienes ·
+                    <strong>{{ 'Credencial digital de POK:' | t }}</strong>
+                    {{ 'aún no la tienes ·' | t }}
                     <button
                       class="link-button"
                       type="button"
                       [disabled]="syncingPok() === certificate.id"
                       (click)="syncPok(certificate)"
                     >
-                      {{ syncingPok() === certificate.id ? 'Solicitando…' : 'Obtenerla' }}
+                      {{
+                        syncingPok() === certificate.id ? ('Solicitando…' | t) : ('Obtenerla' | t)
+                      }}
                     </button>
                   </p>
                 } @else if (
@@ -335,8 +376,8 @@
                   certificate.pokStatus !== 'NONE'
                 ) {
                   <p class="pok-line" [attr.data-pok]="certificate.pokStatus">
-                    <strong>Credencial digital de POK:</strong>
-                    {{ pokLabels[certificate.pokStatus] }}
+                    <strong>{{ 'Credencial digital de POK:' | t }}</strong>
+                    {{ pokLabels[certificate.pokStatus] | t }}
                     @if (
                       certificate.pokUrl &&
                       (certificate.pokStatus === 'EMITTED' || certificate.pokStatus === 'ACCEPTED')
@@ -346,7 +387,7 @@
                         [href]="certificate.pokUrl | publicUrl"
                         target="_blank"
                         rel="noopener noreferrer"
-                        >Ver en POK</a
+                        >{{ 'Ver en POK' | t }}</a
                       >
                     }
                     @if (
@@ -359,7 +400,11 @@
                         [disabled]="syncingPok() === certificate.id"
                         (click)="syncPok(certificate)"
                       >
-                        {{ syncingPok() === certificate.id ? 'Consultando…' : 'Actualizar estado' }}
+                        {{
+                          syncingPok() === certificate.id
+                            ? ('Consultando…' | t)
+                            : ('Actualizar estado' | t)
+                        }}
                       </button>
                     }
                   </p>
@@ -371,7 +416,9 @@
                     (click)="downloadCertificate(certificate)"
                   >
                     {{
-                      downloadingCertificate() === certificate.id ? 'Descargando…' : 'Descargar PDF'
+                      downloadingCertificate() === certificate.id
+                        ? ('Descargando…' | t)
+                        : ('Descargar PDF' | t)
                     }}
                   </button>
                 }
@@ -390,21 +437,21 @@
       } @else if (currentPanel === 'account') {
         <app-account-settings />
       } @else if (currentPanel === 'settings') {
-        <p class="muted">Ajusta tu espacio de aprendizaje.</p>
+        <p class="muted">{{ 'Ajusta tu espacio de aprendizaje.' | t }}</p>
         <label class="preference"
-          ><span>Modo oscuro</span
+          ><span>{{ 'Modo oscuro' | t }}</span
           ><input
             type="checkbox"
             [checked]="settings.darkMode()"
             (change)="settings.darkMode.set($any($event.target).checked)" /></label
         ><label class="preference"
-          ><span>Alto contraste</span
+          ><span>{{ 'Alto contraste' | t }}</span
           ><input
             type="checkbox"
             [checked]="settings.contrast()"
             (change)="settings.contrast.set($any($event.target).checked)" /></label
         ><label class="preference"
-          ><span>Texto más grande</span
+          ><span>{{ 'Texto más grande' | t }}</span
           ><input
             type="checkbox"
             [checked]="settings.largeText()"
@@ -412,7 +459,7 @@
         /></label>
       } @else {
         @if (notificationLoading()) {
-          <p role="status">Cargando notificaciones…</p>
+          <p role="status">{{ 'Cargando notificaciones…' | t }}</p>
         } @else if (notificationError()) {
           <p role="alert">{{ notificationError() }}</p>
         } @else {
@@ -428,7 +475,9 @@
                     [routerLink]="['/courses', notice.courseId]"
                     [queryParams]="notice.type === 'NEW_REPLY' ? { tab: 'preguntas' } : null"
                     (click)="hidePanel()"
-                    >{{ notice.type === 'NEW_REPLY' ? 'Ver la respuesta →' : 'Ver curso →' }}</a
+                    >{{
+                      notice.type === 'NEW_REPLY' ? ('Ver la respuesta →' | t) : ('Ver curso →' | t)
+                    }}</a
                   >
                 }
               </li>

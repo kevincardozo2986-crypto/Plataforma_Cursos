@@ -38,11 +38,13 @@
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Crear curso
+          {{ 'Crear curso' | t }}
         </a>
       </div>
 
-      <p class="cv-eyebrow rel">Espacio docente / <b>Biblioteca</b></p>
+      <p class="cv-eyebrow rel">
+        {{ 'Espacio docente /' | t }} <b>{{ 'Biblioteca' | t }}</b>
+      </p>
       <div class="px-hero__main">
         @if (minis().length > 0) {
           <div class="mc-minis" aria-hidden="true">
@@ -58,36 +60,42 @@
           </div>
         }
         <div>
-          <h1>{{ isAdmin() ? 'Todos los cursos' : 'Mis cursos' }}</h1>
+          <h1>{{ isAdmin() ? ('Todos los cursos' | t) : ('Mis cursos' | t) }}</h1>
           <p class="px-hero__sub">
-            Tus ideas, en un solo lugar. Continúa creando y comparte lo que sabes.
+            {{ 'Tus ideas, en un solo lugar. Continúa creando y comparte lo que sabes.' | t }}
           </p>
         </div>
       </div>
       <p class="ix-sum">
-        <b>{{ counts().ALL }}</b> {{ counts().ALL === 1 ? 'curso' : 'cursos' }} ·
+        <b>{{ counts().ALL }}</b> {{ counts().ALL === 1 ? ('curso' | t) : ('cursos' | t) }} ·
         <b>{{ counts().PUBLISHED }}</b>
-        {{ counts().PUBLISHED === 1 ? 'publicado' : 'publicados' }} · <b>{{ studentsTotal() }}</b>
-        {{ studentsTotal() === 1 ? 'estudiante aprendiendo' : 'estudiantes aprendiendo' }} contigo
+        {{ counts().PUBLISHED === 1 ? ('publicado' | t) : ('publicados' | t) }} ·
+        <b>{{ studentsTotal() }}</b>
+        {{
+          studentsTotal() === 1 ? ('estudiante aprendiendo' | t) : ('estudiantes aprendiendo' | t)
+        }}
+        contigo
       </p>
     </header>
 
     @if (loading()) {
-      <p class="mc-empty" role="status">Cargando tus cursos…</p>
+      <p class="mc-empty" role="status">{{ 'Cargando tus cursos…' | t }}</p>
     } @else if (error()) {
       <div class="cv-callout cv-callout--danger" role="alert">
         <p>{{ error() }} Vuelve a abrir esta página para intentarlo de nuevo.</p>
       </div>
     } @else if (courses().length === 0) {
       <section class="mc-panel mc-empty-card">
-        <h2>Tu próxima idea empieza aquí</h2>
-        <p>Crea tu primer curso y organiza el conocimiento que quieres compartir.</p>
-        <a class="cv-btn cv-btn--primary" routerLink="/teacher/courses/new">Crear el primero</a>
+        <h2>{{ 'Tu próxima idea empieza aquí' | t }}</h2>
+        <p>{{ 'Crea tu primer curso y organiza el conocimiento que quieres compartir.' | t }}</p>
+        <a class="cv-btn cv-btn--primary" routerLink="/teacher/courses/new">{{
+          'Crear el primero' | t
+        }}</a>
       </section>
     } @else {
       <!-- Continúa donde quedaste -->
       @if (resume(); as draft) {
-        <section class="mc-resume" aria-label="Continúa donde quedaste">
+        <section class="mc-resume" [attr.aria-label]="'Continúa donde quedaste' | t">
           <div class="mc-resume__cover" [class]="'mc-resume__cover mc-cover--' + colorOf(draft)">
             @if (draft.imageUrl) {
               <img [src]="draft.imageUrl | publicUrl" alt="" />
@@ -100,10 +108,11 @@
           </div>
           <div class="mc-resume__body">
             <p class="cv-eyebrow">Continúa donde quedaste · {{ whenLower(draft) }}</p>
-            <h2>{{ untitled(draft) ? 'Curso sin título' : draft.title }}</h2>
+            <h2>{{ untitled(draft) ? ('Curso sin título' | t) : draft.title }}</h2>
             <div class="mc-progress">
               <div class="mc-progress__label">
-                <span>Configuración</span><b>{{ done(draft) }} de 5</b>
+                <span>{{ 'Configuración' | t }}</span
+                ><b>{{ done(draft) }} de 5</b>
               </div>
               <div class="mc-progress__track">
                 <div class="mc-progress__bar" [style.width.%]="done(draft) * 20"></div>
@@ -111,12 +120,12 @@
             </div>
             <div class="mc-steps">
               @for (step of stepsOf(draft); track step.label) {
-                <span [class.ok]="step.ok">{{ step.ok ? '✓' : '○' }} {{ step.label }}</span>
+                <span [class.ok]="step.ok">{{ step.ok ? '✓' : '○' }} {{ step.label | t }}</span>
               }
             </div>
           </div>
           <a class="cv-btn cv-btn--primary" [routerLink]="['/teacher/courses', draft.id, 'edit']">
-            Continuar
+            {{ 'Continuar' | t }}
             <svg
               width="16"
               height="16"
@@ -136,7 +145,7 @@
 
       <!-- Barra de filtros -->
       <div class="mc-bar">
-        <div class="cv-tabs" role="tablist" aria-label="Filtrar por estado">
+        <div class="cv-tabs" role="tablist" [attr.aria-label]="'Filtrar por estado' | t">
           @for (item of tabs; track item.value) {
             <button
               type="button"
@@ -145,7 +154,7 @@
               [attr.aria-selected]="tab() === item.value"
               (click)="setTab(item.value)"
             >
-              {{ item.label }} <span class="cv-tab__count">{{ counts()[item.value] }}</span>
+              {{ item.label | t }} <span class="cv-tab__count">{{ counts()[item.value] }}</span>
             </button>
           }
         </div>
@@ -165,22 +174,27 @@
           </svg>
           <input
             type="search"
-            placeholder="Buscar por título o categoría"
-            aria-label="Buscar cursos"
+            [placeholder]="'Buscar por título o categoría' | t"
+            [attr.aria-label]="'Buscar cursos' | t"
             [value]="query()"
             (input)="onSearch($event)"
           />
         </label>
-        <select class="cv-select" aria-label="Ordenar" [value]="sort()" (change)="onSort($event)">
-          <option value="rec">Recientes</option>
+        <select
+          class="cv-select"
+          [attr.aria-label]="'Ordenar' | t"
+          [value]="sort()"
+          (change)="onSort($event)"
+        >
+          <option value="rec">{{ 'Recientes' | t }}</option>
           <option value="az">A–Z</option>
-          <option value="stu">Más estudiantes</option>
+          <option value="stu">{{ 'Más estudiantes' | t }}</option>
         </select>
-        <div class="cv-seg" role="group" aria-label="Vista">
+        <div class="cv-seg" role="group" [attr.aria-label]="'Vista' | t">
           <button
             type="button"
             [attr.aria-pressed]="view() === 'grid'"
-            aria-label="Cuadrícula"
+            [attr.aria-label]="'Cuadrícula' | t"
             (click)="setView('grid')"
           >
             <svg
@@ -201,7 +215,7 @@
           <button
             type="button"
             [attr.aria-pressed]="view() === 'list'"
-            aria-label="Lista"
+            [attr.aria-label]="'Lista' | t"
             (click)="setView('list')"
           >
             <svg
@@ -222,9 +236,9 @@
 
       @if (visible().length === 0) {
         <div class="mc-empty">
-          Ningún curso coincide con el filtro.
+          {{ 'Ningún curso coincide con el filtro.' | t }}
           <button type="button" class="cv-btn cv-btn--ghost" (click)="resetFilters()">
-            Limpiar filtros
+            {{ 'Limpiar filtros' | t }}
           </button>
         </div>
       } @else if (view() === 'grid') {
@@ -251,10 +265,10 @@
                 [class]="'cv-badge cv-card__badge cv-badge--' + course.status.toLowerCase()"
                 >{{
                   course.status === 'PUBLISHED'
-                    ? 'Publicado'
+                    ? ('Publicado' | t)
                     : course.status === 'DRAFT'
-                      ? 'Borrador'
-                      : 'Archivado'
+                      ? ('Borrador' | t)
+                      : ('Archivado' | t)
                 }}</span
               >
               <button
@@ -288,11 +302,11 @@
                 @if (course.category) {
                   <p class="cv-card__cat">{{ course.category.name }}</p>
                 } @else {
-                  <p class="cv-card__cat cv-card__cat--empty">+ Añadir categoría</p>
+                  <p class="cv-card__cat cv-card__cat--empty">{{ '+ Añadir categoría' | t }}</p>
                 }
                 <h3 class="cv-card__title" [class.cv-card__title--untitled]="untitled(course)">
                   <a class="cv-card__link" [routerLink]="['/teacher/courses', course.id, 'edit']">{{
-                    untitled(course) ? 'Curso sin título' : course.title
+                    untitled(course) ? ('Curso sin título' | t) : course.title
                   }}</a>
                 </h3>
                 <div class="cv-meta">
@@ -312,7 +326,7 @@
                         <circle cx="12" cy="9" r="6" />
                         <path d="m8.5 13.8-1.5 7.2 5-2.6 5 2.6-1.5-7.2" />
                       </svg>
-                      Credencial POK
+                      {{ 'Credencial POK' | t }}
                     </span>
                   }
                   @if (isAdmin() && course.teacher) {
@@ -324,14 +338,15 @@
                 @if (course.status === 'DRAFT') {
                   <div class="mc-progress">
                     <div class="mc-progress__label">
-                      <span>Configuración</span><b>{{ done(course) }} de 5</b>
+                      <span>{{ 'Configuración' | t }}</span
+                      ><b>{{ done(course) }} de 5</b>
                     </div>
                     <div class="mc-progress__track">
                       <div class="mc-progress__bar" [style.width.%]="done(course) * 20"></div>
                     </div>
                   </div>
                 } @else if (enrolled(course) === 0) {
-                  <p class="mc-nobody">Aún sin estudiantes</p>
+                  <p class="mc-nobody">{{ 'Aún sin estudiantes' | t }}</p>
                 } @else {
                   <div class="mc-card__stats">
                     <span class="mc-people">
@@ -341,9 +356,9 @@
                         }
                       </span>
                       <b>{{ enrolled(course) }}</b>
-                      {{ enrolled(course) === 1 ? 'estudiante' : 'estudiantes' }}
+                      {{ enrolled(course) === 1 ? ('estudiante' | t) : ('estudiantes' | t) }}
                     </span>
-                    <span class="mc-avg" title="Avance promedio">
+                    <span class="mc-avg" [title]="'Avance promedio' | t">
                       <span class="mc-progress__track mc-avg__track"
                         ><span
                           class="mc-avg__bar"
@@ -358,7 +373,7 @@
               </div>
               <div class="cv-card__footer">
                 <span class="cv-card__updated">{{
-                  course.status === 'ARCHIVED' ? 'Archivado' : when(course)
+                  course.status === 'ARCHIVED' ? ('Archivado' | t) : when(course)
                 }}</span>
                 <a
                   class="cv-btn cv-btn--ghost"
@@ -366,10 +381,10 @@
                 >
                   {{
                     course.status === 'DRAFT'
-                      ? 'Continuar'
+                      ? ('Continuar' | t)
                       : course.status === 'ARCHIVED'
-                        ? 'Ver'
-                        : 'Gestionar'
+                        ? ('Ver' | t)
+                        : ('Gestionar' | t)
                   }}
                   <svg
                     width="16"
@@ -403,7 +418,7 @@
                 >
                   <path d="M12 5v14M5 12h14" /></svg
               ></span>
-              Nuevo curso
+              {{ 'Nuevo curso' | t }}
             </a>
           }
         </div>
@@ -423,13 +438,13 @@
                   class="mc-row__title"
                   [class.is-untitled]="untitled(course)"
                   [routerLink]="['/teacher/courses', course.id, 'edit']"
-                  >{{ untitled(course) ? 'Curso sin título' : course.title }}</a
+                  >{{ untitled(course) ? ('Curso sin título' | t) : course.title }}</a
                 >
                 <small
-                  >{{ course.category?.name ?? 'Sin categoría' }} · {{ level(course) }} ·
+                  >{{ course.category?.name ?? ('Sin categoría' | t) }} · {{ level(course) }} ·
                   {{ price(course) }}
                   @if (isPok(course)) {
-                    · Credencial POK
+                    {{ '· Credencial POK' | t }}
                   }
                   @if (isAdmin() && course.teacher) {
                     · {{ course.teacher.firstName }} {{ course.teacher.lastName }}
@@ -442,25 +457,25 @@
                   [class]="'cv-badge cv-badge--' + course.status.toLowerCase()"
                   >{{
                     course.status === 'PUBLISHED'
-                      ? 'Publicado'
+                      ? ('Publicado' | t)
                       : course.status === 'DRAFT'
-                        ? 'Borrador'
-                        : 'Archivado'
+                        ? ('Borrador' | t)
+                        : ('Archivado' | t)
                   }}</span
                 ></span
               >
               <span class="mc-people mc-row__stats">
                 @if (course.status === 'DRAFT') {
-                  <small>Configuración {{ done(course) }} de 5</small>
+                  <small>{{ 'Configuración' | t }} {{ done(course) }} de 5</small>
                 } @else {
                   <span
                     ><b>{{ enrolled(course) }}</b>
-                    {{ enrolled(course) === 1 ? 'estudiante' : 'estudiantes' }}</span
+                    {{ enrolled(course) === 1 ? ('estudiante' | t) : ('estudiantes' | t) }}</span
                   >
                 }
               </span>
               <small class="mc-row__date">{{
-                course.status === 'ARCHIVED' ? 'Archivado' : when(course)
+                course.status === 'ARCHIVED' ? ('Archivado' | t) : when(course)
               }}</small>
               <button
                 type="button"
@@ -519,7 +534,7 @@
       >
         <path d="M4 20h4L19 9l-4-4L4 16z" />
       </svg>
-      {{ course.status === 'DRAFT' ? 'Continuar editando' : 'Gestionar curso' }}
+      {{ course.status === 'DRAFT' ? ('Continuar editando' | t) : ('Gestionar curso' | t) }}
     </button>
     @if (course.status === 'PUBLISHED') {
       <button type="button" role="menuitem" (click)="viewAsStudent(course)">
@@ -535,7 +550,7 @@
           <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        Ver como estudiante
+        {{ 'Ver como estudiante' | t }}
       </button>
       <button type="button" role="menuitem" (click)="viewStudents(course)">
         <svg
@@ -551,7 +566,7 @@
           <circle cx="9" cy="8" r="3.5" />
           <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" />
         </svg>
-        Ver inscritos
+        {{ 'Ver inscritos' | t }}
       </button>
     }
     <button type="button" role="menuitem" (click)="duplicate(course)">
@@ -567,7 +582,7 @@
         <rect x="9" y="9" width="11" height="11" rx="2" />
         <path d="M5 15V5a1 1 0 0 1 1-1h10" />
       </svg>
-      Duplicar
+      {{ 'Duplicar' | t }}
     </button>
     <hr />
     <button
@@ -588,7 +603,7 @@
       >
         <path d="M3 7h18v13H3zM2 3h20v4H2zM10 12h4" />
       </svg>
-      {{ course.status === 'ARCHIVED' ? 'Restaurar' : 'Archivar' }}
+      {{ course.status === 'ARCHIVED' ? ('Restaurar' | t) : ('Archivar' | t) }}
     </button>
     @if (course.isOwner !== false) {
       @if (confirmDeleteId() === course.id) {
@@ -605,7 +620,7 @@
           >
             <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
           </svg>
-          Sí, eliminar para siempre
+          {{ 'Sí, eliminar para siempre' | t }}
         </button>
       } @else {
         <button type="button" role="menuitem" class="danger" (click)="askDelete(course)">
@@ -621,7 +636,7 @@
           >
             <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
           </svg>
-          Eliminar curso
+          {{ 'Eliminar curso' | t }}
         </button>
       }
     }
@@ -645,7 +660,7 @@
   <span>{{ toast()?.message }}</span>
   @if (toast()?.undo) {
     <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="runUndo()">
-      Deshacer
+      {{ 'Deshacer' | t }}
     </button>
   }
 </div>

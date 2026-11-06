@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,7 +22,7 @@ interface Draft {
 /** Un intento de quiz: lo que respondió el estudiante y la nota de cada pregunta abierta. */
 @Component({
   selector: 'app-attempt-detail',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [TranslatePipe, FormsModule, RouterLink, DatePipe],
   templateUrl: './attempt-detail.html',
   styleUrl: './grading-detail.scss',
 })

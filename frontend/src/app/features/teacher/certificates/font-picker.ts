@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import {
   Component,
   computed,
@@ -32,6 +33,7 @@ const GROUPS: { category: FontCategory; title: string }[] = [
  * Permite subir una tipografía propia (que queda disponible solo para quien la subió).
  */
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-font-picker',
   templateUrl: './font-picker.html',
   styleUrl: './font-picker.scss',

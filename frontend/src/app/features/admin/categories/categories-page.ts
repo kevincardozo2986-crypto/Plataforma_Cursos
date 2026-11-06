@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -8,7 +9,7 @@ import { Icon } from '../../../shared/ui/icon/icon';
 /** Las categorías con las que se agrupan los cursos en el catálogo: crear, renombrar y borrar. */
 @Component({
   selector: 'app-admin-categories',
-  imports: [FormsModule, Icon],
+  imports: [TranslatePipe, FormsModule, Icon],
   templateUrl: './categories-page.html',
   styleUrls: ['../admin-common.scss', './categories-page.scss'],
 })

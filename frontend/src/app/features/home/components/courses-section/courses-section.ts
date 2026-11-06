@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -8,7 +9,7 @@ import { toCardCourse } from './course-mapper';
 /** Catálogo de cursos publicados. Lo ve cualquiera, con o sin sesión. */
 @Component({
   selector: 'app-courses-section',
-  imports: [CourseCard],
+  imports: [TranslatePipe, CourseCard],
   templateUrl: './courses-section.html',
   styleUrl: './courses-section.scss',
 })

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -13,7 +14,7 @@ const LATEST = 8;
 /** La campana del encabezado: cuántas hay sin leer y un menú con las más recientes. */
 @Component({
   selector: 'app-notification-bell',
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   templateUrl: './notification-bell.html',
   styleUrl: './notification-bell.scss',
   host: {

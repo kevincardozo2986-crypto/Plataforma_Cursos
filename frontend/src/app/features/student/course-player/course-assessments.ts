@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -39,7 +40,7 @@ interface Submission {
 
 @Component({
   selector: 'app-course-assessments',
-  imports: [FormsModule, RichHtmlPipe],
+  imports: [TranslatePipe, FormsModule, RichHtmlPipe],
   template: `
     <header>
       <h3>Evaluaciones y tareas</h3>
@@ -58,11 +59,11 @@ interface Submission {
           [class.passed]="item.passed"
         >
           <span
-            >{{ item.type === 'evaluation' ? 'Evaluación' : 'Tarea' }} ·
+            >{{ item.type === 'evaluation' ? 'Evaluación' : ('Tarea' | t) }} ·
             {{ moduleTitle(item.moduleId) }}<strong>{{ item.title }}</strong></span
           >
           <span
-            >{{ item.score === null ? 'Pendiente' : item.score + ' / 100'
+            >{{ item.score === null ? ('Pendiente' | t) : item.score + ' / 100'
             }}<small>{{
               item.passed ? 'Aprobada ✓' : 'Mínimo ' + item.minimum + ' %'
             }}</small></span
@@ -89,7 +90,7 @@ interface Submission {
           <fieldset [disabled]="busy()">
             <legend>{{ index + 1 }}. {{ question.text }}</legend>
             @if (question.type === 'ESSAY' || question.type === 'FILL_BLANK') {
-              <label [for]="'answer-' + question.id">Tu respuesta</label>
+              <label [for]="'answer-' + question.id">{{ 'Tu respuesta' | t }}</label>
               <textarea
                 [id]="'answer-' + question.id"
                 [name]="'answer-' + question.id"
@@ -115,7 +116,9 @@ interface Submission {
           </fieldset>
         }
         <button class="primary" type="submit" [disabled]="busy()">Enviar evaluación</button>
-        <button type="button" [disabled]="busy()" (click)="quiz.set(null)">Cerrar</button>
+        <button type="button" [disabled]="busy()" (click)="quiz.set(null)">
+          {{ 'Cerrar' | t }}
+        </button>
       </form>
     }
     @if (task(); as current) {
@@ -134,7 +137,7 @@ interface Submission {
             <p>{{ previous.feedback }}</p>
           }
         }
-        <label for="task-answer">Tu entrega</label
+        <label for="task-answer">{{ 'Tu entrega' | t }}</label
         ><textarea
           id="task-answer"
           name="task-answer"
@@ -159,7 +162,7 @@ interface Submission {
               [disabled]="busy() || submission()?.status === 'GRADED'"
               (click)="removeFile(file.name)"
             >
-              Quitar
+              {{ 'Quitar' | t }}
             </button>
           </p>
         }
@@ -172,7 +175,9 @@ interface Submission {
         >
           Enviar tarea
         </button>
-        <button type="button" [disabled]="busy()" (click)="task.set(null)">Cerrar</button>
+        <button type="button" [disabled]="busy()" (click)="task.set(null)">
+          {{ 'Cerrar' | t }}
+        </button>
       </form>
     }
   `,

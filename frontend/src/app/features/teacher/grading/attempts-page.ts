@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +17,7 @@ const PAGE_SIZE = 20;
 /** Intentos de quiz presentados por los estudiantes, para revisar las preguntas abiertas. */
 @Component({
   selector: 'app-attempts-page',
-  imports: [RouterLink, DatePipe, PageHeader],
+  imports: [TranslatePipe, RouterLink, DatePipe, PageHeader],
   templateUrl: './attempts-page.html',
   styleUrl: './grading-list.scss',
 })

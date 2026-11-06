@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -19,7 +20,7 @@ const PAGE_SIZE = 20;
 /** Anuncios del docente a los inscritos de sus cursos. */
 @Component({
   selector: 'app-announcements-page',
-  imports: [ReactiveFormsModule, DatePipe, PageHeader, RichEditor, RichHtmlPipe],
+  imports: [TranslatePipe, ReactiveFormsModule, DatePipe, PageHeader, RichEditor, RichHtmlPipe],
   templateUrl: './announcements-page.html',
   styleUrl: './announcements-page.scss',
 })

@@ -2,25 +2,53 @@
   <div class="panel-container ix-wrap">
     <!-- Encabezado -->
     <header class="px-hero">
-      <svg class="px-hero__art" viewBox="0 0 440 220" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <svg
+        class="px-hero__art"
+        viewBox="0 0 440 220"
+        preserveAspectRatio="xMaxYMid slice"
+        aria-hidden="true"
+      >
         <rect class="teal" x="200" y="-16" width="120" height="96" rx="16" />
         <rect class="blue" x="336" y="-16" width="120" height="150" rx="16" />
         <rect class="sand" x="200" y="96" width="256" height="140" rx="16" />
         @for (dot of dots; track $index) {
-          <circle [attr.cx]="dot.x" [attr.cy]="dot.y" [attr.r]="dot.r" class="dot" [style.opacity]="dot.o" />
+          <circle
+            [attr.cx]="dot.x"
+            [attr.cy]="dot.y"
+            [attr.r]="dot.r"
+            class="dot"
+            [style.opacity]="dot.o"
+          />
         }
       </svg>
 
       <div class="px-hero__actions">
-        <button type="button" class="cv-btn cv-btn--primary" [disabled]="filtered().length === 0" (click)="exportAll()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <button
+          type="button"
+          class="cv-btn cv-btn--primary"
+          [disabled]="filtered().length === 0"
+          (click)="exportAll()"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
           </svg>
-          Exportar CSV
+          {{ 'Exportar CSV' | t }}
         </button>
       </div>
 
-      <p class="cv-eyebrow rel">Espacio docente / <b>Inscritos</b></p>
+      <p class="cv-eyebrow rel">
+        {{ 'Espacio docente /' | t }} <b>{{ 'Inscritos' | t }}</b>
+      </p>
       <div class="px-hero__main">
         @if (avatars().length > 0) {
           <div class="ix-avs" aria-hidden="true">
@@ -33,40 +61,50 @@
           </div>
         }
         <div>
-          <h1>Inscritos</h1>
-          <p class="px-hero__sub">Quiénes están en tus cursos, cuánto llevan y quién necesita un empujón.</p>
+          <h1>{{ 'Inscritos' | t }}</h1>
+          <p class="px-hero__sub">
+            {{ 'Quiénes están en tus cursos, cuánto llevan y quién necesita un empujón.' | t }}
+          </p>
         </div>
       </div>
       <p class="ix-sum">
-        <b>{{ base().length }}</b> {{ base().length === 1 ? 'estudiante' : 'estudiantes' }} en
-        <b>{{ courseCount() }}</b> {{ courseCount() === 1 ? 'curso' : 'cursos' }} · <b>{{ donePercent() }}%</b> ya
-        terminó
+        <b>{{ base().length }}</b>
+        {{ base().length === 1 ? ('estudiante' | t) : ('estudiantes' | t) }} en
+        <b>{{ courseCount() }}</b> {{ courseCount() === 1 ? ('curso' | t) : ('cursos' | t) }} ·
+        <b>{{ donePercent() }}%</b> {{ 'ya terminó' | t }}
       </p>
     </header>
 
     @if (error()) {
       <div class="cv-callout cv-callout--danger" role="alert">
         <p>{{ error() }}</p>
-        <button type="button" class="cv-btn cv-btn--ghost" (click)="load()">Reintentar</button>
+        <button type="button" class="cv-btn cv-btn--ghost" (click)="load()">
+          {{ 'Reintentar' | t }}
+        </button>
       </div>
     }
 
     @if (loading()) {
-      <p class="ix-empty" role="status">Cargando a tus inscritos…</p>
+      <p class="ix-empty" role="status">{{ 'Cargando a tus inscritos…' | t }}</p>
     } @else if (!error() && rows().length === 0) {
       <section class="pk-panel">
         <div class="ix-empty">
-          Todavía no hay estudiantes inscritos en tus cursos. Cuando alguien se inscriba, aquí verás cómo va.
+          {{
+            'Todavía no hay estudiantes inscritos en tus cursos. Cuando alguien se inscriba, aquí verás cómo va.'
+              | t
+          }}
         </div>
       </section>
     } @else if (rows().length > 0) {
       <!-- Panorama -->
-      <section class="ix-insights" aria-label="Panorama del grupo">
+      <section class="ix-insights" [attr.aria-label]="'Panorama del grupo' | t">
         <div class="ix-card">
           <h3>
-            Cómo va el grupo
+            {{ 'Cómo va el grupo' | t }}
             @if (state() !== 'all') {
-              <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="clearState()">Ver todos</button>
+              <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="clearState()">
+                {{ 'Ver todos' | t }}
+              </button>
             }
           </h3>
           <div class="ix-dist">
@@ -84,7 +122,7 @@
               }
             }
           </div>
-          <div class="ix-legend" role="group" aria-label="Filtrar por estado">
+          <div class="ix-legend" role="group" [attr.aria-label]="'Filtrar por estado' | t">
             @for (s of order; track s) {
               <button
                 type="button"
@@ -100,39 +138,61 @@
         </div>
 
         <div class="ix-card">
-          <h3>Avance promedio</h3>
+          <h3>{{ 'Avance promedio' | t }}</h3>
           <div class="ix-avg">
             <div class="px-ring">
               <svg viewBox="0 0 96 96" aria-hidden="true">
                 <circle class="trk" cx="48" cy="48" r="40" />
-                <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="ring" [attr.stroke-dashoffset]="ringOffset()" />
+                <circle
+                  class="val"
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  [attr.stroke-dasharray]="ring"
+                  [attr.stroke-dashoffset]="ringOffset()"
+                />
               </svg>
               <div class="px-ring__txt">
-                <div>{{ average() }}%<small>promedio</small></div>
+                <div>
+                  {{ average() }}%<small>{{ 'promedio' | t }}</small>
+                </div>
               </div>
             </div>
             <p>
-              <b>{{ activeThisWeek() }} {{ activeThisWeek() === 1 ? 'activo' : 'activos' }} esta semana</b>
-              de {{ base().length }} inscritos.
+              <b
+                >{{ activeThisWeek() }}
+                {{ activeThisWeek() === 1 ? ('activo' | t) : ('activos' | t) }} esta semana</b
+              >
+              {{ 'de' | t }} {{ base().length }} inscritos.
               @if (neverStarted() > 0) {
-                {{ neverStarted() }} {{ neverStarted() === 1 ? 'aún no empieza' : 'aún no empiezan' }}.
+                {{ neverStarted() }}
+                {{ neverStarted() === 1 ? ('aún no empieza' | t) : ('aún no empiezan' | t) }}.
               }
             </p>
           </div>
         </div>
 
         <div class="ix-card">
-          <h3>Necesitan un empujón</h3>
+          <h3>{{ 'Necesitan un empujón' | t }}</h3>
           <ul class="ix-risk">
             @for (row of risk(); track row.enrollmentId) {
               <li>
                 <span [class]="'ix-av ix-av--' + row.color">{{ row.ini }}</span>
                 <div>
                   <b>{{ row.name }}</b>
-                  <small>{{ row.days === null ? 'No ha empezado' : 'Sin avanzar hace ' + row.days + ' días' }}</small>
+                  <small>{{
+                    row.days === null
+                      ? ('No ha empezado' | t)
+                      : 'Sin avanzar hace ' + row.days + ' días'
+                  }}</small>
                 </div>
-                <button type="button" class="cv-btn cv-btn--secondary cv-btn--sm" [disabled]="isSending(row)" (click)="remind(row)">
-                  Recordar
+                <button
+                  type="button"
+                  class="cv-btn cv-btn--secondary cv-btn--sm"
+                  [disabled]="isSending(row)"
+                  (click)="remind(row)"
+                >
+                  {{ 'Recordar' | t }}
                 </button>
               </li>
             } @empty {
@@ -144,49 +204,98 @@
 
       @if (state() === 'idle' && idleRows().length > 0) {
         <div class="cv-callout" role="status">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
           </svg>
           <p>
-            <b>{{ idleRows().length }} {{ idleRows().length === 1 ? 'inactivo' : 'inactivos' }}:</b> no avanzan
-            ninguna lección hace 30 días o más. Un recordatorio suele bastar.
+            <b
+              >{{ idleRows().length }}
+              {{ idleRows().length === 1 ? ('inactivo' | t) : ('inactivos' | t) }}:</b
+            >
+            {{ 'no avanzan ninguna lección hace 30 días o más. Un recordatorio suele bastar.' | t }}
           </p>
-          <button type="button" class="cv-btn cv-btn--ghost" [disabled]="bulkSending()" (click)="remindIdle()">
-            {{ bulkSending() ? 'Enviando…' : 'Recordar a todos' }}
+          <button
+            type="button"
+            class="cv-btn cv-btn--ghost"
+            [disabled]="bulkSending()"
+            (click)="remindIdle()"
+          >
+            {{ bulkSending() ? ('Enviando…' | t) : 'Recordar a todos' }}
           </button>
         </div>
       }
 
       <!-- Lista -->
-      <section class="pk-panel ix-list" aria-label="Lista de inscritos">
+      <section class="pk-panel ix-list" [attr.aria-label]="'Lista de inscritos' | t">
         <div class="ix-toolbar">
           <label class="cv-search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
             </svg>
             <input
               type="search"
-              placeholder="Buscar por nombre o correo"
-              aria-label="Buscar"
+              [placeholder]="'Buscar por nombre o correo' | t"
+              [attr.aria-label]="'Buscar' | t"
               [value]="query()"
               (input)="setQuery($any($event.target).value)"
             />
           </label>
-          <select class="cv-select" aria-label="Curso" [value]="courseId()" (change)="setCourse($any($event.target).value)">
-            <option value="all" [selected]="courseId() === 'all'">Todos mis cursos ({{ courses().length }})</option>
+          <select
+            class="cv-select"
+            [attr.aria-label]="'Curso' | t"
+            [value]="courseId()"
+            (change)="setCourse($any($event.target).value)"
+          >
+            <option value="all" [selected]="courseId() === 'all'">
+              Todos mis cursos ({{ courses().length }})
+            </option>
             @for (course of courses(); track course.id) {
-              <option [value]="course.id" [selected]="courseId() === course.id">{{ course.title }}</option>
+              <option [value]="course.id" [selected]="courseId() === course.id">
+                {{ course.title }}
+              </option>
             }
           </select>
         </div>
 
         <div class="ix-bulk" [hidden]="selected().size === 0">
-          <span>{{ selected().size }} {{ selected().size === 1 ? 'seleccionado' : 'seleccionados' }}</span>
-          <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" [disabled]="bulkSending()" (click)="remindSelected()">
-            {{ bulkSending() ? 'Enviando…' : 'Enviar recordatorio' }}
+          <span
+            >{{ selected().size }}
+            {{ selected().size === 1 ? ('seleccionado' | t) : ('seleccionados' | t) }}</span
+          >
+          <button
+            type="button"
+            class="cv-btn cv-btn--ghost cv-btn--sm"
+            [disabled]="bulkSending()"
+            (click)="remindSelected()"
+          >
+            {{ bulkSending() ? ('Enviando…' | t) : 'Enviar recordatorio' }}
           </button>
-          <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="exportSelection()">Exportar selección</button>
-          <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="clearSelection()">Quitar selección</button>
+          <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="exportSelection()">
+            {{ 'Exportar selección' | t }}
+          </button>
+          <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="clearSelection()">
+            {{ 'Quitar selección' | t }}
+          </button>
         </div>
 
         <div class="ix-scroll">
@@ -197,34 +306,105 @@
                   <input
                     type="checkbox"
                     class="ix-check"
-                    aria-label="Seleccionar todos los de esta página"
+                    [attr.aria-label]="'Seleccionar todos los de esta página' | t"
                     [checked]="allChecked()"
                     [indeterminate]="someChecked()"
                     (change)="toggleAll($any($event.target).checked)"
                   />
                 </th>
-                <th [attr.aria-sort]="dirOf('name') === 'asc' ? 'ascending' : dirOf('name') === 'desc' ? 'descending' : 'none'">
-                  <button type="button" class="ix-sort" [attr.data-dir]="dirOf('name')" (click)="sortBy('name')">
-                    Estudiante
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                <th
+                  [attr.aria-sort]="
+                    dirOf('name') === 'asc'
+                      ? 'ascending'
+                      : dirOf('name') === 'desc'
+                        ? 'descending'
+                        : 'none'
+                  "
+                >
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="dirOf('name')"
+                    (click)="sortBy('name')"
+                  >
+                    {{ 'Estudiante' | t }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                 </th>
-                <th>Curso</th>
-                <th [attr.aria-sort]="dirOf('pct') === 'asc' ? 'ascending' : dirOf('pct') === 'desc' ? 'descending' : 'none'">
-                  <button type="button" class="ix-sort" [attr.data-dir]="dirOf('pct')" (click)="sortBy('pct')">
-                    Avance
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                <th>{{ 'Curso' | t }}</th>
+                <th
+                  [attr.aria-sort]="
+                    dirOf('pct') === 'asc'
+                      ? 'ascending'
+                      : dirOf('pct') === 'desc'
+                        ? 'descending'
+                        : 'none'
+                  "
+                >
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="dirOf('pct')"
+                    (click)="sortBy('pct')"
+                  >
+                    {{ 'Avance' | t }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                 </th>
-                <th>Estado</th>
-                <th [attr.aria-sort]="dirOf('days') === 'asc' ? 'ascending' : dirOf('days') === 'desc' ? 'descending' : 'none'">
-                  <button type="button" class="ix-sort" [attr.data-dir]="dirOf('days')" (click)="sortBy('days')">
-                    Última actividad
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                <th>{{ 'Estado' | t }}</th>
+                <th
+                  [attr.aria-sort]="
+                    dirOf('days') === 'asc'
+                      ? 'ascending'
+                      : dirOf('days') === 'desc'
+                        ? 'descending'
+                        : 'none'
+                  "
+                >
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="dirOf('days')"
+                    (click)="sortBy('days')"
+                  >
+                    {{ 'Última actividad' | t }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                 </th>
-                <th>Evaluaciones</th>
-                <th><span class="sr-only">Acciones</span></th>
+                <th>{{ 'Evaluaciones' | t }}</th>
+                <th>
+                  <span class="sr-only">{{ 'Acciones' | t }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -257,14 +437,35 @@
                   <td>
                     <div class="ix-prog">
                       <div class="ix-prog__track">
-                        <div [class]="'ix-prog__bar ix-prog__bar--' + (row.ix === 'new' ? 'prog' : row.ix)" [style.width.%]="row.pct"></div>
+                        <div
+                          [class]="
+                            'ix-prog__bar ix-prog__bar--' + (row.ix === 'new' ? 'prog' : row.ix)
+                          "
+                          [style.width.%]="row.pct"
+                        ></div>
                       </div>
-                      <span class="ix-prog__n">{{ row.pct }}%<small>{{ row.progress.completed }} de {{ row.progress.total }} lecciones</small></span>
+                      <span class="ix-prog__n"
+                        >{{ row.pct }}%<small
+                          >{{ row.progress.completed }} {{ 'de' | t }} {{ row.progress.total }}
+                          {{ 'lecciones' | t }}</small
+                        ></span
+                      >
                     </div>
                   </td>
                   <td>
-                    <span [class]="'cv-badge cv-badge--' + (row.ix === 'done' ? 'published' : row.ix === 'prog' ? 'info' : row.ix === 'idle' ? 'draft' : 'archived')">
-                      {{ labels[row.ix] }}
+                    <span
+                      [class]="
+                        'cv-badge cv-badge--' +
+                        (row.ix === 'done'
+                          ? 'published'
+                          : row.ix === 'prog'
+                            ? 'info'
+                            : row.ix === 'idle'
+                              ? 'draft'
+                              : 'archived')
+                      "
+                    >
+                      {{ labels[row.ix] | t }}
                     </span>
                   </td>
                   <td>
@@ -276,17 +477,25 @@
                     </span>
                     <span class="ix-spark" aria-hidden="true">
                       @for (week of row.weeks; track $index) {
-                        <i [class.z]="week === 0" [style.height.px]="sparkHeight(week, row.weeks)"></i>
+                        <i
+                          [class.z]="week === 0"
+                          [style.height.px]="sparkHeight(week, row.weeks)"
+                        ></i>
                       }
                     </span>
                   </td>
                   <td>
                     <div class="ix-ev">
                       @if (row.quizzes) {
-                        <span class="cv-chip">Quiz <b>{{ row.quizzes.done }}/{{ row.quizzes.total }}</b></span>
+                        <span class="cv-chip"
+                          >Quiz <b>{{ row.quizzes.done }}/{{ row.quizzes.total }}</b></span
+                        >
                       }
                       @if (row.tasks) {
-                        <span class="cv-chip">Tareas <b>{{ row.tasks.done }}/{{ row.tasks.total }}</b></span>
+                        <span class="cv-chip"
+                          >{{ 'Tareas' | t }}
+                          <b>{{ row.tasks.done }}/{{ row.tasks.total }}</b></span
+                        >
                       }
                       @if (!row.quizzes && !row.tasks) {
                         <span class="px-muted">—</span>
@@ -303,7 +512,7 @@
                           [disabled]="isReminded(row) || isSending(row)"
                           (click)="remind(row)"
                         >
-                          {{ isReminded(row) ? '✓ Enviado' : 'Recordar' }}
+                          {{ isReminded(row) ? ('✓ Enviado' | t) : ('Recordar' | t) }}
                         </button>
                       }
                     </div>
@@ -313,7 +522,9 @@
                 <tr>
                   <td colspan="8" class="ix-empty">
                     Nadie coincide con esos filtros.
-                    <button type="button" class="cv-btn cv-btn--ghost" (click)="resetFilters()">Limpiar filtros</button>
+                    <button type="button" class="cv-btn cv-btn--ghost" (click)="resetFilters()">
+                      {{ 'Limpiar filtros' | t }}
+                    </button>
                   </td>
                 </tr>
               }
@@ -324,11 +535,31 @@
         <div class="ix-foot">
           <span>{{ range() }}</span>
           <div class="ix-pages">
-            <button type="button" aria-label="Anterior" [disabled]="currentPage() <= 1" (click)="goTo(currentPage() - 1)">‹</button>
+            <button
+              type="button"
+              [attr.aria-label]="'Anterior' | t"
+              [disabled]="currentPage() <= 1"
+              (click)="goTo(currentPage() - 1)"
+            >
+              ‹
+            </button>
             @for (n of pageNumbers(); track n) {
-              <button type="button" [attr.aria-current]="currentPage() === n ? 'page' : null" (click)="goTo(n)">{{ n }}</button>
+              <button
+                type="button"
+                [attr.aria-current]="currentPage() === n ? 'page' : null"
+                (click)="goTo(n)"
+              >
+                {{ n }}
+              </button>
             }
-            <button type="button" aria-label="Siguiente" [disabled]="currentPage() >= pages()" (click)="goTo(currentPage() + 1)">›</button>
+            <button
+              type="button"
+              [attr.aria-label]="'Siguiente' | t"
+              [disabled]="currentPage() >= pages()"
+              (click)="goTo(currentPage() + 1)"
+            >
+              ›
+            </button>
           </div>
         </div>
       </section>
@@ -338,19 +569,52 @@
 
 <!-- Detalle de una persona -->
 <div class="ix-scrim" [class.open]="openId() !== null" (click)="closeDetail()"></div>
-<aside class="ix-drawer" [class.open]="openId() !== null" aria-label="Detalle del estudiante" [attr.aria-hidden]="openId() === null">
+<aside
+  class="ix-drawer"
+  [class.open]="openId() !== null"
+  [attr.aria-label]="'Detalle del estudiante' | t"
+  [attr.aria-hidden]="openId() === null"
+>
   @if (openRow(); as row) {
     <div class="ix-drawer__head">
       <span [class]="'ix-av ix-av--' + row.color">{{ row.ini }}</span>
       <div class="ix-drawer__who">
         <h3>{{ row.name }}</h3>
         <p>{{ row.student.email }}</p>
-        <span [class]="'cv-badge cv-badge--' + (row.ix === 'done' ? 'published' : row.ix === 'prog' ? 'info' : row.ix === 'idle' ? 'draft' : 'archived')">
-          {{ labels[row.ix] }}
+        <span
+          [class]="
+            'cv-badge cv-badge--' +
+            (row.ix === 'done'
+              ? 'published'
+              : row.ix === 'prog'
+                ? 'info'
+                : row.ix === 'idle'
+                  ? 'draft'
+                  : 'archived')
+          "
+        >
+          {{ labels[row.ix] | t }}
         </span>
       </div>
-      <button #closeButton type="button" class="cv-icon-btn" aria-label="Cerrar" (click)="closeDetail()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      <button
+        #closeButton
+        type="button"
+        class="cv-icon-btn"
+        [attr.aria-label]="'Cerrar' | t"
+        (click)="closeDetail()"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
       </button>
     </div>
 
@@ -359,28 +623,45 @@
         <h4>{{ row.course.title }}</h4>
         <div class="ix-prog">
           <div class="ix-prog__track">
-            <div [class]="'ix-prog__bar ix-prog__bar--' + (row.ix === 'new' ? 'prog' : row.ix)" [style.width.%]="row.pct"></div>
+            <div
+              [class]="'ix-prog__bar ix-prog__bar--' + (row.ix === 'new' ? 'prog' : row.ix)"
+              [style.width.%]="row.pct"
+            ></div>
           </div>
           <span class="ix-prog__n">{{ row.pct }}%</span>
         </div>
       </div>
 
       <div class="ix-kpis">
-        <div class="ix-kpi"><b>{{ row.progress.completed }}/{{ row.progress.total }}</b><span>Lecciones</span></div>
-        <div class="ix-kpi"><b>{{ row.quizzes ? row.quizzes.done + '/' + row.quizzes.total : '—' }}</b><span>Quizzes</span></div>
-        <div class="ix-kpi"><b>{{ row.tasks ? row.tasks.done + '/' + row.tasks.total : '—' }}</b><span>Tareas</span></div>
+        <div class="ix-kpi">
+          <b>{{ row.progress.completed }}/{{ row.progress.total }}</b
+          ><span>{{ 'Lecciones' | t }}</span>
+        </div>
+        <div class="ix-kpi">
+          <b>{{ row.quizzes ? row.quizzes.done + '/' + row.quizzes.total : '—' }}</b
+          ><span>Quizzes</span>
+        </div>
+        <div class="ix-kpi">
+          <b>{{ row.tasks ? row.tasks.done + '/' + row.tasks.total : '—' }}</b
+          ><span>{{ 'Tareas' | t }}</span>
+        </div>
       </div>
 
       @if (detailLoading()) {
-        <p class="px-muted" role="status">Cargando el detalle…</p>
+        <p class="px-muted" role="status">{{ 'Cargando el detalle…' | t }}</p>
       } @else if (detailError()) {
         <p class="px-muted ix-bad" role="alert">{{ detailError() }}</p>
       } @else if (detail(); as d) {
         <div>
-          <h4>Lecciones</h4>
+          <h4>{{ 'Lecciones' | t }}</h4>
           <div class="ix-lessons">
             @for (lesson of d.lessons; track lesson.id; let i = $index) {
-              <span [class.ok]="lesson.done" [class.now]="i === currentLesson(d) && row.ix !== 'done'" [title]="lesson.title">{{ i + 1 }}</span>
+              <span
+                [class.ok]="lesson.done"
+                [class.now]="i === currentLesson(d) && row.ix !== 'done'"
+                [title]="lesson.title"
+                >{{ i + 1 }}</span
+              >
             } @empty {
               <span class="px-muted">Este curso aún no tiene lecciones.</span>
             }
@@ -388,7 +669,7 @@
         </div>
 
         <div>
-          <h4>Actividad · últimas 8 semanas</h4>
+          <h4>{{ 'Actividad · últimas 8 semanas' | t }}</h4>
           <div class="ix-chart">
             @for (week of d.weeks; track $index) {
               <div>
@@ -400,10 +681,12 @@
         </div>
 
         <div>
-          <h4>Actividad reciente</h4>
+          <h4>{{ 'Actividad reciente' | t }}</h4>
           <ul class="ix-timeline">
             @for (event of d.events; track $index) {
-              <li>{{ event.label }}<small>{{ eventWhen(event.at) }}</small></li>
+              <li>
+                {{ event.label }}<small>{{ eventWhen(event.at) }}</small>
+              </li>
             }
           </ul>
         </div>
@@ -411,12 +694,21 @@
     </div>
 
     <div class="ix-drawer__foot">
-      <button type="button" class="cv-btn cv-btn--secondary" (click)="copyEmail(row.student.email)">Copiar correo</button>
+      <button type="button" class="cv-btn cv-btn--secondary" (click)="copyEmail(row.student.email)">
+        {{ 'Copiar correo' | t }}
+      </button>
       @if (row.ix === 'done') {
-        <a class="cv-btn cv-btn--primary" routerLink="/teacher/certificates">Ver certificado</a>
+        <a class="cv-btn cv-btn--primary" routerLink="/teacher/certificates">{{
+          'Ver certificado' | t
+        }}</a>
       } @else {
-        <button type="button" class="cv-btn cv-btn--primary" [disabled]="isReminded(row) || isSending(row)" (click)="remind(row)">
-          {{ isReminded(row) ? '✓ Recordatorio enviado' : 'Enviar recordatorio' }}
+        <button
+          type="button"
+          class="cv-btn cv-btn--primary"
+          [disabled]="isReminded(row) || isSending(row)"
+          (click)="remind(row)"
+        >
+          {{ isReminded(row) ? ('✓ Recordatorio enviado' | t) : ('Enviar recordatorio' | t) }}
         </button>
       }
     </div>
@@ -424,6 +716,17 @@
 </aside>
 
 <div class="px-toast" [class.show]="toast()" role="status" aria-live="polite">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <path d="m5 12 5 5 9-10" />
+  </svg>
   <span>{{ toast() }}</span>
 </div>

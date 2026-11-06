@@ -1,25 +1,27 @@
 @if (passwordChanged()) {
   <p class="success" role="status">
-    Tu contrase&#241;a se actualiz&#243;. Cerramos las sesiones anteriores para proteger tu cuenta.
+    {{
+      'Tu contraseña se actualizó. Cerramos las sesiones anteriores para proteger tu cuenta.' | t
+    }}
   </p>
-  <a class="primary login-again" routerLink="/login">Volver a iniciar sesi&#243;n</a>
+  <a class="primary login-again" routerLink="/login">{{ 'Volver a iniciar sesión' | t }}</a>
 } @else if (loading()) {
-  <p role="status">Cargando tu cuenta...</p>
+  <p role="status">{{ 'Cargando tu cuenta...' | t }}</p>
 } @else {
-  <section class="photo-section" aria-label="Foto de perfil">
+  <section class="photo-section" [attr.aria-label]="'Foto de perfil' | t">
     <span class="profile-photo">
       @if (auth.user()?.avatarUrl; as photo) {
-        <img [src]="photo | publicUrl" alt="Tu foto de perfil" />
+        <img [src]="photo | publicUrl" [alt]="'Tu foto de perfil' | t" />
       } @else {
         {{ auth.user()?.firstName?.charAt(0) }}{{ auth.user()?.lastName?.charAt(0) }}
       }
     </span>
     <div class="photo-details">
-      <strong>Tu foto de perfil</strong>
-      <p>JPG, PNG, WebP o GIF. Hasta 5 MB.</p>
+      <strong>{{ 'Tu foto de perfil' | t }}</strong>
+      <p>{{ 'JPG, PNG, WebP o GIF. Hasta 5 MB.' | t }}</p>
       <div class="photo-actions">
         <label class="upload-button" [class.disabled]="uploading() || saving()">
-          {{ uploading() ? 'Actualizando...' : 'Cambiar foto' }}
+          {{ uploading() ? ('Actualizando...' | t) : ('Cambiar foto' | t) }}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
@@ -34,7 +36,7 @@
             [disabled]="uploading() || saving()"
             (click)="removePhoto()"
           >
-            Quitar foto
+            {{ 'Quitar foto' | t }}
           </button>
         }
       </div>
@@ -47,11 +49,12 @@
     <p class="success" role="status">{{ message() }}</p>
   }
   <form #details="ngForm" (ngSubmit)="save()">
-    <h3>Informaci&#243;n personal</h3>
-    <p class="description">Mant&#233;n tus datos al d&#237;a.</p>
+    <h3>{{ 'Información personal' | t }}</h3>
+    <p class="description">{{ 'Mantén tus datos al día.' | t }}</p>
     <div class="name-fields">
       <label
-        >Nombre<input
+        >{{ 'Nombre' | t
+        }}<input
           name="firstName"
           [(ngModel)]="firstName"
           required
@@ -60,7 +63,8 @@
           autocomplete="given-name"
       /></label>
       <label
-        >Apellido<input
+        >{{ 'Apellido' | t
+        }}<input
           name="lastName"
           [(ngModel)]="lastName"
           required
@@ -70,7 +74,8 @@
       /></label>
     </div>
     <label
-      >Correo electr&#243;nico<input
+      >{{ 'Correo electrónico' | t
+      }}<input
         type="email"
         name="email"
         [(ngModel)]="email"
@@ -81,7 +86,8 @@
     /></label>
     @if (email.trim().toLowerCase() !== originalEmail) {
       <label
-        >Confirma tu contrase&#241;a actual<input
+        >{{ 'Confirma tu contraseña actual' | t
+        }}<input
           type="password"
           name="emailPassword"
           [(ngModel)]="emailPassword"
@@ -89,24 +95,24 @@
           maxlength="72"
           autocomplete="current-password"
       /></label>
-      <p class="description">La necesitas para cambiar tu correo de acceso.</p>
+      <p class="description">{{ 'La necesitas para cambiar tu correo de acceso.' | t }}</p>
     }
     <label
-      >Tel&#233;fono <small>(opcional)</small
+      >{{ 'Teléfono' | t }} <small>{{ '(opcional)' | t }}</small
       ><input type="tel" name="phone" [(ngModel)]="phone" maxlength="30" autocomplete="tel"
     /></label>
     <button class="primary" type="submit" [disabled]="details.invalid || saving() || uploading()">
-      {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+      {{ saving() ? ('Guardando...' | t) : ('Guardar cambios' | t) }}
     </button>
   </form>
   <section class="security-section">
-    <h3>Cambiar contrase&#241;a</h3>
+    <h3>{{ 'Cambiar contraseña' | t }}</h3>
     <p class="description">
-      Verifica que eres t&#250; con un c&#243;digo enviado al correo registrado en tu cuenta.
+      {{ 'Verifica que eres tú con un código enviado al correo registrado en tu cuenta.' | t }}
     </p>
     <form #identity="ngForm" (ngSubmit)="requestCode()">
       <label
-        >Correo electr&#243;nico o c&#233;dula
+        >{{ 'Correo electrónico o cédula' | t }}
         <input
           name="identifier"
           [(ngModel)]="identifier"
@@ -123,10 +129,10 @@
       >
         {{
           requestingCode()
-            ? 'Enviando...'
+            ? ('Enviando...' | t)
             : codeSent()
-              ? 'Reenviar código'
-              : 'Enviar código a mi correo'
+              ? ('Reenviar código' | t)
+              : ('Enviar código a mi correo' | t)
         }}
       </button>
     </form>
@@ -136,7 +142,7 @@
       </p>
       <form #security="ngForm" (ngSubmit)="changePassword()">
         <label
-          >C&#243;digo de verificaci&#243;n
+          >{{ 'Código de verificación' | t }}
           <input
             name="code"
             [(ngModel)]="code"
@@ -150,10 +156,11 @@
           />
         </label>
         <p class="description">
-          Vence en 10 minutos. Puedes solicitar otro despu&#233;s de un minuto.
+          {{ 'Vence en 10 minutos. Puedes solicitar otro después de un minuto.' | t }}
         </p>
         <label
-          >Nueva contrase&#241;a<input
+          >{{ 'Nueva contraseña' | t
+          }}<input
             type="password"
             name="newPassword"
             [(ngModel)]="newPassword"
@@ -163,7 +170,8 @@
             autocomplete="new-password"
         /></label>
         <label
-          >Repetir nueva contrase&#241;a<input
+          >{{ 'Repetir nueva contraseña' | t
+          }}<input
             type="password"
             name="confirmPassword"
             [(ngModel)]="confirmPassword"
@@ -172,13 +180,13 @@
             maxlength="72"
             autocomplete="new-password"
         /></label>
-        <p class="description">Usa entre 8 y 72 caracteres.</p>
+        <p class="description">{{ 'Usa entre 8 y 72 caracteres.' | t }}</p>
         <button
           type="submit"
           class="primary"
           [disabled]="security.invalid || passwordSaving() || requestingCode()"
         >
-          {{ passwordSaving() ? 'Actualizando...' : 'Verificar y cambiar contraseña' }}
+          {{ passwordSaving() ? ('Actualizando...' | t) : ('Verificar y cambiar contraseña' | t) }}
         </button>
       </form>
     }

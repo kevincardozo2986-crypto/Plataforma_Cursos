@@ -2,36 +2,56 @@
   <!-- Encabezado -->
   <header class="px-hero">
     <div class="rs-controls">
-      <div class="cv-tabs" role="tablist" aria-label="Periodo">
+      <div class="cv-tabs" role="tablist" [attr.aria-label]="'Periodo' | t">
         @for (item of periods; track item.value) {
-          <button type="button" class="cv-tab" role="tab" [attr.aria-selected]="period() === item.value" (click)="setPeriod(item.value)">
-            {{ item.label }}
+          <button
+            type="button"
+            class="cv-tab"
+            role="tab"
+            [attr.aria-selected]="period() === item.value"
+            (click)="setPeriod(item.value)"
+          >
+            {{ item.label | t }}
           </button>
         }
       </div>
-      <select class="cv-select" aria-label="Curso" (change)="setCourse($event)">
-        <option value="all" [selected]="courseId() === null">Todos mis cursos</option>
+      <select class="cv-select" [attr.aria-label]="'Curso' | t" (change)="setCourse($event)">
+        <option value="all" [selected]="courseId() === null">{{ 'Todos mis cursos' | t }}</option>
         @for (course of selectable(); track course.id) {
-          <option [value]="course.id" [selected]="courseId() === course.id">{{ course.title }}</option>
+          <option [value]="course.id" [selected]="courseId() === course.id">
+            {{ course.title }}
+          </option>
         }
       </select>
     </div>
 
-    <p class="cv-eyebrow rel">Espacio docente / <b>Resumen</b></p>
+    <p class="cv-eyebrow rel">
+      {{ 'Espacio docente /' | t }} <b>{{ 'Resumen' | t }}</b>
+    </p>
     <div class="px-hero__main">
       <div class="rs-minis" aria-hidden="true">
-        <div class="rs-mini rs-mini--back"><i style="height: 40%"></i><i class="o" style="height: 70%"></i><i style="height: 55%"></i></div>
-        <div class="rs-mini rs-mini--front"><i style="height: 35%"></i><i style="height: 80%"></i><i class="o" style="height: 50%"></i><i style="height: 100%"></i></div>
+        <div class="rs-mini rs-mini--back">
+          <i style="height: 40%"></i><i class="o" style="height: 70%"></i
+          ><i style="height: 55%"></i>
+        </div>
+        <div class="rs-mini rs-mini--front">
+          <i style="height: 35%"></i><i style="height: 80%"></i><i class="o" style="height: 50%"></i
+          ><i style="height: 100%"></i>
+        </div>
       </div>
       <div>
-        <h1>Cómo van tus cursos</h1>
-        <p class="px-hero__sub">Tus cifras de un vistazo. Cambia el periodo o el curso y todo se actualiza.</p>
+        <h1>{{ 'Cómo van tus cursos' | t }}</h1>
+        <p class="px-hero__sub">
+          {{ 'Tus cifras de un vistazo. Cambia el periodo o el curso y todo se actualiza.' | t }}
+        </p>
       </div>
     </div>
     @if (data(); as d) {
       <p class="ix-sum">
-        <b>{{ d.courses.published }}</b> {{ d.courses.published === 1 ? 'curso publicado' : 'cursos publicados' }} de
-        <b>{{ d.courses.total }}</b> ({{ d.courses.draft }} {{ d.courses.draft === 1 ? 'borrador' : 'borradores' }}) · mostrando
+        <b>{{ d.courses.published }}</b>
+        {{ d.courses.published === 1 ? ('curso publicado' | t) : ('cursos publicados' | t) }}
+        {{ 'de' | t }} <b>{{ d.courses.total }}</b> ({{ d.courses.draft }}
+        {{ d.courses.draft === 1 ? ('borrador' | t) : ('borradores' | t) }}) · mostrando
         <b>{{ periodLabel() }}</b>
         @if (filteredCourse(); as course) {
           · <b>{{ course.title }}</b>
@@ -45,36 +65,69 @@
   @if (error()) {
     <div class="cv-callout cv-callout--danger" role="alert">
       <p>{{ error() }}</p>
-      <button type="button" class="cv-btn cv-btn--ghost" (click)="retry()">Reintentar</button>
+      <button type="button" class="cv-btn cv-btn--ghost" (click)="retry()">
+        {{ 'Reintentar' | t }}
+      </button>
     </div>
   }
 
   @if (!data() && loading()) {
-    <p class="rs-empty" role="status">Cargando tus cifras…</p>
+    <p class="rs-empty" role="status">{{ 'Cargando tus cifras…' | t }}</p>
   } @else if (data(); as d) {
     <div class="rs-body" [class.is-loading]="loading()" [attr.aria-busy]="loading()">
       <!-- Indicadores -->
-      <section class="rs-kpis" aria-label="Indicadores">
+      <section class="rs-kpis" [attr.aria-label]="'Indicadores' | t">
         <div class="rs-kpi">
           <p class="rs-kpi__label">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4" /></svg>
-            Estudiantes
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4" />
+            </svg>
+            {{ 'Estudiantes' | t }}
           </p>
-          <p class="rs-kpi__val" [attr.aria-label]="d.students + ' estudiantes'">{{ shown().students }}</p>
+          <p class="rs-kpi__val" [attr.aria-label]="d.students + ' estudiantes'">
+            {{ shown().students }}
+          </p>
           <div class="rs-kpi__row">
-            <p class="rs-kpi__sub">con inscripción en el periodo</p>
+            <p class="rs-kpi__sub">{{ 'con inscripción en el periodo' | t }}</p>
             @if (studentsDelta(); as delta) {
-              <ng-container [ngTemplateOutlet]="deltaTpl" [ngTemplateOutletContext]="{ $implicit: delta }" />
+              <ng-container
+                [ngTemplateOutlet]="deltaTpl"
+                [ngTemplateOutletContext]="{ $implicit: delta }"
+              />
             }
           </div>
         </div>
 
         <div class="rs-kpi">
           <p class="rs-kpi__label">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 11h6M9 15h4" /></svg>
-            Inscripciones
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <rect x="5" y="4" width="14" height="17" rx="2" />
+              <path d="M9 4V3h6v1M9 11h6M9 15h4" />
+            </svg>
+            {{ 'Inscripciones' | t }}
           </p>
-          <p class="rs-kpi__val" [attr.aria-label]="d.completion.enrolled + ' inscripciones'">{{ shown().enrollments }}</p>
+          <p class="rs-kpi__val" [attr.aria-label]="d.completion.enrolled + ' inscripciones'">
+            {{ shown().enrollments }}
+          </p>
           <div class="rs-kpi__row">
             <span class="ix-spark" aria-hidden="true">
               @for (height of spark(); track $index) {
@@ -82,46 +135,95 @@
               }
             </span>
             @if (enrollmentsDelta(); as delta) {
-              <ng-container [ngTemplateOutlet]="deltaTpl" [ngTemplateOutletContext]="{ $implicit: delta }" />
+              <ng-container
+                [ngTemplateOutlet]="deltaTpl"
+                [ngTemplateOutletContext]="{ $implicit: delta }"
+              />
             }
           </div>
         </div>
 
         <div class="rs-kpi">
           <p class="rs-kpi__label">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></svg>
-            Finalización
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m8 12 3 3 5-6" />
+            </svg>
+            {{ 'Finalización' | t }}
           </p>
-          <p class="rs-kpi__val" [attr.aria-label]="d.completion.rate + ' por ciento'">{{ shown().rate }}%</p>
-          <p class="rs-kpi__sub">{{ d.completion.completed }} de {{ activeEnrollments() }} terminaron</p>
+          <p class="rs-kpi__val" [attr.aria-label]="d.completion.rate + ' por ciento'">
+            {{ shown().rate }}%
+          </p>
+          <p class="rs-kpi__sub">
+            {{ d.completion.completed }} {{ 'de' | t }} {{ activeEnrollments() }} terminaron
+          </p>
           <div class="px-ring" [class.is-done]="ringDone()" aria-hidden="true">
             <svg viewBox="0 0 96 96">
               <circle class="trk" cx="48" cy="48" r="40" />
-              <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="ringLength" [attr.stroke-dashoffset]="ringOffset()" />
+              <circle
+                class="val"
+                cx="48"
+                cy="48"
+                r="40"
+                [attr.stroke-dasharray]="ringLength"
+                [attr.stroke-dashoffset]="ringOffset()"
+              />
             </svg>
           </div>
         </div>
 
         <div class="rs-kpi">
           <p class="rs-kpi__label">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z" /></svg>
-            Calificación
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z"
+              />
+            </svg>
+            {{ 'Calificación' | t }}
           </p>
           @if (rating().average !== null) {
             <p class="rs-kpi__val">{{ ratingText() }}<small>/ 5</small></p>
             <div class="rs-kpi__row">
               <span class="rs-stars" aria-hidden="true">
                 @for (n of stars; track n) {
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" [class.on]="n <= (rating().average ?? 0) + 0.5"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z" /></svg>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    [class.on]="n <= (rating().average ?? 0) + 0.5"
+                  >
+                    <path
+                      d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z"
+                    />
+                  </svg>
                 }
               </span>
-              <p class="rs-kpi__sub">{{ rating().count }} {{ rating().count === 1 ? 'reseña' : 'reseñas' }}</p>
+              <p class="rs-kpi__sub">
+                {{ rating().count }} {{ rating().count === 1 ? ('reseña' | t) : ('reseñas' | t) }}
+              </p>
             </div>
           } @else {
-            <p class="rs-kpi__val rs-kpi__val--none" aria-label="Sin calificación">—</p>
-            <p class="rs-kpi__sub">Aún no hay reseñas en este periodo.</p>
-            <button type="button" class="rs-empty-link" [disabled]="asking()" (click)="askReviews(courseId())">
-              Pedir reseñas a quienes terminaron →
+            <p class="rs-kpi__val rs-kpi__val--none" [attr.aria-label]="'Sin calificación' | t">
+              —
+            </p>
+            <p class="rs-kpi__sub">{{ 'Aún no hay reseñas en este periodo.' | t }}</p>
+            <button
+              type="button"
+              class="rs-empty-link"
+              [disabled]="asking()"
+              (click)="askReviews(courseId())"
+            >
+              {{ 'Pedir reseñas a quienes terminaron →' | t }}
             </button>
           }
         </div>
@@ -129,44 +231,119 @@
 
       <div class="rs-grid">
         <!-- Gráfica -->
-        <section class="pk-panel rel" #panel aria-label="Inscripciones y finalizaciones">
+        <section
+          class="pk-panel rel"
+          #panel
+          [attr.aria-label]="'Inscripciones y finalizaciones' | t"
+        >
           <div class="rs-chart__head">
             <div>
-              <h2>Inscripciones y finalizaciones</h2>
+              <h2>{{ 'Inscripciones y finalizaciones' | t }}</h2>
               <p>Por {{ noun() }}, dentro del periodo elegido.</p>
             </div>
-            <div class="cv-seg" role="group" aria-label="Vista de la gráfica">
-              <button type="button" [attr.aria-pressed]="view() === 'chart'" aria-label="Gráfica" (click)="view.set('chart')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            <div class="cv-seg" role="group" [attr.aria-label]="'Vista de la gráfica' | t">
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'chart'"
+                [attr.aria-label]="'Gráfica' | t"
+                (click)="view.set('chart')"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+                </svg>
               </button>
-              <button type="button" [attr.aria-pressed]="view() === 'table'" aria-label="Tabla" (click)="view.set('table')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg>
+              <button
+                type="button"
+                [attr.aria-pressed]="view() === 'table'"
+                [attr.aria-label]="'Tabla' | t"
+                (click)="view.set('table')"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+                </svg>
               </button>
             </div>
           </div>
           <div class="rs-legend">
-            <span><i></i>Inscripciones <b>{{ totals().enrollments }}</b></span>
-            <span><i class="o"></i>Finalizaciones <b>{{ totals().completions }}</b></span>
+            <span
+              ><i></i>{{ 'Inscripciones' | t }} <b>{{ totals().enrollments }}</b></span
+            >
+            <span
+              ><i class="o"></i>{{ 'Finalizaciones' | t }} <b>{{ totals().completions }}</b></span
+            >
           </div>
 
           <div class="rs-chart">
             @if (view() === 'table') {
               <table class="rs-table">
-                <caption class="sr-only">{{ chartLabel() }}</caption>
-                <thead><tr><th scope="col">Periodo</th><th scope="col">Inscripciones</th><th scope="col">Finalizaciones</th></tr></thead>
+                <caption class="sr-only">
+                  {{
+                    chartLabel()
+                  }}
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{{ 'Periodo' | t }}</th>
+                    <th scope="col">{{ 'Inscripciones' | t }}</th>
+                    <th scope="col">{{ 'Finalizaciones' | t }}</th>
+                  </tr>
+                </thead>
                 <tbody>
                   @for (bar of bars(); track bar.index) {
-                    <tr><td>{{ bar.longLabel }}</td><td>{{ bar.enrollments.value }}</td><td>{{ bar.completions.value }}</td></tr>
+                    <tr>
+                      <td>{{ bar.longLabel }}</td>
+                      <td>{{ bar.enrollments.value }}</td>
+                      <td>{{ bar.completions.value }}</td>
+                    </tr>
                   } @empty {
-                    <tr><td colspan="3">Sin movimiento en este periodo.</td></tr>
+                    <tr>
+                      <td colspan="3">Sin movimiento en este periodo.</td>
+                    </tr>
                   }
                 </tbody>
               </table>
             } @else {
-              <svg class="rs-svg" [attr.viewBox]="'0 0 ' + canvas.width + ' ' + canvas.height" role="img" [attr.aria-label]="chartLabel()" (pointerleave)="clearHover()">
+              <svg
+                class="rs-svg"
+                [attr.viewBox]="'0 0 ' + canvas.width + ' ' + canvas.height"
+                role="img"
+                [attr.aria-label]="chartLabel()"
+                (pointerleave)="clearHover()"
+              >
                 @for (tick of layout().ticks; track tick.value) {
-                  <line class="grid" [attr.x1]="canvas.left" [attr.x2]="canvas.width" [attr.y1]="tick.y" [attr.y2]="tick.y" />
-                  <text class="axis" [attr.x]="canvas.left - 8" [attr.y]="tick.y + 4" text-anchor="end">{{ tick.label }}</text>
+                  <line
+                    class="grid"
+                    [attr.x1]="canvas.left"
+                    [attr.x2]="canvas.width"
+                    [attr.y1]="tick.y"
+                    [attr.y2]="tick.y"
+                  />
+                  <text
+                    class="axis"
+                    [attr.x]="canvas.left - 8"
+                    [attr.y]="tick.y + 4"
+                    text-anchor="end"
+                  >
+                    {{ tick.label }}
+                  </text>
                 }
                 @for (bar of bars(); track bar.index) {
                   <rect
@@ -183,17 +360,56 @@
                 <g class="bars">
                   @for (bar of bars(); track bar.index) {
                     @if (bar.enrollments.value > 0) {
-                      <path class="b1" [attr.d]="barPath(bar.enrollments.x, layout().base, layout().barWidth, bar.enrollments.height)" />
+                      <path
+                        class="b1"
+                        [attr.d]="
+                          barPath(
+                            bar.enrollments.x,
+                            layout().base,
+                            layout().barWidth,
+                            bar.enrollments.height
+                          )
+                        "
+                      />
                     } @else {
-                      <rect class="b1 stub" [attr.x]="bar.enrollments.x" [attr.y]="layout().base - 2" [attr.width]="layout().barWidth" height="2" />
+                      <rect
+                        class="b1 stub"
+                        [attr.x]="bar.enrollments.x"
+                        [attr.y]="layout().base - 2"
+                        [attr.width]="layout().barWidth"
+                        height="2"
+                      />
                     }
                     @if (bar.completions.value > 0) {
-                      <path class="b2" [attr.d]="barPath(bar.completions.x, layout().base, layout().barWidth, bar.completions.height)" />
+                      <path
+                        class="b2"
+                        [attr.d]="
+                          barPath(
+                            bar.completions.x,
+                            layout().base,
+                            layout().barWidth,
+                            bar.completions.height
+                          )
+                        "
+                      />
                     } @else {
-                      <rect class="b2 stub" [attr.x]="bar.completions.x" [attr.y]="layout().base - 2" [attr.width]="layout().barWidth" height="2" />
+                      <rect
+                        class="b2 stub"
+                        [attr.x]="bar.completions.x"
+                        [attr.y]="layout().base - 2"
+                        [attr.width]="layout().barWidth"
+                        height="2"
+                      />
                     }
                     @if (bar.showLabel) {
-                      <text class="axis" [attr.x]="bar.center" [attr.y]="canvas.height - 8" text-anchor="middle">{{ bar.label }}</text>
+                      <text
+                        class="axis"
+                        [attr.x]="bar.center"
+                        [attr.y]="canvas.height - 8"
+                        text-anchor="middle"
+                      >
+                        {{ bar.label }}
+                      </text>
                     }
                   }
                 </g>
@@ -202,10 +418,21 @@
           </div>
 
           @if (tooltip(); as tip) {
-            <div class="rs-tip show" role="tooltip" [style.left.px]="tip.left" [style.top.px]="tip.top">
+            <div
+              class="rs-tip show"
+              role="tooltip"
+              [style.left.px]="tip.left"
+              [style.top.px]="tip.top"
+            >
               <b>{{ tip.title }}</b>
-              <div><i></i><span>Inscripciones</span><strong>{{ tip.enrollments }}</strong></div>
-              <div><i class="o"></i><span>Finalizaciones</span><strong>{{ tip.completions }}</strong></div>
+              <div>
+                <i></i><span>{{ 'Inscripciones' | t }}</span
+                ><strong>{{ tip.enrollments }}</strong>
+              </div>
+              <div>
+                <i class="o"></i><span>{{ 'Finalizaciones' | t }}</span
+                ><strong>{{ tip.completions }}</strong>
+              </div>
             </div>
           }
         </section>
@@ -213,12 +440,20 @@
         <!-- Lateral -->
         <aside class="rs-side">
           <div class="ix-card">
-            <h3>Estado de las inscripciones</h3>
-            <div class="ix-dist" role="img" [attr.aria-label]="'Reparto de las inscripciones por estado'">
+            <h3>{{ 'Estado de las inscripciones' | t }}</h3>
+            <div
+              class="ix-dist"
+              role="img"
+              [attr.aria-label]="'Reparto de las inscripciones por estado'"
+            >
               @if (hasStates()) {
                 @for (state of states(); track state.key) {
                   @if (state.value > 0) {
-                    <span [class]="'ix-seg--' + state.key" [style.flex-grow]="state.value" [attr.title]="state.label + ': ' + state.value"></span>
+                    <span
+                      [class]="'ix-seg--' + state.key"
+                      [style.flex-grow]="state.value"
+                      [attr.title]="state.label + ': ' + state.value"
+                    ></span>
                   }
                 }
               } @else {
@@ -227,42 +462,105 @@
             </div>
             <div class="ix-legend">
               @for (state of states(); track state.key) {
-                <span class="ix-leg"><span [class]="'ix-dot ix-dot--' + state.key"></span>{{ state.label }}<b>{{ state.value }}</b></span>
+                <span class="ix-leg"
+                  ><span [class]="'ix-dot ix-dot--' + state.key"></span>{{ state.label
+                  }}<b>{{ state.value }}</b></span
+                >
               }
             </div>
           </div>
 
           @if (hasHighlights()) {
             <div class="ix-card">
-              <h3>Para tener en cuenta</h3>
+              <h3>{{ 'Para tener en cuenta' | t }}</h3>
               <div class="rs-high">
                 @if (best(); as course) {
                   <div class="rs-high__item">
                     <span class="rs-high__ic rs-ic--ok" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></svg>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      >
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="m8 12 3 3 5-6" />
+                      </svg>
                     </span>
-                    <p><b>{{ course.title }}: {{ course.completionRate }}% terminó</b>Tu curso con mejor finalización en el periodo.</p>
+                    <p>
+                      <b>{{ course.title }}: {{ course.completionRate }}% terminó</b
+                      >{{ 'Tu curso con mejor finalización en el periodo.' | t }}
+                    </p>
                   </div>
                 }
                 @if (empty().length > 0) {
                   <div class="rs-high__item">
                     <span class="rs-high__ic rs-ic--warn" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" /></svg>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      >
+                        <circle cx="9" cy="8" r="3.5" />
+                        <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" />
+                      </svg>
                     </span>
                     <p>
-                      <b>{{ empty().length }} {{ empty().length === 1 ? 'curso publicado sin inscritos' : 'cursos publicados sin inscritos' }}</b>{{ emptyNames() }}.
-                      <button type="button" class="cv-btn cv-btn--secondary cv-btn--sm" (click)="copyLinks()">Copiar enlaces para compartir</button>
+                      <b
+                        >{{ empty().length }}
+                        {{
+                          empty().length === 1
+                            ? ('curso publicado sin inscritos' | t)
+                            : ('cursos publicados sin inscritos' | t)
+                        }}</b
+                      >{{ emptyNames() }}.
+                      <button
+                        type="button"
+                        class="cv-btn cv-btn--secondary cv-btn--sm"
+                        (click)="copyLinks()"
+                      >
+                        {{ 'Copiar enlaces para compartir' | t }}
+                      </button>
                     </p>
                   </div>
                 }
                 @if (drafts() > 0) {
                   <div class="rs-high__item">
                     <span class="rs-high__ic rs-ic--info" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 11h6M9 15h4" /></svg>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      >
+                        <rect x="5" y="4" width="14" height="17" rx="2" />
+                        <path d="M9 4V3h6v1M9 11h6M9 15h4" />
+                      </svg>
                     </span>
                     <p>
-                      <b>{{ drafts() }} {{ drafts() === 1 ? 'borrador sin publicar' : 'borradores sin publicar' }}</b>Terminar uno puede traerte más estudiantes.
-                      <a class="cv-btn cv-btn--ghost cv-btn--sm rs-link" routerLink="/teacher/courses">Ir a Mis cursos →</a>
+                      <b
+                        >{{ drafts() }}
+                        {{
+                          drafts() === 1
+                            ? ('borrador sin publicar' | t)
+                            : ('borradores sin publicar' | t)
+                        }}</b
+                      >{{ 'Terminar uno puede traerte más estudiantes.' | t }}
+                      <a
+                        class="cv-btn cv-btn--ghost cv-btn--sm rs-link"
+                        routerLink="/teacher/courses"
+                        >{{ 'Ir a Mis cursos →' | t }}</a
+                      >
                     </p>
                   </div>
                 }
@@ -273,84 +571,184 @@
       </div>
 
       <!-- Por curso -->
-      <section class="pk-panel rs-courses" aria-label="Por curso">
+      <section class="pk-panel rs-courses" [attr.aria-label]="'Por curso' | t">
         <div class="rs-courses__head">
-          <h2>Por curso</h2>
+          <h2>{{ 'Por curso' | t }}</h2>
           <label class="rs-toggle">
-            <input type="checkbox" [checked]="showDrafts()" (change)="showDrafts.set(!showDrafts())" />
-            Mostrar borradores <span class="cv-tab__count">{{ drafts() }}</span>
+            <input
+              type="checkbox"
+              [checked]="showDrafts()"
+              (change)="showDrafts.set(!showDrafts())"
+            />
+            {{ 'Mostrar borradores' | t }} <span class="cv-tab__count">{{ drafts() }}</span>
           </label>
         </div>
         <div class="ix-scroll">
           <table class="ix-table rs-ctable">
             <thead>
               <tr>
-                <th scope="col" [attr.aria-sort]="sortAria('title')"><button type="button" class="ix-sort" [attr.data-dir]="sortKey() === 'title' ? sortDir() : null" (click)="setSort('title')">Curso</button></th>
+                <th scope="col" [attr.aria-sort]="sortAria('title')">
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="sortKey() === 'title' ? sortDir() : null"
+                    (click)="setSort('title')"
+                  >
+                    {{ 'Curso' | t }}
+                  </button>
+                </th>
                 <th scope="col" [attr.aria-sort]="sortAria('enrolled')">
-                  <button type="button" class="ix-sort" [attr.data-dir]="sortKey() === 'enrolled' ? sortDir() : null" (click)="setSort('enrolled')">
-                    Inscritos <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="sortKey() === 'enrolled' ? sortDir() : null"
+                    (click)="setSort('enrolled')"
+                  >
+                    {{ 'Inscritos' | t }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                 </th>
-                <th scope="col">Terminaron</th>
+                <th scope="col">{{ 'Terminaron' | t }}</th>
                 <th scope="col" [attr.aria-sort]="sortAria('rate')">
-                  <button type="button" class="ix-sort" [attr.data-dir]="sortKey() === 'rate' ? sortDir() : null" (click)="setSort('rate')">
-                    Finalización <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  <button
+                    type="button"
+                    class="ix-sort"
+                    [attr.data-dir]="sortKey() === 'rate' ? sortDir() : null"
+                    (click)="setSort('rate')"
+                  >
+                    {{ 'Finalización' | t }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                 </th>
-                <th scope="col">Nota media</th>
-                <th scope="col">Calificación</th>
+                <th scope="col">{{ 'Nota media' | t }}</th>
+                <th scope="col">{{ 'Calificación' | t }}</th>
               </tr>
             </thead>
             <tbody>
               @for (row of rows(); track row.id) {
-                <tr tabindex="0" [class.is-picked]="courseId() === row.id" [attr.title]="courseId() === row.id ? 'Quitar el filtro' : 'Filtrar el resumen por este curso'" (click)="toggleCourse(row.id)" (keydown.enter)="toggleCourse(row.id)" (keydown.space)="$event.preventDefault(); toggleCourse(row.id)">
+                <tr
+                  tabindex="0"
+                  [class.is-picked]="courseId() === row.id"
+                  [attr.title]="
+                    courseId() === row.id ? 'Quitar el filtro' : 'Filtrar el resumen por este curso'
+                  "
+                  (click)="toggleCourse(row.id)"
+                  (keydown.enter)="toggleCourse(row.id)"
+                  (keydown.space)="$event.preventDefault(); toggleCourse(row.id)"
+                >
                   <td>
                     <div class="ix-who">
-                      <span class="rs-mono" [class]="'rs-mono mc-cover--' + row.color">{{ row.mono }}</span>
+                      <span class="rs-mono" [class]="'rs-mono mc-cover--' + row.color">{{
+                        row.mono
+                      }}</span>
                       <div>
                         <b>{{ row.title }}</b>
-                        <span class="cv-badge" [class]="'cv-badge cv-badge--' + row.status.toLowerCase()">{{ statusLabels[row.status] }}</span>
+                        <span
+                          class="cv-badge"
+                          [class]="'cv-badge cv-badge--' + row.status.toLowerCase()"
+                          >{{ statusLabels[row.status] | t }}</span
+                        >
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="ix-prog">
-                      <div class="ix-prog__track"><div class="ix-prog__bar ix-prog__bar--prog" [style.width.%]="(row.enrolled / maxEnrolled()) * 100"></div></div>
-                      <span class="rs-num" [class.rs-num--zero]="row.enrolled === 0">{{ row.enrolled }}</span>
+                      <div class="ix-prog__track">
+                        <div
+                          class="ix-prog__bar ix-prog__bar--prog"
+                          [style.width.%]="(row.enrolled / maxEnrolled()) * 100"
+                        ></div>
+                      </div>
+                      <span class="rs-num" [class.rs-num--zero]="row.enrolled === 0">{{
+                        row.enrolled
+                      }}</span>
                     </div>
                   </td>
-                  <td><span class="rs-num" [class.rs-num--zero]="row.completed === 0">{{ row.completed }}</span></td>
+                  <td>
+                    <span class="rs-num" [class.rs-num--zero]="row.completed === 0">{{
+                      row.completed
+                    }}</span>
+                  </td>
                   <td>
                     @if (row.rate >= 0) {
                       <div class="ix-prog">
-                        <div class="ix-prog__track"><div class="ix-prog__bar" [class]="'ix-prog__bar ix-prog__bar--' + (row.rate >= 50 ? 'done' : 'prog')" [style.width.%]="row.rate"></div></div>
+                        <div class="ix-prog__track">
+                          <div
+                            class="ix-prog__bar"
+                            [class]="
+                              'ix-prog__bar ix-prog__bar--' + (row.rate >= 50 ? 'done' : 'prog')
+                            "
+                            [style.width.%]="row.rate"
+                          ></div>
+                        </div>
                         <span class="ix-prog__n">{{ row.rate }}%</span>
                       </div>
                     } @else {
-                      <span class="rs-nodata">Sin inscritos</span>
+                      <span class="rs-nodata">{{ 'Sin inscritos' | t }}</span>
                     }
                   </td>
                   <td>
                     @if (row.averageScore !== null) {
                       <span class="rs-num">{{ noteOf(row) }}%</span>
                     } @else {
-                      <span class="rs-nodata">Sin notas</span>
+                      <span class="rs-nodata">{{ 'Sin notas' | t }}</span>
                     }
                   </td>
                   <td>
                     @if (row.rating.average !== null) {
                       <span class="rs-num rs-rate">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z" /></svg>{{ ratingOf(row) }}
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1-4.5-4.2 6.1-.8z"
+                          /></svg
+                        >{{ ratingOf(row) }}
                       </span>
                     } @else if (canAskReview(row)) {
-                      <button type="button" class="rs-cta" [disabled]="asking()" (click)="$event.stopPropagation(); askReviews(row.id, row.title)" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">Pedir reseña</button>
+                      <button
+                        type="button"
+                        class="rs-cta"
+                        [disabled]="asking()"
+                        (click)="$event.stopPropagation(); askReviews(row.id, row.title)"
+                        (keydown.enter)="$event.stopPropagation()"
+                        (keydown.space)="$event.stopPropagation()"
+                      >
+                        {{ 'Pedir reseña' | t }}
+                      </button>
                     } @else {
-                      <span class="rs-nodata">Sin reseñas</span>
+                      <span class="rs-nodata">{{ 'Sin reseñas' | t }}</span>
                     }
                   </td>
                 </tr>
               } @empty {
-                <tr class="rs-none"><td colspan="6">Todavía no hay cursos para mostrar.</td></tr>
+                <tr class="rs-none">
+                  <td colspan="6">Todavía no hay cursos para mostrar.</td>
+                </tr>
               }
             </tbody>
           </table>
@@ -362,19 +760,56 @@
 
 <!-- Variación respecto al periodo anterior -->
 <ng-template #deltaTpl let-delta>
-  <span class="rs-delta" [class]="'rs-delta rs-delta--' + delta.kind" title="Comparado con el periodo anterior">
+  <span
+    class="rs-delta"
+    [class]="'rs-delta rs-delta--' + delta.kind"
+    [title]="'Comparado con el periodo anterior' | t"
+  >
     @if (delta.kind === 'up') {
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>{{ delta.amount }}
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 19V5M6 11l6-6 6 6" /></svg
+      >{{ delta.amount }}
     } @else if (delta.kind === 'down') {
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>{{ delta.amount }}
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M6 13l6 6 6-6" /></svg
+      >{{ delta.amount }}
     } @else {
-      = igual
+      {{ '= igual' | t }}
     }
   </span>
 </ng-template>
 
 <!-- Aviso -->
 <div class="px-toast" [class.show]="toast()" role="status" aria-live="polite">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <path d="m5 12 5 5 9-10" />
+  </svg>
   <span>{{ toast() }}</span>
 </div>

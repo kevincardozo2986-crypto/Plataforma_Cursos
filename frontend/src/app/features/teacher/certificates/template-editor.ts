@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -43,7 +44,15 @@ import { fillSample, HEX_COLOR, sampleValues, unknownPlaceholders } from './cert
 /** Crear o editar una plantilla de certificado, con una vista previa que se actualiza al escribir. */
 @Component({
   selector: 'app-template-editor',
-  imports: [PublicUrlPipe, ReactiveFormsModule, RouterLink, Icon, CertificatePreview, FontPicker],
+  imports: [
+    TranslatePipe,
+    PublicUrlPipe,
+    ReactiveFormsModule,
+    RouterLink,
+    Icon,
+    CertificatePreview,
+    FontPicker,
+  ],
   templateUrl: './template-editor.html',
   styleUrl: './template-editor.scss',
 })

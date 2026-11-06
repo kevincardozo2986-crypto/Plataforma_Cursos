@@ -1,12 +1,14 @@
-<h3>Tareas de este módulo</h3>
+<h3>{{ 'Tareas de este módulo' | t }}</h3>
 
 @if (loading()) {
-  <p class="empty" role="status"><app-icon name="refresh" [size]="16" /> Cargando tareas…</p>
+  <p class="empty" role="status">
+    <app-icon name="refresh" [size]="16" /> {{ 'Cargando tareas…' | t }}
+  </p>
 } @else if (error()) {
   <p class="error" role="alert">{{ error() }}</p>
 } @else if (items().length === 0) {
   <p class="empty">
-    <app-icon name="clipboard" [size]="18" /> Este módulo no tiene tareas por ahora.
+    <app-icon name="clipboard" [size]="18" /> {{ 'Este módulo no tiene tareas por ahora.' | t }}
   </p>
 } @else {
   <ul class="tasks">
@@ -19,16 +21,18 @@
           [attr.aria-expanded]="openId() === item.id"
           (click)="toggle(item.id)"
         >
-          <span class="task-icon" aria-hidden="true"><app-icon name="clipboard" [size]="20" /></span>
+          <span class="task-icon" aria-hidden="true"
+            ><app-icon name="clipboard" [size]="20"
+          /></span>
           <span class="task-title">
             <strong>{{ item.title }}</strong>
             @if (item.dueAt) {
               <small [class.overdue]="pastDue(item) && !item.mySubmission">
                 <app-icon name="calendar" [size]="13" />
-                Entrega hasta el {{ item.dueAt | date: "d 'de' MMMM, h:mm a" }}
+                Entrega hasta el {{ item.dueAt | date: "d ('de' | t) MMMM, h:mm a" }}
               </small>
             } @else {
-              <small>Sin fecha límite</small>
+              <small>{{ 'Sin fecha límite' | t }}</small>
             }
           </span>
           <span class="pill" [attr.data-tone]="state.tone">{{ state.label }}</span>
@@ -42,8 +46,8 @@
             }
 
             @if (item.attachments.length > 0) {
-              <section class="block" aria-label="Documentos de la tarea">
-                <h4><app-icon name="download" [size]="16" /> Documentos del docente</h4>
+              <section class="block" [attr.aria-label]="'Documentos de la tarea' | t">
+                <h4><app-icon name="download" [size]="16" /> {{ 'Documentos del docente' | t }}</h4>
                 <ul class="files">
                   @for (file of item.attachments; track file.name) {
                     <li>
@@ -67,30 +71,33 @@
             <p class="score-info">
               <app-icon name="award" [size]="15" /> Vale {{ item.maxScore }} puntos.
               @if (!item.allowLate) {
-                Pasada la fecha límite ya no se reciben entregas.
+                {{ 'Pasada la fecha límite ya no se reciben entregas.' | t }}
               }
             </p>
 
             @if (detailLoading()) {
-              <p class="empty" role="status">Cargando tu entrega…</p>
+              <p class="empty" role="status">{{ 'Cargando tu entrega…' | t }}</p>
             } @else {
               @if (mine(); as sent) {
                 @if (sent.status === 'GRADED') {
-                  <section class="grade" aria-label="Tu calificación">
+                  <section class="grade" [attr.aria-label]="'Tu calificación' | t">
                     <div class="grade-score">
                       <strong>{{ sent.score }}</strong>
-                      <span>de {{ item.maxScore }}</span>
+                      <span>{{ 'de' | t }} {{ item.maxScore }}</span>
                     </div>
                     <div class="grade-text">
-                      <h4><app-icon name="check-circle" [size]="16" /> Tu tarea fue calificada</h4>
+                      <h4>
+                        <app-icon name="check-circle" [size]="16" />
+                        {{ 'Tu tarea fue calificada' | t }}
+                      </h4>
                       @if (sent.feedback) {
                         <p class="feedback">{{ sent.feedback }}</p>
                       } @else {
-                        <p class="muted">El docente no dejó comentarios.</p>
+                        <p class="muted">{{ 'El docente no dejó comentarios.' | t }}</p>
                       }
                       @if (sent.gradedAt) {
                         <small class="muted">
-                          Calificada el {{ sent.gradedAt | date: "d 'de' MMMM" }}
+                          Calificada el {{ sent.gradedAt | date: "d ('de' | t) MMMM" }}
                         </small>
                       }
                     </div>
@@ -98,31 +105,36 @@
                 } @else {
                   <p class="status-line">
                     <app-icon name="clock" [size]="15" />
-                    Entregaste el {{ sent.submittedAt | date: "d 'de' MMMM, h:mm a" }}@if (sent.late) {
-                      <span class="late"> · fuera de plazo</span>
-                    }. Mientras no la califiquen, puedes cambiarla y volver a enviarla.
+                    Entregaste el {{ sent.submittedAt | date: "d ('de' | t) MMMM, h:mm a" }}
+                    @if (sent.late) {
+                      <span class="late"> {{ '· fuera de plazo' | t }}</span>
+                    }
+                    {{ '. Mientras no la califiquen, puedes cambiarla y volver a enviarla.' | t }}
                   </p>
                 }
               }
 
               @if (canSubmit(item)) {
                 <form class="submit" (ngSubmit)="submit(item)">
-                  <h4><app-icon name="pen" [size]="16" /> {{ mine() ? 'Tu entrega' : 'Devuelve tu tarea' }}</h4>
+                  <h4>
+                    <app-icon name="pen" [size]="16" />
+                    {{ mine() ? ('Tu entrega' | t) : ('Devuelve tu tarea' | t) }}
+                  </h4>
 
                   <label class="field">
-                    <span>Tu respuesta (opcional si adjuntas documentos)</span>
+                    <span>{{ 'Tu respuesta (opcional si adjuntas documentos)' | t }}</span>
                     <textarea
                       name="text"
                       rows="5"
                       maxlength="20000"
                       [ngModel]="text()"
                       (ngModelChange)="text.set($event)"
-                      placeholder="Escribe aquí tu respuesta…"
+                      [placeholder]="'Escribe aquí tu respuesta…' | t"
                     ></textarea>
                   </label>
 
                   <div class="field">
-                    <span>Tus documentos (PDF, Word, Excel…)</span>
+                    <span>{{ 'Tus documentos (PDF, Word, Excel…)' | t }}</span>
                     <app-document-field [inputId]="'doc-' + item.id" [(files)]="files" />
                   </div>
 
@@ -137,16 +149,22 @@
 
                   <button type="submit" class="primary" [disabled]="saving()">
                     <app-icon name="check" [size]="17" />
-                    {{ saving() ? 'Enviando…' : mine() ? 'Volver a enviar' : 'Entregar tarea' }}
+                    {{
+                      saving()
+                        ? ('Enviando…' | t)
+                        : mine()
+                          ? ('Volver a enviar' | t)
+                          : ('Entregar tarea' | t)
+                    }}
                   </button>
                 </form>
               } @else if (mine()?.status !== 'GRADED') {
                 <p class="error" role="status">
-                  El plazo terminó y esta tarea ya no recibe entregas.
+                  {{ 'El plazo terminó y esta tarea ya no recibe entregas.' | t }}
                 </p>
               } @else if (mine()?.files?.length) {
-                <section class="block" aria-label="Lo que entregaste">
-                  <h4><app-icon name="file" [size]="16" /> Lo que entregaste</h4>
+                <section class="block" [attr.aria-label]="'Lo que entregaste' | t">
+                  <h4><app-icon name="file" [size]="16" /> {{ 'Lo que entregaste' | t }}</h4>
                   @if (mine()?.text) {
                     <p class="sent-text">{{ mine()?.text }}</p>
                   }
@@ -164,8 +182,8 @@
                   </ul>
                 </section>
               } @else if (mine()?.text) {
-                <section class="block" aria-label="Lo que entregaste">
-                  <h4><app-icon name="file" [size]="16" /> Lo que entregaste</h4>
+                <section class="block" [attr.aria-label]="'Lo que entregaste' | t">
+                  <h4><app-icon name="file" [size]="16" /> {{ 'Lo que entregaste' | t }}</h4>
                   <p class="sent-text">{{ mine()?.text }}</p>
                 </section>
               }

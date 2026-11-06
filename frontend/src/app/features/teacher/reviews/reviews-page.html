@@ -1,14 +1,17 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">ESPACIO DOCENTE / RESEÑAS</span>
-    <app-page-header title="Reseñas" subtitle="Lo que opinan tus estudiantes de tus cursos." />
+    <span class="eyebrow">{{ 'ESPACIO DOCENTE / RESEÑAS' | t }}</span>
+    <app-page-header
+      [title]="'Reseñas' | t"
+      subtitle="Lo que opinan tus estudiantes de tus cursos."
+    />
 
     @if (error()) {
       <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
     }
 
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Filtrar por estrellas">
+      <div class="filters" role="group" [attr.aria-label]="'Filtrar por estrellas' | t">
         <button
           type="button"
           class="chip"
@@ -16,7 +19,7 @@
           [attr.aria-pressed]="ratingFilter() === null"
           (click)="setRating(null)"
         >
-          Todas
+          {{ 'Todas' | t }}
         </button>
         @for (rating of ratings; track rating) {
           <button
@@ -33,9 +36,9 @@
       </div>
 
       <div class="panel-field course">
-        <label for="course-filter">Curso</label>
+        <label for="course-filter">{{ 'Curso' | t }}</label>
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id">{{ course.title }}</option>
           }
@@ -45,14 +48,14 @@
 
     @if (summary(); as data) {
       @if (data.average !== null) {
-        <section class="panel-card summary" aria-label="Resumen del curso">
+        <section class="panel-card summary" [attr.aria-label]="'Resumen del curso' | t">
           <div class="average">
             <strong>{{ data.average.toString().replace('.', ',') }}</strong>
             <span class="stars" [attr.aria-label]="data.average + ' de 5'">{{
               starText(data.average)
             }}</span>
             <span class="panel-muted"
-              >{{ data.count }} {{ data.count === 1 ? 'reseña' : 'reseñas' }}</span
+              >{{ data.count }} {{ data.count === 1 ? ('reseña' | t) : ('reseñas' | t) }}</span
             >
           </div>
 
@@ -70,16 +73,18 @@
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando reseñas…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando reseñas…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">★</span>
-        <h2>Aún no hay reseñas</h2>
+        <h2>{{ 'Aún no hay reseñas' | t }}</h2>
         <p>
           {{
             ratingFilter() || courseFilter()
-              ? 'Ninguna reseña coincide con el filtro.'
-              : 'Cuando un estudiante califique uno de tus cursos, aparecerá aquí.'
+              ? ('Ninguna reseña coincide con el filtro.' | t)
+              : ('Cuando un estudiante califique uno de tus cursos, aparecerá aquí.' | t)
           }}
         </p>
       </div>
@@ -91,19 +96,21 @@
               <span class="stars" [attr.aria-label]="item.rating + ' de 5'">{{
                 starText(item.rating)
               }}</span>
-              <span class="panel-muted when">{{ item.createdAt | date: "d 'de' MMM y" }}</span>
+              <span class="panel-muted when">{{
+                item.createdAt | date: "d ('de' | t) MMM y"
+              }}</span>
             </div>
 
             @if (item.comment) {
               <p class="comment">{{ item.comment }}</p>
             } @else {
-              <p class="comment panel-muted">Sin comentario.</p>
+              <p class="comment panel-muted">{{ 'Sin comentario.' | t }}</p>
             }
 
             <p class="meta panel-muted">
               {{ item.student.firstName }} {{ item.student.lastName }} · {{ item.course.title }}
               @if (item.updatedAt !== item.createdAt) {
-                · editada
+                {{ '· editada' | t }}
               }
             </p>
           </li>
@@ -111,14 +118,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -126,7 +133,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

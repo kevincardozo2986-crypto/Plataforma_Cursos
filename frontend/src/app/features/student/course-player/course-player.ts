@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { embeddedLessonVideo, withoutMainVideo } from './video-source';
 import { CourseVideo, VideoSample } from './course-video';
@@ -96,6 +97,7 @@ type Tab =
 @Component({
   selector: 'app-course-player',
   imports: [
+    TranslatePipe,
     PublicUrlPipe,
     RouterLink,
     FormsModule,

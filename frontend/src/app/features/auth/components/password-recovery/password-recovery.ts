@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { Component, DestroyRef, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -6,7 +7,7 @@ import { finalize } from 'rxjs';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 @Component({
   selector: 'app-password-recovery',
-  imports: [FormsModule],
+  imports: [TranslatePipe, FormsModule],
   templateUrl: './password-recovery.html',
   styleUrl: './password-recovery.scss',
 })

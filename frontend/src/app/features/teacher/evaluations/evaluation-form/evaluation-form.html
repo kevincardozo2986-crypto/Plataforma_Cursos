@@ -13,7 +13,7 @@
         class="panel-btn panel-btn--ghost"
         [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
       >
-        Volver al contenido
+        {{ 'Volver al contenido' | t }}
       </a>
     </app-page-header>
 
@@ -25,20 +25,24 @@
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando evaluación…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando evaluación…' | t }}</p>
+      </div>
     } @else if (!loaded()) {
-      <div class="panel-card"><p class="panel-muted">No se encontró la evaluación.</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'No se encontró la evaluación.' | t }}</p>
+      </div>
     } @else {
       <form class="stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="panel-card general">
           <div class="panel-field">
-            <label for="title">Título</label>
+            <label for="title">{{ 'Título' | t }}</label>
             <input
               id="title"
               class="panel-input"
               type="text"
               formControlName="title"
-              placeholder="Ej. Quiz del módulo 1"
+              [placeholder]="'Ej. Quiz del módulo 1' | t"
               [attr.aria-invalid]="titleError() ? 'true' : null"
             />
             @if (titleError()) {
@@ -47,18 +51,18 @@
           </div>
 
           <div class="panel-field">
-            <label for="description">Descripción (opcional)</label>
+            <label for="description">{{ 'Descripción (opcional)' | t }}</label>
             <app-rich-editor
               inputId="description"
               label="Descripción de la evaluación"
               [minHeight]="140"
               formControlName="description"
-              placeholder="Qué cubre, cuánto dura, indicaciones para presentarla…"
+              [placeholder]="'Qué cubre, cuánto dura, indicaciones para presentarla…' | t"
             />
           </div>
 
           <div class="panel-field score">
-            <label for="passingScore">Nota mínima para aprobar (%)</label>
+            <label for="passingScore">{{ 'Nota mínima para aprobar (%)' | t }}</label>
             <input
               id="passingScore"
               class="panel-input"
@@ -77,23 +81,23 @@
         <div formArrayName="questions" class="questions">
           @for (question of questions.controls; track question; let qi = $index) {
             <fieldset class="panel-card question" [formGroupName]="qi">
-              <legend class="visually-hidden">Pregunta {{ qi + 1 }}</legend>
+              <legend class="visually-hidden">{{ 'Pregunta' | t }} {{ qi + 1 }}</legend>
 
               <div class="question-head">
-                <h2>Pregunta {{ qi + 1 }}</h2>
+                <h2>{{ 'Pregunta' | t }} {{ qi + 1 }}</h2>
                 <button
                   type="button"
                   class="panel-btn panel-btn--danger panel-btn--sm"
                   [disabled]="questions.length === 1"
                   (click)="removeQuestion(qi)"
                 >
-                  Quitar pregunta
+                  {{ 'Quitar pregunta' | t }}
                 </button>
               </div>
 
               <div class="question-row">
                 <div class="panel-field type">
-                  <label [attr.for]="'q-type-' + qi">Tipo de pregunta</label>
+                  <label [attr.for]="'q-type-' + qi">{{ 'Tipo de pregunta' | t }}</label>
                   <select
                     class="panel-select"
                     [id]="'q-type-' + qi"
@@ -105,14 +109,14 @@
                         [value]="entry.value"
                         [selected]="question.controls.type.value === entry.value"
                       >
-                        {{ entry.label }}
+                        {{ entry.label | t }}
                       </option>
                     }
                   </select>
                 </div>
 
                 <div class="panel-field points">
-                  <label [attr.for]="'q-points-' + qi">Puntos</label>
+                  <label [attr.for]="'q-points-' + qi">{{ 'Puntos' | t }}</label>
                   <input
                     class="panel-input"
                     type="number"
@@ -127,12 +131,12 @@
               <p class="panel-hint type-hint">{{ typeHint(question) }}</p>
 
               <div class="panel-field">
-                <label [attr.for]="'q-text-' + qi">Enunciado</label>
+                <label [attr.for]="'q-text-' + qi">{{ 'Enunciado' | t }}</label>
                 <textarea
                   class="panel-textarea short"
                   [id]="'q-text-' + qi"
                   formControlName="text"
-                  placeholder="Escribe la pregunta"
+                  [placeholder]="'Escribe la pregunta' | t"
                   [attr.aria-invalid]="shows(question.controls.text) ? 'true' : null"
                 ></textarea>
               </div>
@@ -278,7 +282,7 @@
           class="panel-btn panel-btn--ghost add-question"
           (click)="addQuestion()"
         >
-          + Añadir pregunta
+          {{ '+ Añadir pregunta' | t }}
         </button>
 
         <div class="footer">
@@ -286,10 +290,12 @@
             class="panel-btn panel-btn--ghost"
             [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
           >
-            Cancelar
+            {{ 'Cancelar' | t }}
           </a>
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-            {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear evaluación' }}
+            {{
+              saving() ? ('Guardando…' | t) : isEdit ? ('Guardar cambios' | t) : 'Crear evaluación'
+            }}
           </button>
         </div>
       </form>

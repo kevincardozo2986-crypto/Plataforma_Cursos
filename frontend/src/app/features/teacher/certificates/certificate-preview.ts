@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { publicUrl } from '../../../core/http/public-url';
 import { Component, computed, effect, ElementRef, inject, input, output } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -37,6 +38,7 @@ const STANDARD: Record<string, FontOption> = {
  * como miniatura.
  */
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-certificate-preview',
   templateUrl: './certificate-preview.html',
   styleUrl: './certificate-preview.scss',

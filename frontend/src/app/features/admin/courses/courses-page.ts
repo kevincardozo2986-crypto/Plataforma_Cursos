@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -17,7 +18,7 @@ const PAGE_SIZE = 20;
 /** Todos los cursos de la plataforma: buscar, ver su estado y publicarlos, archivarlos o devolverlos a borrador. */
 @Component({
   selector: 'app-admin-courses',
-  imports: [DatePipe, RouterLink, Icon],
+  imports: [TranslatePipe, DatePipe, RouterLink, Icon],
   templateUrl: './courses-page.html',
   styleUrls: ['../admin-common.scss', './courses-page.scss'],
 })

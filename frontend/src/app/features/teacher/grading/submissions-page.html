@@ -1,8 +1,8 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">ESPACIO DOCENTE / TAREAS</span>
+    <span class="eyebrow">{{ 'ESPACIO DOCENTE / TAREAS' | t }}</span>
     <app-page-header
-      title="Tareas"
+      [title]="'Tareas' | t"
       subtitle="Entregas de tus estudiantes para revisar y calificar."
     />
 
@@ -11,7 +11,7 @@
     }
 
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Estado">
+      <div class="filters" role="group" [attr.aria-label]="'Estado' | t">
         @for (entry of filters; track entry.value) {
           <button
             type="button"
@@ -20,15 +20,15 @@
             [attr.aria-pressed]="filter() === entry.value"
             (click)="setFilter(entry.value)"
           >
-            {{ entry.label }}
+            {{ entry.label | t }}
           </button>
         }
       </div>
 
       <div class="panel-field course">
-        <label for="course-filter">Curso</label>
+        <label for="course-filter">{{ 'Curso' | t }}</label>
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id">{{ course.title }}</option>
           }
@@ -37,16 +37,18 @@
     </div>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando entregas…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando entregas…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">✓</span>
-        <h2>{{ filter() === 'SUBMITTED' ? 'Todo calificado' : 'No hay entregas' }}</h2>
+        <h2>{{ filter() === 'SUBMITTED' ? ('Todo calificado' | t) : ('No hay entregas' | t) }}</h2>
         <p>
           {{
             filter() === 'SUBMITTED'
-              ? 'No tienes entregas esperando calificación.'
-              : 'Cuando tus estudiantes entreguen una tarea, aparecerá aquí.'
+              ? ('No tienes entregas esperando calificación.' | t)
+              : ('Cuando tus estudiantes entreguen una tarea, aparecerá aquí.' | t)
           }}
         </p>
       </div>
@@ -61,16 +63,16 @@
                 >
                 <p class="meta panel-muted">
                   {{ item.assignment.title }} · {{ item.course.title }} ·
-                  {{ item.submittedAt | date: "d 'de' MMM y, HH:mm" }}
+                  {{ item.submittedAt | date: "d ('de' | t) MMM y, HH:mm" }}
                 </p>
               </div>
 
               <div class="side">
                 @if (item.late) {
-                  <span class="flag">Tarde</span>
+                  <span class="flag">{{ 'Tarde' | t }}</span>
                 }
                 <span class="state" [class.done]="item.status === 'GRADED'">
-                  {{ item.status === 'GRADED' ? 'Calificada' : 'Por calificar' }}
+                  {{ item.status === 'GRADED' ? ('Calificada' | t) : ('Por calificar' | t) }}
                 </span>
                 @if (item.score !== null) {
                   <span class="score">{{ item.score }}/{{ item.maxScore }}</span>
@@ -82,14 +84,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -97,7 +99,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

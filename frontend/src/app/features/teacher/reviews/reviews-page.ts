@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,7 +25,7 @@ export function starText(rating: number): string {
 /** Reseñas que los estudiantes dejaron en los cursos del docente. */
 @Component({
   selector: 'app-reviews-page',
-  imports: [DatePipe, PageHeader],
+  imports: [TranslatePipe, DatePipe, PageHeader],
   templateUrl: './reviews-page.html',
   styleUrl: './reviews-page.scss',
 })

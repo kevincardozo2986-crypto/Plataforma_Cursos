@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -48,7 +49,7 @@ const optionalUrl = () =>
 /** Perfil del docente: cuenta, nombre público, redes, firma de los certificados y contraseña. */
 @Component({
   selector: 'app-profile-page',
-  imports: [PublicUrlPipe, ReactiveFormsModule, Icon],
+  imports: [TranslatePipe, PublicUrlPipe, ReactiveFormsModule, Icon],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })

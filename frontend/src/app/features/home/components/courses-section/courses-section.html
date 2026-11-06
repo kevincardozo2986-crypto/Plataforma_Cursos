@@ -1,13 +1,15 @@
 <section class="courses" aria-labelledby="courses-title">
   <div class="courses-container">
     <header class="heading">
-      <span class="eyebrow">Catálogo</span>
-      <h2 id="courses-title">Cursos <span>disponibles</span></h2>
-      <p>Explora lo que puedes aprender hoy. Crea tu cuenta para inscribirte.</p>
+      <span class="eyebrow">{{ 'Catálogo' | t }}</span>
+      <h2 id="courses-title">
+        {{ 'Cursos' | t }} <span>{{ 'disponibles' | t }}</span>
+      </h2>
+      <p>{{ 'Explora lo que puedes aprender hoy. Crea tu cuenta para inscribirte.' | t }}</p>
     </header>
 
     @if (categories().length > 1) {
-      <div class="chips" role="group" aria-label="Filtrar por categoría">
+      <div class="chips" role="group" [attr.aria-label]="'Filtrar por categoría' | t">
         <button
           type="button"
           class="chip"
@@ -15,7 +17,7 @@
           [attr.aria-pressed]="category() === null"
           (click)="choose(null)"
         >
-          Todos
+          {{ 'Todos' | t }}
         </button>
 
         @for (name of categories(); track name) {
@@ -37,11 +39,11 @@
     }
 
     @if (loading()) {
-      <p class="state" role="status">Cargando cursos…</p>
+      <p class="state" role="status">{{ 'Cargando cursos…' | t }}</p>
     } @else if (error()) {
       <p class="state error" role="alert">{{ error() }}</p>
     } @else if (visible().length === 0) {
-      <p class="state">Aún no hay cursos publicados en esta categoría.</p>
+      <p class="state">{{ 'Aún no hay cursos publicados en esta categoría.' | t }}</p>
     } @else {
       <div class="grid">
         @for (card of visible(); track card.id) {

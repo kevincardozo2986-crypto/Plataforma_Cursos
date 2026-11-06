@@ -8,7 +8,7 @@
         class="panel-btn panel-btn--ghost"
         [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
       >
-        Volver al contenido
+        {{ 'Volver al contenido' | t }}
       </a>
     </app-page-header>
 
@@ -20,53 +20,61 @@
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando tarea…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando tarea…' | t }}</p>
+      </div>
     } @else if (!loaded()) {
-      <div class="panel-card"><p class="panel-muted">No se encontró la tarea.</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'No se encontró la tarea.' | t }}</p>
+      </div>
     } @else {
       <form class="panel-card stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="panel-field">
-          <label for="title">Título</label>
+          <label for="title">{{ 'Título' | t }}</label>
           <input
             id="title"
             class="panel-input"
             type="text"
             formControlName="title"
-            placeholder="Ej. Informe del módulo 1"
+            [placeholder]="'Ej. Informe del módulo 1' | t"
             [attr.aria-invalid]="shows('title') ? 'true' : null"
           />
           @if (shows('title')) {
-            <p class="panel-field-error">El título debe tener entre 2 y 150 caracteres.</p>
+            <p class="panel-field-error">
+              {{ 'El título debe tener entre 2 y 150 caracteres.' | t }}
+            </p>
           }
         </div>
 
         <div class="panel-field">
-          <label for="description">Instrucciones</label>
+          <label for="description">{{ 'Instrucciones' | t }}</label>
           <app-rich-editor
             inputId="description"
             label="Instrucciones de la tarea"
             [minHeight]="220"
             formControlName="description"
-            placeholder="Qué deben entregar, formato, criterios de calificación…"
+            [placeholder]="'Qué deben entregar, formato, criterios de calificación…' | t"
           />
         </div>
 
         <div class="panel-field">
-          <label for="attachments">Documentos para los estudiantes (opcional)</label>
+          <label for="attachments">{{ 'Documentos para los estudiantes (opcional)' | t }}</label>
           <app-document-field
             inputId="attachments"
             [(files)]="attachments"
             (filesChange)="form.markAsDirty()"
           />
           <p class="panel-hint">
-            Guías, plantillas o formatos para que los descarguen y los trabajen. Cuando el
-            estudiante los devuelva, los verás y los calificarás en «Tareas».
+            {{
+              'Guías, plantillas o formatos para que los descarguen y los trabajen. Cuando el estudiante los devuelva, los verás y los calificarás en «Tareas».'
+                | t
+            }}
           </p>
         </div>
 
         <div class="row">
           <div class="panel-field">
-            <label for="dueAt">Fecha límite (opcional)</label>
+            <label for="dueAt">{{ 'Fecha límite (opcional)' | t }}</label>
             <div class="date-row">
               <input id="dueAt" class="panel-input" type="datetime-local" formControlName="dueAt" />
               @if (form.controls.dueAt.value) {
@@ -75,15 +83,15 @@
                   class="panel-btn panel-btn--ghost panel-btn--sm"
                   (click)="clearDate()"
                 >
-                  Quitar
+                  {{ 'Quitar' | t }}
                 </button>
               }
             </div>
-            <p class="panel-hint">En tu hora local. Sin fecha, no hay plazo.</p>
+            <p class="panel-hint">{{ 'En tu hora local. Sin fecha, no hay plazo.' | t }}</p>
           </div>
 
           <div class="panel-field score">
-            <label for="maxScore">Puntaje máximo</label>
+            <label for="maxScore">{{ 'Puntaje máximo' | t }}</label>
             <input
               id="maxScore"
               class="panel-input"
@@ -94,7 +102,7 @@
               [attr.aria-invalid]="shows('maxScore') ? 'true' : null"
             />
             @if (shows('maxScore')) {
-              <p class="panel-field-error">Entero entre 1 y 1000.</p>
+              <p class="panel-field-error">{{ 'Entero entre 1 y 1000.' | t }}</p>
             }
           </div>
         </div>
@@ -102,9 +110,12 @@
         <label class="check">
           <input type="checkbox" formControlName="allowLate" />
           <span>
-            Aceptar entregas después de la fecha límite
+            {{ 'Aceptar entregas después de la fecha límite' | t }}
             <small class="panel-muted">
-              (se marcan como «tarde»; si lo desactivas, pasada la fecha ya no se puede entregar)
+              {{
+                '(se marcan como «tarde»; si lo desactivas, pasada la fecha ya no se puede entregar)'
+                  | t
+              }}
             </small>
           </span>
         </label>
@@ -114,10 +125,10 @@
             class="panel-btn panel-btn--ghost"
             [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
           >
-            Cancelar
+            {{ 'Cancelar' | t }}
           </a>
           <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-            {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear tarea' }}
+            {{ saving() ? ('Guardando…' | t) : isEdit ? ('Guardar cambios' | t) : 'Crear tarea' }}
           </button>
         </div>
       </form>

@@ -12,10 +12,10 @@
         <circle cx="9" cy="10" r="1.6" />
         <path d="m3 17 5-4 4 3 3-2 6 4" />
       </svg>
-      Añadir medios
+      {{ 'Añadir medios' | t }}
     </button>
 
-    <div class="tabs" role="tablist" aria-label="Modo del editor">
+    <div class="tabs" role="tablist" [attr.aria-label]="'Modo del editor' | t">
       <button
         type="button"
         role="tab"
@@ -24,7 +24,7 @@
         [attr.aria-selected]="mode() === 'visual'"
         (click)="show('visual')"
       >
-        Visual
+        {{ 'Visual' | t }}
       </button>
       <button
         type="button"
@@ -34,24 +34,24 @@
         [attr.aria-selected]="mode() === 'code'"
         (click)="show('code')"
       >
-        Código
+        {{ 'Código' | t }}
       </button>
     </div>
   </div>
 
   <div class="frame">
     @if (mode() === 'visual') {
-      <div class="toolbar" role="toolbar" aria-label="Formato del texto">
+      <div class="toolbar" role="toolbar" [attr.aria-label]="'Formato del texto' | t">
         <div class="group">
           <select
             class="block"
-            aria-label="Tipo de párrafo"
+            [attr.aria-label]="'Tipo de párrafo' | t"
             [disabled]="disabled()"
             (change)="setBlock($event)"
           >
             @for (entry of blocks; track entry.value) {
               <option [value]="entry.value" [selected]="block() === entry.value">
-                {{ entry.label }}
+                {{ entry.label | t }}
               </option>
             }
           </select>
@@ -89,8 +89,8 @@
           <button
             type="button"
             class="tool"
-            aria-label="Insertar enlace"
-            title="Insertar enlace"
+            [attr.aria-label]="'Insertar enlace' | t"
+            [title]="'Insertar enlace' | t"
             [class.on]="linkOpen()"
             [disabled]="disabled()"
             (mousedown)="$event.preventDefault()"
@@ -105,8 +105,8 @@
           <button
             type="button"
             class="tool"
-            aria-label="Quitar enlace"
-            title="Quitar enlace"
+            [attr.aria-label]="'Quitar enlace' | t"
+            [title]="'Quitar enlace' | t"
             [disabled]="disabled()"
             (mousedown)="$event.preventDefault()"
             (click)="run({ id: 'unlink', title: '', command: 'unlink' })"
@@ -146,12 +146,12 @@
       </div>
 
       @if (linkOpen()) {
-        <div class="panel link-panel" role="group" aria-label="Insertar enlace">
+        <div class="panel link-panel" role="group" [attr.aria-label]="'Insertar enlace' | t">
           <input
             class="panel-input"
             type="url"
             placeholder="https://ejemplo.com"
-            aria-label="Dirección del enlace"
+            [attr.aria-label]="'Dirección del enlace' | t"
             [value]="linkUrl()"
             (input)="setField('linkUrl', $event)"
             (keydown.enter)="$event.preventDefault(); applyLink()"
@@ -161,14 +161,14 @@
             class="panel-btn panel-btn--primary panel-btn--sm"
             (click)="applyLink()"
           >
-            Aplicar
+            {{ 'Aplicar' | t }}
           </button>
           <button
             type="button"
             class="panel-btn panel-btn--ghost panel-btn--sm"
             (click)="closePanels()"
           >
-            Cancelar
+            {{ 'Cancelar' | t }}
           </button>
           @if (linkError()) {
             <p class="panel-field-error" role="alert">{{ linkError() }}</p>
@@ -205,7 +205,7 @@
         [disabled]="disabled()"
         [value]="html()"
         [style.min-height.px]="minHeight()"
-        aria-label="Código HTML"
+        [attr.aria-label]="'Código HTML' | t"
         placeholder="<p>Escribe HTML aquí. Puedes pegar el código &lt;iframe&gt; de un video.</p>"
         (input)="onCode($event)"
         (blur)="onBlur()"
@@ -213,10 +213,17 @@
     }
 
     @if (mediaOpen()) {
-      <div class="dialog" role="dialog" aria-modal="true" aria-label="Añadir medios">
+      <div class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="'Añadir medios' | t">
         <div class="dialog-head">
-          <strong>Añadir medios</strong>
-          <button type="button" class="close" aria-label="Cerrar" (click)="closePanels()">×</button>
+          <strong>{{ 'Añadir medios' | t }}</strong>
+          <button
+            type="button"
+            class="close"
+            [attr.aria-label]="'Cerrar' | t"
+            (click)="closePanels()"
+          >
+            ×
+          </button>
         </div>
 
         <div class="media-tabs" role="tablist">
@@ -228,7 +235,7 @@
             [attr.aria-selected]="mediaTab() === 'upload'"
             (click)="mediaTab.set('upload'); mediaError.set('')"
           >
-            Subir imagen
+            {{ 'Subir imagen' | t }}
           </button>
           <button
             type="button"
@@ -238,7 +245,7 @@
             [attr.aria-selected]="mediaTab() === 'image'"
             (click)="mediaTab.set('image'); mediaError.set('')"
           >
-            Imagen por enlace
+            {{ 'Imagen por enlace' | t }}
           </button>
           <button
             type="button"
@@ -248,7 +255,7 @@
             [attr.aria-selected]="mediaTab() === 'video'"
             (click)="mediaTab.set('video'); mediaError.set('')"
           >
-            Video o iframe
+            {{ 'Video o iframe' | t }}
           </button>
         </div>
 
@@ -315,12 +322,12 @@
 
           @if (mediaTab() !== 'video') {
             <div class="panel-field alt">
-              <label for="media-alt">Texto alternativo (opcional)</label>
+              <label for="media-alt">{{ 'Texto alternativo (opcional)' | t }}</label>
               <input
                 id="media-alt"
                 class="panel-input"
                 [value]="mediaAlt()"
-                placeholder="Describe la imagen para quien no pueda verla"
+                [placeholder]="'Describe la imagen para quien no pueda verla' | t"
                 (input)="setField('mediaAlt', $event)"
               />
             </div>

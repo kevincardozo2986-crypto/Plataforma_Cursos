@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import {
   Component,
@@ -19,7 +20,7 @@ import { headerLinksFor, ROLE_LABELS } from './header-links';
 
 @Component({
   selector: 'app-site-header',
-  imports: [PublicUrlPipe, RouterLink, RouterLinkActive, NotificationBell],
+  imports: [TranslatePipe, PublicUrlPipe, RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './site-header.html',
   styleUrl: './site-header.scss',
 })

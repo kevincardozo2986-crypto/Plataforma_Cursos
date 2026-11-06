@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,6 +37,7 @@ interface CheckoutResponse {
 
 /** Formulario de pago SIMULADO: no hay pasarela real ni se cobra dinero. */
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-checkout-dialog',
   templateUrl: './checkout-dialog.html',
   styleUrl: './checkout-dialog.scss',
@@ -82,25 +84,31 @@ export class CheckoutDialog {
 
   readonly errors = computed(() => {
     const out: Record<string, string> = {};
-    if (this.holder().trim().length < 2) out['holder'] = 'Escribe el nombre que aparece en la tarjeta';
+    if (this.holder().trim().length < 2)
+      out['holder'] = 'Escribe el nombre que aparece en la tarjeta';
     if (!luhnValid(this.digits())) out['number'] = 'El número de la tarjeta no es válido';
     const expiry = expiryError(this.expiry());
     if (expiry) out['expiry'] = expiry;
     if (this.cvv().length !== this.cvvLength()) out['cvv'] = `Son ${this.cvvLength()} dígitos`;
-    if (this.needsPassword() && !this.password()) out['password'] = 'Escribe la contraseña del curso';
+    if (this.needsPassword() && !this.password())
+      out['password'] = 'Escribe la contraseña del curso';
     return out;
   });
 
   readonly money = computed(() =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(
-      this.amount(),
-    ),
+    new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    }).format(this.amount()),
   );
 
   readonly receiptDate = computed(() => {
     const value = this.receipt()?.createdAt;
     return value
-      ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value))
+      ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'long', timeStyle: 'short' }).format(
+          new Date(value),
+        )
       : '';
   });
 
@@ -145,10 +153,13 @@ export class CheckoutDialog {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         // Un respiro para que se note que «se está procesando».
-        next: (response) => setTimeout(() => this.finish(response), Math.max(0, 1200 - (Date.now() - started))),
+        next: (response) =>
+          setTimeout(() => this.finish(response), Math.max(0, 1200 - (Date.now() - started))),
         error: (error: unknown) => {
           this.processing.set(false);
-          this.serverError.set(apiErrorMessage(error, 'No pudimos procesar el pago. Intenta nuevamente.'));
+          this.serverError.set(
+            apiErrorMessage(error, 'No pudimos procesar el pago. Intenta nuevamente.'),
+          );
         },
       });
   }

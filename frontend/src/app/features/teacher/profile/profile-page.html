@@ -14,7 +14,7 @@
     @if (loading()) {
       <div class="panel-card loading">
         <app-icon name="refresh" [size]="18" />
-        <p class="panel-muted">Cargando tu perfil…</p>
+        <p class="panel-muted">{{ 'Cargando tu perfil…' | t }}</p>
       </div>
     } @else if (data(); as profile) {
       <!-- Cabecera: foto, nombre y números -->
@@ -42,11 +42,11 @@
 
             <label
               class="photo-btn"
-              title="Cambiar foto"
+              [title]="'Cambiar foto' | t"
               [class.disabled]="avatarUploading() || saving()"
             >
               <app-icon name="camera" [size]="16" />
-              <span class="sr-only">Cambiar foto de perfil</span>
+              <span class="sr-only">{{ 'Cambiar foto de perfil' | t }}</span>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -59,7 +59,7 @@
           <div class="who">
             <h1>{{ shownName() }}</h1>
             <p class="meta">
-              <span class="role"><app-icon name="cap" [size]="14" /> {{ roleLabel() }}</span>
+              <span class="role"><app-icon name="cap" [size]="14" /> {{ roleLabel() | t }}</span>
               <span><app-icon name="mail" [size]="14" /> {{ profile.account.email }}</span>
               @if (form.controls.occupation.value) {
                 <span
@@ -76,10 +76,12 @@
                   [disabled]="saving() || avatarUploading()"
                   (click)="removeAvatar()"
                 >
-                  <app-icon name="trash" [size]="13" /> Quitar foto
+                  <app-icon name="trash" [size]="13" /> {{ 'Quitar foto' | t }}
                 </button>
               } @else {
-                <span class="panel-muted">Sube una foto: la verán tus estudiantes.</span>
+                <span class="panel-muted">{{
+                  'Sube una foto: la verán tus estudiantes.' | t
+                }}</span>
               }
             </p>
             @if (avatarError()) {
@@ -88,16 +90,16 @@
           </div>
 
           @if (profile.stats; as stats) {
-            <ul class="stats" aria-label="Tus números">
+            <ul class="stats" [attr.aria-label]="'Tus números' | t">
               <li>
                 <app-icon name="book" [size]="18" />
                 <strong>{{ stats.courses }}</strong>
-                <span>{{ stats.courses === 1 ? 'curso' : 'cursos' }}</span>
+                <span>{{ stats.courses === 1 ? ('curso' | t) : ('cursos' | t) }}</span>
               </li>
               <li>
                 <app-icon name="users" [size]="18" />
                 <strong>{{ stats.students }}</strong>
-                <span>{{ stats.students === 1 ? 'estudiante' : 'estudiantes' }}</span>
+                <span>{{ stats.students === 1 ? ('estudiante' | t) : ('estudiantes' | t) }}</span>
               </li>
               <li>
                 <app-icon name="star" [size]="18" />
@@ -110,7 +112,7 @@
       </header>
 
       <!-- Pestañas -->
-      <div class="tabs" role="tablist" aria-label="Secciones del perfil">
+      <div class="tabs" role="tablist" [attr.aria-label]="'Secciones del perfil' | t">
         @for (item of tabs(); track item.key) {
           <button
             type="button"
@@ -120,7 +122,7 @@
             [attr.aria-selected]="tab() === item.key"
             (click)="tab.set(item.key)"
           >
-            <app-icon [name]="item.icon" [size]="17" /> {{ item.label }}
+            <app-icon [name]="item.icon" [size]="17" /> {{ item.label | t }}
           </button>
         }
       </div>
@@ -130,41 +132,47 @@
           @if (tab() === 'account') {
             <div class="grid">
               <div class="panel-field">
-                <label for="firstName">Nombre</label>
+                <label for="firstName">{{ 'Nombre' | t }}</label>
                 <input id="firstName" class="panel-input" formControlName="firstName" />
                 @if (fieldInvalid('firstName')) {
-                  <p class="panel-field-error">Mínimo 2 caracteres.</p>
+                  <p class="panel-field-error">{{ 'Mínimo 2 caracteres.' | t }}</p>
                 }
               </div>
               <div class="panel-field">
-                <label for="lastName">Apellido</label>
+                <label for="lastName">{{ 'Apellido' | t }}</label>
                 <input id="lastName" class="panel-input" formControlName="lastName" />
                 @if (fieldInvalid('lastName')) {
-                  <p class="panel-field-error">Mínimo 2 caracteres.</p>
+                  <p class="panel-field-error">{{ 'Mínimo 2 caracteres.' | t }}</p>
                 }
               </div>
 
               <div class="panel-field">
-                <label for="email"><app-icon name="mail" [size]="14" /> Correo</label>
+                <label for="email"><app-icon name="mail" [size]="14" /> {{ 'Correo' | t }}</label>
                 <input id="email" class="panel-input" [value]="profile.account.email" disabled />
-                <p class="panel-hint">El correo no se puede cambiar desde aquí.</p>
+                <p class="panel-hint">{{ 'El correo no se puede cambiar desde aquí.' | t }}</p>
               </div>
               <div class="panel-field">
-                <label for="phone"><app-icon name="phone" [size]="14" /> Teléfono</label>
+                <label for="phone"
+                  ><app-icon name="phone" [size]="14" /> {{ 'Teléfono' | t }}</label
+                >
                 <input id="phone" class="panel-input" type="tel" formControlName="phone" />
               </div>
 
               <div class="panel-field">
-                <label for="occupation"><app-icon name="briefcase" [size]="14" /> Ocupación</label>
+                <label for="occupation"
+                  ><app-icon name="briefcase" [size]="14" /> {{ 'Ocupación' | t }}</label
+                >
                 <input
                   id="occupation"
                   class="panel-input"
                   formControlName="occupation"
-                  placeholder="Ej. Ingeniera de software"
+                  [placeholder]="'Ej. Ingeniera de software' | t"
                 />
               </div>
               <div class="panel-field">
-                <label for="timezone"><app-icon name="clock" [size]="14" /> Zona horaria</label>
+                <label for="timezone"
+                  ><app-icon name="clock" [size]="14" /> {{ 'Zona horaria' | t }}</label
+                >
                 <select id="timezone" class="panel-select" formControlName="timezone">
                   @for (zone of zones; track zone) {
                     <option [value]="zone">{{ zone }}</option>
@@ -176,20 +184,20 @@
             <div class="public">
               <div class="public-form">
                 <div class="panel-field">
-                  <label for="publicName">Nombre público</label>
+                  <label for="publicName">{{ 'Nombre público' | t }}</label>
                   <input
                     id="publicName"
                     class="panel-input"
                     formControlName="publicName"
-                    placeholder="Ej. Dra. Laura Gómez"
+                    [placeholder]="'Ej. Dra. Laura Gómez' | t"
                   />
                   <p class="panel-hint">
-                    También sale en tus certificados. Vacío = tu nombre y apellido.
+                    {{ 'También sale en tus certificados. Vacío = tu nombre y apellido.' | t }}
                   </p>
                 </div>
 
                 <div class="panel-field">
-                  <label for="bio">Biografía</label>
+                  <label for="bio">{{ 'Biografía' | t }}</label>
                   <textarea
                     id="bio"
                     class="panel-textarea"
@@ -198,11 +206,13 @@
                   ></textarea>
                   <p class="panel-hint">{{ form.controls.bio.value.length }} / 2000</p>
                   @if (fieldInvalid('bio')) {
-                    <p class="panel-field-error">Máximo 2000 caracteres.</p>
+                    <p class="panel-field-error">{{ 'Máximo 2000 caracteres.' | t }}</p>
                   }
                 </div>
 
-                <h2 class="sub-title"><app-icon name="link" [size]="16" /> Redes sociales</h2>
+                <h2 class="sub-title">
+                  <app-icon name="link" [size]="16" /> {{ 'Redes sociales' | t }}
+                </h2>
                 <div class="grid">
                   @for (social of socials; track social.control) {
                     <div class="panel-field">
@@ -215,15 +225,19 @@
                         [placeholder]="social.placeholder"
                       />
                       @if (fieldInvalid(social.control)) {
-                        <p class="panel-field-error">Debe empezar con http:// o https://</p>
+                        <p class="panel-field-error">
+                          {{ 'Debe empezar con http:// o https://' | t }}
+                        </p>
                       }
                     </div>
                   }
                 </div>
               </div>
 
-              <aside class="see" aria-label="Así te ven">
-                <span class="see-label"><app-icon name="eye" [size]="14" /> ASÍ TE VEN</span>
+              <aside class="see" [attr.aria-label]="'Así te ven' | t">
+                <span class="see-label"
+                  ><app-icon name="eye" [size]="14" /> {{ 'ASÍ TE VEN' | t }}</span
+                >
                 <div class="see-card">
                   <span class="see-photo">
                     @if (avatarUrl(); as photo) {
@@ -236,20 +250,23 @@
                   @if (draft().occupation) {
                     <span class="see-job">{{ draft().occupation }}</span>
                   }
-                  <p>{{ draft().bio || 'Aquí aparecerá tu biografía.' }}</p>
+                  <p>{{ draft().bio || ('Aquí aparecerá tu biografía.' | t) }}</p>
                 </div>
-                <p class="panel-hint">Esto aparece en «Sobre el docente» de tus cursos.</p>
+                <p class="panel-hint">
+                  {{ 'Esto aparece en «Sobre el docente» de tus cursos.' | t }}
+                </p>
               </aside>
             </div>
           }
 
           <div class="savebar">
             <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-              <app-icon name="save" [size]="17" /> {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+              <app-icon name="save" [size]="17" />
+              {{ saving() ? ('Guardando…' | t) : ('Guardar cambios' | t) }}
             </button>
             @if (form.dirty) {
               <span class="dirty"
-                ><app-icon name="info" [size]="14" /> Tienes cambios sin guardar</span
+                ><app-icon name="info" [size]="14" /> {{ 'Tienes cambios sin guardar' | t }}</span
               >
             }
           </div>
@@ -258,20 +275,24 @@
 
       @if (tab() === 'signature' && isTeacher()) {
         <section class="panel-card block">
-          <h2 class="block-title"><app-icon name="pen" [size]="19" /> Firma para certificados</h2>
+          <h2 class="block-title">
+            <app-icon name="pen" [size]="19" /> {{ 'Firma para certificados' | t }}
+          </h2>
           <p class="panel-muted intro">
-            Se imprime sobre la línea de tu nombre. Funciona mejor una imagen de 700 × 430 px con
-            fondo transparente (PNG).
+            {{
+              'Se imprime sobre la línea de tu nombre. Funciona mejor una imagen de 700 × 430 px con fondo transparente (PNG).'
+                | t
+            }}
           </p>
 
           @if (signatureUrl(); as url) {
             <div class="signature">
-              <img [src]="url | publicUrl" alt="Tu firma actual" />
+              <img [src]="url | publicUrl" [alt]="'Tu firma actual' | t" />
             </div>
           } @else {
             <p class="empty-sign">
-              <app-icon name="pen" [size]="22" /> Todavía no subes una firma. Tus certificados salen
-              sin ella.
+              <app-icon name="pen" [size]="22" />
+              {{ 'Todavía no subes una firma. Tus certificados salen sin ella.' | t }}
             </p>
           }
 
@@ -288,7 +309,7 @@
           <div class="buttons">
             <label class="panel-btn panel-btn--ghost file">
               <app-icon name="download" [size]="16" />
-              {{ signatureUrl() ? 'Cambiar firma' : 'Subir firma' }}
+              {{ signatureUrl() ? ('Cambiar firma' | t) : ('Subir firma' | t) }}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -303,7 +324,7 @@
                 [disabled]="saving()"
                 (click)="removeSignature()"
               >
-                <app-icon name="trash" [size]="16" /> Quitar firma
+                <app-icon name="trash" [size]="16" /> {{ 'Quitar firma' | t }}
               </button>
             }
           </div>
@@ -317,7 +338,9 @@
           novalidate
           (ngSubmit)="changePassword()"
         >
-          <h2 class="block-title"><app-icon name="shield" [size]="19" /> Cambiar contraseña</h2>
+          <h2 class="block-title">
+            <app-icon name="shield" [size]="19" /> {{ 'Cambiar contraseña' | t }}
+          </h2>
 
           @if (passwordError()) {
             <p class="panel-alert panel-alert--error" role="alert">
@@ -332,7 +355,7 @@
 
           <div class="grid">
             <div class="panel-field wide">
-              <label for="currentPassword">Contraseña actual</label>
+              <label for="currentPassword">{{ 'Contraseña actual' | t }}</label>
               <input
                 id="currentPassword"
                 class="panel-input"
@@ -343,7 +366,7 @@
             </div>
 
             <div class="panel-field">
-              <label for="newPassword">Contraseña nueva</label>
+              <label for="newPassword">{{ 'Contraseña nueva' | t }}</label>
               <input
                 id="newPassword"
                 class="panel-input"
@@ -355,11 +378,11 @@
                 passwordForm.controls.newPassword.touched &&
                 passwordForm.controls.newPassword.invalid
               ) {
-                <p class="panel-field-error">Mínimo 8 caracteres.</p>
+                <p class="panel-field-error">{{ 'Mínimo 8 caracteres.' | t }}</p>
               }
             </div>
             <div class="panel-field">
-              <label for="repeat">Repite la nueva</label>
+              <label for="repeat">{{ 'Repite la nueva' | t }}</label>
               <input
                 id="repeat"
                 class="panel-input"
@@ -368,7 +391,7 @@
                 formControlName="repeat"
               />
               @if (passwordForm.controls.repeat.touched && !passwordsMatch()) {
-                <p class="panel-field-error">Las contraseñas no coinciden.</p>
+                <p class="panel-field-error">{{ 'Las contraseñas no coinciden.' | t }}</p>
               }
             </div>
           </div>
@@ -380,7 +403,7 @@
               [disabled]="savingPassword()"
             >
               <app-icon name="lock" [size]="17" />
-              {{ savingPassword() ? 'Cambiando…' : 'Cambiar contraseña' }}
+              {{ savingPassword() ? 'Cambiando…' : ('Cambiar contraseña' | t) }}
             </button>
           </div>
         </form>

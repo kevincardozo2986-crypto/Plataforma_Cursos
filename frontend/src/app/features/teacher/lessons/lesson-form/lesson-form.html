@@ -10,7 +10,7 @@
         class="panel-btn panel-btn--ghost"
         [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
       >
-        Volver al contenido
+        {{ 'Volver al contenido' | t }}
       </a>
     </app-page-header>
 
@@ -22,20 +22,24 @@
     }
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando lección…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando lección…' | t }}</p>
+      </div>
     } @else if (isEdit && !lesson()) {
-      <div class="panel-card"><p class="panel-muted">No se encontró la lección.</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'No se encontró la lección.' | t }}</p>
+      </div>
     } @else {
       <div class="stack">
         <form class="panel-card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <div class="panel-field">
-            <label for="title">Título</label>
+            <label for="title">{{ 'Título' | t }}</label>
             <input
               id="title"
               class="panel-input"
               type="text"
               formControlName="title"
-              placeholder="Ej. ¿Qué es una variable?"
+              [placeholder]="'Ej. ¿Qué es una variable?' | t"
               [attr.aria-invalid]="errorOf('title') ? 'true' : null"
             />
             @if (errorOf('title')) {
@@ -44,22 +48,28 @@
           </div>
 
           <div class="panel-field">
-            <label for="content">Contenido</label>
-            <app-rich-editor inputId="content" label="Contenido de la lección" formControlName="content" [minHeight]="320" placeholder="Explica el tema de la lección." />
+            <label for="content">{{ 'Contenido' | t }}</label>
+            <app-rich-editor
+              inputId="content"
+              label="Contenido de la lección"
+              formControlName="content"
+              [minHeight]="320"
+              [placeholder]="'Explica el tema de la lección.' | t"
+            />
           </div>
 
           <app-media-field
             kind="video"
             inputId="videoUrl"
             label="Video de la lección (opcional)"
-            placeholder="Pega un enlace o sube un archivo"
+            [placeholder]="'Pega un enlace o sube un archivo' | t"
             hint="MP4, WebM, MOV u OGG, hasta 500 MB. También puedes pegar un enlace de YouTube o Vimeo."
             [control]="form.controls.videoUrl"
             [error]="errorOf('videoUrl')"
           />
 
           <div class="panel-field duration">
-            <label for="durationMinutes">Duración en minutos (opcional)</label>
+            <label for="durationMinutes">{{ 'Duración en minutos (opcional)' | t }}</label>
             <input
               id="durationMinutes"
               class="panel-input"
@@ -78,10 +88,12 @@
               class="panel-btn panel-btn--ghost"
               [routerLink]="['/teacher/courses', courseId, 'edit', 'curriculum']"
             >
-              Cancelar
+              {{ 'Cancelar' | t }}
             </a>
             <button type="submit" class="panel-btn panel-btn--primary" [disabled]="saving()">
-              {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear lección' }}
+              {{
+                saving() ? ('Guardando…' | t) : isEdit ? ('Guardar cambios' | t) : 'Crear lección'
+              }}
             </button>
           </div>
         </form>
@@ -90,7 +102,7 @@
           <app-resource-panel [lessonId]="current.id" [initial]="current.resources" />
         } @else {
           <p class="panel-muted hint">
-            Guarda la lección para poder añadirle recursos (PDF, enlaces, videos…).
+            {{ 'Guarda la lección para poder añadirle recursos (PDF, enlaces, videos…).' | t }}
           </p>
         }
       </div>

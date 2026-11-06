@@ -1,7 +1,9 @@
+import { englishInterface } from './english-interface';
 export type Language = 'es' | 'en';
 
 // Spanish is the source language. Keep all user-facing translations here.
 export const english: Record<string, string> = {
+  ...englishInterface,
   Accesibilidad: 'Accessibility',
   'Opciones de accesibilidad': 'Accessibility options',
   'Cerrar opciones de accesibilidad': 'Close accessibility options',
@@ -48,6 +50,4 @@ export const english: Record<string, string> = {
   'Campus Virtual · Universidad Santo Tomás': 'Virtual Campus · Universidad Santo Tomás',
   'Universidad Santo Tomás Tunja - Campus Virtual':
     'Universidad Santo Tomás Tunja - Virtual Campus',
-  Campus: 'Virtual',
-  Virtual: 'Campus',
 };

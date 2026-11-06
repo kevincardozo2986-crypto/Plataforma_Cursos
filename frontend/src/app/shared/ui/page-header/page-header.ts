@@ -1,14 +1,16 @@
 import { Component, input } from '@angular/core';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** Título de página con subtítulo y espacio (ng-content) para los botones de acción. */
 @Component({
   selector: 'app-page-header',
+  imports: [TranslatePipe],
   template: `
     <header class="page-header">
       <div class="copy">
-        <h1>{{ title() }}</h1>
+        <h1>{{ title() | t }}</h1>
         @if (subtitle()) {
-          <p>{{ subtitle() }}</p>
+          <p>{{ subtitle() | t }}</p>
         }
       </div>
 

@@ -1,10 +1,11 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { homeFor } from '../../../core/auth/role-home';
 @Component({
   selector: 'app-site-footer',
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   templateUrl: './site-footer.html',
   styleUrl: './site-footer.scss',
 })

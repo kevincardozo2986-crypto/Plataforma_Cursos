@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -85,7 +86,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
 }
 
 @Component({
-  imports: [PublicUrlPipe],
+  imports: [TranslatePipe, PublicUrlPipe],
   selector: 'app-course-video',
   template: `
     @if (native()) {
@@ -93,9 +94,11 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
         #video
         controls
         playsinline
+        [autoplay]="autoplay()"
+        [muted]="autoplay()"
         preload="metadata"
         [src]="src() | publicUrl"
-        [poster]="poster()"
+        [poster]="poster() | publicUrl"
         [attr.aria-label]="title()"
         (loadedmetadata)="nativeSample(true)"
         (play)="nativeSample(true)"
@@ -106,11 +109,11 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
         (seeked)="nativeSample(true)"
         (error)="failed.set(true)"
       >
-        Tu navegador no puede reproducir este video.
+        {{ 'Tu navegador no puede reproducir este video.' | t }}
       </video>
     } @else if (embed(); as embedded) {
       <div #frameHost class="embed-player"></div>
-      @if (embedded.provider === 'youtube') {
+      @if (embedded.provider === 'youtube' && !autoplay()) {
         <div class="video-actions">
           <a [href]="originalUrl() | publicUrl" target="_blank" rel="noopener noreferrer"
             >Abrir en YouTube &#8599;</a
@@ -120,7 +123,7 @@ function loadSdk(window: VideoWindow, provider: 'youtube' | 'vimeo'): Promise<vo
           </button>
         </div>
       }
-      @if (embedded.provider !== 'youtube' && embedded.provider !== 'vimeo') {
+      @if (!autoplay() && embedded.provider !== 'youtube' && embedded.provider !== 'vimeo') {
         <p class="notice">
           Este proveedor no permite registrar el avance. Pide al docente el archivo del video o un
           enlace de YouTube o Vimeo.
@@ -207,6 +210,8 @@ export class CourseVideo {
   readonly src = input.required<string>();
   readonly title = input('Video de la lección');
   readonly poster = input('');
+  /** Solo la presentación del catálogo inicia sola; las lecciones conservan sus controles habituales. */
+  readonly autoplay = input(false);
   readonly sample = output<VideoSample>();
   readonly failed = signal(false);
   private readonly document = inject(DOCUMENT);
@@ -231,6 +236,14 @@ export class CourseVideo {
       url.hostname = this.privacyHost() ? 'www.youtube-nocookie.com' : 'www.youtube.com';
       url.searchParams.set('enablejsapi', '1');
       url.searchParams.set('origin', this.document.location?.origin ?? '');
+    }
+    if (this.autoplay() && embed.provider !== 'other') {
+      url.searchParams.set('autoplay', '1');
+      url.searchParams.set(
+        embed.provider === 'vimeo' || embed.provider === 'loom' ? 'muted' : 'mute',
+        '1',
+      );
+      url.searchParams.set('playsinline', '1');
     }
     return url.href;
   });

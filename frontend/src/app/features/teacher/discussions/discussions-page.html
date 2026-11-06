@@ -1,8 +1,8 @@
 <section class="panel-page">
   <div class="panel-container narrow">
-    <span class="eyebrow">ESPACIO DOCENTE / DISCUSIONES</span>
+    <span class="eyebrow">{{ 'ESPACIO DOCENTE / DISCUSIONES' | t }}</span>
     <app-page-header
-      title="Discusiones"
+      [title]="'Discusiones' | t"
       subtitle="Preguntas y comentarios de tus estudiantes. Responde para resolver sus dudas."
     />
 
@@ -11,7 +11,7 @@
     }
 
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Qué mostrar">
+      <div class="filters" role="group" [attr.aria-label]="'Qué mostrar' | t">
         @for (entry of views; track entry.value) {
           <button
             type="button"
@@ -20,15 +20,15 @@
             [attr.aria-pressed]="view() === entry.value"
             (click)="setView(entry.value)"
           >
-            {{ entry.label }}
+            {{ entry.label | t }}
           </button>
         }
       </div>
 
       <div class="panel-field course">
-        <label for="course-filter">Curso</label>
+        <label for="course-filter">{{ 'Curso' | t }}</label>
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
-          <option value="">Todos mis cursos</option>
+          <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
             <option [value]="course.id">{{ course.title }}</option>
           }
@@ -37,16 +37,18 @@
     </div>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando discusiones…</p></div>
+      <div class="panel-card">
+        <p class="panel-muted">{{ 'Cargando discusiones…' | t }}</p>
+      </div>
     } @else if (items().length === 0) {
       <div class="panel-card empty">
         <span class="empty-icon" aria-hidden="true">💬</span>
-        <h2>{{ view() === 'PENDING' ? 'Todo al día' : 'No hay nada para mostrar' }}</h2>
+        <h2>{{ view() === 'PENDING' ? ('Todo al día' | t) : ('No hay nada para mostrar' | t) }}</h2>
         <p>
           {{
             view() === 'PENDING'
-              ? 'No tienes preguntas sin responder.'
-              : 'Cuando tus estudiantes pregunten o comenten en una lección, aparecerá aquí.'
+              ? ('No tienes preguntas sin responder.' | t)
+              : ('Cuando tus estudiantes pregunten o comenten en una lección, aparecerá aquí.' | t)
           }}
         </p>
       </div>
@@ -57,11 +59,11 @@
             <a class="panel-card item" [routerLink]="['/teacher/discussions', item.id]">
               <div class="top">
                 <span class="kind" [class.comment]="item.kind === 'COMMENT'">
-                  {{ item.kind === 'QUESTION' ? 'Pregunta' : 'Comentario' }}
+                  {{ item.kind === 'QUESTION' ? ('Pregunta' | t) : ('Comentario' | t) }}
                 </span>
                 @if (item.kind === 'QUESTION') {
                   <span class="state" [class.done]="item.answered">
-                    {{ item.answered ? 'Respondida' : 'Sin responder' }}
+                    {{ item.answered ? ('Respondida' | t) : ('Sin responder' | t) }}
                   </span>
                 }
               </div>
@@ -73,9 +75,9 @@
                 @if (item.lesson) {
                   · {{ item.lesson.title }}
                 }
-                · {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }} ·
+                · {{ item.createdAt | date: "d ('de' | t) MMM y, HH:mm" }} ·
                 {{ item._count.replies }}
-                {{ item._count.replies === 1 ? 'respuesta' : 'respuestas' }}
+                {{ item._count.replies === 1 ? ('respuesta' | t) : ('respuestas' | t) }}
               </p>
             </a>
           </li>
@@ -83,14 +85,14 @@
       </ul>
 
       <div class="pager">
-        <span class="panel-muted">{{ from() }}–{{ to() }} de {{ total() }}</span>
+        <span class="panel-muted">{{ from() }}–{{ to() }} {{ 'de' | t }} {{ total() }}</span>
         <button
           type="button"
           class="panel-btn panel-btn--ghost panel-btn--sm"
           [disabled]="!hasPrev()"
           (click)="page(-1)"
         >
-          ← Anterior
+          {{ '← Anterior' | t }}
         </button>
         <button
           type="button"
@@ -98,7 +100,7 @@
           [disabled]="!hasNext()"
           (click)="page(1)"
         >
-          Siguiente →
+          {{ 'Siguiente →' | t }}
         </button>
       </div>
     }

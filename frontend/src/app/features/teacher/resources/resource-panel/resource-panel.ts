@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import { Component, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,7 +10,7 @@ import { TeacherResourcesService } from '../resources.service';
 /** Recursos (enlaces a PDF, videos, etc.) de una lección: listar, añadir, editar y quitar. */
 @Component({
   selector: 'app-resource-panel',
-  imports: [PublicUrlPipe, ReactiveFormsModule],
+  imports: [TranslatePipe, PublicUrlPipe, ReactiveFormsModule],
   templateUrl: './resource-panel.html',
   styleUrl: './resource-panel.scss',
 })

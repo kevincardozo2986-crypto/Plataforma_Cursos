@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,7 +14,7 @@ import { isoToLocalInput, localInputToIso } from './due-date';
 /** Crear (desde un módulo) o editar una tarea. */
 @Component({
   selector: 'app-assignment-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeader, RichEditor, DocumentField],
+  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, PageHeader, RichEditor, DocumentField],
   templateUrl: './assignment-form.html',
   styleUrl: './assignment-form.scss',
 })

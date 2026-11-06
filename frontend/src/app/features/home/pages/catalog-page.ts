@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,7 +12,7 @@ import { Course } from '../../../core/courses/courses.models';
 @Component({
   selector: 'app-catalog-page',
 
-  imports: [CoursesSection],
+  imports: [TranslatePipe, CoursesSection],
 
   templateUrl: './catalog-page.html',
   styleUrl: './home-page.scss',

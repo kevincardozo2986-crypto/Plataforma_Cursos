@@ -5,33 +5,37 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="cap" [size]="19" /></span>
         <div>
-          <h2>Resumen del curso</h2>
-          <p>Ayuda a decidir si este curso es para ellos.</p>
+          <h2>{{ 'Resumen del curso' | t }}</h2>
+          <p>{{ 'Ayuda a decidir si este curso es para ellos.' | t }}</p>
         </div>
       </header>
 
       <div class="panel-field">
         <label for="whatYouWillLearn">
-          <app-icon name="check-circle" [size]="14" /> Qué aprenderá el estudiante
+          <app-icon name="check-circle" [size]="14" /> {{ 'Qué aprenderá el estudiante' | t }}
         </label>
         <app-rich-editor
           inputId="whatYouWillLearn"
-          label="Qué aprenderá el estudiante"
+          [label]="'Qué aprenderá el estudiante' | t"
           formControlName="whatYouWillLearn"
           [minHeight]="170"
-          placeholder="Ej. Crear una página web desde cero"
+          [placeholder]="'Ej. Crear una página web desde cero' | t"
         />
-        <p class="panel-hint">Una lista con viñetas funciona muy bien aquí.</p>
+        <p class="panel-hint">{{ 'Una lista con viñetas funciona muy bien aquí.' | t }}</p>
       </div>
 
       <div class="panel-field">
-        <label for="audience"><app-icon name="users" [size]="14" /> A quién va dirigido</label>
+        <label for="audience"
+          ><app-icon name="users" [size]="14" /> {{ 'A quién va dirigido' | t }}</label
+        >
         <app-rich-editor
           inputId="audience"
-          label="A quién va dirigido"
+          [label]="'A quién va dirigido' | t"
           formControlName="audience"
           [minHeight]="120"
-          placeholder="Ej. Personas sin experiencia previa que quieren empezar en programación"
+          [placeholder]="
+            'Ej. Personas sin experiencia previa que quieren empezar en programación' | t
+          "
         />
       </div>
     </section>
@@ -41,46 +45,50 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="clipboard" [size]="19" /></span>
         <div>
-          <h2>Materiales y requisitos</h2>
-          <p>Lo que incluye el curso y lo que necesitan para empezar.</p>
+          <h2>{{ 'Materiales y requisitos' | t }}</h2>
+          <p>{{ 'Lo que incluye el curso y lo que necesitan para empezar.' | t }}</p>
         </div>
       </header>
 
       <div class="panel-field">
-        <label for="materials"><app-icon name="download" [size]="14" /> Materiales incluidos</label>
+        <label for="materials"
+          ><app-icon name="download" [size]="14" /> {{ 'Materiales incluidos' | t }}</label
+        >
         <app-rich-editor
           inputId="materials"
-          label="Materiales incluidos"
+          [label]="'Materiales incluidos' | t"
           formControlName="materials"
           [minHeight]="120"
-          placeholder="Ej. Guías en PDF, plantillas y código de ejemplo"
+          [placeholder]="'Ej. Guías en PDF, plantillas y código de ejemplo' | t"
         />
       </div>
 
       <div class="panel-field">
-        <label for="requirements"><app-icon name="list" [size]="14" /> Requisitos</label>
+        <label for="requirements"
+          ><app-icon name="list" [size]="14" /> {{ 'Requisitos' | t }}</label
+        >
         <app-rich-editor
           inputId="requirements"
-          label="Requisitos"
+          [label]="'Requisitos' | t"
           formControlName="requirements"
           [minHeight]="120"
-          placeholder="Ej. Un computador con conexión a internet"
+          [placeholder]="'Ej. Un computador con conexión a internet' | t"
         />
       </div>
     </section>
   </div>
 
-  <aside class="wz-side" aria-label="Ajustes del curso">
+  <aside class="wz-side" [attr.aria-label]="'Ajustes del curso' | t">
     <!-- Duración -->
     <section class="wz-card tone-teal">
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="clock" [size]="19" /></span>
-        <h2>Duración total</h2>
+        <h2>{{ 'Duración total' | t }}</h2>
       </header>
 
       <div class="duration-row">
         <div class="panel-field">
-          <label for="hours">Horas</label>
+          <label for="hours">{{ 'Horas' | t }}</label>
           <input
             id="hours"
             class="panel-input"
@@ -93,7 +101,7 @@
         </div>
 
         <div class="panel-field">
-          <label for="minutes">Minutos</label>
+          <label for="minutes">{{ 'Minutos' | t }}</label>
           <input
             id="minutes"
             class="panel-input"
@@ -117,14 +125,18 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="award" [size]="19" /></span>
         <div>
-          <h2>Certificado</h2>
-          <p>Se emite al completar las lecciones y aprobar las evaluaciones y tareas.</p>
+          <h2>{{ 'Certificado' | t }}</h2>
+          <p>
+            {{ 'Se emite al completar las lecciones y aprobar las evaluaciones y tareas.' | t }}
+          </p>
         </div>
       </header>
 
       @if (pokEnabled()) {
         <div class="panel-field">
-          <span class="panel-label" id="cert-mode-label">¿Cómo se entrega el certificado?</span>
+          <span class="panel-label" id="cert-mode-label">{{
+            '¿Cómo se entrega el certificado?' | t
+          }}</span>
           <div class="mode-switch" role="radiogroup" aria-labelledby="cert-mode-label">
             <button
               type="button"
@@ -134,8 +146,8 @@
               [attr.aria-checked]="mode() === 'PLATFORM'"
               (click)="setMode('PLATFORM')"
             >
-              <strong>Certificado de la plataforma</strong>
-              <small>PDF con tu plantilla, verificable con un código.</small>
+              <strong>{{ 'Certificado de la plataforma' | t }}</strong>
+              <small>{{ 'PDF con tu plantilla, verificable con un código.' | t }}</small>
             </button>
             <button
               type="button"
@@ -145,22 +157,23 @@
               [attr.aria-checked]="mode() === 'POK'"
               (click)="setMode('POK')"
             >
-              <strong>Credencial digital de POK</strong>
-              <small>La emite POK con uno de tus diseños.</small>
+              <strong>{{ 'Credencial digital de POK' | t }}</strong>
+              <small>{{ 'La emite POK con uno de tus diseños.' | t }}</small>
             </button>
           </div>
           <p class="panel-hint">
-            Se entrega <strong>solo uno</strong>: el estudiante recibe el que elijas aquí.
+            {{ 'Se entrega' | t }} <strong>{{ 'solo uno' | t }}</strong
+            >{{ ': el estudiante recibe el que elijas aquí.' | t }}
           </p>
         </div>
       }
 
       @if (!pokEnabled() || mode() === 'PLATFORM') {
         <div class="panel-field">
-          <label for="certificateTemplateId">Plantilla</label>
+          <label for="certificateTemplateId">{{ 'Plantilla' | t }}</label>
           <select id="certificateTemplateId" class="panel-select" (change)="onTemplate($event)">
             <option value="" [selected]="form.controls.certificateTemplateId.value === null">
-              Plantilla predeterminada del campus
+              {{ 'Plantilla predeterminada del campus' | t }}
             </option>
             @for (template of templates(); track template.id) {
               <option
@@ -173,16 +186,20 @@
           </select>
           <p class="panel-hint">
             @if (templates().length === 0) {
-              Aún no tienes plantillas.
+              {{ 'Aún no tienes plantillas.' | t }}
             }
-            <a routerLink="/teacher/certificates/new" target="_blank">Crear una plantilla</a>
-            (se abre en otra pestaña; al volver, recarga esta página).
+            <a routerLink="/teacher/certificates/new" target="_blank">{{
+              'Crear una plantilla' | t
+            }}</a>
+            {{ '(se abre en otra pestaña; al volver, recarga esta página).' | t }}
           </p>
-          <p class="panel-hint">Quienes ya cumplieron estos requisitos lo reciben al guardar.</p>
+          <p class="panel-hint">
+            {{ 'Quienes ya cumplieron estos requisitos lo reciben al guardar.' | t }}
+          </p>
         </div>
       } @else {
         <div class="panel-field">
-          <label for="pokTemplateId">Diseño de POK</label>
+          <label for="pokTemplateId">{{ 'Diseño de POK' | t }}</label>
           <select
             id="pokTemplateId"
             class="panel-select"
@@ -199,12 +216,17 @@
             <p class="panel-field-error">{{ pokError() }}</p>
           } @else if (pokTemplates().length === 0) {
             <p class="panel-hint">
-              No hay diseños en tu cuenta de POK. Créalos en el panel de POK y recarga esta página.
+              {{
+                'No hay diseños en tu cuenta de POK. Créalos en el panel de POK y recarga esta página.'
+                  | t
+              }}
             </p>
           } @else {
             <p class="panel-hint">
-              Quienes ya cumplieron los requisitos reciben su credencial al guardar. El estudiante
-              no recibirá el PDF de la plataforma.
+              {{
+                'Quienes ya cumplieron los requisitos reciben su credencial al guardar. El estudiante no recibirá el PDF de la plataforma.'
+                  | t
+              }}
             </p>
           }
         </div>
@@ -222,19 +244,22 @@
       <header class="wz-head">
         <span class="wz-icon" aria-hidden="true"><app-icon name="book" [size]="19" /></span>
         <div>
-          <h2>Cursos recomendados</h2>
+          <h2>{{ 'Cursos recomendados' | t }}</h2>
           <p>
-            Cursos sugeridos para complementar el aprendizaje. No es necesario completarlos para
-            inscribirse.
+            {{
+              'Cursos sugeridos para complementar el aprendizaje. No es necesario completarlos para inscribirse.'
+                | t
+            }}
           </p>
         </div>
       </header>
 
       @if (loadingCandidates()) {
-        <p class="panel-muted">Cargando tus cursos…</p>
+        <p class="panel-muted">{{ 'Cargando tus cursos…' | t }}</p>
       } @else if (candidates().length === 0) {
         <p class="empty-note">
-          <app-icon name="info" [size]="16" /> Aún no tienes otros cursos para recomendar.
+          <app-icon name="info" [size]="16" />
+          {{ 'Aún no tienes otros cursos para recomendar.' | t }}
         </p>
       } @else {
         <ul class="candidates">
@@ -259,12 +284,12 @@
 
     <!-- Lo que todavía no está -->
     <section class="soon">
-      <h2><app-icon name="sparkles" [size]="16" /> Próximamente</h2>
+      <h2><app-icon name="sparkles" [size]="16" /> {{ 'Próximamente' | t }}</h2>
 
       <ul>
         @for (item of upcoming; track item.label) {
           <li>
-            <strong>{{ item.label }}</strong>
+            <strong>{{ item.label | t }}</strong>
             <span class="panel-muted">{{ item.hint }}</span>
           </li>
         }
