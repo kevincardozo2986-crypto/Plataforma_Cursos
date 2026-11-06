@@ -1,14 +1,10 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Subscription, concatMap, forkJoin, from } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
-import {
-  PokConnection,
-  PokCourse,
-  PokService,
-  PokTemplate,
-} from '../../../core/pok/pok.service';
+import { PokConnection, PokCourse, PokService, PokTemplate } from '../../../core/pok/pok.service';
 
 type Filter = 'all' | 'pok' | 'pdf' | 'wait';
 type Panel = 'mode' | null;
@@ -39,6 +35,7 @@ const RING = 251.33;
  * curso (el PDF de la plataforma o la credencial digital de POK, nunca las dos).
  */
 @Component({
+  imports: [PublicUrlPipe],
   selector: 'app-pok-page',
   templateUrl: './pok-page.html',
   styleUrl: './pok-page.scss',
@@ -148,7 +145,9 @@ export class PokPage {
 
   readonly readyCount = computed(() => this.steps().filter((s) => s.ok).length);
   readonly missing = computed(() => this.steps().length - this.readyCount());
-  readonly ringOffset = computed(() => RING * (1 - this.readyCount() / Math.max(1, this.steps().length)));
+  readonly ringOffset = computed(
+    () => RING * (1 - this.readyCount() / Math.max(1, this.steps().length)),
+  );
 
   readonly counts = computed(() => ({
     all: this.courses().length,
@@ -360,7 +359,9 @@ export class PokPage {
     const first = this.templates()[0];
 
     if (!first) {
-      this.error.set('No hay diseños en tu cuenta de POK. Créalos en POK y vuelve a cargar esta pantalla.');
+      this.error.set(
+        'No hay diseños en tu cuenta de POK. Créalos en POK y vuelve a cargar esta pantalla.',
+      );
 
       return;
     }
@@ -384,7 +385,11 @@ export class PokPage {
         this.courses.update((list) =>
           list.map((item) =>
             item.id === course.id
-              ? { ...item, pokTemplateId: result.pokTemplateId, pokTemplateName: result.pokTemplateName }
+              ? {
+                  ...item,
+                  pokTemplateId: result.pokTemplateId,
+                  pokTemplateName: result.pokTemplateName,
+                }
               : item,
           ),
         );
@@ -450,14 +455,15 @@ export class PokPage {
         },
         complete: () => {
           this.showToast(
-            failed === 0 ? `${sent} credenciales enviadas a POK.` : `${sent} enviadas y ${failed} fallaron.`,
+            failed === 0
+              ? `${sent} credenciales enviadas a POK.`
+              : `${sent} enviadas y ${failed} fallaron.`,
           );
           this.sending.set(false);
           this.api.courses().subscribe({ next: (courses) => this.courses.set(courses) });
         },
       });
   }
-
 
   /** Inclina la tarjeta según dónde está el mouse (se ignora con «reducir movimiento»). */
   tilt(event: MouseEvent): void {

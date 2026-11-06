@@ -370,4 +370,3 @@
 - ✅ Un curso sin inscritos se borra con su contenido; después da 404 y no sale en ningún listado
 - ✅ Borrar un curso inexistente → 404; el admin sí puede borrar uno ajeno sin inscritos
 - ✅ Un docente puede ver y editar sus borradores sin que aparezcan al público
-
