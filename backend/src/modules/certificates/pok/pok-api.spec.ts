@@ -3,13 +3,18 @@ import { createHmac } from 'node:crypto';
 import {
   advanceStatus,
   buildCredentialBody,
+  buildPreviewBody,
   credentialIdOf,
   organizationOf,
   PokClient,
   pokConfig,
+  previewUrlOf,
   statusFromState,
   templatesOf,
   verifyWebhook,
+  customParametersFor,
+  documentParameters,
+  parametersOf,
 } from './pok-api.js';
 
 const config = {
@@ -255,5 +260,105 @@ describe('PokClient.emit: reintenta cortes de red', () => {
     await client.emit(body);
 
     expect(http).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('vista previa de POK', () => {
+  it('el cuerpo no lleva los campos de envío ni el correo (POK los rechaza)', () => {
+    const body = buildPreviewBody({ courseTitle: '  Curso   de prueba ', templateId: 'tpl-1' }, config);
+
+    expect(body.credential).toMatchObject({ emissionType: 'pok', title: 'Curso de prueba', emitter: 'Universidad Santo Tomás' });
+    expect(body.credential).not.toHaveProperty('saveAsDraft');
+    expect(body.credential).not.toHaveProperty('tags');
+    expect(body.credential).not.toHaveProperty('skipAcceptance');
+    expect(body.receiver).not.toHaveProperty('email');
+    expect(body.receiver).toMatchObject({ firstName: 'Nombre', lastName: 'del estudiante', languageTag: 'es-AR' });
+    expect(body.customization.template).toEqual({ id: 'tpl-1', customParameters: {} });
+  });
+
+  it('lee la dirección de la imagen solo si es https', () => {
+    expect(previewUrlOf({ url: 'https://img.example/a.png' })).toBe('https://img.example/a.png');
+    expect(previewUrlOf({ url: 'http://inseguro.example/a.png' })).toBeNull();
+    expect(previewUrlOf({ url: 'javascript:alert(1)' })).toBeNull();
+    expect(previewUrlOf({})).toBeNull();
+    expect(previewUrlOf(null)).toBeNull();
+  });
+
+  it('PokClient.preview devuelve la imagen o null si POK falla', async () => {
+    const reply = (status: number, data: unknown) => vi.fn().mockResolvedValue(new Response(JSON.stringify(data), { status }));
+    const body = buildPreviewBody({ courseTitle: 'X', templateId: 'tpl-1' }, config);
+
+    const http = reply(200, { url: 'https://img.example/p.png' });
+
+    expect(await new PokClient(config, http as unknown as typeof fetch).preview(body)).toBe('https://img.example/p.png');
+    expect((http.mock.calls[0] as [string])[0]).toBe('https://api.pok.tech/template/preview');
+    expect(await new PokClient(config, reply(400, { fields: {} }) as unknown as typeof fetch).preview(body)).toBeNull();
+    expect(await new PokClient(config, vi.fn().mockRejectedValue(new Error('red')) as unknown as typeof fetch).preview(body)).toBeNull();
+  });
+});
+
+describe('documento del estudiante en el diseño de POK', () => {
+  const parameters = [
+    { id: 'p-doc', label: 'Documento Id' },
+    { id: 'p-horas', label: 'Número de horas' },
+    { id: 'p-cc', label: 'C.C.' },
+    { id: 'p-accion', label: 'Acción realizada' },
+  ];
+
+  it('lee los parámetros propios que trae el diseño (id y etiqueta)', () => {
+    expect(parametersOf({ id: 't', customParameters: [{ id: 'a', label: 'Documento' }, { id: 5 }, null] })).toEqual([{ id: 'a', label: 'Documento' }]);
+    expect(parametersOf({})).toEqual([]);
+    expect(parametersOf(null)).toEqual([]);
+  });
+
+  it('pone el documento solo en los campos que lo piden, sin confundir otras etiquetas', () => {
+    expect(documentParameters(parameters, ' 1098765432 ')).toEqual({ 'p-doc': '1098765432', 'p-cc': '1098765432' });
+    expect(documentParameters([{ id: 'x', label: 'Cédula de ciudadanía' }, { id: 'y', label: 'Identificación' }], '55')).toEqual({ x: '55', y: '55' });
+  });
+
+  it('sin documento o sin campos de documento, no manda nada', () => {
+    expect(documentParameters(parameters, null)).toEqual({});
+    expect(documentParameters(parameters, '  ')).toEqual({});
+    expect(documentParameters([{ id: 'h', label: 'Número de horas' }], '123')).toEqual({});
+  });
+
+  it('el cuerpo de la credencial lleva esos parámetros en customization.template.customParameters', () => {
+    const config = pokConfig({ POK_API_KEY: 'k', POK_EMITTER: 'U' } as NodeJS.ProcessEnv)!;
+    const body = buildCredentialBody(
+      { code: 'CC-1', courseId: 1, courseTitle: 'C', issuedAt: new Date(), firstName: 'A', lastName: 'B', email: 'a@b.co', document: '123' },
+      config,
+      'tpl',
+      { 'p-doc': '123' },
+    );
+
+    expect(body.customization.template.customParameters).toEqual({ 'p-doc': '123' });
+    expect(body.receiver.identification).toBe('123');
+  });
+});
+
+describe('nombre del curso en el diseño de POK', () => {
+  const parameters = [
+    { id: 'p-doc', label: 'Documento Id' },
+    { id: 'p-curso', label: 'Curso' },
+    { id: 'p-nom', label: 'Nombre del curso' },
+    { id: 'p-horas', label: 'Número de horas' },
+    { id: 'p-cursor', label: 'Cursor' },
+  ];
+
+  it('llena «Curso» y «Nombre del curso» con el título y «Documento Id» con el documento', () => {
+    expect(customParametersFor(parameters, { document: '123', courseTitle: ' Álgebra  I ' })).toEqual({
+      'p-curso': 'Álgebra I',
+      'p-nom': 'Álgebra I',
+      'p-doc': '123',
+    });
+  });
+
+  it('sin documento solo llena el curso; sin título solo el documento; no toca otros campos', () => {
+    expect(customParametersFor(parameters, { document: null, courseTitle: 'X' })).toEqual({ 'p-curso': 'X', 'p-nom': 'X' });
+    expect(customParametersFor(parameters, { document: '9', courseTitle: '  ' })).toEqual({ 'p-doc': '9' });
+  });
+
+  it('un campo que pide el documento del curso no recibe el nombre del curso', () => {
+    expect(customParametersFor([{ id: 'a', label: 'Documento del curso' }], { document: '5', courseTitle: 'X' })).toEqual({ a: '5' });
   });
 });

@@ -24,6 +24,16 @@ export class NotificationsRepository {
     return result.count;
   }
 
+  /** Un aviso con llave única: si ya existe uno con esa llave no se crea otro. Devuelve cuántos creó (0 o 1). */
+  async createOnce(userId: number, data: NewNotification, eventKey: string) {
+    const result = await this.prisma.notification.createMany({
+      data: [{ ...data, userId, eventKey }],
+      skipDuplicates: true,
+    });
+
+    return result.count;
+  }
+
   async findByUser(
     userId: number,
     options: { unreadOnly: boolean; take: number; skip: number },

@@ -1,8 +1,9 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { Role } from '../../generated/prisma/enums.js';
 import type { CourseAccessService } from '../course-access/course-access.service.js';
+import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { DashboardRepository } from './dashboard.repository.js';
 import { DashboardService } from './dashboard.service.js';
 
@@ -29,6 +30,8 @@ function build() {
     ]),
     countInactive: vi.fn().mockResolvedValue(1),
     countStudents: vi.fn().mockResolvedValue(8),
+    countsBetween: vi.fn().mockResolvedValue({ students: 5, enrollments: 6 }),
+    completedWithoutReview: vi.fn().mockResolvedValue([]),
     enrollmentSeries: vi.fn().mockResolvedValue([]),
     completionSeries: vi.fn().mockResolvedValue([]),
     quizStats: vi.fn().mockResolvedValue({ attempts: 10, average: 72, passed: 7 }),
@@ -42,12 +45,14 @@ function build() {
     ]),
   };
   const access = { assertCanManage: vi.fn().mockResolvedValue({}) };
+  const notifications = { notifyOnce: vi.fn().mockResolvedValue(true) };
   const service = new DashboardService(
     repository as unknown as DashboardRepository,
     access as unknown as CourseAccessService,
+    notifications as unknown as NotificationsService,
   );
 
-  return { service, repository, access };
+  return { service, repository, access, notifications };
 }
 
 describe('DashboardService.teacher', () => {
@@ -140,7 +145,8 @@ describe('DashboardService.students', () => {
     enrollmentId: 1, userId: 5, firstName: 'Ana', lastName: 'Ruiz', email: 'ana@campus.com',
     courseId: 1, courseTitle: 'Angular', enrolledAt: new Date('2026-09-01T00:00:00Z'), completedAt: null,
     totalLessons: 8, doneLessons: 2, lastActivityAt: new Date('2026-10-01T00:00:00Z'),
-    quizAverage: 80, taskAverage: null, state: 'IN_PROGRESS', ...overrides,
+    quizAverage: 80, taskAverage: null, state: 'IN_PROGRESS',
+    weeks: [0, 0, 1, 0, 2, 0, 1, 3], totalQuizzes: 3, doneQuizzes: 1, totalTasks: 0, doneTasks: 0, ...overrides,
   });
 
   function setup(rows: unknown[] = [row()], total = rows.length) {
@@ -165,7 +171,20 @@ describe('DashboardService.students', () => {
       progress: { completed: 2, total: 8, percent: 25 },
       quizAverage: 80,
       taskAverage: null,
+      weeks: [0, 0, 1, 0, 2, 0, 1, 3],
+      quizzes: { done: 1, total: 3 },
+      tasks: null,
     });
+  });
+
+  it('quizzes y tareas son null si el curso no tiene, y los semanales siempre son 8', async () => {
+    const { service } = setup([row({ totalQuizzes: 0, doneQuizzes: 0, totalTasks: 2, doneTasks: 1, weeks: undefined })]);
+
+    const [item] = (await service.students(teacher, {}, now)).items;
+
+    expect(item.quizzes).toBeNull();
+    expect(item.tasks).toEqual({ done: 1, total: 2 });
+    expect(item.weeks).toEqual(new Array(8).fill(0));
   });
 
   it('un curso sin lecciones da 0 % y el porcentaje nunca pasa de 100', async () => {
@@ -261,5 +280,188 @@ describe('DashboardService.ratings', () => {
     access.assertCanManage.mockRejectedValue(new ForbiddenException());
 
     await expect(service.ratings(teacher, { courseId: 99 }, now)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+});
+
+describe('DashboardService.studentDetail', () => {
+  const enrollment = {
+    id: 9, userId: 5, courseId: 1, status: 'ACTIVE', enrolledAt: new Date('2026-09-14T00:00:00Z'), completedAt: null,
+    user: { firstName: 'Ana', lastName: 'Ruiz', email: 'ana@campus.com' }, course: { id: 1, title: 'Angular' },
+  };
+
+  function setup() {
+    const built = build();
+
+    Object.assign(built.repository, {
+      findEnrollment: vi.fn().mockResolvedValue(enrollment),
+      lessonsOfCourse: vi.fn().mockResolvedValue([{ id: 1, title: 'Intro' }, { id: 2, title: 'Rutas' }, { id: 3, title: 'Formularios' }]),
+      completedLessons: vi.fn().mockResolvedValue([
+        { lessonId: 2, completedAt: new Date('2026-10-05T00:00:00Z'), lesson: { title: 'Rutas' } },
+        { lessonId: 1, completedAt: new Date('2026-09-20T00:00:00Z'), lesson: { title: 'Intro' } },
+      ]),
+      recentWork: vi.fn().mockResolvedValue({
+        attempts: [{ score: 80, passed: true, status: 'GRADED', createdAt: new Date('2026-10-03T00:00:00Z'), evaluation: { title: 'Quiz 1' } }],
+        submissions: [{ status: 'GRADED', score: 70, submittedAt: new Date('2026-10-01T00:00:00Z'), assignment: { title: 'Tarea 1', maxScore: 100 } }],
+      }),
+    });
+
+    return built;
+  }
+
+  it('devuelve las lecciones en orden con cuáles hizo, su actividad semanal y lo último que hizo (lo más nuevo primero)', async () => {
+    const { service } = setup();
+
+    const result = await service.studentDetail(teacher, 9, now);
+
+    expect(result.lessons).toEqual([
+      { id: 1, title: 'Intro', done: true }, { id: 2, title: 'Rutas', done: true }, { id: 3, title: 'Formularios', done: false },
+    ]);
+    expect(result.weeks).toHaveLength(8);
+    expect(result.weeks.reduce((a, b) => a + b, 0)).toBe(2);
+    expect(result.events.map((e) => e.kind)).toEqual(['LESSON', 'QUIZ', 'TASK', 'LESSON', 'ENROLLED']);
+    expect(result.events[1].label).toContain('Quiz 1');
+  });
+
+  it('una inscripción inexistente da 404 y una de otro docente se rechaza (403)', async () => {
+    const { service, repository, access } = setup();
+    const repo = repository as unknown as Record<string, ReturnType<typeof vi.fn>>;
+
+    repo.findEnrollment.mockResolvedValueOnce(null);
+    await expect(service.studentDetail(teacher, 99, now)).rejects.toBeInstanceOf(NotFoundException);
+
+    access.assertCanManage.mockRejectedValue(new ForbiddenException());
+    await expect(service.studentDetail(teacher, 9, now)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repo.lessonsOfCourse).not.toHaveBeenCalled();
+  });
+});
+
+describe('DashboardService.remind', () => {
+  const enrollment = (overrides: Record<string, unknown> = {}) => ({
+    id: 9, userId: 5, courseId: 1, status: 'ACTIVE', enrolledAt: new Date('2026-09-14T00:00:00Z'), completedAt: null,
+    user: { firstName: 'Ana', lastName: 'Ruiz', email: 'ana@campus.com' }, course: { id: 1, title: 'Angular' }, ...overrides,
+  });
+
+  function setup(found: unknown = enrollment()) {
+    const built = build();
+
+    Object.assign(built.repository, { findEnrollment: vi.fn().mockResolvedValue(found) });
+
+    return built;
+  }
+
+  it('le manda un aviso al estudiante, con una llave que cambia cada día', async () => {
+    const { service, notifications } = setup();
+
+    expect(await service.remind(teacher, 9, now)).toEqual({ sent: true });
+    expect(notifications.notifyOnce).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ type: 'COURSE_REMINDER', courseId: 1, message: expect.stringContaining('Angular') }),
+      'teacher-reminder:9:2026-10-06',
+    );
+  });
+
+  it('si ya le recordó hoy responde 409', async () => {
+    const { service, notifications } = setup();
+
+    notifications.notifyOnce.mockResolvedValue(false);
+
+    await expect(service.remind(teacher, 9, now)).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('no tiene sentido recordarle a quien terminó o canceló (400) y no se manda nada', async () => {
+    for (const found of [enrollment({ status: 'COMPLETED' }), enrollment({ status: 'CANCELLED' }), enrollment({ completedAt: new Date() })]) {
+      const { service, notifications } = setup(found);
+
+      await expect(service.remind(teacher, 9, now)).rejects.toBeInstanceOf(BadRequestException);
+      expect(notifications.notifyOnce).not.toHaveBeenCalled();
+    }
+  });
+
+  it('una inscripción inexistente da 404 y una de otro docente se rechaza sin avisar', async () => {
+    const missing = setup(null);
+
+    await expect(missing.service.remind(teacher, 99, now)).rejects.toBeInstanceOf(NotFoundException);
+
+    const { service, access, notifications } = setup();
+
+    access.assertCanManage.mockRejectedValue(new ForbiddenException());
+    await expect(service.remind(teacher, 9, now)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(notifications.notifyOnce).not.toHaveBeenCalled();
+  });
+});
+
+describe('DashboardService.teacher · periodo anterior', () => {
+  it('trae estudiantes e inscripciones del tramo anterior, de la misma duración', async () => {
+    const { service, repository } = build();
+
+    const result = await service.teacher(teacher, { period: '30d' }, now);
+
+    expect(result.previous).toEqual({ students: 5, enrollments: 6 });
+    const [, from, to] = repository.countsBetween.mock.calls[0] as [unknown, Date, Date];
+
+    expect(to.toISOString()).toBe('2026-09-06T12:00:00.000Z');
+    expect(from.toISOString()).toBe('2026-08-07T12:00:00.000Z');
+  });
+
+  it('en "todo" o con un curso filtrado no hay con qué comparar', async () => {
+    const { service, repository } = build();
+
+    expect((await service.teacher(teacher, { period: 'all' }, now)).previous).toBeNull();
+    expect((await service.teacher(teacher, { period: '30d', courseId: 3 }, now)).previous).toBeNull();
+    expect(repository.countsBetween).not.toHaveBeenCalled();
+  });
+
+  it('30 días se agrupa por semana', async () => {
+    const { service } = build();
+
+    expect((await service.teacher(teacher, { period: '30d' }, now)).bucket).toBe('week');
+  });
+});
+
+describe('DashboardService.requestReviews', () => {
+  const candidates = [
+    { userId: 11, courseId: 1, title: 'Curso A' },
+    { userId: 12, courseId: 1, title: 'Curso A' },
+    { userId: 11, courseId: 2, title: 'Curso B' },
+  ];
+
+  it('avisa a quienes terminaron sin reseñar, una vez por persona y curso', async () => {
+    const { service, repository, notifications } = build();
+    repository.completedWithoutReview.mockResolvedValue(candidates);
+
+    const result = await service.requestReviews(teacher);
+
+    expect(result).toEqual({ eligible: 3, sent: 3 });
+    expect(notifications.notifyOnce.mock.calls.map((c) => c[2])).toEqual([
+      'review-request:1:11',
+      'review-request:1:12',
+      'review-request:2:11',
+    ]);
+  });
+
+  it('no cuenta a quienes ya habían recibido la invitación', async () => {
+    const { service, repository, notifications } = build();
+    repository.completedWithoutReview.mockResolvedValue(candidates);
+    notifications.notifyOnce.mockResolvedValueOnce(true).mockResolvedValue(false);
+
+    expect(await service.requestReviews(teacher)).toEqual({ eligible: 3, sent: 1 });
+  });
+
+  it('con un curso, exige que el docente lo gestione', async () => {
+    const { service, access, repository } = build();
+    access.assertCanManage.mockRejectedValue(new ForbiddenException());
+
+    await expect(service.requestReviews(teacher, { courseId: 9 })).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(repository.completedWithoutReview).not.toHaveBeenCalled();
+  });
+
+  it('un docente solo alcanza sus propios cursos', async () => {
+    const { service, repository } = build();
+
+    await service.requestReviews(teacher, { courseId: 1 });
+
+    expect(repository.completedWithoutReview).toHaveBeenCalledWith({ teacherId: 7, courseId: 1 });
   });
 });

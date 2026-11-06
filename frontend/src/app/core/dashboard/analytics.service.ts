@@ -26,12 +26,26 @@ export interface StudentRow {
   quizAverage: number | null;
   /** Promedio de las tareas calificadas, en porcentaje de su puntaje máximo. */
   taskAverage: number | null;
+  /** Lecciones completadas en cada una de las últimas 8 semanas (la última es la semana actual). */
+  weeks: number[];
+  /** Quizzes presentados / quizzes del curso; null si el curso no tiene. */
+  quizzes: { done: number; total: number } | null;
+  /** Tareas entregadas / tareas del curso; null si el curso no tiene. */
+  tasks: { done: number; total: number } | null;
 }
 
 export interface StudentsPage {
   total: number;
   inactiveAfterDays: number;
   items: StudentRow[];
+}
+
+/** Una inscripción en detalle (panel lateral de Inscritos). */
+export interface StudentDetail {
+  enrollmentId: number;
+  lessons: { id: number; title: string; done: boolean }[];
+  weeks: number[];
+  events: { kind: 'LESSON' | 'QUIZ' | 'TASK' | 'ENROLLED'; label: string; at: string }[];
 }
 
 export interface RatingsReport {
@@ -72,6 +86,19 @@ export class AnalyticsService {
     if (query.q?.trim()) params = params.set('q', query.q.trim());
 
     return this.http.get<StudentsPage>('/api/dashboard/teacher/students', { params });
+  }
+
+  /** Las lecciones (en orden), la actividad semanal y lo último que hizo una inscripción. */
+  studentDetail(enrollmentId: number): Observable<StudentDetail> {
+    return this.http.get<StudentDetail>(`/api/dashboard/teacher/students/${enrollmentId}`);
+  }
+
+  /** Le manda al estudiante un aviso para que siga su curso (máximo uno al día por persona y curso). */
+  remind(enrollmentId: number): Observable<{ sent: boolean }> {
+    return this.http.post<{ sent: boolean }>(
+      `/api/dashboard/teacher/students/${enrollmentId}/remind`,
+      {},
+    );
   }
 
   ratings(period: Period, courseId?: number | null): Observable<RatingsReport> {

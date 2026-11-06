@@ -1,20 +1,16 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { concatMap, forkJoin, from } from 'rxjs';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Subscription, concatMap, forkJoin, from } from 'rxjs';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
-import {
-  PokConnection,
-  PokCourse,
-  PokService,
-  PokTemplate,
-} from '../../../core/pok/pok.service';
+import { PokConnection, PokCourse, PokService, PokTemplate } from '../../../core/pok/pok.service';
 
 type Filter = 'all' | 'pok' | 'pdf' | 'wait';
-type Panel = 'mode' | 'hook' | null;
+type Panel = 'mode' | null;
 
 interface Step {
-  id: 'conn' | 'mode' | 'credits' | 'hook';
+  id: 'conn' | 'mode' | 'credits';
   ok: boolean;
   title: string;
   detail: string;
@@ -32,8 +28,6 @@ const STATUS_LABELS: Record<PokCourse['status'], string> = {
 };
 
 const COVERS = ['sand', 'teal', 'blue', 'green'] as const;
-/** Dibujo decorativo del código QR de la credencial (no es un código real). */
-const QR = [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1];
 const RING = 251.33;
 
 /**
@@ -41,6 +35,7 @@ const RING = 251.33;
  * curso (el PDF de la plataforma o la credencial digital de POK, nunca las dos).
  */
 @Component({
+  imports: [PublicUrlPipe],
   selector: 'app-pok-page',
   templateUrl: './pok-page.html',
   styleUrl: './pok-page.scss',
@@ -52,7 +47,6 @@ export class PokPage {
 
   readonly statusLabels = STATUS_LABELS;
   readonly ring = RING;
-  readonly qr = QR;
   readonly tabs: { id: Filter; label: string }[] = [
     { id: 'all', label: 'Todos' },
     { id: 'pok', label: 'POK' },
@@ -64,6 +58,18 @@ export class PokPage {
   readonly connection = signal<PokConnection | null>(null);
   readonly templates = signal<PokTemplate[]>([]);
   readonly templatesError = signal('');
+  /** Texto del buscador de diseños (la cuenta puede tener cientos). */
+  readonly designQuery = signal('');
+  readonly shownTemplates = computed(() => {
+    const term = this.designQuery().trim().toLowerCase();
+    const all = this.templates();
+
+    return term ? all.filter((template) => template.name.toLowerCase().includes(term)) : all;
+  });
+
+  onDesignSearch(event: Event): void {
+    this.designQuery.set((event.target as HTMLInputElement).value);
+  }
   readonly courses = signal<PokCourse[]>([]);
   readonly error = signal('');
   readonly toast = signal('');
@@ -73,7 +79,13 @@ export class PokPage {
   readonly filter = signal<Filter>('all');
   readonly open = signal<Panel>(null);
   readonly selectedId = signal<number | null>(null);
-  readonly copied = signal(false);
+
+  /** Diseño que se está mirando cuando el curso entrega PDF (no se guarda: es solo para ver cómo quedaría). */
+  readonly previewChoice = signal<string | null>(null);
+  /** Imagen real que genera POK para la vista previa. */
+  readonly previewUrl = signal<string | null>(null);
+  readonly previewLoading = signal(false);
+  readonly previewError = signal('');
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -89,8 +101,6 @@ export class PokPage {
   readonly pdfCourses = computed(() => this.courses().filter((c) => c.pokTemplateId === null));
   readonly waiting = computed(() => this.pokCourses().filter((c) => c.unsent > 0));
   readonly unsentTotal = computed(() => this.pokCourses().reduce((sum, c) => sum + c.unsent, 0));
-
-  readonly webhookUrl = computed(() => `${this.document.location?.origin ?? ''}/api/pok/webhook`);
 
   readonly steps = computed<Step[]>(() => {
     const conn = this.conn();
@@ -130,23 +140,14 @@ export class PokPage {
         kind: 'link',
         level: 'warn',
       },
-      {
-        id: 'hook',
-        ok: conn.webhookConfigured,
-        title: 'Avisos de POK (webhook)',
-        detail: conn.webhookConfigured
-          ? 'POK avisa cuando un estudiante acepta su credencial'
-          : 'Sin configurar: los estados no se actualizan solos',
-        action: conn.webhookConfigured ? null : 'Configurar',
-        kind: 'panel',
-        level: 'warn',
-      },
     ];
   });
 
   readonly readyCount = computed(() => this.steps().filter((s) => s.ok).length);
   readonly missing = computed(() => this.steps().length - this.readyCount());
-  readonly ringOffset = computed(() => RING * (1 - this.readyCount() / 4));
+  readonly ringOffset = computed(
+    () => RING * (1 - this.readyCount() / Math.max(1, this.steps().length)),
+  );
 
   readonly counts = computed(() => ({
     all: this.courses().length,
@@ -173,30 +174,89 @@ export class PokPage {
     () => this.courses().find((c) => c.id === this.selectedId()) ?? this.courses()[0] ?? null,
   );
 
-  /** Cambia cuando cambia el curso o su tipo: vuelve a dibujar la tarjeta con su animación. */
-  readonly previewKey = computed(() => {
-    const course = this.selected();
+  /**
+   * El diseño de POK que se muestra: el del curso; si el curso entrega PDF, el que se esté mirando o el
+   * primero de la cuenta (así siempre se ve cómo quedaría la credencial de POK).
+   */
+  readonly previewTemplateId = computed(
+    () => this.selected()?.pokTemplateId ?? this.previewChoice() ?? this.templates()[0]?.id ?? null,
+  );
 
-    return course ? `${course.id}:${course.pokTemplateId ?? 'pdf'}` : 'none';
-  });
-
-  readonly selectedTemplateName = computed(() => {
-    const course = this.selected();
-
-    if (!course?.pokTemplateId) return '';
-
-    return (
-      this.templates().find((t) => t.id === course.pokTemplateId)?.name ??
-      course.pokTemplateName ??
-      course.pokTemplateId
-    );
-  });
+  private previewRequest: Subscription | null = null;
+  private readonly previewCache = new Map<string, string>();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       if (this.toastTimer) clearTimeout(this.toastTimer);
     });
+    // La imagen se pide a POK cuando cambia el diseño o el curso mostrado.
+    effect(() => {
+      const templateId = this.previewTemplateId();
+      const title = this.selected()?.title ?? '';
+
+      untracked(() => this.loadPreview(templateId, title));
+    });
+
     this.load();
+  }
+
+  private loadPreview(templateId: string | null, title: string): void {
+    this.previewRequest?.unsubscribe();
+    this.previewError.set('');
+
+    if (!templateId) {
+      this.previewUrl.set(null);
+      this.previewLoading.set(false);
+
+      return;
+    }
+
+    const key = `${templateId}|${title}`;
+    const cached = this.previewCache.get(key);
+
+    if (cached) {
+      this.previewUrl.set(cached);
+      this.previewLoading.set(true);
+
+      return;
+    }
+
+    this.previewLoading.set(true);
+    this.previewUrl.set(null);
+    this.previewRequest = this.api.preview(templateId, title).subscribe({
+      next: ({ url }) => {
+        this.previewCache.set(key, url);
+        this.previewUrl.set(url);
+      },
+      error: (error: unknown) => {
+        this.previewError.set(apiErrorMessage(error, 'No pudimos generar la vista previa en POK.'));
+        this.previewLoading.set(false);
+      },
+    });
+  }
+
+  /** La imagen ya se dibujó (o no se pudo cargar). */
+  previewLoaded(): void {
+    this.previewLoading.set(false);
+  }
+
+  previewFailed(): void {
+    this.previewLoading.set(false);
+    this.previewError.set('No pudimos mostrar la imagen de la vista previa.');
+  }
+
+  /**
+   * Elige el diseño de la vista previa: si el curso ya entrega POK lo guarda en el curso; si entrega PDF,
+   * solo cambia lo que se está mirando.
+   */
+  choosePreview(templateId: string): void {
+    const course = this.selected();
+
+    if (course && this.isPok(course)) {
+      this.pickTemplate(course, templateId);
+    } else {
+      this.previewChoice.set(templateId);
+    }
   }
 
   load(): void {
@@ -256,7 +316,7 @@ export class PokPage {
     this.toastTimer = setTimeout(() => this.toast.set(''), 3200);
   }
 
-  togglePanel(panel: 'mode' | 'hook'): void {
+  togglePanel(panel: 'mode'): void {
     this.open.update((current) => (current === panel ? null : panel));
   }
 
@@ -299,7 +359,9 @@ export class PokPage {
     const first = this.templates()[0];
 
     if (!first) {
-      this.error.set('No hay diseños en tu cuenta de POK. Créalos en POK y vuelve a cargar esta pantalla.');
+      this.error.set(
+        'No hay diseños en tu cuenta de POK. Créalos en POK y vuelve a cargar esta pantalla.',
+      );
 
       return;
     }
@@ -323,7 +385,11 @@ export class PokPage {
         this.courses.update((list) =>
           list.map((item) =>
             item.id === course.id
-              ? { ...item, pokTemplateId: result.pokTemplateId, pokTemplateName: result.pokTemplateName }
+              ? {
+                  ...item,
+                  pokTemplateId: result.pokTemplateId,
+                  pokTemplateName: result.pokTemplateName,
+                }
               : item,
           ),
         );
@@ -389,21 +455,14 @@ export class PokPage {
         },
         complete: () => {
           this.showToast(
-            failed === 0 ? `${sent} credenciales enviadas a POK.` : `${sent} enviadas y ${failed} fallaron.`,
+            failed === 0
+              ? `${sent} credenciales enviadas a POK.`
+              : `${sent} enviadas y ${failed} fallaron.`,
           );
           this.sending.set(false);
           this.api.courses().subscribe({ next: (courses) => this.courses.set(courses) });
         },
       });
-  }
-
-  copyWebhook(): void {
-    const copy = this.document.defaultView?.navigator?.clipboard?.writeText(this.webhookUrl());
-
-    void copy?.then(() => {
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 1600);
-    });
   }
 
   /** Inclina la tarjeta según dónde está el mouse (se ignora con «reducir movimiento»). */

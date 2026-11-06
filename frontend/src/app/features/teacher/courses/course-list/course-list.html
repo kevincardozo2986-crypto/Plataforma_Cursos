@@ -1,200 +1,651 @@
 <section class="panel-page">
-  <div class="panel-container">
-    <span class="eyebrow">ESPACIO DOCENTE / BIBLIOTECA</span>
-    <app-page-header
-      [title]="isAdmin() ? 'Todos los cursos' : 'Mis cursos'"
-      subtitle="Tus ideas, en un solo lugar. Continúa creando y comparte lo que sabes."
-    >
-      <a class="panel-btn panel-btn--primary" routerLink="/teacher/courses/new"
-        ><span aria-hidden="true">＋</span> Crear curso</a
+  <div class="panel-container mc-wrap">
+    <!-- Encabezado -->
+    <header class="px-hero">
+      <svg
+        class="px-hero__art"
+        viewBox="0 0 440 220"
+        preserveAspectRatio="xMaxYMid slice"
+        aria-hidden="true"
       >
-    </app-page-header>
-
-    @if (error()) {
-      <p class="panel-alert panel-alert--error" role="alert">{{ error() }}</p>
-    }
-    @if (notice()) {
-      <p class="panel-alert panel-alert--ok" role="status">{{ notice() }}</p>
-    }
-
-    <div class="toolbar">
-      <div class="filters" role="group" aria-label="Filtrar por estado">
-        @for (filter of filters; track filter.value) {
-          <button
-            type="button"
-            class="chip"
-            [class.active]="status() === filter.value"
-            [attr.aria-pressed]="status() === filter.value"
-            (click)="status.set(filter.value)"
-          >
-            {{ filter.label }}
-            <span class="count">{{ countFor(filter.value) }}</span>
-          </button>
+        <rect class="sand" x="200" y="-16" width="120" height="96" rx="16" />
+        <rect class="teal" x="336" y="-16" width="120" height="150" rx="16" />
+        <rect class="blue" x="200" y="96" width="256" height="140" rx="16" />
+        @for (tile of artTiles; track $index) {
+          <rect
+            class="tile"
+            [attr.x]="tile.x"
+            [attr.y]="tile.y"
+            [attr.width]="tile.w"
+            [attr.height]="tile.h"
+            rx="8"
+            [style.opacity]="tile.o"
+          />
         }
+      </svg>
+
+      <div class="px-hero__actions">
+        <a class="cv-btn cv-btn--primary" routerLink="/teacher/courses/new">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Crear curso
+        </a>
       </div>
 
-      <input
-        class="panel-input search"
-        type="search"
-        placeholder="Buscar por título o categoría"
-        aria-label="Buscar cursos"
-        [value]="search()"
-        (input)="onSearch($event)"
-      />
-    </div>
+      <p class="cv-eyebrow rel">Espacio docente / <b>Biblioteca</b></p>
+      <div class="px-hero__main">
+        @if (minis().length > 0) {
+          <div class="mc-minis" aria-hidden="true">
+            @for (mini of minis(); track mini.id) {
+              <span class="mc-mini" [class]="'mc-mini mc-mini--' + colorOf(mini)">
+                @if (mini.imageUrl) {
+                  <img [src]="mini.imageUrl | publicUrl" alt="" />
+                } @else {
+                  {{ mono(mini) }}
+                }
+              </span>
+            }
+          </div>
+        }
+        <div>
+          <h1>{{ isAdmin() ? 'Todos los cursos' : 'Mis cursos' }}</h1>
+          <p class="px-hero__sub">
+            Tus ideas, en un solo lugar. Continúa creando y comparte lo que sabes.
+          </p>
+        </div>
+      </div>
+      <p class="ix-sum">
+        <b>{{ counts().ALL }}</b> {{ counts().ALL === 1 ? 'curso' : 'cursos' }} ·
+        <b>{{ counts().PUBLISHED }}</b>
+        {{ counts().PUBLISHED === 1 ? 'publicado' : 'publicados' }} · <b>{{ studentsTotal() }}</b>
+        {{ studentsTotal() === 1 ? 'estudiante aprendiendo' : 'estudiantes aprendiendo' }} contigo
+      </p>
+    </header>
 
     @if (loading()) {
-      <div class="panel-card"><p class="panel-muted">Cargando cursos…</p></div>
+      <p class="mc-empty" role="status">Cargando tus cursos…</p>
     } @else if (error()) {
-      <div class="panel-card empty">
-        <h2>No pudimos cargar tu biblioteca</h2>
-        <p>Vuelve a abrir esta página para intentarlo de nuevo.</p>
+      <div class="cv-callout cv-callout--danger" role="alert">
+        <p>{{ error() }} Vuelve a abrir esta página para intentarlo de nuevo.</p>
       </div>
     } @else if (courses().length === 0) {
-      <div class="panel-card empty">
-        <span class="empty-icon" aria-hidden="true">▤</span>
+      <section class="mc-panel mc-empty-card">
         <h2>Tu próxima idea empieza aquí</h2>
         <p>Crea tu primer curso y organiza el conocimiento que quieres compartir.</p>
-        <a class="panel-btn panel-btn--primary" routerLink="/teacher/courses/new"
-          >Crear el primero</a
-        >
-      </div>
-    } @else if (visible().length === 0) {
-      <div class="panel-card"><p class="panel-muted">Ningún curso coincide con el filtro.</p></div>
+        <a class="cv-btn cv-btn--primary" routerLink="/teacher/courses/new">Crear el primero</a>
+      </section>
     } @else {
-      <ul class="list">
-        @for (course of visible(); track course.id) {
-          <li
-            class="panel-card item"
-            [class.busy]="busyId() === course.id"
-            [attr.aria-busy]="busyId() === course.id"
-          >
-            <a
-              class="cover"
-              [class.draft]="course.status === 'DRAFT'"
-              [routerLink]="['/teacher/courses', course.id, 'edit']"
-              [attr.aria-label]="'Editar ' + course.title"
-            >
-              @if (course.imageUrl) {
-                <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
-              } @else {
-                <span class="cover-book" aria-hidden="true">▤</span
-                ><span class="cover-label">{{ course.category?.name ?? 'CAMPUS VIRTUAL' }}</span>
-              }
-            </a>
-            <div class="main">
-              <div class="title-row">
-                <a class="title" [routerLink]="['/teacher/courses', course.id, 'edit']">
-                  {{ course.title }}
-                </a>
-                <app-status-badge [status]="course.status" />
+      <!-- Continúa donde quedaste -->
+      @if (resume(); as draft) {
+        <section class="mc-resume" aria-label="Continúa donde quedaste">
+          <div class="mc-resume__cover" [class]="'mc-resume__cover mc-cover--' + colorOf(draft)">
+            @if (draft.imageUrl) {
+              <img [src]="draft.imageUrl | publicUrl" alt="" />
+            } @else {
+              <svg class="mc-shape" viewBox="0 0 100 100" aria-hidden="true">
+                <circle cx="50" cy="50" r="50" fill="currentColor" />
+              </svg>
+              {{ mono(draft) }}
+            }
+          </div>
+          <div class="mc-resume__body">
+            <p class="cv-eyebrow">Continúa donde quedaste · {{ whenLower(draft) }}</p>
+            <h2>{{ untitled(draft) ? 'Curso sin título' : draft.title }}</h2>
+            <div class="mc-progress">
+              <div class="mc-progress__label">
+                <span>Configuración</span><b>{{ done(draft) }} de 5</b>
               </div>
-
-              <p class="meta panel-muted">
-                {{ course.category?.name ?? 'Sin categoría' }} · {{ levelLabels[course.level] }} ·
-                @if (+course.price === 0) {
-                  Gratis
-                } @else {
-                  &#36;{{ course.price | number: '1.2-2' }}
-                }
-                · Actualizado {{ course.updatedAt | date: 'dd/MM/yyyy' }}
-                @if (isAdmin() && course.teacher) {
-                  · {{ course.teacher.firstName }} {{ course.teacher.lastName }}
-                }
-              </p>
+              <div class="mc-progress__track">
+                <div class="mc-progress__bar" [style.width.%]="done(draft) * 20"></div>
+              </div>
             </div>
+            <div class="mc-steps">
+              @for (step of stepsOf(draft); track step.label) {
+                <span [class.ok]="step.ok">{{ step.ok ? '✓' : '○' }} {{ step.label }}</span>
+              }
+            </div>
+          </div>
+          <a class="cv-btn cv-btn--primary" [routerLink]="['/teacher/courses', draft.id, 'edit']">
+            Continuar
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </section>
+      }
 
-            <div class="actions">
-              @if (confirmDeleteId() === course.id) {
-                <span class="confirm-text">¿Eliminar este curso?</span>
-                <button
-                  type="button"
-                  class="panel-btn panel-btn--danger panel-btn--sm"
-                  [disabled]="busyId() === course.id"
-                  (click)="remove(course)"
+      <!-- Barra de filtros -->
+      <div class="mc-bar">
+        <div class="cv-tabs" role="tablist" aria-label="Filtrar por estado">
+          @for (item of tabs; track item.value) {
+            <button
+              type="button"
+              class="cv-tab"
+              role="tab"
+              [attr.aria-selected]="tab() === item.value"
+              (click)="setTab(item.value)"
+            >
+              {{ item.label }} <span class="cv-tab__count">{{ counts()[item.value] }}</span>
+            </button>
+          }
+        </div>
+        <label class="cv-search">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Buscar por título o categoría"
+            aria-label="Buscar cursos"
+            [value]="query()"
+            (input)="onSearch($event)"
+          />
+        </label>
+        <select class="cv-select" aria-label="Ordenar" [value]="sort()" (change)="onSort($event)">
+          <option value="rec">Recientes</option>
+          <option value="az">A–Z</option>
+          <option value="stu">Más estudiantes</option>
+        </select>
+        <div class="cv-seg" role="group" aria-label="Vista">
+          <button
+            type="button"
+            [attr.aria-pressed]="view() === 'grid'"
+            aria-label="Cuadrícula"
+            (click)="setView('grid')"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            [attr.aria-pressed]="view() === 'list'"
+            aria-label="Lista"
+            (click)="setView('list')"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      @if (visible().length === 0) {
+        <div class="mc-empty">
+          Ningún curso coincide con el filtro.
+          <button type="button" class="cv-btn cv-btn--ghost" (click)="resetFilters()">
+            Limpiar filtros
+          </button>
+        </div>
+      } @else if (view() === 'grid') {
+        <div class="cv-grid">
+          @for (course of visible(); track course.id) {
+            <article
+              class="cv-card mc-card"
+              [class.cv-card--archived]="course.status === 'ARCHIVED'"
+              [class.is-busy]="busyId() === course.id"
+            >
+              <div class="cv-card__cover" [class]="'cv-card__cover mc-cover--' + colorOf(course)">
+                @if (course.imageUrl) {
+                  <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
+                } @else {
+                  <svg class="mc-shape" viewBox="0 0 100 100" aria-hidden="true">
+                    <circle cx="50" cy="50" r="50" fill="currentColor" />
+                  </svg>
+                  <span class="cv-card__mono">{{ mono(course) }}</span>
+                }
+              </div>
+              <!-- Fuera de la portada: el filtro gris de los archivados no debe tapar el botón. -->
+              <span
+                class="cv-badge cv-card__badge"
+                [class]="'cv-badge cv-card__badge cv-badge--' + course.status.toLowerCase()"
+                >{{
+                  course.status === 'PUBLISHED'
+                    ? 'Publicado'
+                    : course.status === 'DRAFT'
+                      ? 'Borrador'
+                      : 'Archivado'
+                }}</span
+              >
+              <button
+                type="button"
+                class="cv-icon-btn cv-card__menu"
+                [attr.data-menu]="course.id"
+                aria-haspopup="menu"
+                [attr.aria-expanded]="menuId() === course.id"
+                [attr.aria-label]="'Más acciones para ' + course.title"
+                (click)="toggleMenu(course.id)"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
                 >
-                  Sí, eliminar
-                </button>
-                <button
-                  type="button"
-                  class="panel-btn panel-btn--ghost panel-btn--sm"
-                  (click)="cancelDelete()"
-                >
-                  Cancelar
-                </button>
-              } @else {
+                  <circle cx="5" cy="12" r="1.8" />
+                  <circle cx="12" cy="12" r="1.8" />
+                  <circle cx="19" cy="12" r="1.8" />
+                </svg>
+              </button>
+              @if (menuId() === course.id) {
+                <ng-container
+                  [ngTemplateOutlet]="menuTpl"
+                  [ngTemplateOutletContext]="{ $implicit: course, list: false }"
+                />
+              }
+              <div class="cv-card__body">
+                @if (course.category) {
+                  <p class="cv-card__cat">{{ course.category.name }}</p>
+                } @else {
+                  <p class="cv-card__cat cv-card__cat--empty">+ Añadir categoría</p>
+                }
+                <h3 class="cv-card__title" [class.cv-card__title--untitled]="untitled(course)">
+                  <a class="cv-card__link" [routerLink]="['/teacher/courses', course.id, 'edit']">{{
+                    untitled(course) ? 'Curso sin título' : course.title
+                  }}</a>
+                </h3>
+                <div class="cv-meta">
+                  <span class="cv-chip">{{ level(course) }}</span>
+                  <span class="cv-chip">{{ price(course) }}</span>
+                  @if (isPok(course)) {
+                    <span class="cv-chip mc-chip--pok">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="9" r="6" />
+                        <path d="m8.5 13.8-1.5 7.2 5-2.6 5 2.6-1.5-7.2" />
+                      </svg>
+                      Credencial POK
+                    </span>
+                  }
+                  @if (isAdmin() && course.teacher) {
+                    <span class="cv-chip"
+                      >{{ course.teacher.firstName }} {{ course.teacher.lastName }}</span
+                    >
+                  }
+                </div>
+                @if (course.status === 'DRAFT') {
+                  <div class="mc-progress">
+                    <div class="mc-progress__label">
+                      <span>Configuración</span><b>{{ done(course) }} de 5</b>
+                    </div>
+                    <div class="mc-progress__track">
+                      <div class="mc-progress__bar" [style.width.%]="done(course) * 20"></div>
+                    </div>
+                  </div>
+                } @else if (enrolled(course) === 0) {
+                  <p class="mc-nobody">Aún sin estudiantes</p>
+                } @else {
+                  <div class="mc-card__stats">
+                    <span class="mc-people">
+                      <span class="mc-faces" aria-hidden="true">
+                        @for (n of [0, 1, 2].slice(0, faces(course)); track n) {
+                          <i [class]="'mc-face--' + n"></i>
+                        }
+                      </span>
+                      <b>{{ enrolled(course) }}</b>
+                      {{ enrolled(course) === 1 ? 'estudiante' : 'estudiantes' }}
+                    </span>
+                    <span class="mc-avg" title="Avance promedio">
+                      <span class="mc-progress__track mc-avg__track"
+                        ><span
+                          class="mc-avg__bar"
+                          [class.idle]="course.status === 'ARCHIVED'"
+                          [style.width.%]="avg(course)"
+                        ></span
+                      ></span>
+                      {{ avg(course) }}%
+                    </span>
+                  </div>
+                }
+              </div>
+              <div class="cv-card__footer">
+                <span class="cv-card__updated">{{
+                  course.status === 'ARCHIVED' ? 'Archivado' : when(course)
+                }}</span>
                 <a
-                  class="panel-btn panel-btn--primary panel-btn--sm manage"
+                  class="cv-btn cv-btn--ghost"
                   [routerLink]="['/teacher/courses', course.id, 'edit']"
                 >
-                  {{ course.status === 'DRAFT' ? 'Continuar editando' : 'Gestionar curso' }}
-                  <span aria-hidden="true">→</span>
+                  {{
+                    course.status === 'DRAFT'
+                      ? 'Continuar'
+                      : course.status === 'ARCHIVED'
+                        ? 'Ver'
+                        : 'Gestionar'
+                  }}
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
                 </a>
-                <details class="more" #menu>
-                  <summary [attr.aria-label]="'Más acciones para ' + course.title">
-                    <span aria-hidden="true">⋯</span>
-                  </summary>
-                  <div class="action-menu">
-                    <span class="menu-label">ACCIONES DEL CURSO</span>
-                    <a [routerLink]="['/teacher/courses', course.id, 'edit', 'curriculum']"
-                      >Organizar contenido</a
-                    >
-                    <a [routerLink]="['/teacher/students']" [queryParams]="{ course: course.id }"
-                      >Ver inscritos</a
-                    >
-                    @switch (course.status) {
-                      @case ('DRAFT') {
-                        <button
-                          type="button"
-                          [disabled]="busyId() === course.id"
-                          (click)="menu.open = false; changeStatus(course, 'PUBLISHED')"
-                        >
-                          Publicar curso
-                        </button>
-                      }
-                      @case ('PUBLISHED') {
-                        <button
-                          type="button"
-                          [disabled]="busyId() === course.id"
-                          (click)="menu.open = false; changeStatus(course, 'DRAFT')"
-                        >
-                          Pasar a borrador
-                        </button>
-                        <button
-                          type="button"
-                          [disabled]="busyId() === course.id"
-                          (click)="menu.open = false; changeStatus(course, 'ARCHIVED')"
-                        >
-                          Archivar curso
-                        </button>
-                      }
-                      @case ('ARCHIVED') {
-                        <button
-                          type="button"
-                          [disabled]="busyId() === course.id"
-                          (click)="menu.open = false; changeStatus(course, 'DRAFT')"
-                        >
-                          Restaurar como borrador
-                        </button>
-                      }
-                    }
-                    @if (course.isOwner !== false) {
-                      <button
-                        type="button"
-                        class="delete-action"
-                        [disabled]="busyId() === course.id"
-                        (click)="menu.open = false; askDelete(course.id)"
-                      >
-                        Eliminar curso
-                      </button>
-                    }
-                  </div>
-                </details>
+              </div>
+            </article>
+          }
+          @if (tab() !== 'ARCHIVED') {
+            <a class="cv-card-new" routerLink="/teacher/courses/new">
+              <span class="cv-card-new__icon"
+                ><svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14" /></svg
+              ></span>
+              Nuevo curso
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="mc-list">
+          @for (course of visible(); track course.id) {
+            <div class="mc-row" [class.is-busy]="busyId() === course.id">
+              <span class="mc-row__cover" [class]="'mc-row__cover mc-cover--' + colorOf(course)">
+                @if (course.imageUrl) {
+                  <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
+                } @else {
+                  {{ mono(course) }}
+                }
+              </span>
+              <div class="mc-row__main">
+                <a
+                  class="mc-row__title"
+                  [class.is-untitled]="untitled(course)"
+                  [routerLink]="['/teacher/courses', course.id, 'edit']"
+                  >{{ untitled(course) ? 'Curso sin título' : course.title }}</a
+                >
+                <small
+                  >{{ course.category?.name ?? 'Sin categoría' }} · {{ level(course) }} ·
+                  {{ price(course) }}
+                  @if (isPok(course)) {
+                    · Credencial POK
+                  }
+                  @if (isAdmin() && course.teacher) {
+                    · {{ course.teacher.firstName }} {{ course.teacher.lastName }}
+                  }
+                </small>
+              </div>
+              <span class="mc-row__badge"
+                ><span
+                  class="cv-badge"
+                  [class]="'cv-badge cv-badge--' + course.status.toLowerCase()"
+                  >{{
+                    course.status === 'PUBLISHED'
+                      ? 'Publicado'
+                      : course.status === 'DRAFT'
+                        ? 'Borrador'
+                        : 'Archivado'
+                  }}</span
+                ></span
+              >
+              <span class="mc-people mc-row__stats">
+                @if (course.status === 'DRAFT') {
+                  <small>Configuración {{ done(course) }} de 5</small>
+                } @else {
+                  <span
+                    ><b>{{ enrolled(course) }}</b>
+                    {{ enrolled(course) === 1 ? 'estudiante' : 'estudiantes' }}</span
+                  >
+                }
+              </span>
+              <small class="mc-row__date">{{
+                course.status === 'ARCHIVED' ? 'Archivado' : when(course)
+              }}</small>
+              <button
+                type="button"
+                class="cv-icon-btn"
+                [attr.data-menu]="course.id"
+                aria-haspopup="menu"
+                [attr.aria-expanded]="menuId() === course.id"
+                [attr.aria-label]="'Más acciones para ' + course.title"
+                (click)="toggleMenu(course.id)"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle cx="5" cy="12" r="1.8" />
+                  <circle cx="12" cy="12" r="1.8" />
+                  <circle cx="19" cy="12" r="1.8" />
+                </svg>
+              </button>
+              @if (menuId() === course.id) {
+                <ng-container
+                  [ngTemplateOutlet]="menuTpl"
+                  [ngTemplateOutletContext]="{ $implicit: course, list: true }"
+                />
               }
             </div>
-          </li>
-        }
-      </ul>
+          }
+        </div>
+      }
     }
   </div>
 </section>
+
+<!-- Menú de acciones de un curso -->
+<ng-template #menuTpl let-course let-list="list">
+  <div
+    class="mc-menu"
+    [class.mc-menu--list]="list"
+    role="menu"
+    tabindex="-1"
+    (keydown)="onMenuKeydown($event)"
+  >
+    <button type="button" role="menuitem" (click)="manage(course)">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M4 20h4L19 9l-4-4L4 16z" />
+      </svg>
+      {{ course.status === 'DRAFT' ? 'Continuar editando' : 'Gestionar curso' }}
+    </button>
+    @if (course.status === 'PUBLISHED') {
+      <button type="button" role="menuitem" (click)="viewAsStudent(course)">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        Ver como estudiante
+      </button>
+      <button type="button" role="menuitem" (click)="viewStudents(course)">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" />
+        </svg>
+        Ver inscritos
+      </button>
+    }
+    <button type="button" role="menuitem" (click)="duplicate(course)">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <rect x="9" y="9" width="11" height="11" rx="2" />
+        <path d="M5 15V5a1 1 0 0 1 1-1h10" />
+      </svg>
+      Duplicar
+    </button>
+    <hr />
+    <button
+      type="button"
+      role="menuitem"
+      [class.danger]="course.status !== 'ARCHIVED'"
+      (click)="toggleArchive(course)"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 7h18v13H3zM2 3h20v4H2zM10 12h4" />
+      </svg>
+      {{ course.status === 'ARCHIVED' ? 'Restaurar' : 'Archivar' }}
+    </button>
+    @if (course.isOwner !== false) {
+      @if (confirmDeleteId() === course.id) {
+        <button type="button" role="menuitem" class="danger" (click)="remove(course)">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+          </svg>
+          Sí, eliminar para siempre
+        </button>
+      } @else {
+        <button type="button" role="menuitem" class="danger" (click)="askDelete(course)">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+          </svg>
+          Eliminar curso
+        </button>
+      }
+    }
+  </div>
+</ng-template>
+
+<!-- Aviso -->
+<div class="px-toast" [class.show]="toast()" role="status" aria-live="polite">
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <path d="m5 12 5 5 9-10" />
+  </svg>
+  <span>{{ toast()?.message }}</span>
+  @if (toast()?.undo) {
+    <button type="button" class="cv-btn cv-btn--ghost cv-btn--sm" (click)="runUndo()">
+      Deshacer
+    </button>
+  }
+</div>

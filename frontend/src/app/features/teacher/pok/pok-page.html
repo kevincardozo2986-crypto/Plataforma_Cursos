@@ -2,11 +2,18 @@
   <div class="panel-container pk-wrap">
     <!-- Encabezado -->
     <header class="px-hero">
-      <svg class="px-hero__art" viewBox="0 0 440 220" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <svg
+        class="px-hero__art"
+        viewBox="0 0 440 220"
+        preserveAspectRatio="xMaxYMid slice"
+        aria-hidden="true"
+      >
         <rect class="blue" x="200" y="-16" width="120" height="96" rx="16" />
         <rect class="teal" x="336" y="-16" width="120" height="150" rx="16" />
         <defs>
-          <clipPath id="pokSandClip"><rect x="200" y="96" width="256" height="140" rx="16" /></clipPath>
+          <clipPath id="pokSandClip">
+            <rect x="200" y="96" width="256" height="140" rx="16" />
+          </clipPath>
         </defs>
         <rect class="sand" x="200" y="96" width="256" height="140" rx="16" />
         <g clip-path="url(#pokSandClip)">
@@ -22,9 +29,23 @@
       </svg>
 
       <div class="px-hero__actions">
-        <a class="cv-btn cv-btn--secondary" href="https://pok.tech" target="_blank" rel="noopener noreferrer">
+        <a
+          class="cv-btn cv-btn--secondary"
+          href="https://pok.tech"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Abrir POK
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
             <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
           </svg>
         </a>
@@ -35,12 +56,18 @@
         <div class="px-minis" aria-hidden="true">
           <div class="px-mini px-mini--back">
             <svg viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="1.1">
-              <path d="M22 3v7M15 5l7 5 7-5" /><circle cx="22" cy="13" r="3" /><path d="M12 20h20" stroke-width="1.8" /><path d="M16 24h12" stroke-width=".8" />
+              <path d="M22 3v7M15 5l7 5 7-5" />
+              <circle cx="22" cy="13" r="3" />
+              <path d="M12 20h20" stroke-width="1.8" />
+              <path d="M16 24h12" stroke-width=".8" />
             </svg>
           </div>
           <div class="px-mini px-mini--front">
             <svg viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="1.1">
-              <path d="M22 3v7M15 5l7 5 7-5" /><circle cx="22" cy="13" r="3" /><path d="M12 20h20" stroke-width="1.8" /><path d="M16 24h12" stroke-width=".8" />
+              <path d="M22 3v7M15 5l7 5 7-5" />
+              <circle cx="22" cy="13" r="3" />
+              <path d="M12 20h20" stroke-width="1.8" />
+              <path d="M16 24h12" stroke-width=".8" />
             </svg>
           </div>
         </div>
@@ -55,33 +82,82 @@
 
       @if (conn(); as c) {
         <div class="px-hero__stats">
-          <span class="px-stat" [class.px-stat--ok]="c.organization" [class.px-stat--bad]="!c.organization">
+          <span
+            class="px-stat"
+            [class.px-stat--ok]="c.organization"
+            [class.px-stat--bad]="!c.organization"
+          >
             <span class="px-stat__ic">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                @if (c.organization) { <path d="m5 12 5 5 9-10" /> } @else { <path d="M12 7v6M12 17h.01" /> }
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                @if (c.organization) {
+                  <path d="m5 12 5 5 9-10" />
+                } @else {
+                  <path d="M12 7v6M12 17h.01" />
+                }
               </svg>
             </span>
             {{ c.organization ? 'Conectado a' : 'Sin conexión con' }} <b>POK</b>
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="8" /><path d="M12 8v8M9 11h6" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="8" />
+                <path d="M12 8v8M9 11h6" />
               </svg>
             </span>
             <b>{{ credits() }}</b> créditos
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="9" r="5" /><path d="m9 13-1 7 4-2 4 2-1-7" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="9" r="5" />
+                <path d="m9 13-1 7 4-2 4 2-1-7" />
               </svg>
             </span>
             <b>{{ counts().pok }}</b> cursos con POK
           </span>
           <span class="px-stat">
             <span class="px-stat__ic">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M4 12h16M14 6l6 6-6 6" />
               </svg>
             </span>
@@ -93,8 +169,18 @@
 
     @if (error()) {
       <div class="cv-callout cv-callout--danger" role="alert">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M12 3 2 20h20L12 3z" /><path d="M12 10v4M12 17h.01" />
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M12 3 2 20h20L12 3z" />
+          <path d="M12 10v4M12 17h.01" />
         </svg>
         <p>{{ error() }}</p>
         <button type="button" class="cv-btn cv-btn--ghost" (click)="load()">Reintentar</button>
@@ -107,21 +193,39 @@
       <section class="pk-panel">
         <div class="px-empty">
           <b>POK no está activado.</b> Falta la clave de API en el servidor: quien administra la
-          plataforma debe agregar <code>POK_API_KEY</code> en <code>backend/.env</code> y reiniciar la
-          API. Mientras tanto, los certificados de la plataforma se emiten con normalidad.
+          plataforma debe agregar <code>POK_API_KEY</code> en <code>backend/.env</code> y reiniciar
+          la API. Mientras tanto, los certificados de la plataforma se emiten con normalidad.
         </div>
       </section>
     } @else {
       @if (unsentTotal() > 0) {
         <div class="cv-callout" role="alert">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <path d="M12 3 2 20h20L12 3z" /><path d="M12 10v4M12 17h.01" />
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3 2 20h20L12 3z" />
+            <path d="M12 10v4M12 17h.01" />
           </svg>
           <p>
             <b>{{ unsentTotal() }} {{ unsentTotal() === 1 ? 'credencial' : 'credenciales' }}</b>
-            {{ unsentTotal() === 1 ? 'espera' : 'esperan' }} ser enviada{{ unsentTotal() === 1 ? '' : 's' }} a POK.
+            {{ unsentTotal() === 1 ? 'espera' : 'esperan' }} ser enviada{{
+              unsentTotal() === 1 ? '' : 's'
+            }}
+            a POK.
           </p>
-          <button type="button" class="cv-btn cv-btn--ghost" [disabled]="sending()" (click)="sendAll()">
+          <button
+            type="button"
+            class="cv-btn cv-btn--ghost"
+            [disabled]="sending()"
+            (click)="sendAll()"
+          >
             {{ sending() ? 'Enviando…' : 'Enviar todas' }}
           </button>
         </div>
@@ -131,19 +235,26 @@
         <!-- Estado de emisión -->
         <section class="pk-panel px-ready" aria-label="Estado de emisión">
           <div class="px-ready__head">
-            <div class="px-ring" [class.is-done]="readyCount() === 4">
+            <div class="px-ring" [class.is-done]="readyCount() === steps().length">
               <svg viewBox="0 0 96 96" aria-hidden="true">
                 <circle class="trk" cx="48" cy="48" r="40" />
-                <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="ring" [attr.stroke-dashoffset]="ringOffset()" />
+                <circle
+                  class="val"
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  [attr.stroke-dasharray]="ring"
+                  [attr.stroke-dashoffset]="ringOffset()"
+                />
               </svg>
               <div class="px-ring__txt">
-                <div>{{ readyCount() }}/4<small>listo</small></div>
+                <div>{{ readyCount() }}/{{ steps().length }}<small>listo</small></div>
               </div>
             </div>
             <div>
               <p class="px-ready__title">
                 {{
-                  readyCount() === 4
+                  readyCount() === steps().length
                     ? '¡Todo listo para emitir!'
                     : missing() === 1
                       ? 'Te falta 1 paso para emitir'
@@ -152,7 +263,7 @@
               </p>
               <p class="px-ready__sub">
                 {{
-                  readyCount() === 4
+                  readyCount() === steps().length
                     ? 'Las credenciales se envían apenas un estudiante termina el curso.'
                     : 'Resuelve lo que está marcado y las credenciales saldrán solas.'
                 }}
@@ -164,9 +275,28 @@
             @for (step of steps(); track step.id) {
               <li class="px-step">
                 <div class="px-step__row">
-                  <span class="px-dot" [class.px-dot--ok]="step.ok" [class.px-dot--bad]="!step.ok && step.level === 'bad'" [class.px-dot--warn]="!step.ok && step.level === 'warn'">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      @if (step.ok) { <path d="m5 12 5 5 9-10" /> } @else { <path d="M12 7v6M12 17h.01" /> }
+                  <span
+                    class="px-dot"
+                    [class.px-dot--ok]="step.ok"
+                    [class.px-dot--bad]="!step.ok && step.level === 'bad'"
+                    [class.px-dot--warn]="!step.ok && step.level === 'warn'"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      @if (step.ok) {
+                        <path d="m5 12 5 5 9-10" />
+                      } @else {
+                        <path d="M12 7v6M12 17h.01" />
+                      }
                     </svg>
                   </span>
                   <div class="px-step__text">
@@ -175,13 +305,19 @@
                   </div>
                   @if (step.action) {
                     @if (step.kind === 'link') {
-                      <a class="cv-btn cv-btn--ghost cv-btn--sm" href="https://pok.tech" target="_blank" rel="noopener noreferrer">{{ step.action }}</a>
+                      <a
+                        class="cv-btn cv-btn--ghost cv-btn--sm"
+                        href="https://pok.tech"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >{{ step.action }}</a
+                      >
                     } @else {
                       <button
                         type="button"
                         class="cv-btn cv-btn--secondary cv-btn--sm"
                         [attr.aria-expanded]="open() === step.id"
-                        (click)="togglePanel(step.id === 'mode' ? 'mode' : 'hook')"
+                        (click)="togglePanel('mode')"
                       >
                         {{ step.action }}
                       </button>
@@ -201,100 +337,105 @@
                     </div>
                   </div>
                 }
-                @if (step.id === 'hook') {
-                  <div class="px-expand" [class.open]="open() === 'hook'">
-                    <div>
-                      <div class="px-expand__in">
-                        <p class="px-hint">
-                          En POK → Ajustes → Webhooks agrega esta URL y pulsa el check para enviar un
-                          mensaje de prueba. Luego pega su «clave de firma» en
-                          <code>POK_WEBHOOK_SIGNING_KEY</code> (<code>backend/.env</code>) y reinicia la API.
-                        </p>
-                        <div class="px-field">
-                          <code>{{ webhookUrl() }}</code>
-                          <button type="button" class="cv-btn cv-btn--secondary cv-btn--sm" (click)="copyWebhook()">
-                            {{ copied() ? 'Copiado' : 'Copiar' }}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
               </li>
             }
           </ul>
         </section>
 
-        <!-- Vista previa -->
+        <!-- Vista previa: la imagen real que genera POK con tu diseño -->
         <section class="pk-panel px-stage" aria-label="Vista previa de la credencial">
           <div class="px-stage__head">
             <p>Así la recibe tu estudiante</p>
-            <span class="cv-chip">{{ selected() && isPok(selected()!) ? 'Credencial POK' : 'PDF de la plataforma' }}</span>
+            <span class="cv-chip">Credencial POK</span>
           </div>
           <div class="px-stage__body">
-            @if (selected(); as course) {
-              @for (key of [previewKey()]; track key) {
-                @if (isPok(course)) {
-                  <div class="px-cred px-cred--pok swap" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
-                    <div class="px-cred__frame"></div>
-                    <div class="px-cred__in">
-                      <svg class="px-cred__rays" viewBox="0 0 64 26" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-                        <path d="M32 2v14M20 6l12 10 12-10M10 14l22 4 22-4" /><circle cx="32" cy="22" r="3.2" />
-                      </svg>
-                      <p class="px-cred__org">{{ conn()!.emitter }}</p>
-                      <p class="px-cred__lbl">Otorga esta credencial a</p>
-                      <p class="px-cred__name">Nombre del estudiante</p>
-                      <p class="px-cred__course">{{ course.title }}</p>
-                    </div>
-                    <div class="px-cred__foot">
-                      <span>Verificable en POK</span>
-                      <div class="px-qr" aria-hidden="true">
-                        @for (on of qr; track $index) { <i [class.o]="!on"></i> }
-                      </div>
-                    </div>
-                    <div class="px-cred__shine"></div>
-                  </div>
-                } @else {
-                  <div class="px-cred px-cred--pdf swap" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
-                    <div class="px-cred__frame"></div>
-                    <div class="px-cred__in">
-                      <p class="px-cred__org">Campus Virtual</p>
-                      <p class="px-cred__lbl">Certificado de finalización</p>
-                      <p class="px-cred__name">Nombre del estudiante</p>
-                      <p class="px-cred__lbl">completó el curso</p>
-                      <p class="px-cred__course">{{ course.title }}</p>
-                    </div>
-                    <div class="px-cred__foot"><span>Verificable con un código</span><span>PDF descargable</span></div>
-                    <div class="px-cred__shine"></div>
+            @if (previewTemplateId()) {
+              <div class="px-preview" (mousemove)="tilt($event)" (mouseleave)="untilt($event)">
+                @if (previewUrl(); as url) {
+                  <img
+                    [src]="url | publicUrl"
+                    [alt]="'Credencial de POK del curso ' + (selected()?.title ?? '')"
+                    (load)="previewLoaded()"
+                    (error)="previewFailed()"
+                  />
+                }
+                @if (previewLoading()) {
+                  <div class="px-preview__wait" role="status">
+                    <span class="px-spin"></span> Generando vista previa…
                   </div>
                 }
-              }
+                <div class="px-preview__shine"></div>
+              </div>
             } @else {
-              <p class="px-empty">Cuando tengas cursos, aquí verás cómo recibe el estudiante su credencial.</p>
+              <p class="px-empty">
+                Cuando tengas un diseño en tu cuenta de POK, aquí verás cómo recibe el estudiante su
+                credencial.
+              </p>
             }
           </div>
 
-          <div class="px-designs">
-            @if (selected(); as course) {
-              @if (isPok(course)) {
-                @for (template of templates(); track template.id) {
-                  <button
-                    type="button"
-                    class="px-dz"
-                    [attr.aria-pressed]="course.pokTemplateId === template.id"
-                    [disabled]="busyId() === course.id"
-                    (click)="pickTemplate(course, template.id)"
-                  >
-                    <span class="px-dz__sw"></span>{{ template.name }}
-                  </button>
-                } @empty {
-                  <span class="px-muted">{{ selectedTemplateName() }}</span>
-                }
-                <a class="px-dz px-dz--new" href="https://pok.tech" target="_blank" rel="noopener noreferrer">+ Crear diseño en POK</a>
-              } @else {
-                <span class="px-muted">Se entrega el PDF con la plantilla del Campus Virtual.</span>
-              }
+          @if (previewError()) {
+            <p class="px-preview__note px-preview__note--bad" role="alert">{{ previewError() }}</p>
+          } @else if (selected(); as course) {
+            @if (!isPok(course)) {
+              <p class="px-preview__note">
+                Este curso entrega hoy el <b>PDF de la plataforma</b>. Así se vería con POK:
+                cámbialo con el interruptor de la lista.
+              </p>
             }
+          }
+
+          <div class="px-designs">
+            @if (templates().length > 6) {
+              <label class="px-designs__search">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input
+                  type="search"
+                  placeholder="Buscar entre {{ templates().length }} diseños"
+                  aria-label="Buscar diseño"
+                  [value]="designQuery()"
+                  (input)="onDesignSearch($event)"
+                />
+              </label>
+            }
+            <div class="px-designs__list" role="group" aria-label="Diseños de POK">
+              @for (template of shownTemplates(); track template.id) {
+                <button
+                  type="button"
+                  class="px-dz"
+                  [attr.aria-pressed]="previewTemplateId() === template.id"
+                  [disabled]="busyId() === selected()?.id"
+                  [attr.title]="template.name"
+                  (click)="choosePreview(template.id)"
+                >
+                  <span class="px-dz__sw"></span
+                  ><span class="px-dz__name">{{ template.name }}</span>
+                </button>
+              } @empty {
+                @if (templates().length > 0) {
+                  <span class="px-muted">Ningún diseño coincide con «{{ designQuery() }}».</span>
+                }
+              }
+            </div>
+            <a
+              class="px-dz px-dz--new"
+              href="https://pok.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              >+ Crear diseño en POK</a
+            >
             @if (templatesError()) {
               <span class="px-muted" role="alert">{{ templatesError() }}</span>
             }
@@ -308,15 +449,31 @@
           <h2>Certificado de cada curso</h2>
           <div class="cv-tabs" role="tablist" aria-label="Filtrar cursos">
             @for (tab of tabs; track tab.id) {
-              <button type="button" class="cv-tab" role="tab" [attr.aria-selected]="filter() === tab.id" (click)="setFilter(tab.id)">
+              <button
+                type="button"
+                class="cv-tab"
+                role="tab"
+                [attr.aria-selected]="filter() === tab.id"
+                (click)="setFilter(tab.id)"
+              >
                 {{ tab.label }} <span class="cv-tab__count">{{ counts()[tab.id] }}</span>
               </button>
             }
           </div>
         </div>
         <p class="pk-note">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" />
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5M12 8h.01" />
           </svg>
           Haz clic en un curso para ver su credencial. Si cambias el tipo, quienes ya terminaron
           conservan lo que recibieron.
@@ -333,7 +490,13 @@
             (keydown.space)="$event.preventDefault(); select(course)"
           >
             <div class="pk-course">
-              <div class="pk-course__mono" [style.background]="'var(--cover-' + cover(course) + ')'" [style.color]="'var(--cover-' + cover(course) + '-ink)'">{{ mono(course) }}</div>
+              <div
+                class="pk-course__mono"
+                [style.background]="'var(--cover-' + cover(course) + ')'"
+                [style.color]="'var(--cover-' + cover(course) + '-ink)'"
+              >
+                {{ mono(course) }}
+              </div>
               <div class="pk-course__text">
                 <p class="pk-course__name">{{ course.title }}</p>
                 <p class="pk-course__meta">{{ statusLabels[course.status] }}</p>
@@ -342,15 +505,45 @@
 
             <div class="px-switch" [attr.data-v]="isPok(course) ? 'pok' : 'pdf'">
               <span class="px-switch__thumb"></span>
-              <button type="button" [attr.aria-pressed]="!isPok(course)" [disabled]="busyId() === course.id" (click)="setType(course, 'PDF')">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z" /><path d="M14 3v5h5" />
+              <button
+                type="button"
+                [attr.aria-pressed]="!isPok(course)"
+                [disabled]="busyId() === course.id"
+                (click)="setType(course, 'PDF')"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z" />
+                  <path d="M14 3v5h5" />
                 </svg>
                 PDF
               </button>
-              <button type="button" [attr.aria-pressed]="isPok(course)" [disabled]="busyId() === course.id" (click)="setType(course, 'POK')">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                  <circle cx="12" cy="9" r="6" /><path d="m8.5 13.8-1.5 7.2 5-2.6 5 2.6-1.5-7.2" />
+              <button
+                type="button"
+                [attr.aria-pressed]="isPok(course)"
+                [disabled]="busyId() === course.id"
+                (click)="setType(course, 'POK')"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="9" r="6" />
+                  <path d="m8.5 13.8-1.5 7.2 5-2.6 5 2.6-1.5-7.2" />
                 </svg>
                 POK
               </button>
@@ -361,7 +554,19 @@
                 <span class="px-muted">Se descarga al terminar</span>
               } @else if (course.unsent === 0) {
                 <span class="pk-ok">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 5 5 9-10" />
+                  </svg>
                   Al día
                 </span>
               } @else {
@@ -371,11 +576,27 @@
 
             <div class="px-act">
               @if (isPok(course) && course.unsent > 0) {
-                <button type="button" class="cv-btn cv-btn--primary cv-btn--sm" [disabled]="busyId() === course.id" (click)="send(course)">
+                <button
+                  type="button"
+                  class="cv-btn cv-btn--primary cv-btn--sm"
+                  [disabled]="busyId() === course.id"
+                  (click)="send(course)"
+                >
                   @if (busyId() === course.id) {
                     <span class="px-spin"></span> Enviando
                   } @else {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" /></svg>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" />
+                    </svg>
                     Enviar {{ course.unsent }}
                   }
                 </button>
@@ -384,7 +605,9 @@
           </div>
         } @empty {
           <div class="px-empty">
-            {{ courses().length === 0 ? 'Todavía no tienes cursos.' : 'Nada por aquí. Todo al día ✨' }}
+            {{
+              courses().length === 0 ? 'Todavía no tienes cursos.' : 'Nada por aquí. Todo al día ✨'
+            }}
           </div>
         }
       </section>
@@ -393,6 +616,17 @@
 </section>
 
 <div class="px-toast" [class.show]="toast()" role="status" aria-live="polite">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <path d="m5 12 5 5 9-10" />
+  </svg>
   <span>{{ toast() }}</span>
 </div>

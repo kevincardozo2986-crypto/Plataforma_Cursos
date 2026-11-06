@@ -45,6 +45,15 @@ export class NotificationsService {
     return created;
   }
 
+  /**
+   * Avisa a una persona UNA sola vez por `eventKey` (p. ej. un recordatorio del docente una vez al día).
+   * Devuelve false si ya existía. A diferencia de `notify`, un error de base de datos sí se propaga:
+   * quien lo pide necesita saber si el aviso salió.
+   */
+  async notifyOnce(userId: number, data: NewNotification, eventKey: string): Promise<boolean> {
+    return (await this.repository.createOnce(userId, data, eventKey)) > 0;
+  }
+
   async list(
     user: AuthenticatedUser,
     options: { unread?: boolean; limit?: number; offset?: number },

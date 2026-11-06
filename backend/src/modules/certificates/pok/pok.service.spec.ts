@@ -50,6 +50,7 @@ function build(env: Record<string, string> = { POK_API_KEY: 'k' }) {
     organization: vi.fn().mockResolvedValue({ name: 'ORG', availableCredits: 3 }),
     listTemplates: vi.fn().mockResolvedValue([{ id: 't1', name: 'Uno', tags: [] }]),
     findTemplate: vi.fn().mockResolvedValue({ found: true, id: 't1', name: 'Uno' }),
+    templateParameters: vi.fn().mockResolvedValue([{ id: 'p-doc', label: 'Documento Id' }, { id: 'p-curso', label: 'Curso' }]),
   };
   const service = new PokService(repository as unknown as CertificatesRepository, access as unknown as CourseAccessService);
 
@@ -73,6 +74,24 @@ describe('PokService.emit', () => {
     expect(client.emit.mock.calls[0][0].receiver).toMatchObject({ email: 'ana@correo.com', firstName: 'Ana' });
     expect(repository.setPok).toHaveBeenCalledWith(19, expect.objectContaining({ pokCredentialId: 'cred-1', pokStatus: 'PENDING' }));
     expect(repository.setPok).toHaveBeenCalledWith(19, expect.objectContaining({ pokUrl: 'https://v.pok.tech/r/cred-1' }));
+  });
+
+  it('lleva el documento del estudiante al campo «Documento Id» del diseño', async () => {
+    const { service, client } = build();
+
+    await service.emit(19);
+
+    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({ 'p-doc': '123', 'p-curso': expect.any(String) });
+  });
+
+  it('si POK no devuelve los parámetros del diseño, emite igual (sin ellos)', async () => {
+    const { service, client } = build();
+    client.templateParameters.mockResolvedValue([]);
+
+    await service.emit(19);
+
+    expect(client.emit).toHaveBeenCalledOnce();
+    expect(client.emit.mock.calls[0][0].customization.template.customParameters).toEqual({});
   });
 
   it('apagado (sin clave) no hace nada', async () => {
@@ -370,5 +389,47 @@ describe('PokService: emisión directa (espera a que POK emita)', () => {
     expect(client.get).not.toHaveBeenCalled();
     expect(await service.refreshPending([{ id: 3, provider: 'POK', pokStatus: 'PENDING' }])).toBe(true);
     expect(repository.setPok).toHaveBeenCalledWith(3, expect.objectContaining({ pokStatus: 'EMITTED' }));
+  });
+});
+
+describe('PokService.preview', () => {
+  it('pide la imagen a POK con el título del curso y la reutiliza (no vuelve a pedirla)', async () => {
+    const { service, client } = build();
+    const preview = vi.fn().mockResolvedValue('https://img.example/p.png');
+
+    (client as unknown as { preview: typeof preview }).preview = preview;
+
+    expect(await service.preview('tpl-1', 'Mi curso')).toEqual({ url: 'https://img.example/p.png' });
+    expect(await service.preview('tpl-1', 'Mi curso')).toEqual({ url: 'https://img.example/p.png' });
+    expect(preview).toHaveBeenCalledOnce();
+    expect(preview.mock.calls[0][0].credential.title).toBe('Mi curso');
+
+    await service.preview('tpl-1', 'Otro curso');
+
+    expect(preview).toHaveBeenCalledTimes(2);
+  });
+
+  it('un id de diseño con caracteres raros se rechaza antes de llamar a POK (400)', async () => {
+    const { service, client } = build();
+    const preview = vi.fn();
+
+    (client as unknown as { preview: typeof preview }).preview = preview;
+
+    await expect(service.preview('../etc/passwd', 'X')).rejects.toBeInstanceOf(BadRequestException);
+    expect(preview).not.toHaveBeenCalled();
+  });
+
+  it('si POK no devuelve la imagen responde 502', async () => {
+    const { service, client } = build();
+
+    (client as unknown as { preview: () => Promise<null> }).preview = vi.fn().mockResolvedValue(null);
+
+    await expect(service.preview('tpl-1', 'X')).rejects.toBeInstanceOf(BadGatewayException);
+  });
+
+  it('con POK apagado responde 400', async () => {
+    const { service } = build({});
+
+    await expect(service.preview('tpl-1', 'X')).rejects.toBeInstanceOf(BadRequestException);
   });
 });

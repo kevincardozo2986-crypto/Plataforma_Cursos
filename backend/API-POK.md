@@ -76,6 +76,7 @@ Docente o admin.
 | --- | --- |
 | `GET /pok/status` | `{ enabled }` y, si está activo, organización, créditos, modo (borrador/real) y si el webhook está configurado. |
 | `GET /pok/templates` | Los diseños de la cuenta de POK: `[{ id, name, tags }]`. `502` si POK no responde. Solo se lee la primera página de resultados. |
+| `GET /pok/templates/:templateId/preview?title=` | Cómo se ve la credencial con ese diseño: `{ url }` de una **imagen PNG que genera POK** (`POST /template/preview`) con el título del curso y un estudiante de ejemplo. Se guarda 10 minutos en memoria. `400` id inválido, `502` si POK no la genera. La usa la vista previa de la pantalla POK. |
 | `GET /pok/courses` | Mis cursos (un admin ve todos) con `pokTemplateId` / `pokTemplateName` (null = vía Plataforma) y `unsent` (certificados de POK vigentes aún no enviados). |
 | `PUT /pok/courses/:courseId/template` | `{ "pokTemplateId": "<id>" }` = el curso entrega la credencial de POK; `{ "pokTemplateId": null }` = vuelve al certificado de la plataforma. Comprueba contra POK que el diseño exista (`400` si no). Responde `issued` (credenciales emitidas a quienes ya habían terminado sin certificado). Quien no gestiona el curso recibe `403`. |
 | `POST /pok/courses/:courseId/send-pending` | Envía a POK los certificados **de POK** del curso que no están allá (hasta 100 por vez). `{ total, sent, failed }`. Reenviar uno que POK ya tiene **no duplica**. |
@@ -110,3 +111,11 @@ Autenticación (se exige una; **sin ninguna configurada se rechaza todo**):
 - `pok/pok-api.spec.ts`: configuración, cuerpo de la petición, estados, firma del webhook y cliente HTTP.
 - `pok/pok.service.spec.ts`: emisión, reintento, permisos, webhook y que un fallo de POK **nunca** rompa el certificado; un certificado de la plataforma nunca se envía.
 - `certificates.service.spec.ts` («una sola vía»): el origen se fija al emitir, el aviso al estudiante, y que los de POK no tienen PDF ni se corrigen.
+
+## Documento del estudiante en la credencial
+
+Además de `receiver.identification`, muchos diseños de POK tienen un **campo propio** («Documento Id», «Documento», «Cédula»…) que no se llena solo.
+Al emitir, el backend lee los parámetros del diseño (`GET /template/{id}` → `customParameters: [{ id, label }]`) y manda el documento del estudiante en
+`customization.template.customParameters` como un objeto `{ idDelParametro: "documento" }`, en cada parámetro cuya etiqueta sea de documento
+(documento, cédula, identificación, c.c., dni). Los demás parámetros (p. ej. «Número de horas») no se tocan. Si POK no responde esa consulta, la emisión sigue sin ellos.
+La vista previa usa un documento de ejemplo (1234567890) para mostrar dónde saldrá. Las credenciales ya emitidas no cambian.
