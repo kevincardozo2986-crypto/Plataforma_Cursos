@@ -191,7 +191,7 @@
                     <span class="person">
                       <span class="avatar" aria-hidden="true">
                         @if (user.avatarUrl) {
-                          <img [src]="user.avatarUrl" alt="" />
+                          <img [src]="user.avatarUrl | publicUrl" alt="" />
                         } @else {
                           {{ initials(user) }}
                         }

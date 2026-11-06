@@ -1,3 +1,4 @@
+import { publicUrl } from '../http/public-url';
 /**
  * Limpieza de HTML en el navegador. Es el mismo criterio que aplica el servidor al guardar
  * (backend/src/common/dto/sanitize-html.ts): si cambias uno, cambia el otro.
@@ -144,12 +145,12 @@ function copyAttributes(source: Element, target: Element, tag: string): boolean 
       }
     } else if (key === 'href') {
       if (isSafeUrl(value)) {
-        target.setAttribute('href', value);
+        target.setAttribute('href', publicUrl(value));
       }
     } else if (key === 'src') {
       // Los marcos admiten cualquier https:// ajeno a esta plataforma; las imágenes, http(s) o una ruta propia.
       if (tag === 'iframe' ? isAllowedEmbedUrl(value) : isSafeUrl(value, ['http:', 'https:'])) {
-        target.setAttribute('src', value);
+        target.setAttribute('src', publicUrl(value));
       }
     } else {
       target.setAttribute(key, value);

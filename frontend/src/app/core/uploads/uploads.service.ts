@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { UploadKind } from './upload-rules';
+import { publicUrl } from '../http/public-url';
 
 export type UploadEvent =
   { type: 'progress'; percent: number } | { type: 'done'; url: string; name: string; size: number };
@@ -38,7 +39,7 @@ export class UploadsService {
       const form = new FormData();
       form.append('file', file, file.name);
 
-      xhr.open('POST', ENDPOINTS[kind]);
+      xhr.open('POST', publicUrl(ENDPOINTS[kind]));
 
       const token = readToken();
       if (token) {

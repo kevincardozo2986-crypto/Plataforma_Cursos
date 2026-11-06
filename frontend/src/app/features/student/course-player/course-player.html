@@ -124,7 +124,7 @@
             [class.has-image]="course().imageUrl || course().image || course().thumbnail"
           >
             @if (course().imageUrl || course().image || course().thumbnail; as image) {
-              <img [src]="image" alt="" />
+              <img [src]="image | publicUrl" alt="" />
             }
             <div class="cover-content">
               <span class="eyebrow">{{ selected()?.moduleTitle }}</span>
@@ -132,7 +132,7 @@
               @if (current.videoUrl) {
                 <a
                   class="external-video"
-                  [href]="current.videoUrl"
+                  [href]="current.videoUrl | publicUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   ><app-student-icon name="play" />Abrir video de la lecci&#243;n &#8599;</a
@@ -614,12 +614,22 @@
             <p>
               Estado: <strong>{{ pokLabels[cert.pokStatus ?? 'NONE'] }}</strong>
               @if (cert.pokUrl && (cert.pokStatus === 'EMITTED' || cert.pokStatus === 'ACCEPTED')) {
-                · <a [href]="cert.pokUrl" target="_blank" rel="noopener noreferrer">Ver en POK</a>
+                ·
+                <a [href]="cert.pokUrl | publicUrl" target="_blank" rel="noopener noreferrer"
+                  >Ver en POK</a
+                >
               }
             </p>
           }
-          @if (state.certificate?.pokStatus !== 'EMITTED' && state.certificate?.pokStatus !== 'ACCEPTED') {
-            <button class="primary certificate-download" (click)="requestPokCredential()" [disabled]="pokBusy()">
+          @if (
+            state.certificate?.pokStatus !== 'EMITTED' &&
+            state.certificate?.pokStatus !== 'ACCEPTED'
+          ) {
+            <button
+              class="primary certificate-download"
+              (click)="requestPokCredential()"
+              [disabled]="pokBusy()"
+            >
               {{
                 pokBusy()
                   ? 'Consultando...'

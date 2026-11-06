@@ -16,6 +16,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 
 import { firstValueFrom } from 'rxjs';
 
+import { basePathInterceptor } from './core/http/base-path.interceptor';
 import { authInterceptor } from './core/auth/auth.interceptor';
 
 import { AuthService } from './core/auth/auth.service';
@@ -29,7 +30,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     { provide: LOCALE_ID, useValue: 'es' },
 
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([basePathInterceptor, authInterceptor])),
 
     provideBrowserGlobalErrorListeners(),
 

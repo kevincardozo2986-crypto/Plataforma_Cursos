@@ -2,21 +2,17 @@
   <div class="student-shell">
     <aside class="profile-sidebar" aria-label="Perfil del estudiante">
       <a class="campus-brand" routerLink="/student/dashboard" aria-label="Campus Virtual, inicio">
-        <img
-          class="campus-logo--light"
-          src="/images/campus-virtual-logo.png"
-          alt="Campus Virtual"
-        />
+        <img class="campus-logo--light" src="images/campus-virtual-logo.png" alt="Campus Virtual" />
         <img
           class="campus-logo--dark"
-          src="/images/campus-virtual-logo-white.png"
+          src="images/campus-virtual-logo-white.png"
           alt="Campus Virtual"
         />
       </a>
       <div class="profile-person">
         <button class="profile-avatar" (click)="panel.set('account')" aria-label="Editar mi perfil">
           @if (auth.user()?.avatarUrl; as photo) {
-            <img [src]="photo" alt="Tu foto de perfil" />
+            <img [src]="photo | publicUrl" alt="Tu foto de perfil" />
           } @else {
             <span>{{ initials() }}</span>
           }
@@ -108,7 +104,7 @@
               <a class="continue-card" [routerLink]="['/courses', item.courseId]">
                 <div class="continue-cover">
                   @if (item.course.imageUrl) {
-                    <img [src]="item.course.imageUrl" alt="" />
+                    <img [src]="item.course.imageUrl | publicUrl" alt="" />
                   } @else {
                     <span>{{ item.course.title.charAt(0).toUpperCase() }}</span>
                   }
@@ -228,7 +224,7 @@
               <a class="recommendation-card" [routerLink]="['/courses', item.id]"
                 ><div class="recommendation-cover">
                   @if (item.imageUrl || item.image || item.thumbnail; as cover) {
-                    <img [src]="cover" alt="" loading="lazy" />
+                    <img [src]="cover | publicUrl" alt="" loading="lazy" />
                   } @else {
                     <span class="cover-letter">{{
                       (item.title || item.name || 'Curso').charAt(0).toUpperCase()
@@ -317,7 +313,11 @@
               <li>
                 <strong>{{ certificate.courseTitle }}</strong>
                 <p>{{ certificate.instructorName }}</p>
-                @if (certificate.provider === 'POK' && certificate.pokAvailable && (!certificate.pokStatus || certificate.pokStatus === 'NONE')) {
+                @if (
+                  certificate.provider === 'POK' &&
+                  certificate.pokAvailable &&
+                  (!certificate.pokStatus || certificate.pokStatus === 'NONE')
+                ) {
                   <p class="pok-line">
                     <strong>Credencial digital de POK:</strong> aún no la tienes ·
                     <button
@@ -329,7 +329,11 @@
                       {{ syncingPok() === certificate.id ? 'Solicitando…' : 'Obtenerla' }}
                     </button>
                   </p>
-                } @else if (certificate.provider === 'POK' && certificate.pokStatus && certificate.pokStatus !== 'NONE') {
+                } @else if (
+                  certificate.provider === 'POK' &&
+                  certificate.pokStatus &&
+                  certificate.pokStatus !== 'NONE'
+                ) {
                   <p class="pok-line" [attr.data-pok]="certificate.pokStatus">
                     <strong>Credencial digital de POK:</strong>
                     {{ pokLabels[certificate.pokStatus] }}
@@ -337,11 +341,17 @@
                       certificate.pokUrl &&
                       (certificate.pokStatus === 'EMITTED' || certificate.pokStatus === 'ACCEPTED')
                     ) {
-                      · <a [href]="certificate.pokUrl" target="_blank" rel="noopener noreferrer"
+                      ·
+                      <a
+                        [href]="certificate.pokUrl | publicUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         >Ver en POK</a
                       >
                     }
-                    @if (certificate.pokStatus === 'FAILED' || certificate.pokStatus === 'PENDING') {
+                    @if (
+                      certificate.pokStatus === 'FAILED' || certificate.pokStatus === 'PENDING'
+                    ) {
                       ·
                       <button
                         class="link-button"

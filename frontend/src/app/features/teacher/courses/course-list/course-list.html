@@ -76,7 +76,7 @@
               [attr.aria-label]="'Editar ' + course.title"
             >
               @if (course.imageUrl) {
-                <img [src]="course.imageUrl" alt="" loading="lazy" />
+                <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
               } @else {
                 <span class="cover-book" aria-hidden="true">▤</span
                 ><span class="cover-label">{{ course.category?.name ?? 'CAMPUS VIRTUAL' }}</span>

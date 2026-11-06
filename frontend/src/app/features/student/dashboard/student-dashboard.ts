@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Course, CoursesResponse } from '../../../core/courses/courses.models';
 import { StreakFlame } from './streak-flame';
 import { CertificatesService } from '../../../core/certificates/certificates.service';
@@ -30,7 +31,7 @@ interface StudentNotification {
 
 @Component({
   selector: 'app-student-dashboard',
-  imports: [RouterLink, StudentIcon, StudyStreak, AccountSettings, StreakFlame],
+  imports: [PublicUrlPipe, RouterLink, StudentIcon, StudyStreak, AccountSettings, StreakFlame],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss',
 })

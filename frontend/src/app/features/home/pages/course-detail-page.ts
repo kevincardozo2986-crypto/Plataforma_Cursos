@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { RichHtmlPipe } from '../../../shared/pipes/rich-html.pipe';
 import { CheckoutDialog } from './checkout-dialog/checkout-dialog';
 import { CoursePlayer } from '../../student/course-player/course-player';
@@ -40,7 +41,7 @@ interface CourseProgress {
 
 @Component({
   selector: 'app-course-detail-page',
-  imports: [RouterLink, FormsModule, CoursePlayer, RichHtmlPipe, CheckoutDialog],
+  imports: [PublicUrlPipe, RouterLink, FormsModule, CoursePlayer, RichHtmlPipe, CheckoutDialog],
   templateUrl: './course-detail-page.html',
   styleUrl: './course-detail-page.scss',
 })
@@ -110,7 +111,9 @@ export class CourseDetailPage {
   onPaid(): void {
     const course = this.course();
     if (!course) return;
-    this.enrollmentNotice.set('¡Pago aprobado e inscripción realizada! El curso ya aparece en Mis cursos.');
+    this.enrollmentNotice.set(
+      '¡Pago aprobado e inscripción realizada! El curso ya aparece en Mis cursos.',
+    );
     this.progress.set({
       status: 'ACTIVE',
       percent: 0,

@@ -81,7 +81,7 @@
     } @else {
       <img
         class="preview"
-        [src]="previewUrl()"
+        [src]="previewUrl() | publicUrl"
         alt="Vista previa de la imagen"
         (error)="previewFailed.set(true)"
       />
@@ -89,7 +89,7 @@
   } @else if (embedSrc(); as src) {
     <iframe
       class="preview embed"
-      [src]="src"
+      [src]="src | publicUrl"
       title="Vista previa del video"
       loading="lazy"
       allowfullscreen
@@ -111,7 +111,7 @@
         class="preview"
         controls
         preload="metadata"
-        [src]="videoSrc()"
+        [src]="videoSrc() | publicUrl"
         (error)="previewFailed.set(true)"
       >
         Tu navegador no puede reproducir este video.

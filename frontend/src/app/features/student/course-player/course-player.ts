@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { embeddedLessonVideo, withoutMainVideo } from './video-source';
 import { CourseVideo, VideoSample } from './course-video';
 import { CourseAssessments, Assessment } from './course-assessments';
@@ -95,6 +96,7 @@ type Tab =
 @Component({
   selector: 'app-course-player',
   imports: [
+    PublicUrlPipe,
     RouterLink,
     FormsModule,
     StudentIcon,

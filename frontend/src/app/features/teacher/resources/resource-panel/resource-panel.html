@@ -13,7 +13,7 @@
       <li class="item">
         <span class="type-tag">{{ labels[resource.type] }}</span>
 
-        <a class="name" [href]="resource.url" target="_blank" rel="noopener noreferrer">
+        <a class="name" [href]="resource.url | publicUrl" target="_blank" rel="noopener noreferrer">
           {{ resource.title }}
         </a>
 

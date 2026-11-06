@@ -1,6 +1,6 @@
 <article class="course-card">
   <div class="course-image">
-    <img [src]="course().image" [alt]="course().title" />
+    <img [src]="course().image | publicUrl" [alt]="course().title" />
 
     <span class="category">
       {{ course().category }}

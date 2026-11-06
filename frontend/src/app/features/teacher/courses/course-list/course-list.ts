@@ -1,3 +1,4 @@
+import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +15,7 @@ type StatusFilter = CourseStatus | 'ALL';
 
 @Component({
   selector: 'app-course-list',
-  imports: [RouterLink, DatePipe, DecimalPipe, PageHeader, StatusBadge],
+  imports: [PublicUrlPipe, RouterLink, DatePipe, DecimalPipe, PageHeader, StatusBadge],
   templateUrl: './course-list.html',
   styleUrl: './course-list.scss',
 })

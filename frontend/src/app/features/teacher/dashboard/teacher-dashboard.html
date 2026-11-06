@@ -60,7 +60,7 @@
                   >
                     <div class="draft-image">
                       @if (course.imageUrl) {
-                        <img [src]="course.imageUrl" alt="" loading="lazy" />
+                        <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
                       } @else {
                         <div class="cover-art" aria-hidden="true">
                           <svg viewBox="0 0 160 120" fill="none">
@@ -182,7 +182,7 @@
                     <a class="published-row" [routerLink]="['/teacher/courses', course.id, 'edit']">
                       <div class="published-thumb">
                         @if (course.imageUrl) {
-                          <img [src]="course.imageUrl" alt="" loading="lazy" />
+                          <img [src]="course.imageUrl | publicUrl" alt="" loading="lazy" />
                         } @else {
                           <span aria-hidden="true">▤</span>
                         }

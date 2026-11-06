@@ -58,6 +58,8 @@ Prettier usa la configuración de `.prettierrc`. Ejecutar `npm run format` despu
 
 ## SSR
 
+Para producción bajo `/cursos-virtuales/`, ejecuta `npm run build:deploy` y sigue la [guía de despliegue](../deploy/README.md). El desarrollo local con `npm start` sigue usando `/`.
+
 Después de compilar:
 
 ```bash
