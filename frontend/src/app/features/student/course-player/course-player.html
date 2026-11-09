@@ -3,15 +3,9 @@
   [class.is-maximized]="maximized()"
   [class.modules-open]="modulesOpen()"
   [class.tools-open]="focusToolOpen()"
-  [attr.role]="maximized() ? 'dialog' : null"
-  [attr.aria-modal]="maximized() ? 'true' : null"
   [attr.aria-label]="'Aula del curso' | t"
 >
   <div class="classroom-topbar">
-    <a class="breadcrumb" routerLink="/student/dashboard" fragment="my-courses"
-      >{{ 'Mis cursos' | t }} <span aria-hidden="true">&#8250;</span>
-      <span>{{ course().title || course().name }}</span></a
-    >
     <div class="classroom-actions">
       <span class="course-status"
         ><span aria-hidden="true"></span
@@ -74,7 +68,31 @@
       [attr.aria-label]="'Lección actual' | t"
       [attr.aria-busy]="loading() || initializing()"
     >
-      @if (initializing() && !lesson()) {
+      @if (!started()) {
+        <div class="course-welcome">
+          <span class="welcome-mark" aria-hidden="true"><app-student-icon name="play" /></span>
+          <span class="eyebrow">{{ 'Aula de aprendizaje' | t }}</span>
+          <h2>{{ course().title || course().name }}</h2>
+          <p>
+            {{
+              progress().percent
+                ? ('Continúa desde donde quedaste y avanza a tu propio ritmo.' | t)
+                : ('Estás a punto de comenzar un recorrido de lecciones, recursos y evaluaciones.' | t)
+            }}
+          </p>
+          <div class="welcome-progress" aria-label="Progreso del curso">
+            <span><strong>{{ progress().percent }}%</strong> {{ 'completado' | t }}</span>
+            <span>{{ progress().completedLessons }} / {{ progress().totalLessons }}</span>
+          </div>
+          <button class="primary start-button" type="button" (click)="startCourse()" [disabled]="initializing()">
+            <app-student-icon name="play" />
+            {{ initializing() ? ('Preparando...' | t) : (progress().percent ? ('Continuar curso' | t) : ('Empezar curso' | t)) }}
+          </button>
+          @if (!initializing() && !lessons().length) {
+            <small class="waiting-hint">{{ 'El docente aún no ha agregado lecciones.' | t }}</small>
+          }
+        </div>
+      } @else if (initializing() && !lesson()) {
         <div class="stage-state" role="status">
           {{ 'Preparando tu espacio de aprendizaje...' | t }}
         </div>
@@ -194,23 +212,88 @@
           }
         </div>
       }
-      <div class="player-corner-controls">
-        <button
-          type="button"
-          class="maximize-button"
-          [attr.aria-pressed]="maximized()"
-          [attr.aria-label]="maximized() ? ('Restaurar vista' | t) : 'Ampliar curso'"
-          (click)="toggleMaximized()"
-          [attr.title]="
-            maximized() ? 'Volver a la vista normal (Esc)' : 'Ampliar el espacio del curso'
-          "
-        >
-          <app-student-icon [name]="maximized() ? 'minimize' : 'maximize'" />
-          <span>{{ maximized() ? ('Restaurar vista' | t) : ('Maximizar curso' | t) }}</span>
-        </button>
-      </div>
+      @if (showCertificateBanner()) {
+        <section class="certificate-banner" aria-label="Certificado del curso">
+          <span class="certificate-banner__icon" aria-hidden="true">
+            <app-student-icon name="award" />
+          </span>
+          <div class="certificate-banner__body">
+            <strong>{{ '¡Terminaste todas las lecciones!' | t }}</strong>
+            @if (graduationLoading()) {
+              <span role="status">{{ 'Consultando requisitos...' | t }}</span>
+            } @else if (graduationError()) {
+              <span role="alert">{{ graduationError() }}</span>
+            } @else if (graduation(); as state) {
+              @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
+                <span>{{ 'Tu credencial digital la emite POK.' | t }}</span>
+              } @else if (state.eligible && state.certificateEnabled) {
+                <span>{{ 'Tu certificado está listo.' | t }}</span>
+              } @else if (state.eligible && !state.certificateEnabled) {
+                <span>{{ 'El docente aún no ha asignado una plantilla de certificado.' | t }}</span>
+              } @else {
+                <span>{{
+                  'Te falta aprobar evaluaciones y tareas para obtener el certificado.' | t
+                }}</span>
+              }
+            }
+          </div>
+          <div class="certificate-banner__action">
+            @if (graduationError()) {
+              <button type="button" class="certificate-banner__ghost" (click)="refreshGraduation()">
+                {{ 'Reintentar consulta' | t }}
+              </button>
+            } @else if (graduation(); as state) {
+              @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
+                @if (state.certificate?.pokUrl && (state.certificate.pokStatus === 'EMITTED' || state.certificate.pokStatus === 'ACCEPTED')) {
+                  <a
+                    class="certificate-banner__cta"
+                    [href]="state.certificate.pokUrl | publicUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{ 'Ver mi credencial en POK' | t }}</a
+                  >
+                } @else {
+                  <button
+                    type="button"
+                    class="certificate-banner__cta"
+                    (click)="requestPokCredential()"
+                    [disabled]="pokBusy()"
+                  >
+                    {{ pokBusy() ? ('Consultando...' | t) : ('Generar certificado' | t) }}
+                  </button>
+                }
+              } @else if (state.eligible && state.certificateEnabled) {
+                <button
+                  type="button"
+                  class="certificate-banner__cta"
+                  (click)="downloadCertificate()"
+                  [disabled]="downloading() || state.certificate?.status === 'REVOKED'"
+                >
+                  <app-student-icon name="download" />
+                  {{
+                    downloading()
+                      ? ('Preparando PDF...' | t)
+                      : state.certificate?.status === 'REVOKED'
+                        ? ('Certificado revocado' | t)
+                        : ('Descargar certificado PDF' | t)
+                  }}
+                </button>
+              } @else if (!state.eligible && pendingGrades()) {
+                <button
+                  type="button"
+                  class="certificate-banner__ghost"
+                  (click)="openTool('assessments')"
+                >
+                  {{ 'Ver' | t }} {{ pendingGrades() }} {{ 'requisitos pendientes' | t }} &#8594;
+                </button>
+              }
+            }
+          </div>
+        </section>
+      }
     </section>
 
+    @if (started()) {
     <nav
       [attr.inert]="maximized() && (modulesOpen() || focusToolOpen()) ? '' : null"
       class="lesson-navigation"
@@ -262,6 +345,7 @@
         }
       </div>
     </nav>
+    }
     <header class="classroom-heading">
       <div class="heading-title">
         <div>

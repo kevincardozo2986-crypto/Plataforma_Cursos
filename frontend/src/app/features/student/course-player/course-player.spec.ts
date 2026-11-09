@@ -69,6 +69,7 @@ describe('CoursePlayer', () => {
     localStorage.removeItem('campus.notes:student@example.com:7:2');
   });
   function loadLesson() {
+    player.startCourse();
     http
       .expectOne('/api/lessons/2')
       .flush({ id: 2, title: 'Componentes', content: '<p>Contenido real</p>', resources: [] });
@@ -112,6 +113,7 @@ describe('CoursePlayer', () => {
     );
   });
   it('lets the student go back while the current video is incomplete', () => {
+    player.startCourse();
     http
       .expectOne('/api/lessons/2')
       .flush({ id: 2, title: 'Video', videoUrl: 'https://example.com/video.mp4', resources: [] });
@@ -128,6 +130,7 @@ describe('CoursePlayer', () => {
     expect(player.selectedId()).toBe(1);
   });
   it('promotes an embedded YouTube video into the main player and enforces the server threshold', () => {
+    player.startCourse();
     http.expectOne('/api/lessons/2').flush({
       id: 2,
       title: 'Componentes',
@@ -157,6 +160,44 @@ describe('CoursePlayer', () => {
     // Reaching 90% enables completion, but the next lesson still waits for saved completion.
     expect(player.lessonLocked(3)).toBe(true);
   });
+  it('shows a lesson whose only content is a Genially iframe instead of the empty cover', () => {
+    player.startCourse();
+    http.expectOne('/api/lessons/2').flush({
+      id: 2,
+      title: 'Diapositivas',
+      content:
+        '<div><iframe title="Competencias" src="https://view.genially.com/69dd0243c965f6efdff3ce8b" width="1200" height="675" allowfullscreen></iframe></div>',
+      resources: [],
+    });
+    fixture.detectChanges();
+    expect(player.currentVideo()).toBeNull();
+    expect(player.hasLessonContent()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.lesson-reader iframe')?.getAttribute('src')).toBe(
+      'https://view.genially.com/69dd0243c965f6efdff3ce8b',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'El docente aún no ha agregado contenido a esta lección.',
+    );
+  });
+  it('shows the previous and next lesson titles on the navigation buttons', () => {
+    player.startCourse();
+    http.expectOne('/api/lessons/2').flush({
+      id: 2,
+      title: 'Componentes',
+      content: '<p>Contenido real</p>',
+      resources: [],
+    });
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.lesson-navigation .previous strong')?.textContent,
+    ).toContain('Introduccion');
+    expect(
+      fixture.nativeElement.querySelector('.lesson-navigation .next strong')?.textContent,
+    ).toContain('Proyecto');
+    expect(
+      fixture.nativeElement.querySelector('.lesson-navigation .complete-button')?.textContent,
+    ).toContain('Completar lección');
+  });
   it('shows the introductory video for an empty course without fabricating lesson progress', () => {
     loadLesson();
     fixture.componentRef.setInput('course', {
@@ -171,6 +212,7 @@ describe('CoursePlayer', () => {
         { moduleId: 20, locked: true },
       ],
     });
+    player.startCourse();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-course-video video')?.getAttribute('src')).toBe(
       'https://example.com/intro.mp4',
@@ -179,8 +221,9 @@ describe('CoursePlayer', () => {
     expect(player.lessons()).toHaveLength(0);
   });
   it('resumes the first incomplete unlocked lesson and renders its real content', () => {
+    player.startCourse();
     expect(player.selectedId()).toBe(2);
-    loadLesson();
+    http.expectOne('/api/lessons/2').flush({ id: 2, title: 'Componentes', content: '<p>Contenido real</p>', resources: [] });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Contenido real');
     expect(player.completed().has(1)).toBe(true);
@@ -192,6 +235,7 @@ describe('CoursePlayer', () => {
     http.expectNone('/api/lessons/3');
   });
   it('cancels a previous lesson request when selection changes', () => {
+    player.startCourse();
     const old = http.expectOne('/api/lessons/2');
     player.select(1);
     expect(old.cancelled).toBe(true);
@@ -282,6 +326,7 @@ describe('CoursePlayer', () => {
     http
       .expectOne('/api/courses/7/modules/availability')
       .flush({ modules: [{ moduleId: 10, locked: false }] });
+    player.startCourse();
     http.expectOne('/api/lessons/2').flush({ id: 2, title: 'Componentes', resources: [] });
     expect(player.tabs().some((tab) => tab.id === 'practice')).toBe(false);
     player.selectTab('practice');
@@ -289,58 +334,45 @@ describe('CoursePlayer', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-code-practice')).toBeNull();
   });
-  it('maximizes without recreating the video or changing the selected lesson', () => {
-    http
-      .expectOne('/api/lessons/2')
-      .flush({ id: 2, title: 'Video', videoUrl: 'https://example.com/video.mp4', resources: [] });
-    http
-      .expectOne('/api/lessons/2/video-progress')
-      .flush({ required: true, percent: 10, eligible: false, position: 10 });
-    fixture.detectChanges();
-    const video = fixture.nativeElement.querySelector('app-course-video');
-    const button = fixture.nativeElement.querySelector('.maximize-button') as HTMLButtonElement;
-    button.click();
+  it('has no minimize/maximize button and stays maximized', () => {
+    loadLesson();
     fixture.detectChanges();
     expect(player.maximized()).toBe(true);
-    expect(fixture.nativeElement.querySelector('.classroom').getAttribute('aria-modal')).toBe(
-      'true',
-    );
-    expect(fixture.nativeElement.querySelector('app-course-video')).toBe(video);
-    expect(player.selectedId()).toBe(2);
-    expect(fixture.nativeElement.querySelector('.complete-button').disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.next').disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.previous').disabled).toBe(false);
-    button.click();
-    fixture.detectChanges();
-    expect(player.maximized()).toBe(false);
-    expect(fixture.nativeElement.querySelector('app-course-video')).toBe(video);
-  });
-  it('restores the normal view with Escape without changing the lesson', () => {
-    loadLesson();
-    player.toggleMaximized();
-    fixture.detectChanges();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
-    fixture.detectChanges();
-    expect(player.maximized()).toBe(false);
-    expect(player.selectedId()).toBe(2);
+    expect(fixture.nativeElement.querySelector('.maximize-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.player-corner-controls')).toBeNull();
     expect(fixture.nativeElement.querySelector('.classroom').hasAttribute('aria-modal')).toBe(
       false,
     );
   });
-  it('closes the mobile module drawer before leaving the maximized view', () => {
+  it('shows the certificate banner in the stage as soon as all lessons are complete', () => {
     loadLesson();
-    player.toggleMaximized();
-    player.toggleModules();
+    http.expectOne('/api/certificates/courses/7/completion').flush({
+      contentComplete: true,
+      gradesComplete: true,
+      eligible: true,
+      certificateEnabled: true,
+      certificateProvider: 'PLATFORM',
+      average: 90,
+      assessments: [],
+      certificate: null,
+    });
+    player.progress.set({
+      percent: 100,
+      completedLessons: 3,
+      totalLessons: 3,
+      completedLessonIds: [1, 2, 3],
+    });
     fixture.detectChanges();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
-    expect(player.modulesOpen()).toBe(false);
-    expect(player.maximized()).toBe(true);
-    player.toggleMaximized();
-    expect(player.modulesOpen()).toBe(false);
+    expect(player.showCertificateBanner()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.certificate-banner')?.textContent).toContain(
+      'Terminaste todas las lecciones',
+    );
+    expect(
+      fixture.nativeElement.querySelector('.certificate-banner__cta')?.textContent,
+    ).toContain('Descargar certificado PDF');
   });
-  it('closes the module drawer after selecting an unlocked lesson and stays maximized', () => {
+  it('closes the mobile module drawer after selecting an unlocked lesson and stays maximized', () => {
     loadLesson();
-    player.toggleMaximized();
     player.toggleModules();
     player.select(1);
     http.expectOne('/api/lessons/1').flush({ id: 1, title: 'Introduccion', resources: [] });
@@ -348,17 +380,8 @@ describe('CoursePlayer', () => {
     expect(player.maximized()).toBe(true);
     expect(player.selectedId()).toBe(1);
   });
-  it('places the maximize control inside the player control strip', () => {
+  it('keeps focus tools compact until opened and Escape closes them', () => {
     loadLesson();
-    fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.lesson-stage .player-corner-controls .maximize-button'),
-    ).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.classroom-topbar .maximize-button')).toBeNull();
-  });
-  it('keeps focus tools compact until opened and Escape closes them before restoring', () => {
-    loadLesson();
-    player.toggleMaximized();
     expect(player.focusToolOpen()).toBe(false);
     player.selectTab('notes');
     fixture.detectChanges();
@@ -367,13 +390,10 @@ describe('CoursePlayer', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
     expect(player.focusToolOpen()).toBe(false);
     expect(player.maximized()).toBe(true);
-    player.toggleMaximized();
-    expect(player.focusToolOpen()).toBe(false);
   });
 
   it('uses mutually exclusive overlay panels without recreating the video area', () => {
     loadLesson();
-    player.toggleMaximized();
     fixture.detectChanges();
     const stage = fixture.nativeElement.querySelector('.lesson-stage');
     player.toggleModules();

@@ -22,7 +22,7 @@ import {
   untracked,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, Subscription, catchError, concatMap, EMPTY, finalize, of, switchMap } from 'rxjs';
@@ -99,7 +99,6 @@ type Tab =
   imports: [
     TranslatePipe,
     PublicUrlPipe,
-    RouterLink,
     FormsModule,
     StudentIcon,
     LessonResource,
@@ -115,7 +114,8 @@ type Tab =
   styleUrl: './course-player.scss',
 })
 export class CoursePlayer {
-  readonly maximized = signal(false);
+  readonly maximized = signal(true);
+  readonly started = signal(false);
   readonly focusToolOpen = signal(false);
   readonly modulesOpen = signal(false);
 
@@ -136,56 +136,18 @@ export class CoursePlayer {
     () => this.tabs().find((item) => item.id === this.tab())?.label ?? 'Herramientas',
   );
 
-  toggleMaximized(): void {
-    this.maximized.update((value) => !value);
-    this.focusToolOpen.set(false);
-    this.modulesOpen.set(false);
-    this.focusMaximizeButton();
-  }
-
-  private focusMaximizeButton(): void {
-    this.element.nativeElement
-      .querySelector<HTMLButtonElement>('.maximize-button')
-      ?.focus({ preventScroll: true });
-  }
-
   @HostListener('document:keydown', ['$event'])
   onClassroomKeydown(event: KeyboardEvent): void {
     if (!this.maximized() || event.defaultPrevented) return;
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      if (this.modulesOpen()) {
-        this.modulesOpen.set(false);
-        this.element.nativeElement
-          .querySelector<HTMLButtonElement>('.focus-modules-button')
-          ?.focus();
-      } else if (this.focusToolOpen()) {
-        this.closeFocusPanels();
-      } else {
-        this.maximized.set(false);
-        this.focusMaximizeButton();
-      }
-    } else if (event.key === 'Tab') {
-      const buttons = Array.from(
-        this.element.nativeElement.querySelectorAll<HTMLElement>(
-          'a[href], button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), summary, iframe, [tabindex="0"]',
-        ),
-      ).filter(
-        (element) =>
-          element.getClientRects().length > 0 &&
-          !element.closest('[inert]') &&
-          getComputedStyle(element).visibility !== 'hidden',
-      );
-      const first = buttons[0];
-      const last = buttons[buttons.length - 1];
-      const active = this.element.nativeElement.ownerDocument.activeElement;
-      if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first?.focus();
-      }
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    if (this.modulesOpen()) {
+      this.modulesOpen.set(false);
+      this.element.nativeElement
+        .querySelector<HTMLButtonElement>('.focus-modules-button')
+        ?.focus();
+    } else if (this.focusToolOpen()) {
+      this.closeFocusPanels();
     }
   }
 
@@ -232,7 +194,7 @@ export class CoursePlayer {
     const html = this.lessonDescription();
 
     return (
-      /<(iframe|img|video|audio|table|object)/i.test(html) ||
+      /<(iframe|img|video|audio|table|object)\b/i.test(html) ||
       html.replace(/<[^>]*>/g, '').replace(/&nbsp;|\s/g, '').length > 0
     );
   });
@@ -241,6 +203,13 @@ export class CoursePlayer {
   );
   readonly pendingGrades = computed(
     () => this.graduation()?.assessments.filter((a) => !a.passed).length ?? 0,
+  );
+  /** Al terminar todas las lecciones el certificado aparece en el escenario, sin abrir el panel. */
+  readonly showCertificateBanner = computed(
+    () =>
+      this.started() &&
+      this.progress().percent === 100 &&
+      this.progress().totalLessons > 0,
   );
   readonly progress = signal<LearningProgress>({
     percent: 0,
@@ -346,6 +315,8 @@ export class CoursePlayer {
       const course = this.course();
       untracked(() => {
         this.progress.set(this.initialProgress());
+        this.started.set(false);
+        this.maximized.set(true);
         this.selectedId.set(null);
         this.lesson.set(null);
         this.initialize(course.id);
@@ -366,7 +337,7 @@ export class CoursePlayer {
       .subscribe({
         next: (data) => {
           this.availability.set(data.modules);
-          if (!this.selectedId()) {
+          if (this.started() && !this.selectedId()) {
             const open = this.lessons().filter((item) => !this.locked(item.moduleId));
             const first = open.find((item) => !this.completed().has(item.id)) ?? open[0];
             if (first) this.select(first.id);
@@ -376,6 +347,13 @@ export class CoursePlayer {
         error: (error) =>
           this.initError.set(apiErrorMessage(error, 'No pudimos cargar el contenido disponible.')),
       });
+  }
+  startCourse(): void {
+    if (this.initializing() || this.started()) return;
+    this.started.set(true);
+    const open = this.lessons().filter((item) => !this.locked(item.moduleId));
+    const first = open.find((item) => !this.completed().has(item.id)) ?? open[0];
+    if (first) this.select(first.id);
   }
   locked(moduleId: number): boolean {
     return this.availability().find((module) => module.moduleId === moduleId)?.locked ?? true;
