@@ -1,4 +1,20 @@
 /* Immersive classroom. Resizing keeps the existing video mounted. */
+
+/* Certificado integrado al curso: una sección más del escenario (sin tarjeta propia),
+   con los mismos colores y tipografía del aula. */
+.certificate-banner{display:flex;align-items:center;gap:14px;margin:0;padding:18px 22px;border-top:1px solid #ffffff2b;background:transparent;color:#eaf2fb}
+.certificate-banner__icon{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;color:#09b8c6}
+.certificate-banner__icon app-student-icon{width:26px;height:26px}
+.certificate-banner__body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.certificate-banner__body strong{font-size:1rem;font-weight:800;letter-spacing:-.02em;line-height:1.3}
+.certificate-banner__body span{font-size:.82rem;line-height:1.5;color:#aebfd8}
+.certificate-banner__action{display:flex;flex-shrink:0}
+.certificate-banner__cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 16px;border:0;border-radius:10px;background:#195be4;color:#fff;font-size:.8rem;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
+.certificate-banner__cta:hover{background:#0756cc}
+.certificate-banner__cta:disabled{opacity:.65;cursor:default}
+.certificate-banner__cta app-student-icon{width:16px;height:16px}
+.certificate-banner__ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #ffffff59;border-radius:10px;background:transparent;color:#eaf2fb;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap}
+@media (max-width:700px){.certificate-banner{flex-wrap:wrap;padding:16px 18px}.certificate-banner__icon{width:34px;height:34px}.certificate-banner__action{flex-basis:100%}.certificate-banner__cta,.certificate-banner__ghost{width:100%}}
 app-course-player {
   .classroom-actions {
     display: flex;
@@ -11,61 +27,29 @@ app-course-player {
   .focus-panel-dismiss {
     display: none;
   }
-  .player-corner-controls {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    flex-shrink: 0;
-    min-height: 34px;
-    padding: 3px 8px;
-    background: #080808;
-  }
-  .maximize-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: 1px solid #555;
-    border-radius: 8px;
-    padding: 6px 9px;
-    background: #202020;
-    color: #fff;
-    font: inherit;
-    font-size: 0.65rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .maximize-button:hover {
-    background: #383838;
-    border-color: #aaa;
-  }
-  .maximize-button app-student-icon {
-    width: 16px;
-    height: 16px;
-  }
   .classroom.is-maximized {
     position: fixed !important;
     inset: 0 !important;
+    /* El encabezado principal se mantiene visible dentro del curso (versión compacta
+       de 56px, ver más abajo), así que el aula empieza debajo de él sin perder
+       casi nada de alto: la fila superior del aula (25px) desaparece. */
+    top: 56px !important;
     width: 100%;
-    height: 100dvh;
+    height: calc(100dvh - 56px);
     max-width: none !important;
     margin: 0 !important;
-    padding: 8px !important;
+    padding: 6px !important;
     z-index: 1200;
     background: var(--p-bg) !important;
     color: var(--p-ink);
     box-sizing: border-box;
     display: grid !important;
     grid-template-columns: 66px minmax(0, 1fr) !important;
-    grid-template-rows: 25px minmax(0, 1fr) 38px !important;
-    gap: 8px !important;
+    grid-template-rows: 0 minmax(0, 1fr) auto !important;
+    gap: 6px !important;
     overflow: hidden;
     .classroom-topbar {
-      grid-column: 1/-1 !important;
-      grid-row: 1 !important;
-      min-width: 0;
-      min-height: 0;
-      gap: 12px !important;
+      display: none !important;
     }
     .breadcrumb {
       font-size: 0.65rem;
@@ -210,64 +194,83 @@ app-course-player {
       min-height: 0;
       overflow: auto;
     }
+    /* Contenido sin video (p. ej. diapositivas Genially) y pantalla de bienvenida:
+       ocupan el escenario y hacen scroll interno en vez de desbordarse. */
+    .lesson-reader,
+    .course-welcome {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      aspect-ratio: auto !important;
+    }
+    .lesson-reader {
+      padding: 20px;
+    }
+    .lesson-reader__body iframe {
+      min-height: 320px;
+    }
+    .certificate-banner {
+      flex-shrink: 0;
+      margin: 0;
+      max-height: 42%;
+      overflow: auto;
+    }
     .stage-message {
       max-height: 70px;
       flex-shrink: 0;
       overflow: auto;
       padding: 8px 12px;
     }
-    .player-corner-controls {
-      min-height: 30px;
-      padding: 2px 7px;
-    }
-    .player-corner-controls .maximize-button span {
-      display: none;
-    }
-    .player-corner-controls .maximize-button {
-      width: 29px;
-      height: 26px;
-      padding: 4px;
-    }
     .lesson-navigation {
       grid-column: 2 !important;
       grid-row: 3 !important;
       display: flex;
       flex-wrap: nowrap;
-      align-items: center;
+      align-items: stretch;
       gap: 8px;
       min-height: 0;
+      height: auto;
       margin: 0 !important;
-      padding: 0 !important;
-      border: 0;
-      background: transparent;
+      padding: 8px !important;
+      border: 1px solid var(--p-border);
+      background: var(--p-surface);
+      border-radius: 12px;
     }
     .lesson-navigation > button {
+      flex: 1 1 0;
+      min-width: 0;
       max-width: none;
+      min-height: 44px;
+      height: auto;
       padding: 7px 10px;
-      height: 33px;
     }
     .lesson-navigation .next {
       margin-left: 0;
     }
     .lesson-navigation strong {
-      display: none;
+      display: block;
+      font-size: 0.74rem;
     }
     .lesson-navigation small {
-      font-size: 0.64rem;
+      font-size: 0.6rem;
     }
     .navigation-arrow {
-      width: auto;
-      height: auto;
-      background: none;
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      font-size: 0.85rem;
     }
     .completion-action {
+      flex: 0 0 auto;
       width: auto !important;
       margin-left: auto !important;
     }
     .completion-action .complete-button {
       width: auto;
-      padding: 7px 12px;
-      font-size: 0.64rem;
+      min-height: 44px;
+      padding: 8px 14px;
+      font-size: 0.68rem;
+      white-space: nowrap;
     }
     .classroom-sidebar {
       display: none !important;
@@ -402,17 +405,100 @@ html:has(app-course-player .classroom.is-maximized),
 html:has(app-course-player .classroom.is-maximized) body {
   overflow: hidden !important;
 }
+/* Solo se ocultan pie y menú de accesibilidad: el encabezado (logo, Inicio, Mis cursos,
+   Explorar cursos, perfil, notificaciones) queda visible para salir del curso.
+   En el aula va compacto (56px: 8 de padding + 48 de barra) para que el curso
+   no pierda casi nada de alto, y por encima del aula para que sus menús
+   desplegables (cuenta, notificaciones) no queden tapados. */
+html:has(app-course-player .classroom.is-maximized) app-site-header {
+  z-index: 1300 !important;
+  .site-header {
+    padding: 8px 16px 0;
+  }
+  .bar {
+    min-height: 48px;
+    padding: 0 14px;
+  }
+  .campus-logo {
+    width: 120px;
+  }
+  .pill {
+    padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+  .avatar,
+  .icon-button {
+    width: 34px;
+    height: 34px;
+  }
+}
 html:has(app-course-player .classroom.is-maximized)
-  :is(app-site-header, app-site-footer, app-accessibility-menu) {
+  :is(app-site-footer, app-accessibility-menu) {
   visibility: hidden !important;
   pointer-events: none !important;
+}
+/* Tablet: riel más angosto y la navegación anterior/siguiente/completar en dos filas. */
+@media (max-width: 900px) {
+  app-course-player .classroom.is-maximized {
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+    grid-template-rows: 0 minmax(0, 1fr) auto !important;
+    .focus-rail button {
+      min-height: 44px;
+      font-size: 0.52rem;
+    }
+    .lesson-navigation {
+      flex-wrap: wrap;
+      align-content: center;
+    }
+    .lesson-navigation > button {
+      flex: 1 1 auto;
+    }
+    .completion-action {
+      flex-basis: 100%;
+      margin: 0 !important;
+    }
+    .completion-action .complete-button {
+      width: 100%;
+    }
+    .classroom-sidebar,
+    .lesson-details {
+      left: 70px !important;
+      width: calc(100vw - 82px) !important;
+    }
+    .focus-panel-dismiss {
+      left: 70px !important;
+    }
+  }
+}
+/* Móvil: encabezado compacto para que quepan logo + acciones en 320px. */
+@media (max-width: 860px) {
+  html:has(app-course-player .classroom.is-maximized) app-site-header {
+    .site-header {
+      padding: 8px 10px 0;
+    }
+    .bar {
+      padding: 0 10px;
+      gap: 10px;
+    }
+    .campus-logo {
+      width: 92px !important;
+    }
+    .actions {
+      gap: 6px;
+    }
+    .avatar,
+    .icon-button {
+      width: 32px;
+      height: 32px;
+    }
+  }
 }
 @media (max-width: 600px) {
   app-course-player .classroom.is-maximized {
     padding: 6px !important;
     gap: 6px !important;
     grid-template-columns: 52px minmax(0, 1fr) !important;
-    grid-template-rows: 23px minmax(0, 1fr) 65px !important;
+    grid-template-rows: 0 minmax(0, 1fr) auto !important;
     .breadcrumb {
       font-size: 0.6rem;
     }
@@ -439,16 +525,22 @@ html:has(app-course-player .classroom.is-maximized)
       gap: 4px;
     }
     .lesson-navigation > button {
-      padding: 5px 7px;
-      height: 28px;
+      flex: 1 1 calc(50% - 4px);
+      min-height: 40px;
+      padding: 5px 8px;
+    }
+    .lesson-navigation strong {
+      font-size: 0.68rem;
     }
     .lesson-navigation small {
       font-size: 0.53rem;
     }
     .lesson-navigation .next {
-      margin-left: auto;
+      margin-left: 0;
     }
     .navigation-arrow {
+      width: 26px;
+      height: 26px;
       font-size: 0.7rem;
     }
     .completion-action {
@@ -457,9 +549,9 @@ html:has(app-course-player .classroom.is-maximized)
     }
     .completion-action .complete-button {
       width: 100%;
-      min-height: 26px;
+      min-height: 40px;
       padding: 5px;
-      font-size: 0.56rem;
+      font-size: 0.6rem;
     }
     .classroom-sidebar,
     .lesson-details {
@@ -525,36 +617,4 @@ app-course-player .classroom.is-maximized .focus-rail {
   background: var(--p-surface);
   border-color: var(--p-border);
 }
-app-course-player .classroom .player-corner-controls .maximize-button {
-  position:relative;
-  width:36px;
-  height:30px;
-  padding:5px;
-  color:#fff!important;
-  background:transparent!important;
-  border:0!important;
-  border-radius:4px;
-  box-shadow:none;
-}
-app-course-player .player-corner-controls .maximize-button span { display:none; }
-app-course-player .player-corner-controls .maximize-button app-student-icon { width:21px; height:21px; transition:transform .18s ease,opacity .18s ease; opacity:.85; }
-app-course-player .player-corner-controls .maximize-button:hover app-student-icon { opacity:1; transform:scale(1.12); }
-app-course-player .player-corner-controls .maximize-button::before {
-  content:attr(aria-label);
-  position:absolute;
-  right:0;
-  bottom:calc(100% + 8px);
-  padding:7px 10px;
-  border-radius:6px;
-  background:#111e;
-  color:#fff;
-  font-size:.67rem;
-  font-weight:500;
-  white-space:nowrap;
-  pointer-events:none;
-  opacity:0;
-  transform:translateY(3px);
-  transition:opacity .18s ease,transform .18s ease;
-}
-app-course-player .player-corner-controls .maximize-button:is(:hover,:focus-visible)::before { opacity:1; transform:translateY(0); }
-@media(prefers-reduced-motion:reduce) { app-course-player .player-corner-controls .maximize-button::before,app-course-player .player-corner-controls .maximize-button app-student-icon { transition:none; } }
+
