@@ -125,6 +125,21 @@ export class AdminRepository {
     });
   }
 
+  /** Lo que impide borrar una cuenta: los cursos que creó y los anuncios que publicó (no se borran en cascada). */
+  async ownedContent(id: number) {
+    const [courses, announcements] = await Promise.all([
+      this.prisma.course.count({ where: { teacherId: id } }),
+      this.prisma.announcement.count({ where: { authorId: id } }),
+    ]);
+
+    return { courses, announcements };
+  }
+
+  /** Borra la cuenta; su avance, notas, certificados, pagos y avisos se van con ella (cascada). */
+  async deleteUser(id: number) {
+    await this.prisma.user.delete({ where: { id } });
+  }
+
   countActiveAdmins() {
     return this.prisma.user.count({ where: { role: 'ADMIN', status: 'ACTIVE' } });
   }

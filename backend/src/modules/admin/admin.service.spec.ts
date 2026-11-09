@@ -37,6 +37,8 @@ function build() {
     createUser: vi.fn((data: Record<string, unknown>) => Promise.resolve(user(data))),
     updateUser: vi.fn((_id: number, data: Record<string, unknown>) => Promise.resolve(user(data))),
     countActiveAdmins: vi.fn().mockResolvedValue(2),
+    ownedContent: vi.fn().mockResolvedValue({ courses: 0, announcements: 0 }),
+    deleteUser: vi.fn().mockResolvedValue(undefined),
     courses: vi.fn().mockResolvedValue({
       total: 1,
       items: [{ id: 1, title: 'Angular', slug: 'angular', status: 'PUBLISHED', price: '0', createdAt: now, teacher: { id: 9, firstName: 'Luis', lastName: 'Pérez', email: 'l@c.com' }, category: null, _count: { enrollments: 3, modules: 2 } }],
@@ -222,6 +224,57 @@ describe('AdminService', () => {
       await service.courses({ q: 'ang', status: 'PUBLISHED', teacherId: 9, limit: 5, offset: 10 });
 
       expect(repository.courses).toHaveBeenCalledWith({ q: 'ang', status: 'PUBLISHED', teacherId: 9, take: 5, skip: 10 });
+    });
+  });
+
+  describe('deleteUser', () => {
+    const actor = { id: 1, role: 'ADMIN' } as never;
+
+    it('borra una cuenta sin cursos ni anuncios', async () => {
+      const { service, repository } = build();
+
+      expect(await service.deleteUser(actor, 5)).toEqual({ deleted: true });
+      expect(repository.deleteUser).toHaveBeenCalledWith(5);
+    });
+
+    it('no deja borrar la propia cuenta', async () => {
+      const { service, repository } = build();
+
+      await expect(service.deleteUser(actor, 1)).rejects.toThrow('propia cuenta');
+      expect(repository.deleteUser).not.toHaveBeenCalled();
+    });
+
+    it('una cuenta inexistente da 404', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(null);
+
+      await expect(service.deleteUser(actor, 99)).rejects.toThrow('no existe');
+    });
+
+    it('no borra al último administrador activo', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(user({ role: 'ADMIN', status: 'ACTIVE' }));
+      repository.countActiveAdmins.mockResolvedValue(1);
+
+      await expect(service.deleteUser(actor, 5)).rejects.toThrow('al menos un administrador');
+      expect(repository.deleteUser).not.toHaveBeenCalled();
+    });
+
+    it('con otro administrador activo sí se puede borrar a un admin', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(user({ role: 'ADMIN', status: 'ACTIVE' }));
+
+      await service.deleteUser(actor, 5);
+
+      expect(repository.deleteUser).toHaveBeenCalledWith(5);
+    });
+
+    it('no borra a quien tiene cursos o anuncios y dice cuántos (409)', async () => {
+      const { service, repository } = build();
+      repository.ownedContent.mockResolvedValue({ courses: 2, announcements: 1 });
+
+      await expect(service.deleteUser(actor, 5)).rejects.toThrow('2 cursos y 1 anuncio');
+      expect(repository.deleteUser).not.toHaveBeenCalled();
     });
   });
 });

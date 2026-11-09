@@ -147,6 +147,11 @@ export class AdminService {
     return this.http.patch<AdminUser>(`/api/admin/users/${id}`, changes);
   }
 
+  /** Borra la cuenta (no la propia, ni al último admin, ni a quien tenga cursos o anuncios). */
+  deleteUser(id: number): Observable<{ deleted: boolean }> {
+    return this.http.delete<{ deleted: boolean }>(`/api/admin/users/${id}`);
+  }
+
   courses(query: CoursesQuery): Observable<CoursesPage> {
     return this.http.get<CoursesPage>('/api/admin/courses', { params: params(query) });
   }

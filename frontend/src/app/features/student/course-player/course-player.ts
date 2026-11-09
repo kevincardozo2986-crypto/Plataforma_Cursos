@@ -467,6 +467,8 @@ export class CoursePlayer {
   /** Mientras POK emite la credencial (Pendiente), se vuelve a preguntar sola hasta que quede lista. */
   private pokTimer: ReturnType<typeof setTimeout> | null = null;
   private pokChecks = 0;
+  /** POK está emitiendo la credencial: el botón de generar queda bloqueado hasta que termine (o se agote la espera). */
+  readonly pokWaiting = signal(false);
   private readonly stopPokWatch = this.destroyRef.onDestroy(() => {
     if (this.pokTimer) clearTimeout(this.pokTimer);
   });
@@ -476,9 +478,14 @@ export class CoursePlayer {
     const certificate = state.certificate;
     if (certificate?.pokStatus !== 'PENDING') {
       this.pokChecks = 0;
+      this.pokWaiting.set(false);
       return;
     }
-    if (this.pokChecks >= 20) return; // ~1 minuto: después basta con el botón
+    if (this.pokChecks >= 20) {
+      this.pokWaiting.set(false); // ~1 minuto: después se puede volver a pulsar
+      return;
+    }
+    this.pokWaiting.set(true);
     this.pokChecks += 1;
     this.pokTimer = setTimeout(() => {
       this.http
@@ -521,7 +528,7 @@ export class CoursePlayer {
   };
   /** Credencial de POK: se pide (si aún no existe) o se consulta su estado. No hay PDF de la plataforma. */
   requestPokCredential(): void {
-    if (this.pokBusy()) return;
+    if (this.pokBusy() || this.pokWaiting()) return;
     this.pokBusy.set(true);
     this.graduationError.set('');
     const existing = this.graduation()?.certificate;

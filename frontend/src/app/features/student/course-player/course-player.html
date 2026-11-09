@@ -666,10 +666,20 @@
             <button
               class="primary certificate-download"
               (click)="requestPokCredential()"
-              [disabled]="pokBusy()"
+              [disabled]="pokBusy() || pokWaiting()"
+              [attr.aria-busy]="pokBusy() || pokWaiting()"
             >
-              {{ pokBusy() ? ('Consultando...' | t) : ('Generar certificado' | t) }}
+              {{
+                pokBusy() || pokWaiting()
+                  ? ('Generando tu certificado...' | t)
+                  : ('Generar certificado' | t)
+              }}
             </button>
+            @if (pokWaiting()) {
+              <p class="pok-wait" role="status">
+                {{ 'Estamos emitiendo tu credencial en POK. En unos segundos aparecerá aquí el botón para verla.' | t }}
+              </p>
+            }
           }
         } @else if (state.eligible && state.certificateEnabled) {
           <p class="finished">{{ '¡Lo lograste! Tu certificado está listo.' | t }}</p>

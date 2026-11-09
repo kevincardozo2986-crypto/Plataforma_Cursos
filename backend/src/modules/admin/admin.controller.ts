@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
@@ -42,6 +42,12 @@ export class AdminController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.admin.updateUser(user, id, dto);
+  }
+
+  /** Borra una cuenta (no la propia, ni al último admin, ni a quien tenga cursos o anuncios). */
+  @Delete('users/:id')
+  deleteUser(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
+    return this.admin.deleteUser(user, id);
   }
 
   /** Todos los cursos de la plataforma: `?q=&status=&teacherId=&limit=&offset=`. */

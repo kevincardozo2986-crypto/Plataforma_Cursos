@@ -253,6 +253,25 @@
                   <td class="actions">
                     @if (isMe(user)) {
                       <span class="muted small">{{ 'Es tu cuenta' | t }}</span>
+                    } @else if (pendingDelete() === user.id) {
+                      <span class="confirm-text">
+                        ¿Borrar esta cuenta para siempre? Se borran también su avance, notas y certificados.
+                      </span>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--danger panel-btn--sm"
+                        [disabled]="busyId() === user.id"
+                        (click)="confirmDelete(user)"
+                      >
+                        {{ 'Sí' | t }}, borrar
+                      </button>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm"
+                        (click)="cancelDelete()"
+                      >
+                        {{ 'No' | t }}
+                      </button>
                     } @else if (pending()?.id === user.id) {
                       <span class="confirm-text">
                         @if (pending()?.role; as role) {
@@ -290,6 +309,15 @@
                           [size]="15"
                         />
                         {{ user.status === 'ACTIVE' ? ('Quitar acceso' | t) : ('Dar acceso' | t) }}
+                      </button>
+                      <button
+                        type="button"
+                        class="panel-btn panel-btn--ghost panel-btn--sm danger"
+                        [attr.aria-label]="'Borrar la cuenta de ' + user.firstName + ' ' + user.lastName"
+                        title="Borrar cuenta"
+                        (click)="askDelete(user)"
+                      >
+                        <app-icon name="trash" [size]="15" />
                       </button>
                     }
                   </td>

@@ -9,6 +9,7 @@ Nunca devuelven contraseñas ni datos de sesión.
 | `GET /admin/users?q=&role=&status=&limit=&offset=` | Cuentas (busca en nombre, apellido, correo o documento) |
 | `POST /admin/users` | Crea una cuenta con el rol que se elija |
 | `PATCH /admin/users/:id` | Cambia el rol o el estado de otra cuenta |
+| `DELETE /admin/users/:id` | Borra una cuenta |
 | `GET /admin/courses?q=&status=&teacherId=&limit=&offset=` | Todos los cursos, con su autor y sus conteos |
 
 Las **categorías** se administran con `/categories` (crear y editar: docente o admin; **borrar: solo admin**; sus cursos quedan sin categoría). Para
@@ -40,3 +41,8 @@ y la persona puede cambiarla; quien administra debe compartírsela. Correo o doc
 - `status: "INACTIVE"` bloquea el acceso y **cierra todas sus sesiones abiertas** (suben su `sessionVersion`); `ACTIVE` lo devuelve (debe iniciar sesión de nuevo).
 - Uno **no puede cambiar su propia cuenta** (`400`), y siempre debe quedar **al menos un administrador activo** (`400`).
 - Cambiar a un docente a estudiante no toca sus cursos: siguen a su nombre.
+
+**Borrar** (`DELETE /admin/users/:id`): responde `{ "deleted": true }`.
+- No se puede borrar la propia cuenta (`400`) ni al último administrador activo (`400`); una cuenta inexistente da `404`.
+- Quien tiene **cursos o anuncios** no se borra (`409`, con el conteo en el mensaje): se desactiva en su lugar, o se borran antes esos contenidos.
+- Para un **estudiante** se borran con él su avance, notas, entregas, reseñas, mensajes, certificados, pagos y avisos (los certificados dejan de poder verificarse). Los archivos que subió siguen en el disco.

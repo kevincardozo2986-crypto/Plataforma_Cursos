@@ -129,6 +129,42 @@ export class AdminService {
     return this.present(updated);
   }
 
+  /**
+   * Borra una cuenta. No se puede borrar la propia, ni al último administrador activo, ni a quien tenga cursos o
+   * anuncios (habría que dejarlos sin autor): en ese caso se desactiva la cuenta o se pasan antes los cursos.
+   * Para un estudiante, su avance, notas, certificados y pagos se borran con él.
+   */
+  async deleteUser(actor: AuthenticatedUser, id: number) {
+    if (actor.id === id) {
+      throw new BadRequestException('No puedes borrar tu propia cuenta');
+    }
+
+    const target = await this.repository.findUser(id);
+
+    if (!target) {
+      throw new NotFoundException('La cuenta no existe');
+    }
+
+    if (target.role === Role.ADMIN && target.status === UserStatus.ACTIVE && (await this.repository.countActiveAdmins()) <= 1) {
+      throw new BadRequestException('Debe quedar al menos un administrador activo');
+    }
+
+    const owned = await this.repository.ownedContent(id);
+
+    if (owned.courses > 0 || owned.announcements > 0) {
+      const parts = [
+        owned.courses > 0 ? `${owned.courses} ${owned.courses === 1 ? 'curso' : 'cursos'}` : '',
+        owned.announcements > 0 ? `${owned.announcements} ${owned.announcements === 1 ? 'anuncio' : 'anuncios'}` : '',
+      ].filter(Boolean);
+
+      throw new ConflictException(`No se puede borrar: la cuenta tiene ${parts.join(' y ')}. Desactívala en su lugar o borra primero esos contenidos.`);
+    }
+
+    await this.repository.deleteUser(id);
+
+    return { deleted: true };
+  }
+
   async courses(query: ListAdminCoursesQueryDto) {
     const { items, total } = await this.repository.courses({
       q: query.q,

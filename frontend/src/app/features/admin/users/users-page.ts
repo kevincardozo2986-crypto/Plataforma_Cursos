@@ -165,7 +165,42 @@ export class UsersPage {
     }
   }
 
+  /** Id de la cuenta que está pidiendo confirmación para borrarse. */
+  readonly pendingDelete = signal<number | null>(null);
+
+  askDelete(user: AdminUser): void {
+    this.pending.set(null);
+    this.pendingDelete.set(user.id);
+  }
+
+  cancelDelete(): void {
+    this.pendingDelete.set(null);
+  }
+
+  confirmDelete(user: AdminUser): void {
+    this.notice.set('');
+    this.error.set('');
+    this.busyId.set(user.id);
+
+    this.api.deleteUser(user.id).subscribe({
+      next: () => {
+        this.notice.set(`Se borró la cuenta de ${user.firstName} ${user.lastName}.`);
+        this.pendingDelete.set(null);
+        this.busyId.set(null);
+        // Si era la última de la página, se vuelve una atrás.
+        if (this.users().length === 1 && this.offset() > 0) this.offset.update((value) => Math.max(0, value - PAGE_SIZE));
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.error.set(apiErrorMessage(error, 'No pudimos borrar la cuenta.'));
+        this.pendingDelete.set(null);
+        this.busyId.set(null);
+      },
+    });
+  }
+
   askStatus(user: AdminUser): void {
+    this.pendingDelete.set(null);
     this.pending.set({ id: user.id, status: user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' });
   }
 
