@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
@@ -45,8 +46,19 @@ function build() {
     }),
   };
 
-  return { service: new AdminService(repository as unknown as AdminRepository), repository };
+  // Sin ADMIN_EMAIL configurado, el principal es admin@campus.com.
+  const config = { get: vi.fn().mockReturnValue(undefined) };
+
+  return {
+    service: new AdminService(repository as unknown as AdminRepository, config as unknown as ConfigService),
+    repository,
+  };
 }
+
+const PRINCIPAL_EMAIL = 'admin@campus.com';
+const principal = { id: 1, role: Role.ADMIN, email: PRINCIPAL_EMAIL } as AuthenticatedUser;
+const otherAdmin = { id: 2, role: Role.ADMIN, email: 'otro@campus.com' } as AuthenticatedUser;
+const principalRow = () => user({ id: 1, role: Role.ADMIN, email: PRINCIPAL_EMAIL });
 
 describe('AdminService', () => {
   describe('overview', () => {
@@ -275,6 +287,79 @@ describe('AdminService', () => {
 
       await expect(service.deleteUser(actor, 5)).rejects.toThrow('2 cursos y 1 anuncio');
       expect(repository.deleteUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('administrador principal', () => {
+    it('el principal puede borrar a otro administrador', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(user({ id: 5, role: Role.ADMIN, email: 'malcreado@campus.com' }));
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      expect(await service.deleteUser(principal, 5)).toEqual({ deleted: true });
+      expect(repository.deleteUser).toHaveBeenCalledWith(5);
+    });
+
+    it('otro admin no puede borrar, degradar ni desactivar a un administrador (403)', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(user({ id: 5, role: Role.ADMIN, email: 'malcreado@campus.com' }));
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      await expect(service.deleteUser(otherAdmin, 5)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.updateUser(otherAdmin, 5, { role: Role.TEACHER })).rejects.toThrow('Solo el administrador principal');
+      await expect(service.updateUser(otherAdmin, 5, { status: UserStatus.INACTIVE })).rejects.toBeInstanceOf(ForbiddenException);
+      expect(repository.deleteUser).not.toHaveBeenCalled();
+      expect(repository.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('otro admin sí puede gestionar estudiantes y docentes', async () => {
+      const { service, repository } = build();
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      await expect(service.deleteUser(otherAdmin, 9)).resolves.toEqual({ deleted: true });
+      await expect(service.updateUser(otherAdmin, 9, { status: UserStatus.INACTIVE })).resolves.toBeDefined();
+    });
+
+    it('nadie puede borrar, degradar ni desactivar al principal', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(principalRow());
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      await expect(service.deleteUser(otherAdmin, 1)).rejects.toThrow('principal no se puede borrar');
+      await expect(service.updateUser(otherAdmin, 1, { role: Role.STUDENT })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.updateUser(otherAdmin, 1, { status: UserStatus.INACTIVE })).rejects.toBeInstanceOf(ForbiddenException);
+      expect(repository.deleteUser).not.toHaveBeenCalled();
+    });
+
+    it('el correo del principal se compara sin importar mayúsculas', async () => {
+      const { service, repository } = build();
+      repository.findUser.mockResolvedValue(user({ id: 5, role: Role.ADMIN }));
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      await expect(
+        service.deleteUser({ ...principal, email: 'Admin@Campus.com' } as AuthenticatedUser, 5),
+      ).resolves.toEqual({ deleted: true });
+    });
+
+    it('la lista marca cuál es la cuenta principal', async () => {
+      const { service, repository } = build();
+      repository.users.mockResolvedValue({ items: [principalRow(), user()], total: 2 });
+
+      const { items } = await service.users({});
+
+      expect(items.map((item) => item.principal)).toEqual([true, false]);
+    });
+
+    it('avisa a la pantalla si quien consulta puede gestionar administradores', async () => {
+      const { service, repository } = build();
+      repository.findUserByEmail.mockResolvedValue(principalRow());
+
+      expect((await service.users({}, principal)).canManageAdmins).toBe(true);
+      expect((await service.users({}, otherAdmin)).canManageAdmins).toBe(false);
+
+      // Sin cuenta principal, cualquier admin puede.
+      repository.findUserByEmail.mockResolvedValue(null);
+      expect((await service.users({}, otherAdmin)).canManageAdmins).toBe(true);
     });
   });
 });

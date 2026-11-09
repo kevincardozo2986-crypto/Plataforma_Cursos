@@ -200,13 +200,23 @@
             [poster]="course().imageUrl || ''"
             (sample)="reportVideo($event)"
           />
-          <div class="watch-status" [class.ready]="canComplete()" role="status">
-            <span>{{
-              videoState()?.eligible
-                ? ('Requisito de video cumplido' | t)
-                : ('Mira al menos el 90 % para continuar' | t)
-            }}</span>
-            <strong>{{ videoState()?.percent ?? 0 }} % {{ 'visto' | t }}</strong>
+          <div
+            class="watch-status"
+            [class.ready]="canComplete() || completed().has(current.id)"
+            role="status"
+          >
+            @if (completed().has(current.id)) {
+              <!-- Ya la completó: el contador de esta visita empieza en 0 y confundía. -->
+              <span>{{ '✓ Lección completada' | t }}</span>
+              <strong>{{ 'Puedes volver a verla cuando quieras' | t }}</strong>
+            } @else {
+              <span>{{
+                videoState()?.eligible
+                  ? ('Requisito de video cumplido' | t)
+                  : ('Mira al menos el 90 % para continuar' | t)
+              }}</span>
+              <strong>{{ videoState()?.percent ?? 0 }} % {{ 'visto' | t }}</strong>
+            }
           </div>
           @if (watchError()) {
             <p class="stage-message" role="alert">{{ watchError() }}</p>

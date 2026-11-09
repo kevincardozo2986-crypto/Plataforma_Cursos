@@ -34,11 +34,15 @@ export interface AdminUser {
   enrollments: number;
   /** Cursos donde es instructor. */
   instructing: number;
+  /** Administrador principal (el que crea el sistema): no se puede borrar, degradar ni desactivar. */
+  principal?: boolean;
 }
 
 export interface UsersPage {
   total: number;
   items: AdminUser[];
+  /** Si quien consulta puede borrar, degradar o desactivar a otros administradores (solo el principal). */
+  canManageAdmins?: boolean;
 }
 
 export interface AdminCourse {

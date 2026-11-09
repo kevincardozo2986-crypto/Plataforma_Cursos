@@ -10,6 +10,14 @@ const DEFAULT_PASSWORD = 'Admin2026*';
 const DEFAULT_DOCUMENT = 'ADMIN-0001';
 
 /**
+ * Correo del administrador principal: el que crea el sistema al arrancar (`ADMIN_EMAIL`). Es el
+ * único que puede borrar, degradar o desactivar a otros administradores, y a él nadie puede.
+ */
+export function principalAdminEmail(config: ConfigService): string {
+  return (config.get<string>('ADMIN_EMAIL') ?? DEFAULT_EMAIL).trim().toLowerCase();
+}
+
+/**
  * Crea el administrador inicial al arrancar la API, solo si su correo todavía no
  * existe (nunca modifica una cuenta ya creada). La contraseña se guarda con
  * bcrypt, igual que la de cualquier usuario registrado.
@@ -31,11 +39,7 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     if (this.config.get<string>('ADMIN_BOOTSTRAP') === 'false') return;
 
-    const email = (
-      this.config.get<string>('ADMIN_EMAIL') ?? DEFAULT_EMAIL
-    )
-      .trim()
-      .toLowerCase();
+    const email = principalAdminEmail(this.config);
     const configuredPassword = this.config.get<string>('ADMIN_PASSWORD');
 
     if (

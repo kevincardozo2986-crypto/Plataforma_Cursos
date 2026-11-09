@@ -13,6 +13,8 @@ export const englishClassroom: Record<string, string> = {
   'Empezar curso': 'Start course',
   'El docente aún no ha agregado lecciones.': 'The teacher has not added any lessons yet.',
   visto: 'watched',
+  '✓ Lección completada': '✓ Lesson completed',
+  'Puedes volver a verla cuando quieras': 'You can watch it again anytime',
   'Contenido de la lección': 'Lesson content',
   'El docente aún no ha agregado contenido a esta lección.':
     'The teacher has not added content to this lesson yet.',
@@ -122,4 +124,10 @@ export const englishClassroom: Record<string, string> = {
   'Entregas de los estudiantes en este curso': 'Student submissions in this course',
   'Ver entregas': 'View submissions',
   'Este módulo aún no tiene tareas.': 'This module has no assignments yet.',
+
+  // Admin: administrador principal
+  Principal: 'Main',
+  'Administrador principal del sistema': 'Main system administrator',
+  'Administrador principal: no se puede modificar': 'Main administrator: cannot be changed',
+  'Solo el administrador principal puede gestionarlo': 'Only the main administrator can manage this account',
 };

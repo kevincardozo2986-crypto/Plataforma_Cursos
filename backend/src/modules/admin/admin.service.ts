@@ -1,8 +1,16 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-request.interface.js';
 import { CourseStatus, Role, UserStatus } from '../../generated/prisma/enums.js';
+import { principalAdminEmail } from '../auth/admin-bootstrap.service.js';
 import { AdminRepository } from './admin.repository.js';
 import type { CreateUserDto, ListAdminCoursesQueryDto, ListUsersQueryDto, UpdateUserDto } from './dto/admin.dto.js';
 
@@ -13,7 +21,31 @@ type UserRow = NonNullable<Awaited<ReturnType<AdminRepository['findUser']>>>;
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly repository: AdminRepository) {}
+  constructor(
+    private readonly repository: AdminRepository,
+    private readonly config: ConfigService,
+  ) {}
+
+  private isPrincipal(email: string | null | undefined): boolean {
+    return !!email && email.trim().toLowerCase() === principalAdminEmail(this.config);
+  }
+
+  /**
+   * Protege a los administradores. Al principal nadie lo toca, y solo el principal puede borrar,
+   * degradar o desactivar a otro admin. Si la cuenta principal no existe (por ejemplo, con
+   * `ADMIN_BOOTSTRAP=false`), cualquier admin puede hacerlo, para no dejar admins intocables.
+   */
+  private async assertCanManageAdmin(actor: AuthenticatedUser, target: UserRow, action: string) {
+    if (this.isPrincipal(target.email)) {
+      throw new ForbiddenException(`El administrador principal no se puede ${action}`);
+    }
+
+    if (target.role !== Role.ADMIN || this.isPrincipal(actor.email)) return;
+
+    if (await this.repository.findUserByEmail(principalAdminEmail(this.config))) {
+      throw new ForbiddenException(`Solo el administrador principal puede ${action} a otros administradores`);
+    }
+  }
 
   /** Las cifras de toda la plataforma. */
   async overview(now = new Date()) {
@@ -61,16 +93,24 @@ export class AdminService {
     };
   }
 
-  async users(query: ListUsersQueryDto) {
-    const { items, total } = await this.repository.users({
-      q: query.q,
-      role: query.role,
-      status: query.status,
-      take: query.limit ?? 25,
-      skip: query.offset ?? 0,
-    });
+  /** `canManageAdmins`: si quien consulta puede borrar, degradar o desactivar a otros administradores. */
+  async users(query: ListUsersQueryDto, actor?: AuthenticatedUser) {
+    const [{ items, total }, principalAccount] = await Promise.all([
+      this.repository.users({
+        q: query.q,
+        role: query.role,
+        status: query.status,
+        take: query.limit ?? 25,
+        skip: query.offset ?? 0,
+      }),
+      this.repository.findUserByEmail(principalAdminEmail(this.config)),
+    ]);
 
-    return { total, items: items.map((user) => this.present(user)) };
+    return {
+      total,
+      items: items.map((user) => this.present(user)),
+      canManageAdmins: !principalAccount || this.isPrincipal(actor?.email),
+    };
   }
 
   async createUser(dto: CreateUserDto) {
@@ -119,6 +159,14 @@ export class AdminService {
       target.status === UserStatus.ACTIVE &&
       ((dto.role !== undefined && dto.role !== Role.ADMIN) || dto.status === UserStatus.INACTIVE);
 
+    // Reactivar o volver a hacer admin a alguien no quita poder a nadie; degradar o desactivar sí.
+    const demotes =
+      (dto.role !== undefined && dto.role !== target.role) || dto.status === UserStatus.INACTIVE;
+
+    if (demotes) {
+      await this.assertCanManageAdmin(actor, target, 'degradar ni desactivar');
+    }
+
     if (losesAdmin && (await this.repository.countActiveAdmins()) <= 1) {
       throw new BadRequestException('Debe quedar al menos un administrador activo');
     }
@@ -144,6 +192,8 @@ export class AdminService {
     if (!target) {
       throw new NotFoundException('La cuenta no existe');
     }
+
+    await this.assertCanManageAdmin(actor, target, 'borrar');
 
     if (target.role === Role.ADMIN && target.status === UserStatus.ACTIVE && (await this.repository.countActiveAdmins()) <= 1) {
       throw new BadRequestException('Debe quedar al menos un administrador activo');
@@ -201,6 +251,8 @@ export class AdminService {
       phone: user.phone,
       role: user.role,
       status: user.status,
+      /** Es el administrador principal (no se puede borrar, degradar ni desactivar). */
+      principal: this.isPrincipal(user.email),
       createdAt: user.createdAt,
       avatarUrl: user.profile?.avatarUrl ?? null,
       courses: user._count.courses,

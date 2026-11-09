@@ -46,3 +46,9 @@ y la persona puede cambiarla; quien administra debe compartírsela. Correo o doc
 - No se puede borrar la propia cuenta (`400`) ni al último administrador activo (`400`); una cuenta inexistente da `404`.
 - Quien tiene **cursos o anuncios** no se borra (`409`, con el conteo en el mensaje): se desactiva en su lugar, o se borran antes esos contenidos.
 - Para un **estudiante** se borran con él su avance, notas, entregas, reseñas, mensajes, certificados, pagos y avisos (los certificados dejan de poder verificarse). Los archivos que subió siguen en el disco.
+
+**Administrador principal.** Es la cuenta que crea el sistema al arrancar (`ADMIN_EMAIL`, por defecto `admin@campus.com`).
+- **Nadie** puede borrarlo, cambiarle el rol ni desactivarlo (`403`).
+- **Solo él** puede borrar, degradar o desactivar a **otros administradores** (`403` para los demás admins). Crear admins o subir a alguien a admin sigue abierto a cualquier admin.
+- Si esa cuenta no existe (por ejemplo, con `ADMIN_BOOTSTRAP=false`), cualquier admin puede gestionar a los demás, para no dejar admins intocables.
+- `GET /admin/users` marca cada cuenta con `principal: true|false` y responde `canManageAdmins`: si quien consulta puede gestionar administradores (la pantalla oculta los botones que el backend rechazaría).

@@ -24,8 +24,8 @@ export class AdminController {
 
   /** Cuentas: `?q=&role=&status=&limit=&offset=`. */
   @Get('users')
-  users(@Query() query: ListUsersQueryDto) {
-    return this.admin.users(query);
+  users(@CurrentUser() user: AuthenticatedUser, @Query() query: ListUsersQueryDto) {
+    return this.admin.users(query, user);
   }
 
   /** Crea una cuenta con el rol que se elija (por ejemplo, un docente). */

@@ -47,6 +47,8 @@ export class UsersPage {
   readonly error = signal('');
   readonly notice = signal('');
   readonly busyId = signal<number | null>(null);
+  /** Solo el administrador principal puede borrar, degradar o desactivar a otros admins. */
+  readonly canManageAdmins = signal(true);
 
   readonly q = signal('');
   readonly role = signal<UserRole | ''>('');
@@ -100,6 +102,7 @@ export class UsersPage {
         next: (page) => {
           this.users.set(page.items);
           this.total.set(page.total);
+          this.canManageAdmins.set(page.canManageAdmins ?? true);
           this.loading.set(false);
         },
         error: (error: unknown) => {
@@ -150,6 +153,14 @@ export class UsersPage {
   /** La sesión guarda el correo, no el id. */
   isMe(user: AdminUser): boolean {
     return user.email.toLowerCase() === (this.auth.user()?.email ?? '').toLowerCase();
+  }
+
+  /**
+   * Cuentas que esta persona no puede tocar: el admin principal (nadie puede) y los demás admins
+   * cuando no es el principal. El backend lo vuelve a comprobar.
+   */
+  locked(user: AdminUser): boolean {
+    return !!user.principal || (user.role === 'ADMIN' && !this.canManageAdmins());
   }
 
   // ---------- Cambiar rol o estado ----------

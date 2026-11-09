@@ -208,13 +208,16 @@
                           @if (isMe(user)) {
                             <span class="me">{{ 'Tú' | t }}</span>
                           }
+                          @if (user.principal) {
+                            <span class="me" [attr.title]="'Administrador principal del sistema' | t">{{ 'Principal' | t }}</span>
+                          }
                         </strong>
                         <small class="muted">{{ user.email }} · {{ user.document }}</small>
                       </span>
                     </span>
                   </th>
                   <td>
-                    @if (isMe(user)) {
+                    @if (isMe(user) || locked(user)) {
                       <span class="pill" data-tone="accent">{{ roleLabels[user.role] | t }}</span>
                     } @else {
                       <select
@@ -253,6 +256,10 @@
                   <td class="actions">
                     @if (isMe(user)) {
                       <span class="muted small">{{ 'Es tu cuenta' | t }}</span>
+                    } @else if (user.principal) {
+                      <span class="muted small">{{ 'Administrador principal: no se puede modificar' | t }}</span>
+                    } @else if (locked(user)) {
+                      <span class="muted small">{{ 'Solo el administrador principal puede gestionarlo' | t }}</span>
                     } @else if (pendingDelete() === user.id) {
                       <span class="confirm-text">
                         ¿Borrar esta cuenta para siempre? Se borran también su avance, notas y certificados.
