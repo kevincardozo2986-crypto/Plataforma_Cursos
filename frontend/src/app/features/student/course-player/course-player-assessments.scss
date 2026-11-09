@@ -1,0 +1,21 @@
+/* Evaluaciones y tareas integradas en el aula (pantalla grande, bienvenida y temario) */
+.assessment-stage{min-height:420px;padding-inline:max(clamp(20px,3.2vw,40px),calc((100% - 820px)/2))}
+.assessment-crumbs{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;margin-bottom:26px}
+.assessment-back{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:99px;background:none;color:var(--muted);font:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
+.assessment-back:hover{border-color:#1265ed;color:#1265ed}
+.welcome-assessments{width:min(100%,560px);margin-top:14px;text-align:left}
+.welcome-assessments h3{margin:0 0 10px;color:#c3cfea;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.welcome-assessments ul{display:grid;gap:8px;max-height:240px;margin:0;padding:0;overflow-y:auto;list-style:none}
+.welcome-assessments button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border:1px solid #ffffff26;border-radius:12px;background:#ffffff0d;color:#fff;font:inherit;text-align:left;cursor:pointer}
+.welcome-assessments button:hover:not(:disabled){border-color:#5c9bff;background:#ffffff17}
+.welcome-assessments button:disabled{opacity:.5;cursor:not-allowed}
+.welcome-assessment__text{display:grid;flex:1;gap:2px;min-width:0}
+.welcome-assessment__text small{color:#a4b5d5;font-size:.66rem}
+.welcome-assessment__text strong{overflow:hidden;font-size:.82rem;text-overflow:ellipsis;white-space:nowrap}
+.welcome-assessment__state{flex-shrink:0;color:#c3cfea;font-size:.72rem}
+.welcome-assessments .passed .welcome-assessment__state{color:#5fe0c4}
+.assessment-kind{display:block;margin-bottom:2px;color:#008c9f;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+
+/* Progreso de la bienvenida: «100 % completado» y «3 / 3» separados */
+.welcome-progress{display:flex;align-items:baseline;justify-content:center;gap:14px;color:#dce7ff;font-size:.9rem}
+.welcome-progress span+span{padding-left:14px;border-left:1px solid #ffffff38;color:#a4b5d5}

@@ -2,7 +2,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { AttemptRow, AttemptStatus, GradingService } from '../../../core/grading/grading.service';
@@ -24,6 +24,7 @@ const PAGE_SIZE = 20;
 export class AttemptsPage {
   private readonly api = inject(GradingService);
   private readonly coursesApi = inject(TeacherCoursesService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly filters: { value: Filter; label: string }[] = [
     { value: 'PENDING_REVIEW', label: 'Por revisar' },
@@ -47,6 +48,10 @@ export class AttemptsPage {
   readonly hasNext = computed(() => this.offset() + PAGE_SIZE < this.total());
 
   constructor() {
+    // Desde la pantalla de un curso se llega con `?curso=<id>`: la bandeja abre filtrada por ese curso.
+    const course = Number(this.route.snapshot.queryParamMap.get('curso'));
+    if (course > 0) this.courseFilter.set(course);
+
     this.coursesApi
       .list()
       .pipe(takeUntilDestroyed())

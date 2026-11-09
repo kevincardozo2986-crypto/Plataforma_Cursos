@@ -86,14 +86,18 @@ interface Graduation {
 }
 
 type Tab =
-  | 'assessments'
   | 'practice'
   | 'description'
   | 'resources'
-  | 'assignments'
   | 'notes'
   | 'questions'
   | 'announcements';
+
+/** Pestañas que puede pedir un aviso por la ruta (`?tab=`). */
+const REQUESTED_TABS: Record<string, Tab> = {
+  preguntas: 'questions',
+  anuncios: 'announcements',
+};
 @Component({
   selector: 'app-course-player',
   imports: [
@@ -111,7 +115,7 @@ type Tab =
     RichHtmlPipe,
   ],
   templateUrl: './course-player.html',
-  styleUrl: './course-player.scss',
+  styleUrls: ['./course-player.scss', './course-player-assessments.scss'],
 })
 export class CoursePlayer {
   readonly maximized = signal(true);
@@ -164,7 +168,8 @@ export class CoursePlayer {
   });
   private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
-  private requestedTab = false;
+  private requestedTab: Tab | null = null;
+  private requestedAssessment: Pick<Assessment, 'type' | 'id'> | null = null;
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
@@ -201,6 +206,37 @@ export class CoursePlayer {
   readonly canComplete = computed(
     () => !this.currentVideo() || this.videoState()?.eligible === true,
   );
+  /**
+   * Evaluación o tarea abierta en la pantalla grande del aula, o 'all' para la lista completa.
+   * Se muestran dentro del curso, no en un panel lateral.
+   */
+  readonly assessmentView = signal<Assessment | 'all' | null>(null);
+  readonly assessments = computed(() => this.graduation()?.assessments ?? []);
+  moduleAssessments(moduleId: number): Assessment[] {
+    return this.assessments().filter((item) => item.moduleId === moduleId);
+  }
+  openAssessment(item: Assessment | 'all'): void {
+    if (item !== 'all' && this.locked(item.moduleId)) return;
+    this.modulesOpen.set(false);
+    this.focusToolOpen.set(false);
+    this.activeResource.set(null);
+    this.assessmentView.set(item);
+    this.element.nativeElement.querySelector('.lesson-stage')?.scrollIntoView({
+      block: 'start',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  }
+  closeAssessment(): void {
+    this.assessmentView.set(null);
+  }
+  isOpenAssessment(item: Assessment): boolean {
+    const view = this.assessmentView();
+    return view !== null && view !== 'all' && view.id === item.id && view.type === item.type;
+  }
+  /** Número (desde 1) del módulo en el temario. */
+  moduleNumber(moduleId: number): number {
+    return (this.course().modules ?? []).findIndex((module) => module.id === moduleId) + 1;
+  }
   readonly pendingGrades = computed(
     () => this.graduation()?.assessments.filter((a) => !a.passed).length ?? 0,
   );
@@ -242,8 +278,6 @@ export class CoursePlayer {
   private readonly allTabs: { id: Tab; label: string }[] = [
     { id: 'description', label: 'Descripción' },
     { id: 'resources', label: 'Recursos' },
-    { id: 'assignments', label: 'Tareas' },
-    { id: 'assessments', label: 'Evaluaciones' },
     { id: 'practice', label: 'Practicar código' },
     { id: 'notes', label: 'Mis notas' },
     { id: 'questions', label: 'Preguntas' },
@@ -304,10 +338,19 @@ export class CoursePlayer {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
-    // Un aviso («Respondieron tu pregunta») manda `?tab=preguntas`: se abre esa pestaña. Se vuelve a
-    // leer si llega otro aviso estando ya en el curso, porque la ruta no cambia.
+    // Los avisos llevan al estudiante a lo que le avisaron: `?tab=preguntas` o `?tab=anuncios` abren
+    // esa pestaña, y `?evaluacion=<id>` o `?tarea=<id>` abren esa nota en la pantalla del curso. Se
+    // vuelve a leer si llega otro aviso estando ya en el curso, porque la ruta no cambia.
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      this.requestedTab = params.get('tab') === 'preguntas';
+      this.requestedTab = REQUESTED_TABS[params.get('tab') ?? ''] ?? null;
+      const evaluation = Number(params.get('evaluacion'));
+      const assignment = Number(params.get('tarea'));
+      this.requestedAssessment =
+        evaluation > 0
+          ? { type: 'evaluation', id: evaluation }
+          : assignment > 0
+            ? { type: 'assignment', id: assignment }
+            : null;
       // Si todavía se está iniciando, se abre al terminar (`select` vuelve a «Descripción»).
       if (!this.initializing()) this.applyRequestedTab();
     });
@@ -316,6 +359,7 @@ export class CoursePlayer {
       untracked(() => {
         this.progress.set(this.initialProgress());
         this.started.set(false);
+        this.assessmentView.set(null);
         this.maximized.set(true);
         this.selectedId.set(null);
         this.lesson.set(null);
@@ -384,6 +428,7 @@ export class CoursePlayer {
     this.selectedId.set(id);
     this.lesson.set(null);
     this.activeResource.set(null);
+    this.assessmentView.set(null);
     this.loading.set(true);
     this.error.set('');
     this.videoError.set(false);
@@ -489,6 +534,7 @@ export class CoursePlayer {
         next: (state) => {
           this.graduation.set(state);
           this.watchPokCredential(state);
+          if (!this.initializing()) this.applyRequestedTab();
         },
         error: (e) =>
           this.graduationError.set(
@@ -621,12 +667,23 @@ export class CoursePlayer {
           this.progressError.set(apiErrorMessage(error, 'No pudimos guardar tu progreso.')),
       });
   }
-  /** Abre la pestaña que pidió la ruta (`?tab=preguntas`), una sola vez. */
+  /**
+   * Abre lo que pidió la ruta (una pestaña, o una evaluación o tarea), una sola vez. La evaluación
+   * espera a que lleguen las notas del curso, que es donde está la lista.
+   */
   private applyRequestedTab(): void {
-    if (!this.requestedTab || !this.tabs().some((t) => t.id === 'questions')) return;
-    this.requestedTab = false;
+    const wanted = this.requestedAssessment;
+    const graduation = this.graduation();
+    if (wanted && graduation) {
+      this.requestedAssessment = null;
+      const item = graduation.assessments.find((a) => a.type === wanted.type && a.id === wanted.id);
+      if (item) setTimeout(() => this.openAssessment(item));
+    }
+    const tab = this.requestedTab;
+    if (!tab || !this.tabs().some((t) => t.id === tab)) return;
+    this.requestedTab = null;
     // Después de pintar la página, para que exista `#course-tools` al desplazarse.
-    setTimeout(() => this.openTool('questions'));
+    setTimeout(() => this.openTool(tab));
   }
   openTool(tab: Tab): void {
     this.selectTab(tab);

@@ -252,6 +252,14 @@
             } @else {
               <a
                 class="panel-btn panel-btn--ghost panel-btn--sm"
+                routerLink="/teacher/quiz-attempts"
+                [queryParams]="{ curso: courseId() }"
+                [attr.title]="'Intentos de los estudiantes en este curso' | t"
+              >
+                {{ 'Ver intentos' | t }}
+              </a>
+              <a
+                class="panel-btn panel-btn--ghost panel-btn--sm"
                 [routerLink]="[
                   '/teacher/courses',
                   courseId(),
@@ -273,7 +281,7 @@
           </span>
         </li>
       } @empty {
-        <li class="no-lessons panel-muted">Este módulo aún no tiene evaluaciones.</li>
+        <li class="no-lessons panel-muted">{{ 'Este módulo aún no tiene evaluaciones.' | t }}</li>
       }
     </ul>
 
@@ -338,6 +346,14 @@
             } @else {
               <a
                 class="panel-btn panel-btn--ghost panel-btn--sm"
+                routerLink="/teacher/assignments"
+                [queryParams]="{ curso: courseId() }"
+                [attr.title]="'Entregas de los estudiantes en este curso' | t"
+              >
+                {{ 'Ver entregas' | t }}
+              </a>
+              <a
+                class="panel-btn panel-btn--ghost panel-btn--sm"
                 [routerLink]="[
                   '/teacher/courses',
                   courseId(),
@@ -359,7 +375,7 @@
           </span>
         </li>
       } @empty {
-        <li class="no-lessons panel-muted">Este módulo aún no tiene tareas.</li>
+        <li class="no-lessons panel-muted">{{ 'Este módulo aún no tiene tareas.' | t }}</li>
       }
     </ul>
 

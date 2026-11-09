@@ -473,11 +473,9 @@
                 @if (notice.courseId) {
                   <a
                     [routerLink]="['/courses', notice.courseId]"
-                    [queryParams]="notice.type === 'NEW_REPLY' ? { tab: 'preguntas' } : null"
+                    [queryParams]="noticeParams(notice)"
                     (click)="hidePanel()"
-                    >{{
-                      notice.type === 'NEW_REPLY' ? ('Ver la respuesta →' | t) : ('Ver curso →' | t)
-                    }}</a
+                    >{{ noticeAction(notice) | t }}</a
                   >
                 }
               </li>

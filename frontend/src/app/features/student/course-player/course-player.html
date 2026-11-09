@@ -43,11 +43,9 @@
                 ? 'book'
                 : item.id === 'announcements'
                   ? 'bell'
-                  : item.id === 'assessments'
-                    ? 'award'
-                    : item.id === 'resources'
-                      ? 'download'
-                      : 'menu'
+                  : item.id === 'resources'
+                    ? 'download'
+                    : 'menu'
           "
         /><span>{{ item.label | t }}</span>
       </button>
@@ -68,7 +66,50 @@
       [attr.aria-label]="'Lección actual' | t"
       [attr.aria-busy]="loading() || initializing()"
     >
-      @if (!started()) {
+      @if (assessmentView(); as view) {
+        <div class="lesson-caption">
+          <span>{{ view === 'all' ? ('Evaluaciones y tareas' | t) : view.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }}</span>
+          @if (view !== 'all') {
+            <span>{{ 'Módulo' | t }} {{ moduleNumber(view.moduleId) }}</span>
+          }
+        </div>
+        <article class="lesson-reader assessment-stage" [attr.aria-label]="'Evaluaciones y tareas' | t">
+          <nav class="assessment-crumbs" [attr.aria-label]="'Navegación de evaluaciones' | t">
+            <button type="button" class="assessment-back" (click)="closeAssessment()">
+              <span aria-hidden="true">&#8592;</span>
+              {{ started() ? ('Volver a la lección' | t) : ('Volver al inicio del curso' | t) }}
+            </button>
+            @if (view !== 'all' && assessments().length > 1) {
+              <button type="button" class="assessment-back" (click)="openAssessment('all')">
+                {{ 'Ver todas' | t }} ({{ assessments().length }})
+              </button>
+            }
+          </nav>
+          @if (view === 'all') {
+            <app-course-assessments
+              [items]="assessments()"
+              [modules]="course().modules ?? []"
+              [delegate]="true"
+              (picked)="openAssessment($event)"
+              (changed)="refreshGraduation()"
+            />
+          } @else if (view.type === 'evaluation') {
+            <app-course-assessments
+              [items]="[view]"
+              [focus]="view"
+              [modules]="course().modules ?? []"
+              (changed)="refreshGraduation()"
+              (closed)="closeAssessment()"
+            />
+          } @else {
+            <app-student-assignments
+              [moduleId]="view.moduleId"
+              [focusId]="view.id"
+              (submitted)="refreshGraduation()"
+            />
+          }
+        </article>
+      } @else if (!started()) {
         <div class="course-welcome">
           <span class="welcome-mark" aria-hidden="true"><app-student-icon name="play" /></span>
           <span class="eyebrow">{{ 'Aula de aprendizaje' | t }}</span>
@@ -80,7 +121,7 @@
                 : ('Estás a punto de comenzar un recorrido de lecciones, recursos y evaluaciones.' | t)
             }}
           </p>
-          <div class="welcome-progress" aria-label="Progreso del curso">
+          <div class="welcome-progress" [attr.aria-label]="'Progreso del curso' | t">
             <span><strong>{{ progress().percent }}%</strong> {{ 'completado' | t }}</span>
             <span>{{ progress().completedLessons }} / {{ progress().totalLessons }}</span>
           </div>
@@ -90,6 +131,33 @@
           </button>
           @if (!initializing() && !lessons().length) {
             <small class="waiting-hint">{{ 'El docente aún no ha agregado lecciones.' | t }}</small>
+          }
+          @if (assessments().length) {
+            <section class="welcome-assessments" [attr.aria-label]="'Evaluaciones y tareas' | t">
+              <h3>{{ 'Evaluaciones y tareas' | t }}</h3>
+              <ul>
+                @for (item of assessments(); track item.type + item.id) {
+                  <li>
+                    <button
+                      type="button"
+                      [class.passed]="item.passed"
+                      [disabled]="locked(item.moduleId)"
+                      [attr.title]="locked(item.moduleId) ? lockReason(item.moduleId) : item.title"
+                      (click)="openAssessment(item)"
+                    >
+                      <app-student-icon [name]="item.type === 'evaluation' ? 'award' : 'book'" />
+                      <span class="welcome-assessment__text">
+                        <small>{{ item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }} · {{ 'Módulo' | t }} {{ moduleNumber(item.moduleId) }}</small>
+                        <strong>{{ item.title }}</strong>
+                      </span>
+                      <span class="welcome-assessment__state">{{
+                        item.passed ? ('Aprobada ✓' | t) : item.score === null ? ('Pendiente' | t) : item.score + ' / 100'
+                      }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
           }
         </div>
       } @else if (initializing() && !lesson()) {
@@ -138,19 +206,19 @@
                 ? ('Requisito de video cumplido' | t)
                 : ('Mira al menos el 90 % para continuar' | t)
             }}</span>
-            <strong>{{ videoState()?.percent ?? 0 }} % visto</strong>
+            <strong>{{ videoState()?.percent ?? 0 }} % {{ 'visto' | t }}</strong>
           </div>
           @if (watchError()) {
             <p class="stage-message" role="alert">{{ watchError() }}</p>
           }
           @if (hasLessonContent()) {
-            <article class="lesson-reader lesson-reader--below" aria-label="Contenido de la lección">
-              <h2>Contenido de la lecci&#243;n</h2>
+            <article class="lesson-reader lesson-reader--below" [attr.aria-label]="'Contenido de la lección' | t">
+              <h2>{{ 'Contenido de la lección' | t }}</h2>
               <div class="lesson-reader__body" [innerHTML]="lessonDescription() | richHtml"></div>
             </article>
           }
         } @else if (hasLessonContent()) {
-          <article class="lesson-reader" aria-label="Contenido de la lección">
+          <article class="lesson-reader" [attr.aria-label]="'Contenido de la lección' | t">
             <span class="eyebrow">{{ selected()?.moduleTitle }}</span>
             <h2>{{ current.title }}</h2>
             <div class="lesson-reader__body" [innerHTML]="lessonDescription() | richHtml"></div>
@@ -187,7 +255,7 @@
         <app-course-video
           [src]="course().introVideoUrl!"
           [autoplay]="true"
-          [title]="course().title || 'Presentacion del curso'"
+          [title]="course().title || ('Presentación del curso' | t)"
           [poster]="course().imageUrl || ''"
         />
         <p class="stage-message">
@@ -213,7 +281,7 @@
         </div>
       }
       @if (showCertificateBanner()) {
-        <section class="certificate-banner" aria-label="Certificado del curso">
+        <section class="certificate-banner" [attr.aria-label]="'Certificado del curso' | t">
           <span class="certificate-banner__icon" aria-hidden="true">
             <app-student-icon name="award" />
           </span>
@@ -282,9 +350,10 @@
                 <button
                   type="button"
                   class="certificate-banner__ghost"
-                  (click)="openTool('assessments')"
+                  (click)="openAssessment('all')"
                 >
-                  {{ 'Ver' | t }} {{ pendingGrades() }} {{ 'requisitos pendientes' | t }} &#8594;
+                  {{ 'Ver' | t }} {{ pendingGrades() }}
+                  {{ (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t }} &#8594;
                 </button>
               }
             }
@@ -374,6 +443,11 @@
         <button (click)="openTool('resources')">
           <app-student-icon />{{ 'Ver materiales' | t }}
         </button>
+        @if (assessments().length) {
+          <button (click)="openAssessment('all')">
+            <app-student-icon name="award" />{{ 'Evaluaciones y tareas' | t }}
+          </button>
+        }
         @if (programmingEnabled()) {
           <button (click)="openTool('practice')">
             <app-student-icon name="menu" />{{ 'Practicar código' | t }}
@@ -432,22 +506,15 @@
       </nav>
       <div class="tab-content">
         @switch (tab()) {
-          @case ('assessments') {
-            <app-course-assessments
-              [items]="graduation()?.assessments ?? []"
-              [modules]="course().modules ?? []"
-              (changed)="refreshGraduation()"
-            />
-          }
           @case ('description') {
             <div class="description-grid">
               <section class="course-overview">
-                <h3>Sobre el curso</h3>
+                <h3>{{ 'Sobre el curso' | t }}</h3>
                 @if (course().description) {
                   <div class="rich-text" [innerHTML]="course().description | richHtml"></div>
                 } @else {
                   <p class="empty-message">
-                    El docente a&#250;n no ha agregado una descripci&#243;n del curso.
+                    {{ 'El docente aún no ha agregado una descripción del curso.' | t }}
                   </p>
                 }
                 @for (section of courseInformation(); track section.title) {
@@ -458,7 +525,7 @@
                 }
                 @if (course().instructors?.length) {
                   <section class="course-information">
-                    <h4>Equipo docente</h4>
+                    <h4>{{ 'Equipo docente' | t }}</h4>
                     @for (instructor of course().instructors; track instructor.id) {
                       <p>{{ instructor.firstName }} {{ instructor.lastName }}</p>
                     }
@@ -469,9 +536,9 @@
           }
           @case ('resources') {
             <app-course-files [courseId]="+course().id" />
-            <h3>Explora los materiales de la lecci&#243;n</h3>
+            <h3>{{ 'Explora los materiales de la lección' | t }}</h3>
             <p class="empty-message">
-              Selecciona un recurso para verlo en el espacio principal sin salir del curso.
+              {{ 'Selecciona un recurso para verlo en el espacio principal sin salir del curso.' | t }}
             </p>
             @for (resource of lesson()?.resources ?? []; track resource.id) {
               <button
@@ -481,10 +548,10 @@
               >
                 <app-student-icon /><span
                   >{{ resource.title }}<small>{{ resourceLabel(resource) }}</small></span
-                ><span>Ver material &#8593;</span>
+                ><span>{{ 'Ver material' | t }} &#8593;</span>
               </button>
             } @empty {
-              <p class="empty-message">Esta lecci&#243;n a&#250;n no tiene recursos adjuntos.</p>
+              <p class="empty-message">{{ 'Esta lección aún no tiene recursos adjuntos.' | t }}</p>
             }
           }
           @case ('practice') {
@@ -493,11 +560,11 @@
             }
           }
           @case ('notes') {
-            <h3>Tus apuntes</h3>
+            <h3>{{ 'Tus apuntes' | t }}</h3>
             <p class="empty-message">
-              Notas personales para esta lecci&#243;n. Se guardan solo en este navegador.
+              {{ 'Notas personales para esta lección. Se guardan solo en este navegador.' | t }}
             </p>
-            <label class="sr-only" for="lesson-notes">Mis apuntes de la lecci&#243;n</label
+            <label class="sr-only" for="lesson-notes">{{ 'Mis apuntes de la lección' | t }}</label
             ><textarea
               id="lesson-notes"
               rows="6"
@@ -505,20 +572,20 @@
               [ngModel]="note"
               (ngModelChange)="note = $event; saveNote(false)"
               [disabled]="!lesson()"
-              placeholder="Escribe las ideas que quieres recordar..."
+              [placeholder]="'Escribe las ideas que quieres recordar...' | t"
             ></textarea>
             <button class="secondary" [disabled]="!lesson()" (click)="saveNote()">
-              Guardar notas
+              {{ 'Guardar notas' | t }}
             </button>
             @if (noteNotice()) {
               <p role="status">{{ noteNotice() }}</p>
             }
           }
           @case ('questions') {
-            <h3>Preguntas del curso</h3>
+            <h3>{{ 'Preguntas del curso' | t }}</h3>
             @if (course()['qaEnabled'] !== false) {
               <form #question="ngForm" (ngSubmit)="ask()">
-                <label for="question-title">&#191;Qu&#233; te gustar&#237;a preguntar?</label
+                <label for="question-title">{{ '¿Qué te gustaría preguntar?' | t }}</label
                 ><input
                   id="question-title"
                   name="title"
@@ -526,8 +593,8 @@
                   required
                   minlength="5"
                   maxlength="150"
-                  placeholder="Título de tu pregunta"
-                /><label class="sr-only" for="question-body">Detalles de la pregunta</label
+                  [placeholder]="'Título de tu pregunta' | t"
+                /><label class="sr-only" for="question-body">{{ 'Detalles de la pregunta' | t }}</label
                 ><textarea
                   id="question-body"
                   name="body"
@@ -535,18 +602,18 @@
                   required
                   maxlength="5000"
                   rows="3"
-                  placeholder="Cuéntale al docente tu duda..."
+                  [placeholder]="'Cuéntale al docente tu duda...' | t"
                 ></textarea
                 ><button
                   class="primary"
                   [disabled]="question.invalid || questionSaving()"
                   type="submit"
                 >
-                  {{ questionSaving() ? ('Enviando...' | t) : 'Enviar pregunta' }}
+                  {{ questionSaving() ? ('Enviando...' | t) : ('Enviar pregunta' | t) }}
                 </button>
               </form>
             } @else if (course()['qaEnabled'] === false) {
-              <p class="empty-message">El docente desactiv&#243; las preguntas para este curso.</p>
+              <p class="empty-message">{{ 'El docente desactivó las preguntas para este curso.' | t }}</p>
             }
             @if (questionNotice()) {
               <p class="success" role="status">{{ questionNotice() }}</p>
@@ -555,7 +622,7 @@
               <article class="post">
                 <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
                 @if (post.answered) {
-                  <span class="answered-badge">✓ Respondida por el docente</span>
+                  <span class="answered-badge">{{ '✓ Respondida por el docente' | t }}</span>
                 }
                 <h4>{{ post.title }}</h4>
                 <p>{{ post.body }}</p>
@@ -563,17 +630,12 @@
               </article>
             } @empty {
               @if (!panelLoading() && !panelError()) {
-                <p class="empty-message">A&#250;n no hay preguntas en este curso.</p>
+                <p class="empty-message">{{ 'Aún no hay preguntas en este curso.' | t }}</p>
               }
             }
           }
-          @case ('assignments') {
-            @if (selected(); as current) {
-              <app-student-assignments [moduleId]="current.moduleId" />
-            }
-          }
           @case ('announcements') {
-            <h3>Anuncios del docente</h3>
+            <h3>{{ 'Anuncios del docente' | t }}</h3>
             @for (post of posts(); track post.id) {
               <article class="post">
                 <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
@@ -582,7 +644,7 @@
               </article>
             } @empty {
               @if (!panelLoading() && !panelError()) {
-                <p class="empty-message">No hay anuncios por ahora.</p>
+                <p class="empty-message">{{ 'No hay anuncios por ahora.' | t }}</p>
               }
             }
           }
@@ -600,7 +662,7 @@
   <aside
     id="course-curriculum"
     class="classroom-sidebar"
-    [attr.aria-label]="maximized() ? ('Módulos del curso' | t) : 'Progreso y temario'"
+    [attr.aria-label]="maximized() ? ('Módulos del curso' | t) : ('Progreso y temario' | t)"
   >
     <section class="curriculum-card" aria-labelledby="curriculum-title">
       <div class="curriculum-heading">
@@ -635,7 +697,7 @@
               [disabled]="lessonLocked(item.id) || saving() || questionSaving()"
               [attr.title]="
                 lessonLocked(item.id)
-                  ? 'Completa el video anterior o los requisitos del modulo'
+                  ? ('Completa el video anterior o los requisitos del módulo' | t)
                   : item.title
               "
               (click)="select(item.id)"
@@ -657,9 +719,30 @@
           } @empty {
             <p class="lock-reason">{{ 'Este módulo aún no tiene lecciones.' | t }}</p>
           }
+          @for (item of moduleAssessments(module.id); track item.type + item.id) {
+            <button
+              class="lesson-row assessment-row"
+              [class.selected]="isOpenAssessment(item)"
+              [attr.aria-current]="isOpenAssessment(item) ? 'step' : null"
+              [class.done]="item.passed"
+              [disabled]="locked(module.id) || saving() || questionSaving()"
+              [attr.title]="locked(module.id) ? lockReason(module.id) : item.title"
+              (click)="openAssessment(item)"
+            >
+              <span class="lesson-check" aria-hidden="true">{{ item.passed ? '✓' : '' }}</span
+              ><span class="lesson-name"
+                ><small class="assessment-kind">{{
+                  item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t)
+                }}</small>
+                {{ item.title }}</span
+              >
+              <small>{{ item.score === null ? ('Pendiente' | t) : item.score + ' / 100' }}</small>
+              <app-student-icon [name]="item.type === 'evaluation' ? 'award' : 'book'" />
+            </button>
+          }
         </details>
       } @empty {
-        <p class="empty-message">El temario aparecer&#225; cuando el docente agregue contenido.</p>
+        <p class="empty-message">{{ 'El temario aparecerá cuando el docente agregue contenido.' | t }}</p>
       }
     </section>
     <section class="progress-card">
@@ -694,10 +777,10 @@
       @if (graduation(); as state) {
         <ul class="graduation-checklist">
           <li [class.met]="state.contentComplete">
-            {{ state.contentComplete ? '✓' : '○' }} Lecciones completadas
+            {{ state.contentComplete ? '✓' : '○' }} {{ 'Lecciones completadas' | t }}
           </li>
           <li [class.met]="state.gradesComplete">
-            {{ state.gradesComplete ? '✓' : '○' }} Evaluaciones y tareas aprobadas
+            {{ state.gradesComplete ? '✓' : '○' }} {{ 'Evaluaciones y tareas aprobadas' | t }}
           </li>
         </ul>
         @if (state.average !== null) {
@@ -706,8 +789,9 @@
           </p>
         }
         @if (pendingGrades()) {
-          <button class="text-action" (click)="openTool('assessments')">
-            {{ 'Ver' | t }} {{ pendingGrades() }} requisitos pendientes &#8594;
+          <button class="text-action" (click)="openAssessment('all')">
+            {{ 'Ver' | t }} {{ pendingGrades() }}
+            {{ (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t }} &#8594;
           </button>
         }
         @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {

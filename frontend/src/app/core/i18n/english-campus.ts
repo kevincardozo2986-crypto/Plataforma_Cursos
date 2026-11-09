@@ -1,5 +1,7 @@
+import { englishClassroom } from './english-classroom';
 import { englishTeacher } from './english-teacher';
 export const englishCampus: Record<string, string> = {
+  ...englishClassroom,
   ...englishTeacher,
   Profesor: 'Teacher',
   'Gestionar cursos': 'Manage courses',

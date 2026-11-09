@@ -63,3 +63,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Archivos subidos por los usuarios (videos e imágenes de los cursos)
 /uploads
+
+# Resultados generados por los scripts de prueba
+/postman/results.json
+/postman/login-results.json

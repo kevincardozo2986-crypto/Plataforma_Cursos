@@ -1,7 +1,16 @@
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -55,6 +64,10 @@ export class StudentAssignments {
 
   /** El módulo de la lección que se está viendo. */
   readonly moduleId = input.required<number>();
+  /** Tarea que se abre sola al cargar (cuando se llega desde el temario o la bienvenida). */
+  readonly focusId = input<number | null>(null);
+  /** Avisa que el estudiante entregó, para refrescar sus requisitos. */
+  readonly submitted = output<void>();
 
   readonly items = signal<AssignmentItem[]>([]);
   readonly loading = signal(true);
@@ -77,12 +90,13 @@ export class StudentAssignments {
   constructor() {
     effect(() => {
       const moduleId = this.moduleId();
+      const focusId = this.focusId();
 
-      untracked(() => this.load(moduleId));
+      untracked(() => this.load(moduleId, focusId));
     });
   }
 
-  private load(moduleId: number): void {
+  private load(moduleId: number, focusId: number | null = null): void {
     this.loading.set(true);
     this.error.set('');
     this.openId.set(null);
@@ -92,8 +106,10 @@ export class StudentAssignments {
         this.items.set(items);
         this.loading.set(false);
 
-        // Con una sola tarea, se abre sola.
-        if (items.length === 1) {
+        // La tarea pedida, o la única del módulo, se abre sola.
+        if (focusId !== null && items.some((item) => item.id === focusId)) {
+          this.toggle(focusId);
+        } else if (items.length === 1) {
           this.toggle(items[0].id);
         }
       },
@@ -214,6 +230,7 @@ export class StudentAssignments {
               : 'Tarea entregada. Tu docente la calificará pronto.',
           );
           this.saving.set(false);
+          this.submitted.emit();
         },
         error: (error: unknown) => {
           this.formError.set(apiErrorMessage(error, 'No pudimos entregar la tarea.'));

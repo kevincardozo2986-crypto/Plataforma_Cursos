@@ -30,7 +30,7 @@
         <select id="course-filter" class="panel-select" (change)="setCourse($event)">
           <option value="">{{ 'Todos mis cursos' | t }}</option>
           @for (course of courses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
+            <option [value]="course.id" [selected]="course.id === courseFilter()">{{ course.title }}</option>
           }
         </select>
       </div>

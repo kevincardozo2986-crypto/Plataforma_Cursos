@@ -2,7 +2,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
 import {
@@ -28,6 +28,7 @@ const PAGE_SIZE = 20;
 export class SubmissionsPage {
   private readonly api = inject(GradingService);
   private readonly coursesApi = inject(TeacherCoursesService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly filters: { value: Filter; label: string }[] = [
     { value: 'SUBMITTED', label: 'Por calificar' },
@@ -51,6 +52,10 @@ export class SubmissionsPage {
   readonly hasNext = computed(() => this.offset() + PAGE_SIZE < this.total());
 
   constructor() {
+    // Desde la pantalla de un curso se llega con `?curso=<id>`: la bandeja abre filtrada por ese curso.
+    const course = Number(this.route.snapshot.queryParamMap.get('curso'));
+    if (course > 0) this.courseFilter.set(course);
+
     this.coursesApi
       .list()
       .pipe(takeUntilDestroyed())

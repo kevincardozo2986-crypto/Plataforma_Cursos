@@ -35,14 +35,30 @@ export function notificationLink(
   return course;
 }
 
-/** Parámetros de la ruta: la respuesta a una pregunta abre la pestaña «Preguntas» del curso. */
+/**
+ * Parámetros de la ruta del aula, para que el estudiante llegue directo a lo que le avisaron:
+ * la respuesta a su pregunta abre «Preguntas», un anuncio abre «Anuncios» y una nota abre esa
+ * evaluación o tarea en la pantalla del curso (`refId` es su id).
+ */
 export function notificationQueryParams(
-  notification: Pick<AppNotification, 'type'>,
+  notification: Pick<AppNotification, 'type'> & Partial<Pick<AppNotification, 'refId'>>,
   role: UserRole | null | undefined,
 ): Record<string, string> | undefined {
-  const staff = role === 'TEACHER' || role === 'ADMIN';
+  if (role === 'TEACHER' || role === 'ADMIN') return undefined;
+  const { type, refId } = notification;
 
-  return !staff && notification.type === 'NEW_REPLY' ? { tab: 'preguntas' } : undefined;
+  switch (type) {
+    case 'NEW_REPLY':
+      return { tab: 'preguntas' };
+    case 'ANNOUNCEMENT':
+      return { tab: 'anuncios' };
+    case 'GRADED_QUIZ':
+      return refId ? { evaluacion: String(refId) } : undefined;
+    case 'GRADED_ASSIGNMENT':
+      return refId ? { tarea: String(refId) } : undefined;
+    default:
+      return undefined;
+  }
 }
 
 /** «hace un momento», «hace 5 min», «hace 3 h», «ayer», «hace 4 días», o la fecha si ya pasó un mes. */

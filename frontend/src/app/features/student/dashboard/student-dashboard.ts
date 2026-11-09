@@ -14,6 +14,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { AccessibilityService } from '../../../core/accessibility/accessibility.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { StudentIcon } from './student-icon';
+import { notificationQueryParams } from '../../../core/notifications/notification-link';
+import { NotificationType } from '../../../core/notifications/notifications.service';
 
 export interface StudentEnrollment {
   id: number;
@@ -28,6 +30,7 @@ interface StudentNotification {
   title: string;
   message?: string | null;
   courseId?: number | null;
+  refId?: number | null;
 }
 
 @Component({
@@ -310,6 +313,32 @@ export class StudentDashboard {
    */
   hidePanel(): void {
     this.panel.set(null);
+  }
+
+  /** Parámetros con los que el aviso abre el aula justo en lo que avisa. */
+  noticeParams(notice: StudentNotification): Record<string, string> | null {
+    return (
+      notificationQueryParams(
+        { type: (notice.type ?? '') as NotificationType, refId: notice.refId ?? null },
+        'STUDENT',
+      ) ?? null
+    );
+  }
+
+  /** Texto del enlace de un aviso. */
+  noticeAction(notice: StudentNotification): string {
+    switch (notice.type) {
+      case 'NEW_REPLY':
+        return 'Ver la respuesta →';
+      case 'ANNOUNCEMENT':
+        return 'Ver el anuncio →';
+      case 'GRADED_QUIZ':
+        return notice.refId ? 'Ver la evaluación →' : 'Ver curso →';
+      case 'GRADED_ASSIGNMENT':
+        return notice.refId ? 'Ver la tarea →' : 'Ver curso →';
+      default:
+        return 'Ver curso →';
+    }
   }
 
   closePanel(): void {

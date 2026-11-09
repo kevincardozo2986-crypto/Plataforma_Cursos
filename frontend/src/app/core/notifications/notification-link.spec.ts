@@ -95,8 +95,19 @@ describe('notificationQueryParams', () => {
     expect(notificationQueryParams(note('NEW_REPLY'), 'STUDENT')).toEqual({ tab: 'preguntas' });
   });
 
+  it('a un estudiante, un anuncio le abre la pestaña Anuncios', () => {
+    expect(notificationQueryParams(note('ANNOUNCEMENT'), 'STUDENT')).toEqual({ tab: 'anuncios' });
+  });
+
+  it('a un estudiante, una nota le abre esa evaluación o tarea en el aula', () => {
+    expect(notificationQueryParams(note('GRADED_QUIZ'), 'STUDENT')).toEqual({ evaluacion: '20' });
+    expect(notificationQueryParams(note('GRADED_ASSIGNMENT'), 'STUDENT')).toEqual({ tarea: '20' });
+    expect(notificationQueryParams(note('GRADED_QUIZ', 3, null), 'STUDENT')).toBeUndefined();
+  });
+
   it('otros avisos y el docente no llevan parámetros', () => {
-    expect(notificationQueryParams(note('ANNOUNCEMENT'), 'STUDENT')).toBeUndefined();
+    expect(notificationQueryParams(note('CERTIFICATE_ISSUED'), 'STUDENT')).toBeUndefined();
     expect(notificationQueryParams(note('NEW_REPLY'), 'TEACHER')).toBeUndefined();
+    expect(notificationQueryParams(note('GRADED_QUIZ'), 'TEACHER')).toBeUndefined();
   });
 });
