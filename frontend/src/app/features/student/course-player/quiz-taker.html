@@ -1,0 +1,283 @@
+<div class="qz-top">
+  <button type="button" class="qz-back" (click)="closed.emit()">← {{ 'Volver al curso' | t }}</button>
+  <button type="button" class="qz-back" (click)="showAll.emit()">
+    {{ 'Todas las evaluaciones' | t }} ({{ evaluationCount() }})
+  </button>
+</div>
+
+@if (loading()) {
+  <p class="muted" role="status">{{ 'Cargando evaluación…' | t }}</p>
+} @else if (!quiz()) {
+  <p class="alert" role="alert">{{ error() || ('No pudimos abrir la evaluación.' | t) }}</p>
+} @else {
+  @let q = quiz()!;
+
+  <header class="qz-head">
+    <p class="eyebrow">
+      {{ 'Evaluación' | t }}
+      @if (moduleTitle()) {
+        · {{ moduleTitle() }}
+      }
+    </p>
+    <h1>{{ q.title }}</h1>
+    @if (q.description) {
+      <p class="qz-desc">{{ q.description }}</p>
+    }
+    <div class="chips">
+      <span class="chip">{{ q.questions.length }} {{ q.questions.length === 1 ? ('pregunta' | t) : ('preguntas' | t) }}</span>
+      <span class="chip">{{ 'Apruebas con' | t }} {{ minimum() }} %</span>
+      <span class="chip">{{ 'Sin límite de tiempo' | t }}</span>
+      @if (hasBest()) {
+        <span class="chip chip--ok">{{ 'Tu mejor nota' | t }}: <b>{{ item().score }} / 100</b></span>
+      }
+    </div>
+  </header>
+
+  @if (result(); as done) {
+    <!-- ======================= Resultados ======================= -->
+    <section class="qz-res" [class.pass]="done.passed" [class.fail]="!done.passed && done.status !== 'PENDING_REVIEW'" role="status">
+      @if (done.status === 'PENDING_REVIEW') {
+        <div>
+          <span class="badge badge--warn">{{ 'En revisión' | t }}</span>
+          <h2>{{ '¡Respuestas enviadas!' | t }}</h2>
+          <p>{{ 'Tu docente revisará las respuestas abiertas. Verás tu nota cuando las califique.' | t }}</p>
+          <div class="qz-res__act">
+            <button type="button" class="btn btn--secondary" (click)="closed.emit()">{{ 'Volver al curso' | t }}</button>
+          </div>
+        </div>
+      } @else {
+        <div class="ring">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <circle class="trk" cx="48" cy="48" r="40" />
+            <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="circle" [attr.stroke-dashoffset]="dashOffset()" />
+          </svg>
+          <span>{{ done.score }}%</span>
+        </div>
+        <div>
+          <span class="badge" [class.badge--ok]="done.passed" [class.badge--warn]="!done.passed">
+            {{ done.passed ? ('Aprobado' | t) : ('No alcanzaste el mínimo' | t) }}
+          </span>
+          <h2>
+            {{ done.passed ? (done.score === 100 ? ('¡Perfecto!' | t) : ('¡Bien hecho!' | t)) : ('Casi lo logras' | t) }}
+          </h2>
+          <p>
+            @if (done.results?.length) {
+              {{ 'Acertaste' | t }} {{ hits() }} {{ 'de' | t }} {{ done.results!.length }} {{ 'preguntas.' | t }}
+            }
+            {{ done.passed ? ('Superaste el mínimo de' | t) : ('Necesitas' | t) }} {{ minimum() }} %{{ done.passed ? '.' : (' para aprobar.' | t) }}
+          </p>
+          <div class="chips">
+            @if (newBest()) {
+              <span class="chip chip--ok">{{ '¡Nueva mejor nota!' | t }} <b>{{ done.score }} / 100</b></span>
+            } @else if (hasBest()) {
+              <span class="chip">{{ 'Tu mejor nota' | t }}: <b>{{ item().score }} / 100</b></span>
+            }
+          </div>
+          <div class="qz-res__act">
+            @if (!done.passed) {
+              <button type="button" class="btn btn--primary" (click)="load()">{{ 'Intentar de nuevo' | t }}</button>
+            }
+            <button type="button" class="btn" [class.btn--primary]="done.passed" [class.btn--secondary]="!done.passed" (click)="closed.emit()">
+              {{ 'Volver al curso' | t }}
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+
+    <h3 class="eyebrow spaced">{{ 'Revisa tus respuestas' | t }}</h3>
+    <div class="qz-rev">
+      @for (question of q.questions; track question.id; let n = $index) {
+        @let v = verdict(question);
+        <div class="qz-rev__item">
+          <h4>
+            <span class="qz-rev__ic" [class.ok]="v === 'ok'" [class.no]="v === 'no'" aria-hidden="true">
+              {{ v === 'ok' ? '✓' : v === 'no' ? '✕' : '…' }}
+            </span>
+            {{ n + 1 }}. {{ question.text }}
+          </h4>
+          @for (mine of chosen(question); track mine.text) {
+            <div class="qz-rev__row" [class.good]="v === 'ok'" [class.bad]="v === 'no'">
+              <span class="qz-rev__txt">{{ mine.text }}</span>
+              <small>{{ v === 'ok' ? ('Tu respuesta ✓' | t) : ('Tu respuesta' | t) }}</small>
+            </div>
+          } @empty {
+            <div class="qz-rev__row">{{ 'Sin responder' | t }}</div>
+          }
+          @if (v === 'open') {
+            <p class="muted small">{{ 'Pendiente de revisión por el docente.' | t }}</p>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- ======================= Pregunta ======================= -->
+    @if (current(); as question) {
+      @let multi = question.type === 'MULTIPLE';
+      <div class="qz-layout">
+        @for (frame of [animate()]; track frame) {
+        <section class="qz-q" aria-labelledby="qz-title">
+          <div class="qz-q__top">
+            <span class="qz-q__n">{{ 'Pregunta' | t }} <b>{{ index() + 1 }}</b> {{ 'de' | t }} {{ total() }}</span>
+            <span class="qz-type">{{ hint(question.type) | t }}</span>
+          </div>
+          <h2 id="qz-title">{{ question.text }}</h2>
+
+          @if (isOpen(question)) {
+            <label class="sr-only" for="qz-text">{{ 'Tu respuesta' | t }}</label>
+            <textarea
+              id="qz-text"
+              class="qz-text"
+              maxlength="5000"
+              [rows]="question.type === 'ESSAY' ? 7 : 3"
+              [ngModel]="texts()[question.id] ?? ''"
+              (ngModelChange)="setText(question, $event)"
+              [placeholder]="'Escribe tu respuesta...' | t"
+            ></textarea>
+          } @else {
+            <fieldset class="qz-opts" [class.qz-tf]="question.type === 'TRUE_FALSE'">
+              <legend class="sr-only">{{ hint(question.type) | t }}</legend>
+              @for (option of question.options; track option.id; let o = $index) {
+                <label class="qz-opt" [class.is-sel]="selected(question, option.id)" [class.qz-opt--multi]="multi">
+                  <input
+                    [type]="multi ? 'checkbox' : 'radio'"
+                    [name]="'q' + question.id"
+                    [checked]="selected(question, option.id)"
+                    (change)="choose(question, option.id, $any($event.target).checked)"
+                  />
+                  <span class="qz-key">{{ keyOf(question, o) }}</span>
+                  <span>{{ option.text }}</span>
+                  <span class="qz-opt__mark" aria-hidden="true">
+                    @if (selected(question, option.id)) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+                    }
+                  </span>
+                </label>
+              }
+            </fieldset>
+          }
+
+          <div class="qz-nav">
+            <button type="button" class="btn btn--secondary" [disabled]="index() === 0" (click)="go(-1)">← {{ 'Anterior' | t }}</button>
+            <span class="qz-mid">
+              <button type="button" class="qz-flag" [attr.aria-pressed]="isFlagged(question)" (click)="toggleFlag()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>
+                {{ isFlagged(question) ? ('Marcada para revisar' | t) : ('Marcar para revisar' | t) }}
+              </button>
+              @if (!isOpen(question)) {
+                <span class="qz-hint">
+                  {{ 'Teclas' | t }}
+                  @if (question.type === 'TRUE_FALSE') {
+                    <kbd>V</kbd><kbd>F</kbd>
+                  } @else {
+                    <kbd>A</kbd>–<kbd>{{ letters[question.options.length - 1] }}</kbd>
+                  }
+                  · <kbd>→</kbd>
+                </span>
+              }
+            </span>
+            @if (index() < total() - 1) {
+              <button type="button" class="btn" [class.btn--primary]="isAnswered(question)" [class.btn--secondary]="!isAnswered(question)" (click)="go(1)">
+                {{ 'Siguiente' | t }} →
+              </button>
+            } @else {
+              <button type="button" class="btn btn--primary" [disabled]="answered() === 0" (click)="review()">{{ 'Revisar y enviar' | t }}</button>
+            }
+          </div>
+        </section>
+        }
+
+        <aside class="qz-side" [attr.aria-label]="'Progreso' | t">
+          <div class="qz-side__prog">
+            <div class="ring ring--sm" [class.done]="answered() === total()">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <circle class="trk" cx="48" cy="48" r="40" />
+                <circle class="val" cx="48" cy="48" r="40" [attr.stroke-dasharray]="circle" [attr.stroke-dashoffset]="circle * (1 - answered() / (total() || 1))" />
+              </svg>
+              <span>{{ answered() }}/{{ total() }}</span>
+            </div>
+            <p>
+              <b>{{ answered() === total() ? ('¡Todo respondido!' | t) : answered() + ' ' + ('de' | t) + ' ' + total() + ' ' + ('respondidas' | t) }}</b>
+              {{ answered() === total() ? ('Revisa y envía cuando quieras.' | t) : ('Puedes ir y volver entre preguntas.' | t) }}
+            </p>
+          </div>
+
+          <div class="qz-map">
+            @for (entry of q.questions; track entry.id; let k = $index) {
+              <button
+                type="button"
+                [class.ans]="isAnswered(entry)"
+                [class.cur]="k === index()"
+                [class.flag]="isFlagged(entry)"
+                [attr.aria-current]="k === index() ? 'step' : null"
+                [attr.aria-label]="('Pregunta' | t) + ' ' + (k + 1)"
+                (click)="jump(k)"
+              >{{ k + 1 }}</button>
+            }
+          </div>
+
+          <div class="qz-legend">
+            <span><i class="a"></i>{{ 'Respondida' | t }}</span>
+            <span><i></i>{{ 'Sin responder' | t }}</span>
+            <span><i class="f"></i>{{ 'Para revisar' | t }}</span>
+          </div>
+
+          <ul class="qz-facts">
+            <li>{{ 'Apruebas con' | t }}<b>{{ minimum() }} %</b></li>
+            @if (hasBest()) {
+              <li>{{ 'Tu mejor nota' | t }}<b>{{ item().score }} / 100</b></li>
+            }
+          </ul>
+
+          @if (error()) {
+            <p class="alert" role="alert">{{ error() }}</p>
+          }
+
+          <button type="button" class="btn btn--primary btn--block" [disabled]="answered() === 0" (click)="review()">
+            {{ 'Enviar evaluación' | t }}
+          </button>
+        </aside>
+      </div>
+    }
+  }
+}
+
+<!-- ======================= Revisión antes de enviar ======================= -->
+@if (reviewing()) {
+  <div class="qz-modal" (click)="reviewing.set(false)">
+    <div class="qz-modal__box" role="dialog" aria-modal="true" aria-labelledby="qz-modal-title" (click)="$event.stopPropagation()">
+      <h3 id="qz-modal-title">
+        @if (missing() > 0) {
+          {{ missing() === 1 ? ('Te falta 1 pregunta' | t) : ('Te faltan' | t) + ' ' + missing() + ' ' + ('preguntas' | t) }}
+        } @else {
+          {{ '¿Enviar tu evaluación?' | t }}
+        }
+      </h3>
+      <p>
+        @if (missing() > 0) {
+          {{ 'Las preguntas sin responder cuentan como incorrectas.' | t }}
+        } @else {
+          {{ 'Respondiste todas. Una vez enviada no podrás cambiar tus respuestas.' | t }}
+        }
+        @if (flags().size > 0) {
+          {{ 'Tienes' | t }} {{ flags().size }} {{ flags().size === 1 ? ('marcada' | t) : ('marcadas' | t) }} {{ 'para revisar.' | t }}
+        }
+      </p>
+      @if (pending().length > 0) {
+        <div class="qz-modal__list">
+          @for (entry of pending(); track entry.index) {
+            <button type="button" (click)="jumpFromReview(entry.index)">
+              {{ 'Pregunta' | t }} {{ entry.index + 1 }} · {{ entry.label | t }}
+            </button>
+          }
+        </div>
+      }
+      <div class="qz-modal__act">
+        <button type="button" class="btn btn--secondary" (click)="reviewing.set(false)">{{ 'Seguir respondiendo' | t }}</button>
+        <button type="button" class="btn btn--primary" [disabled]="submitting()" (click)="submit()">
+          {{ submitting() ? ('Enviando...' | t) : ('Enviar ahora' | t) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

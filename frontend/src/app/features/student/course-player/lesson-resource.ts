@@ -27,6 +27,16 @@ export function materialKind(resource: LearningResource): MaterialKind {
   if (/\.(png|jpe?g|gif|webp|avif)$/.test(path)) return 'image';
   return 'link';
 }
+/**
+ * Dirección que sí sirve para mostrar una imagen. Muchos sitios bloquean la imagen si la pide otra
+ * página (por eso la imagen se pide sin «referrer»), y un enlace de «compartir» de Google Drive
+ * abre una página, no la imagen: se cambia por el enlace directo.
+ */
+export function imageUrlOf(url: string): string {
+  const drive = /^https?:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/i.exec(url);
+
+  return drive ? `https://drive.google.com/thumbnail?id=${drive[1]}&sz=w2000` : url;
+}
 export function allowedMaterialUrl(value: string): boolean {
   return (
     /^https?:\/\/[^\s]+$/i.test(value) || /^\/api\/uploads\/[a-f0-9]{32}\.[a-z0-9]+$/i.test(value)
@@ -83,9 +93,9 @@ export function allowedMaterialUrl(value: string): boolean {
           }
           @case ('image') {
             <img
-              [src]="resource().url | publicUrl"
+              [src]="imageSrc() | publicUrl"
               [alt]="resource().title"
-              loading="lazy"
+              referrerpolicy="no-referrer"
               (error)="failed.set(true)"
             />
           }
@@ -273,6 +283,7 @@ export class LessonResource {
       ? this.sanitizer.bypassSecurityTrustResourceUrl(publicUrl(this.resource().url))
       : null,
   );
+  readonly imageSrc = computed(() => imageUrlOf(this.resource().url));
   readonly failed = signal(false);
   readonly labels: Record<MaterialKind, string> = {
     pdf: 'Documento PDF',

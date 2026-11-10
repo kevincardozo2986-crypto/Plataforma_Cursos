@@ -75,7 +75,7 @@
                 @if (item.lesson) {
                   · {{ item.lesson.title }}
                 }
-                · {{ item.createdAt | date: "d ('de' | t) MMM y, HH:mm" }} ·
+                · {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }} ·
                 {{ item._count.replies }}
                 {{ item._count.replies === 1 ? ('respuesta' | t) : ('respuestas' | t) }}
               </p>

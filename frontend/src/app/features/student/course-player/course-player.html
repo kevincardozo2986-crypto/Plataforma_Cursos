@@ -66,6 +66,12 @@
       [attr.aria-label]="'Lección actual' | t"
       [attr.aria-busy]="loading() || initializing()"
     >
+      <app-course-roadmap
+        [modules]="course().modules ?? []"
+        [availability]="availability()"
+        (lesson)="select($event)"
+        (assessment)="goAssessment($event)"
+      />
       @if (assessmentView(); as view) {
         <div class="lesson-caption">
           <span>{{ view === 'all' ? ('Evaluaciones y tareas' | t) : view.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }}</span>
@@ -74,6 +80,7 @@
           }
         </div>
         <article class="lesson-reader assessment-stage" [attr.aria-label]="'Evaluaciones y tareas' | t">
+          @if (view === 'all' || view.type !== 'evaluation') {
           <nav class="assessment-crumbs" [attr.aria-label]="'Navegación de evaluaciones' | t">
             <button type="button" class="assessment-back" (click)="closeAssessment()">
               <span aria-hidden="true">&#8592;</span>
@@ -85,6 +92,7 @@
               </button>
             }
           </nav>
+          }
           @if (view === 'all') {
             <app-course-assessments
               [items]="assessments()"
@@ -94,16 +102,18 @@
               (changed)="refreshGraduation()"
             />
           } @else if (view.type === 'evaluation') {
-            <app-course-assessments
-              [items]="[view]"
-              [focus]="view"
+            <app-quiz-taker
+              [item]="view"
+              [all]="assessments()"
               [modules]="course().modules ?? []"
               (changed)="refreshGraduation()"
               (closed)="closeAssessment()"
+              (showAll)="openAssessment('all')"
             />
           } @else {
             <app-student-assignments
               [moduleId]="view.moduleId"
+              [moduleNumber]="moduleNumber(view.moduleId)"
               [focusId]="view.id"
               (submitted)="refreshGraduation()"
             />
@@ -684,10 +694,16 @@
           class="module"
           [open]="selected()?.moduleId === module.id || (!selectedId() && index === 0)"
         >
-          <summary>
+          <summary (click)="openModule(module.id)">
             <span class="chevron" aria-hidden="true">&#8964;</span
             ><span>{{ 'Módulo' | t }} {{ index + 1 }}: {{ module.title }}</span
-            ><small>{{ moduleCompleted(module.id) }}/{{ module.lessons.length }}</small>
+            ><small class="module-state" [class.is-done]="moduleDone(module.id)">{{
+              locked(module.id) && !initializing()
+                ? ('🔒 Bloqueado' | t)
+                : moduleDone(module.id)
+                  ? ('✓ Completo' | t)
+                  : moduleCompleted(module.id) + '/' + module.lessons.length
+            }}</small>
           </summary>
           @if (module.description) {
             <div

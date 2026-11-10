@@ -156,7 +156,7 @@
                 <h3>{{ item.title }}</h3>
                 <p class="meta panel-muted">
                   {{ item.course.title }} · {{ item.author.firstName }} {{ item.author.lastName }} ·
-                  {{ item.createdAt | date: "d ('de' | t) MMM y, HH:mm" }}
+                  {{ item.createdAt | date: "d 'de' MMM y, HH:mm" }}
                   @if (item.updatedAt !== item.createdAt) {
                     {{ '· editado' | t }}
                   }

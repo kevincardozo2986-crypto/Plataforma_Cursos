@@ -56,23 +56,75 @@ export class CourseAccessRepository {
     });
   }
 
-  /** Ids de los módulos del curso con todas sus lecciones terminadas (uno sin lecciones cuenta como terminado). */
-  async completedModuleIds(enrollmentId: number, courseId: number): Promise<number[]> {
+  /**
+   * Lo que pide cada módulo para darlo por terminado, con el avance de este estudiante:
+   * ver todas las lecciones, aprobar cada evaluación y entregar cada tarea.
+   * (Una tarea solo necesita estar entregada: no se espera a que el docente la califique.)
+   */
+  async moduleRequirements(userId: number, enrollmentId: number, courseId: number) {
     const modules = await this.prisma.courseModule.findMany({
       where: { courseId },
+      orderBy: [{ position: 'asc' }, { id: 'asc' }],
       select: {
         id: true,
         lessons: {
+          orderBy: [{ position: 'asc' }, { id: 'asc' }],
+          select: { id: true, title: true, progress: { where: { enrollmentId }, select: { id: true } } },
+        },
+        evaluations: {
+          orderBy: { id: 'asc' },
           select: {
-            progress: { where: { enrollmentId }, select: { id: true } },
+            id: true,
+            title: true,
+            passingScore: true,
+            attempts: { where: { userId, status: 'GRADED' }, select: { passed: true, score: true } },
+          },
+        },
+        assignments: {
+          orderBy: { id: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            dueAt: true,
+            submissions: { where: { userId }, select: { status: true, score: true } },
           },
         },
       },
     });
 
-    return modules
-      .filter((m) => m.lessons.every((lesson) => lesson.progress.length > 0))
-      .map((m) => m.id);
+    return modules.map((module) => ({
+      moduleId: module.id,
+      requirements: [
+        ...module.lessons.map((lesson) => ({
+          type: 'lesson' as const,
+          id: lesson.id,
+          title: lesson.title,
+          done: lesson.progress.length > 0,
+          dueAt: null as Date | null,
+        })),
+        ...module.evaluations.map((evaluation) => ({
+          type: 'evaluation' as const,
+          id: evaluation.id,
+          title: evaluation.title,
+          done: evaluation.attempts.some((a) => a.passed && a.score >= evaluation.passingScore),
+          dueAt: null as Date | null,
+        })),
+        ...module.assignments.map((assignment) => ({
+          type: 'assignment' as const,
+          id: assignment.id,
+          title: assignment.title,
+          done: assignment.submissions.length > 0,
+          dueAt: assignment.dueAt,
+        })),
+      ],
+    }));
+  }
+
+  /** Ids de los módulos terminados: todas sus lecciones vistas, evaluaciones aprobadas y tareas entregadas. */
+  async completedModuleIds(userId: number, enrollmentId: number, courseId: number): Promise<number[]> {
+    return (await this.moduleRequirements(userId, enrollmentId, courseId))
+      .filter((module) => module.requirements.every((item) => item.done))
+      .map((module) => module.moduleId);
   }
 
   async moduleIdOfLesson(lessonId: number): Promise<number | null> {

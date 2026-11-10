@@ -32,7 +32,7 @@
           @if (root.lesson) {
             · {{ root.lesson.title }}
           }
-          · {{ root.createdAt | date: "d ('de' | t) MMM y, HH:mm" }}
+          · {{ root.createdAt | date: "d 'de' MMM y, HH:mm" }}
         </p>
 
         <p class="text">{{ root.body }}</p>
@@ -83,7 +83,7 @@
                 }}</span>
               }
               <span class="panel-muted when">{{
-                item.createdAt | date: "d ('de' | t) MMM y, HH:mm"
+                item.createdAt | date: "d 'de' MMM y, HH:mm"
               }}</span>
             </div>
 

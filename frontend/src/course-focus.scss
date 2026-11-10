@@ -619,3 +619,8 @@ app-course-player .classroom.is-maximized .focus-rail {
   border-color: var(--p-border);
 }
 
+
+/* «Tu ruta» va dentro del escenario de la lección, nunca suelta en la cuadrícula del aula. */
+app-course-player .lesson-stage > app-course-roadmap .roadmap {
+  margin: 8px 8px 0;
+}

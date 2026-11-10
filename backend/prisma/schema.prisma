@@ -103,7 +103,7 @@ model Course {
   /// Contenido visible sin inscripción.
   publicContent  Boolean          @default(false)
   qaEnabled      Boolean          @default(true)
-  dripType       DripType         @default(NONE)
+  dripType       DripType         @default(SEQUENTIAL)
 
   // Presentación
   introVideoUrl String?

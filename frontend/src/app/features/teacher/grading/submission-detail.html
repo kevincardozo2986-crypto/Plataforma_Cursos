@@ -21,9 +21,9 @@
             {{ data.student.email }} · {{ data.assignment.title }} · {{ data.course.title }}
           </p>
           <p class="meta panel-muted">
-            Entregada el {{ data.submittedAt | date: "d ('de' | t) MMM y, HH:mm" }}
+            Entregada el {{ data.submittedAt | date: "d 'de' MMM y, HH:mm" }}
             @if (data.assignment.dueAt) {
-              · Fecha límite {{ data.assignment.dueAt | date: "d ('de' | t) MMM y, HH:mm" }}
+              · Fecha límite {{ data.assignment.dueAt | date: "d 'de' MMM y, HH:mm" }}
             }
           </p>
         </div>

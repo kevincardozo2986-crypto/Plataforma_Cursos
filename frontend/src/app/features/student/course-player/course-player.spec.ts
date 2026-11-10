@@ -65,6 +65,8 @@ describe('CoursePlayer', () => {
         assessments: [],
         certificate: null,
       });
+    // El aviso de «completion» vuelve a pedir qué módulos están abiertos.
+    for (const request of http.match('/api/courses/7/modules/availability')) request.flush({ modules: [] });
     http.verify();
     localStorage.removeItem('campus.notes:student@example.com:7:2');
   });

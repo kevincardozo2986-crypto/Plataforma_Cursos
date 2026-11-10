@@ -180,6 +180,7 @@ describe('CourseAccessService: acceso al contenido y liberación gradual', () =>
       findEnrollmentBasics: vi.fn().mockResolvedValue({ id: 50, status: 'ACTIVE', enrolledAt: new Date(Date.now() - 2 * day) }),
       findDripModules: vi.fn().mockResolvedValue(modules),
       completedModuleIds: vi.fn().mockResolvedValue([]),
+      moduleRequirements: vi.fn().mockResolvedValue([]),
     };
 
     return { service: new CourseAccessService(repository as unknown as CourseAccessRepository, learning), repository };

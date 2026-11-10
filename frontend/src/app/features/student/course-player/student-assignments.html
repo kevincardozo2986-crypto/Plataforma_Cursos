@@ -1,221 +1,348 @@
-<h3>{{ 'Tareas de este módulo' | t }}</h3>
+<header class="tk-mod">
+  <div>
+    <p class="eyebrow">
+      @if (moduleNumber(); as number) {
+        {{ 'Módulo' | t }} {{ number }} ·
+      }
+      {{ 'Tareas' | t }}
+    </p>
+    <h3>{{ 'Tareas de este módulo' | t }}</h3>
+  </div>
+  @if (items().length > 0) {
+    <div class="tk-mod__prog">
+      <div class="track">
+        <div class="bar" [style.width.%]="(delivered() / items().length) * 100"></div>
+      </div>
+      {{ delivered() }} {{ 'de' | t }} {{ items().length }} {{ 'entregadas' | t }}
+    </div>
+  }
+</header>
 
 @if (loading()) {
-  <p class="empty" role="status">
-    <app-icon name="refresh" [size]="16" /> {{ 'Cargando tareas…' | t }}
-  </p>
+  <p class="empty" role="status">{{ 'Cargando tareas…' | t }}</p>
 } @else if (error()) {
-  <p class="error" role="alert">{{ error() }}</p>
+  <p class="alert" role="alert">{{ error() }}</p>
 } @else if (items().length === 0) {
-  <p class="empty">
-    <app-icon name="clipboard" [size]="18" /> {{ 'Este módulo no tiene tareas por ahora.' | t }}
-  </p>
+  <p class="empty">{{ 'Este módulo no tiene tareas por ahora.' | t }}</p>
 } @else {
-  <ul class="tasks">
+  <div class="tk-list">
     @for (item of items(); track item.id) {
-      @let state = stateOf(item);
-      <li class="task" [class.open]="openId() === item.id">
+      @let st = state(item);
+      @let open = openIds().has(item.id);
+      @let sub = subs()[item.id];
+      @let dr = draft(item.id);
+      @let count = countdown(item);
+      <article
+        class="tk"
+        [class.is-open]="open"
+        [class.is-late]="st === 'late'"
+        [class.is-done]="st === 'done'"
+        [class.is-graded]="st === 'graded'"
+      >
         <button
           type="button"
-          class="task-head"
-          [attr.aria-expanded]="openId() === item.id"
+          class="tk__head"
+          [attr.aria-expanded]="open"
+          [attr.aria-controls]="'task-' + item.id"
           (click)="toggle(item.id)"
         >
-          <span class="task-icon" aria-hidden="true"
-            ><app-icon name="clipboard" [size]="20"
-          /></span>
-          <span class="task-title">
-            <strong>{{ item.title }}</strong>
+          <span class="tk-date" aria-hidden="true">
             @if (item.dueAt) {
-              <small [class.overdue]="pastDue(item) && !item.mySubmission">
-                <app-icon name="calendar" [size]="13" />
-                Entrega hasta el {{ item.dueAt | date: "d ('de' | t) MMMM, h:mm a" }}
-              </small>
+              <small>{{ item.dueAt | date: 'MMM' }}</small>
+              <b>{{ item.dueAt | date: 'd' }}</b>
             } @else {
-              <small>{{ 'Sin fecha límite' | t }}</small>
+              <small>{{ 'Sin' | t }}</small>
+              <b>—</b>
             }
           </span>
-          <span class="pill" [attr.data-tone]="state.tone">{{ state.label }}</span>
-          <app-icon class="chev" name="chevron-right" [size]="18" />
+          <span class="tk__title">
+            <b>{{ item.title }}</b>
+            <span class="tk__meta">
+              @if (item.dueAt) {
+                <span class="inline">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                  {{ 'Vence el' | t }} {{ item.dueAt | date: "EEEE, d 'de' MMMM, h:mm a" }}
+                </span>
+              } @else {
+                <span>{{ 'Sin fecha límite' | t }}</span>
+              }
+              @if (st === 'pending' && count) {
+                <span class="tk-count" [attr.data-tone]="count.tone">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  {{ count.label | t }}
+                </span>
+              }
+              <span class="tk-pts">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="m8.5 13.8-1.5 7.2 5-2.6 5 2.6-1.5-7.2"/></svg>
+                {{ item.maxScore }} pts
+              </span>
+            </span>
+          </span>
+          @switch (st) {
+            @case ('graded') {
+              <span class="tk-grade"><b>{{ item.mySubmission?.score }}/{{ item.maxScore }}</b><small>{{ 'Calificada' | t }}</small></span>
+            }
+            @case ('done') {
+              <span class="badge badge--ok">{{ 'Entregada' | t }}</span>
+            }
+            @case ('late') {
+              <span class="badge badge--bad">{{ 'Vencida' | t }}</span>
+            }
+            @default {
+              <span class="badge badge--warn">{{ 'Por entregar' | t }}</span>
+            }
+          }
+          <span class="tk__chev" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
         </button>
 
-        @if (openId() === item.id) {
-          <div class="task-body">
-            @if (item.description) {
-              <div class="rich-text" [innerHTML]="item.description | richHtml"></div>
-            }
-
-            @if (item.attachments.length > 0) {
-              <section class="block" [attr.aria-label]="'Documentos de la tarea' | t">
-                <h4><app-icon name="download" [size]="16" /> {{ 'Documentos del docente' | t }}</h4>
-                <ul class="files">
-                  @for (file of item.attachments; track file.name) {
-                    <li>
-                      <button
-                        type="button"
-                        class="file"
-                        [disabled]="downloading() === file.name"
-                        (click)="download(file)"
-                      >
-                        <app-icon name="file" [size]="18" />
-                        <span>{{ file.originalName }}</span>
-                        <small>{{ size(file.size) }}</small>
-                        <app-icon name="download" [size]="16" />
-                      </button>
+        <div class="tk__body" [id]="'task-' + item.id">
+          <div>
+            @if (open) {
+              <div class="tk__inner">
+                <ol class="tk-steps">
+                  @for (step of steps(item); track step.n) {
+                    <li [class.ok]="step.ok" [class.on]="step.on">
+                      <i>
+                        @if (step.ok) {
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                        } @else {
+                          {{ step.n }}
+                        }
+                      </i>
+                      {{ step.label | t }}
                     </li>
                   }
-                </ul>
-              </section>
-            }
+                </ol>
 
-            <p class="score-info">
-              <app-icon name="award" [size]="15" /> Vale {{ item.maxScore }} puntos.
-              @if (!item.allowLate) {
-                {{ 'Pasada la fecha límite ya no se reciben entregas.' | t }}
-              }
-            </p>
-
-            @if (detailLoading()) {
-              <p class="empty" role="status">{{ 'Cargando tu entrega…' | t }}</p>
-            } @else {
-              @if (mine(); as sent) {
-                @if (sent.status === 'GRADED') {
-                  <section class="grade" [attr.aria-label]="'Tu calificación' | t">
-                    <div class="grade-score">
-                      <strong>{{ sent.score }}</strong>
-                      <span>{{ 'de' | t }} {{ item.maxScore }}</span>
-                    </div>
-                    <div class="grade-text">
-                      <h4>
-                        <app-icon name="check-circle" [size]="16" />
-                        {{ 'Tu tarea fue calificada' | t }}
-                      </h4>
-                      @if (sent.feedback) {
-                        <p class="feedback">{{ sent.feedback }}</p>
-                      } @else {
-                        <p class="muted">{{ 'El docente no dejó comentarios.' | t }}</p>
-                      }
-                      @if (sent.gradedAt) {
-                        <small class="muted">
-                          Calificada el {{ sent.gradedAt | date: "d ('de' | t) MMMM" }}
-                        </small>
-                      }
-                    </div>
-                  </section>
-                } @else {
-                  <section class="delivered" role="status" [attr.aria-label]="'Tu tarea fue entregada' | t">
-                    <h4>
-                      <app-icon name="check-circle" [size]="18" />
-                      {{ 'Tarea entregada' | t }}
-                      @if (sent.late) {
-                        <span class="late"> {{ '· fuera de plazo' | t }}</span>
-                      }
-                    </h4>
-                    <p>
-                      {{ 'Entregaste el' | t }} {{ sent.submittedAt | date: "d ('de' | t) MMMM, h:mm a" }}.
-                      {{ 'Está en revisión: tu docente ya recibió el aviso para calificarla.' | t }}
-                    </p>
-                    @if (sent.text) {
-                      <p class="sent-text">{{ sent.text }}</p>
+                <!-- Izquierda: instrucciones y material del docente -->
+                <div>
+                  <section class="tk-sec">
+                    <h4>{{ 'Instrucciones' | t }}</h4>
+                    @if (item.description) {
+                      <div class="tk-instr rich-text" [innerHTML]="item.description | richHtml"></div>
+                    } @else {
+                      <p class="tk-instr muted">{{ 'El docente no dejó instrucciones escritas.' | t }}</p>
                     }
-                    @if (sent.files.length) {
-                      <ul class="files">
-                        @for (file of sent.files; track file.name) {
-                          <li>
-                            <button type="button" class="file" (click)="download(file)">
-                              <app-icon name="file" [size]="18" />
-                              <span>{{ file.originalName }}</span>
-                              <small>{{ size(file.size) }}</small>
-                              <app-icon name="download" [size]="16" />
+                  </section>
+
+                  @if (item.attachments.length > 0) {
+                    <section class="tk-sec">
+                      <h4>{{ 'Material del docente' | t }}</h4>
+                      <div class="tk-files">
+                        @for (file of item.attachments; track file.name) {
+                          <div class="tk-file">
+                            <span class="tk-ext" [attr.data-k]="kind(file.originalName)">{{ extension(file.originalName) }}</span>
+                            <div class="tk-file__name">
+                              <b>{{ file.originalName }}</b>
+                              <small>
+                                {{ size(file.size) }}
+                                @if (seen().has(file.name)) {
+                                  · <span class="tk-seen">✓ {{ 'descargado' | t }}</span>
+                                }
+                              </small>
+                            </div>
+                            <button
+                              type="button"
+                              class="btn btn--secondary btn--sm"
+                              [disabled]="downloading() === file.name"
+                              (click)="download(file, item, true)"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+                              {{ downloading() === file.name ? ('Descargando…' | t) : ('Descargar' | t) }}
                             </button>
-                          </li>
+                          </div>
                         }
-                      </ul>
-                    }
-                    <small class="muted">
-                      {{ 'Mientras no la califiquen, puedes cambiarla y volver a enviarla.' | t }}
-                    </small>
-                  </section>
-                }
-              }
-
-              @if (canSubmit(item)) {
-                <form class="submit" (ngSubmit)="submit(item)">
-                  <h4>
-                    <app-icon name="pen" [size]="16" />
-                    {{ mine() ? ('Tu entrega' | t) : ('Devuelve tu tarea' | t) }}
-                  </h4>
-
-                  <label class="field">
-                    <span>{{ 'Tu respuesta (opcional si adjuntas documentos)' | t }}</span>
-                    <textarea
-                      name="text"
-                      rows="5"
-                      maxlength="20000"
-                      [ngModel]="text()"
-                      (ngModelChange)="text.set($event)"
-                      [placeholder]="'Escribe aquí tu respuesta…' | t"
-                    ></textarea>
-                  </label>
-
-                  <div class="field">
-                    <span>{{ 'Tus documentos (PDF, Word, Excel…)' | t }}</span>
-                    <app-document-field [inputId]="'doc-' + item.id" [(files)]="files" />
-                  </div>
-
-                  @if (formError()) {
-                    <p class="error" role="alert">{{ formError() }}</p>
+                      </div>
+                    </section>
                   }
-                  @if (notice()) {
-                    <p class="success" role="status">
-                      <app-icon name="check-circle" [size]="16" /> {{ notice() }}
-                    </p>
+                </div>
+
+                <!-- Derecha: según el estado -->
+                <div>
+                  @if (st === 'graded' && sub) {
+                    <section class="tk-sec">
+                      <h4>{{ 'Tu calificación' | t }}</h4>
+                      <div class="tk-score">
+                        <div class="ring">
+                          <svg viewBox="0 0 96 96" aria-hidden="true">
+                            <circle class="trk" cx="48" cy="48" r="40" />
+                            <circle class="val" cx="48" cy="48" r="40" stroke-dasharray="251.33"
+                              [attr.stroke-dashoffset]="251.33 * (1 - (sub.score ?? 0) / item.maxScore)" />
+                          </svg>
+                          <span>{{ percentOf(sub.score, item.maxScore) }}%</span>
+                        </div>
+                        <p>
+                          <b>{{ sub.score }} {{ 'de' | t }} {{ item.maxScore }} {{ 'puntos' | t }}</b>
+                          {{ 'Entregada el' | t }} {{ sub.submittedAt | date: 'd MMM, h:mm a' }}
+                        </p>
+                      </div>
+                    </section>
+                    <div class="tk-feedback">
+                      <span class="avatar" aria-hidden="true">DC</span>
+                      <p>
+                        <b>{{ 'Comentario del docente' | t }}</b>
+                        {{ sub.feedback || ('El docente no dejó comentarios.' | t) }}
+                      </p>
+                    </div>
                   }
 
-                  <button type="submit" class="primary" [disabled]="saving()">
-                    <app-icon name="check" [size]="17" />
-                    {{
-                      saving()
-                        ? ('Enviando…' | t)
-                        : mine()
-                          ? ('Volver a enviar' | t)
-                          : ('Entregar tarea' | t)
-                    }}
-                  </button>
-                </form>
-              } @else if (mine()?.status !== 'GRADED') {
-                <p class="error" role="status">
-                  {{ 'El plazo terminó y esta tarea ya no recibe entregas.' | t }}
-                </p>
-              } @else if (mine()?.files?.length) {
-                <section class="block" [attr.aria-label]="'Lo que entregaste' | t">
-                  <h4><app-icon name="file" [size]="16" /> {{ 'Lo que entregaste' | t }}</h4>
-                  @if (mine()?.text) {
-                    <p class="sent-text">{{ mine()?.text }}</p>
-                  }
-                  <ul class="files">
-                    @for (file of mine()!.files; track file.name) {
-                      <li>
-                        <button type="button" class="file" (click)="download(file)">
-                          <app-icon name="file" [size]="18" />
-                          <span>{{ file.originalName }}</span>
-                          <small>{{ size(file.size) }}</small>
-                          <app-icon name="download" [size]="16" />
+                  @if (st === 'done' && sub && !showForm(item)) {
+                    <div class="tk-receipt" role="status">
+                      <span class="tk-receipt__ic" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+                      </span>
+                      <p>
+                        <b>{{ '¡Entregada!' | t }}</b>
+                        {{ 'El' | t }} {{ sub.submittedAt | date: 'd MMM, h:mm a' }} · {{ 'tu docente ya puede verla' | t }}
+                        @if (sub.late) {
+                          · {{ 'fuera de plazo' | t }}
+                        }
+                      </p>
+                      @if (canSubmit(item)) {
+                        <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(item)">
+                          {{ 'Editar entrega' | t }}
                         </button>
-                      </li>
+                      }
+                    </div>
+                  }
+
+                  @if ((st === 'done' || st === 'graded') && sub && !showForm(item)) {
+                    @if (sub.text) {
+                      <section class="tk-sec spaced">
+                        <h4>{{ (st === 'graded' ? 'Lo que respondiste' : 'Tu respuesta') | t }}</h4>
+                        <p class="tk-answer">{{ sub.text }}</p>
+                      </section>
                     }
-                  </ul>
-                </section>
-              } @else if (mine()?.text) {
-                <section class="block" [attr.aria-label]="'Lo que entregaste' | t">
-                  <h4><app-icon name="file" [size]="16" /> {{ 'Lo que entregaste' | t }}</h4>
-                  <p class="sent-text">{{ mine()?.text }}</p>
-                </section>
-              }
+                    @if (sub.files.length > 0) {
+                      <section class="tk-sec spaced">
+                        <h4>{{ (st === 'graded' ? 'Lo que entregaste' : 'Tus archivos') | t }}</h4>
+                        <div class="tk-files">
+                          @for (file of sub.files; track file.name) {
+                            <div class="tk-file">
+                              <span class="tk-ext" [attr.data-k]="kind(file.originalName)">{{ extension(file.originalName) }}</span>
+                              <div class="tk-file__name">
+                                <b>{{ file.originalName }}</b>
+                                <small>{{ size(file.size) }} · {{ 'listo' | t }}</small>
+                              </div>
+                              <button type="button" class="btn btn--secondary btn--sm" (click)="download(file, item)">
+                                {{ 'Descargar' | t }}
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </section>
+                    }
+                    @if (st === 'done' && canSubmit(item) && item.dueAt) {
+                      <p class="muted spaced">{{ 'Puedes editarla hasta el' | t }} {{ item.dueAt | date: 'd MMM, h:mm a' }}</p>
+                    }
+                  }
+
+                  @if (st === 'late' && !item.allowLate) {
+                    <p class="alert" role="status">{{ 'El plazo terminó y esta tarea ya no recibe entregas.' | t }}</p>
+                  }
+
+                  @if (showForm(item)) {
+                    <div class="tk-box">
+                      <h4>{{ 'Tu entrega' | t }}</h4>
+
+                      <label class="tk-ta">
+                        <span class="sr-only">{{ 'Tu respuesta' | t }}</span>
+                        <textarea
+                          [ngModel]="dr.text"
+                          (ngModelChange)="onText(item, $event)"
+                          maxlength="20000"
+                          rows="5"
+                          [placeholder]="'Escribe tu respuesta… (opcional si adjuntas archivos)' | t"
+                        ></textarea>
+                        <span class="tk-ta__foot">
+                          <span>{{ dr.saved ? ('✓ Borrador guardado' | t) : '' }}</span>
+                          <span>{{ words(dr.text) }} {{ words(dr.text) === 1 ? ('palabra' | t) : ('palabras' | t) }}</span>
+                        </span>
+                      </label>
+
+                      <label
+                        class="tk-drop"
+                        [class.is-over]="overId() === item.id"
+                        (dragenter)="onDrag(item, $event, true)"
+                        (dragover)="onDrag(item, $event, true)"
+                        (dragleave)="onDrag(item, $event, false)"
+                        (drop)="onDrop(item, $event)"
+                      >
+                        <input type="file" multiple [attr.accept]="accept" (change)="onPick(item, $event)" />
+                        <span class="tk-drop__ic" aria-hidden="true">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+                        </span>
+                        <b>{{ 'Arrastra tus archivos aquí o' | t }} <u>{{ 'elígelos' | t }}</u></b>
+                        <small>{{ formats }} · {{ 'hasta 20 MB cada uno · máximo' | t }} {{ maxFiles }}</small>
+                      </label>
+
+                      @if (dr.files.length > 0) {
+                        <div class="tk-files">
+                          @for (row of dr.files; track row.key) {
+                            <div class="tk-file" [class.is-err]="row.error">
+                              <span class="tk-ext" [attr.data-k]="kind(row.name)">{{ extension(row.name) }}</span>
+                              <div class="tk-file__name">
+                                <b>{{ row.name }}</b>
+                                @if (row.error) {
+                                  <small class="err">{{ row.error }}</small>
+                                } @else if (row.stored === null) {
+                                  <small>{{ 'Subiendo…' | t }} {{ row.percent }}%</small>
+                                  <div class="track thin"><div class="bar" [style.width.%]="row.percent"></div></div>
+                                } @else {
+                                  <small>{{ size(row.size) }} · {{ 'listo' | t }}</small>
+                                }
+                              </div>
+                              <button
+                                type="button"
+                                class="icon-btn"
+                                [attr.aria-label]="('Quitar' | t) + ' ' + row.name"
+                                (click)="removeFile(item, row)"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      @if (formError(); as problem) {
+                        @if (problem.id === item.id) {
+                          <p class="alert" role="alert">{{ problem.message }}</p>
+                        }
+                      }
+
+                      <div class="tk-submit">
+                        <p>{{ summary(item.id) | t }}</p>
+                        @if (confirming() === item.id) {
+                          <div class="tk-confirm">
+                            <button type="button" class="btn btn--secondary" [disabled]="sending() === item.id" (click)="cancel()">
+                              {{ 'Revisar' | t }}
+                            </button>
+                            <button type="button" class="btn btn--primary" [disabled]="sending() === item.id" (click)="send(item)">
+                              @if (sending() === item.id) {
+                                <span class="spin" aria-hidden="true"></span> {{ 'Entregando…' | t }}
+                              } @else {
+                                {{ 'Sí, entregar' | t }}
+                              }
+                            </button>
+                          </div>
+                        } @else {
+                          <button type="button" class="btn btn--primary" [disabled]="!readyToSend(item.id)" (click)="ask(item)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                            {{ 'Entregar tarea' | t }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
             }
           </div>
-        }
-      </li>
+        </div>
+      </article>
     }
-  </ul>
+  </div>
 }

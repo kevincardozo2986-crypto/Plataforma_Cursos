@@ -3,7 +3,9 @@ import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { embeddedLessonVideo, withoutMainVideo } from './video-source';
 import { CourseVideo, VideoSample } from './course-video';
 import { CourseAssessments, Assessment } from './course-assessments';
+import { QuizTaker } from './quiz-taker';
 import { LessonResource, LearningResource, materialKind } from './lesson-resource';
+import { CourseRoadmap, RoadmapTarget, RoadmapRequirement } from './course-roadmap';
 import { CodePractice } from './code-practice';
 import { QuestionThread } from './question-thread';
 import { CourseFiles } from './course-files';
@@ -44,6 +46,7 @@ interface Availability {
   moduleId: number;
   locked: boolean;
   reason?: string | null;
+  requirements?: RoadmapRequirement[];
 }
 interface Lesson {
   id: number;
@@ -101,6 +104,8 @@ const REQUESTED_TABS: Record<string, Tab> = {
 @Component({
   selector: 'app-course-player',
   imports: [
+    CourseRoadmap,
+    QuizTaker,
     TranslatePipe,
     PublicUrlPipe,
     FormsModule,
@@ -225,6 +230,19 @@ export class CoursePlayer {
       block: 'start',
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
+  }
+  /** Desde «Tu ruta»: abre la evaluación o la tarea que toca. */
+  goAssessment(target: RoadmapTarget): void {
+    const item = this.assessments().find((a) => a.type === target.type && a.id === target.id);
+
+    this.openAssessment(item ?? 'all');
+  }
+  /** Vuelve a pedir qué módulos están abiertos y qué falta en cada uno (sin mostrar «cargando»). */
+  private refreshAvailability(): void {
+    this.http
+      .get<{ modules: Availability[] }>('/api/courses/' + this.course().id + '/modules/availability')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (data) => this.availability.set(data.modules), error: () => undefined });
   }
   closeAssessment(): void {
     this.assessmentView.set(null);
@@ -402,16 +420,39 @@ export class CoursePlayer {
   locked(moduleId: number): boolean {
     return this.availability().find((module) => module.moduleId === moduleId)?.locked ?? true;
   }
+  /** ¿Ya cumplió todo lo que pide el módulo (lecciones, evaluaciones y tareas)? */
+  moduleDone(moduleId: number): boolean {
+    const items = this.availability().find((module) => module.moduleId === moduleId)?.requirements ?? [];
+
+    return items.length > 0 && items.every((item) => item.done);
+  }
   lockReason(moduleId: number): string {
     const reason = this.availability().find((module) => module.moduleId === moduleId)?.reason;
     return reason === 'DATE' || reason === 'DAYS'
       ? 'Disponible en la fecha indicada por el docente'
-      : 'Completa los módulos anteriores o sus requisitos';
+      : 'Se abre cuando completes el módulo anterior: ver sus lecciones, aprobar sus evaluaciones y entregar sus tareas.';
   }
   moduleCompleted(moduleId: number): number {
     return this.lessons().filter(
       (item) => item.moduleId === moduleId && this.completed().has(item.id),
     ).length;
+  }
+  /** Al tocar un módulo: abre su siguiente lección sin ver (o la primera) y, si no tiene, su primera evaluación o tarea. */
+  openModule(moduleId: number): void {
+    if (this.initializing() || this.locked(moduleId)) return;
+
+    const lessons = this.lessons().filter((lesson) => lesson.moduleId === moduleId);
+    const open = lessons.filter((lesson) => !this.lessonLocked(lesson.id));
+    const target = open.find((lesson) => !this.completed().has(lesson.id)) ?? open[0];
+
+    if (target) {
+      this.select(target.id);
+      return;
+    }
+
+    const first = this.moduleAssessments(moduleId)[0];
+
+    if (first) this.openAssessment(first);
   }
   select(id: number): void {
     const item = this.lessons().find((lesson) => lesson.id === id);
@@ -533,6 +574,7 @@ export class CoursePlayer {
       .subscribe({
         next: (state) => {
           this.graduation.set(state);
+          this.refreshAvailability();
           this.watchPokCredential(state);
           if (!this.initializing()) this.applyRequestedTab();
         },

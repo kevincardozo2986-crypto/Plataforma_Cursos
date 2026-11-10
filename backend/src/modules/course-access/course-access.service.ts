@@ -168,7 +168,7 @@ export class CourseAccessService {
     }
 
     const mine = (
-      await this.availability(course.dripType, courseId, enrollment)
+      await this.availability(course.dripType, courseId, enrollment, user.id)
     ).find((item) => item.moduleId === moduleId);
 
     if (mine?.locked) {
@@ -192,6 +192,7 @@ export class CourseAccessService {
     });
 
     let items: ModuleAvailability[];
+    let requirements: Awaited<ReturnType<CourseAccessRepository['moduleRequirements']>> = [];
 
     if (this.canManage(user, course)) {
       items = modules.map((m) => open(m.id));
@@ -208,11 +209,19 @@ export class CourseAccessService {
             : { ...open(m.id), locked: true, reason: 'NOT_ENROLLED' },
         );
       } else {
-        items = await this.availability(course.dripType, courseId, enrollment);
+        items = await this.availability(course.dripType, courseId, enrollment, user.id);
+        requirements = await this.repository.moduleRequirements(user.id, enrollment.id, courseId);
       }
     }
 
-    return { dripType: course.dripType, modules: items };
+    // Qué le falta en cada módulo (lecciones, evaluaciones y tareas), para que el estudiante lo vea claro.
+    return {
+      dripType: course.dripType,
+      modules: items.map((item) => ({
+        ...item,
+        requirements: requirements.find((r) => r.moduleId === item.moduleId)?.requirements ?? [],
+      })),
+    };
   }
 
   async courseIdOfModule(moduleId: number): Promise<number> {
@@ -266,10 +275,11 @@ export class CourseAccessService {
     type: DripKind,
     courseId: number,
     enrollment: { id: number; enrolledAt: Date },
+    userId: number,
   ) {
     const [modules, completed] = await Promise.all([
       this.repository.findDripModules(courseId),
-      this.repository.completedModuleIds(enrollment.id, courseId),
+      this.repository.completedModuleIds(userId, enrollment.id, courseId),
     ]);
 
     return computeAvailability(type, modules, {
