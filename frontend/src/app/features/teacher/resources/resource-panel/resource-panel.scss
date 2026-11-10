@@ -113,3 +113,64 @@ h3 {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.file-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: -4px 0 12px;
+}
+
+.file-or {
+  font-size: 0.8rem;
+  color: var(--muted, #647a9d);
+}
+
+.file-btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-btn.is-disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.file-progress {
+  height: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: #e1eaf6;
+  border-radius: 999px;
+}
+
+.file-progress span {
+  display: block;
+  height: 100%;
+  background: #1463d8;
+  transition: width 0.2s;
+}
+
+.file-chip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: #17703d;
+  background: #def6e7;
+  border-radius: 10px;
+}

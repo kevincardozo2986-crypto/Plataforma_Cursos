@@ -46,7 +46,7 @@ export function ensureUploadDirs(): string {
 }
 
 /** Nombre con el que se guardan los archivos: 32 caracteres hexadecimales + extensión. */
-export const STORED_NAME = /^[a-f0-9]{32}\.(?:png|jpe?g|gif|webp|mp4|mov|webm|ogv|ogg)$/;
+export const STORED_NAME = /^[a-f0-9]{32}\.(?:png|jpe?g|gif|webp|mp4|mov|webm|ogv|ogg|pdf|mp3|m4a|wav|aac|flac)$/;
 
 export function extensionOf(originalName: string): string {
   return extname(originalName).slice(1).toLowerCase();

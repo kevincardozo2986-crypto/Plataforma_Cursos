@@ -53,3 +53,31 @@ export const ALLOWED_EXTENSIONS: Record<MediaKind, string[]> = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
   video: ['mp4', 'mov', 'webm', 'ogv', 'ogg'],
 };
+
+/** Material de una lección que no es imagen ni video: PDF y audio. */
+export const MATERIAL_EXTENSIONS = ['pdf', 'mp3', 'm4a', 'wav', 'aac', 'flac', 'ogg'];
+
+/**
+ * Reconoce un PDF o un audio por sus primeros bytes. Devuelve las extensiones que puede llevar
+ * (null si no es un formato permitido). Un .ogg puede ser audio (Vorbis/Opus) o video: aquí se acepta como audio.
+ */
+export function detectMaterial(head: Buffer): string[] | null {
+  if (head.length < 12) {
+    return null;
+  }
+
+  const text = (from: number, to: number) => head.toString('latin1', from, to);
+
+  if (text(0, 5) === '%PDF-') return ['pdf'];
+  if (text(0, 3) === 'ID3') return ['mp3'];
+  // 11 bits de sincronía: con «layer» 00 es un cuadro ADTS (aac); con otro valor, un cuadro MPEG de audio (mp3 sin etiqueta).
+  if (head[0] === 0xff && (head[1] & 0xe0) === 0xe0) {
+    return (head[1] & 0x06) === 0 ? ['aac'] : ['mp3'];
+  }
+  if (text(4, 8) === 'ftyp' && (text(8, 12) === 'M4A ' || text(8, 12) === 'M4B ')) return ['m4a'];
+  if (text(0, 4) === 'RIFF' && text(8, 12) === 'WAVE') return ['wav'];
+  if (text(0, 4) === 'fLaC') return ['flac'];
+  if (text(0, 4) === 'OggS') return ['ogg'];
+
+  return null;
+}

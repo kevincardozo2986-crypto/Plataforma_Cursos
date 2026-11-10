@@ -59,6 +59,20 @@
                 <button
                   type="button"
                   class="panel-btn panel-btn--ghost panel-btn--sm"
+                  [disabled]="previewing() === file.name"
+                  (click)="openPreview(file)"
+                >
+                  {{
+                    previewing() === file.name
+                      ? ('Abriendo…' | t)
+                      : preview()?.name === file.name
+                        ? ('Cerrar vista previa' | t)
+                        : ('Vista previa' | t)
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="panel-btn panel-btn--ghost panel-btn--sm"
                   [disabled]="downloading() === file.name"
                   (click)="download(file)"
                 >
@@ -67,6 +81,30 @@
               </li>
             }
           </ul>
+
+          @if (preview(); as view) {
+            <div class="preview">
+              @switch (view.kind) {
+                @case ('pdf') {
+                  <iframe class="preview-frame" [src]="view.url" [title]="'Vista previa' | t"></iframe>
+                }
+                @case ('image') {
+                  <img class="preview-image" [src]="view.raw" [alt]="'Vista previa' | t" />
+                }
+                @case ('html') {
+                  <div class="preview-doc" [innerHTML]="view.html"></div>
+                }
+                @case ('text') {
+                  <pre class="preview-text">{{ view.text }}</pre>
+                }
+                @default {
+                  <p class="panel-muted">
+                    {{ 'Este formato (por ejemplo .doc, .xls o .ppt antiguos) no se puede ver aquí: usa Descargar.' | t }}
+                  </p>
+                }
+              }
+            </div>
+          }
         } @else if (!data.text) {
           <p class="panel-muted">{{ 'La entrega no trae contenido.' | t }}</p>
         }

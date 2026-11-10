@@ -222,3 +222,51 @@ h2 {
     align-items: flex-start;
   }
 }
+
+.preview {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+}
+
+.preview-frame {
+  display: block;
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  border: 0;
+}
+
+.preview-image {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+}
+
+.preview-text {
+  max-height: 60vh;
+  padding: 12px 14px;
+  margin: 0;
+  overflow: auto;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.preview-doc {
+  max-height: 70vh;
+  padding: 14px 18px;
+  overflow: auto;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.preview-doc :is(table) {
+  border-collapse: collapse;
+}
+
+.preview-doc :is(td, th) {
+  padding: 4px 8px;
+  border: 1px solid #dbe4ef;
+}

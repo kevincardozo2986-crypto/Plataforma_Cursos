@@ -2,7 +2,7 @@
   <h2>{{ 'Recursos de la lección' | t }}</h2>
   <p class="panel-muted intro">
     {{
-      'Agrega enlaces a PDF, videos, audios, imágenes y actividades interactivas para tus estudiantes.'
+      'Agrega enlaces o sube archivos (PDF, videos, audios, imágenes) y actividades interactivas para tus estudiantes.'
         | t
     }}
   </p>
@@ -104,6 +104,42 @@
         <p class="panel-field-error">{{ fieldError('url') }}</p>
       }
     </div>
+
+    <div class="file-pick">
+      <span class="file-or">{{ 'o sube un archivo desde tu computador' | t }}</span>
+      <label class="panel-btn panel-btn--ghost panel-btn--sm file-btn" [class.is-disabled]="uploading()">
+        <input
+          type="file"
+          class="file-input"
+          [accept]="accept"
+          [disabled]="uploading()"
+          (change)="onFile($event)"
+        />
+        {{ uploading() ? ('Subiendo…' | t) + ' ' + percent() + '%' : ('Elegir archivo' | t) }}
+      </label>
+      <small class="panel-muted">{{ 'PDF, audio, imagen o video.' | t }}</small>
+    </div>
+    @if (uploading()) {
+      <div class="file-progress" role="progressbar" [attr.aria-valuenow]="percent()" aria-valuemin="0" aria-valuemax="100">
+        <span [style.width.%]="percent()"></span>
+      </div>
+    }
+    @if (uploaded(); as file) {
+      <p class="file-chip" role="status">
+        <span>✓ {{ file.name }} · {{ file.size }}</span>
+        <button type="button" class="panel-btn panel-btn--ghost panel-btn--sm" (click)="clearFile()">
+          {{ 'Quitar' | t }}
+        </button>
+      </p>
+      @if (file.processing) {
+        <p class="panel-muted">
+          {{ 'El video se está optimizando y estará disponible para los estudiantes en unos minutos.' | t }}
+        </p>
+      }
+    }
+    @if (uploadError()) {
+      <p class="panel-field-error" role="alert">{{ uploadError() }}</p>
+    }
 
     <div class="form-actions">
       @if (editingId() !== null) {

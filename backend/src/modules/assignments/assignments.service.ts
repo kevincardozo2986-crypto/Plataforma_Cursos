@@ -181,6 +181,21 @@ export class AssignmentsService {
       this.repository.namesOf(current?.files).filter((name) => !kept.has(name)),
     );
 
+    // El docente (y sus co-docentes) se enteran de que hay una entrega para calificar.
+    const course = await this.access.getCourseOrThrow(courseId);
+
+    await this.notifications.notify(
+      [course.teacherId, ...course.instructorIds],
+      {
+        type: 'NEW_SUBMISSION',
+        title: `${current ? 'Nueva versión de' : 'Nueva entrega de'} ${user.firstName} ${user.lastName}`,
+        message: `«${assignment.title}» en «${course.title}» está lista para calificar`,
+        courseId,
+        refId: saved.id,
+      },
+      user.id,
+    );
+
     return this.toStudentSubmission(saved);
   }
 

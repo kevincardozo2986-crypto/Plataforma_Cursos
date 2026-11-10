@@ -300,3 +300,23 @@ textarea:focus-visible {
     flex-direction: column;
   }
 }
+
+.delivered {
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: #e6f7ed;
+  border: 1px solid #9fdcb7;
+  border-radius: 12px;
+}
+
+.delivered h4 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 6px;
+  color: #17703d;
+}
+
+.delivered p {
+  margin: 0 0 8px;
+}

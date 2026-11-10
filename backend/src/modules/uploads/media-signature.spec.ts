@@ -1,4 +1,4 @@
-import { ALLOWED_EXTENSIONS, detectMedia } from './media-signature.js';
+import { ALLOWED_EXTENSIONS, detectMaterial, detectMedia } from './media-signature.js';
 
 const bytes = (...values: (number | string)[]) =>
   Buffer.concat(
@@ -58,5 +58,29 @@ describe('ALLOWED_EXTENSIONS', () => {
     expect(ALLOWED_EXTENSIONS.video).not.toContain('png');
     expect(ALLOWED_EXTENSIONS.image).toContain('webp');
     expect(ALLOWED_EXTENSIONS.image).not.toContain('mp4');
+  });
+});
+
+describe('detectMaterial', () => {
+  const pad = (text: string, offset = 0) => Buffer.concat([Buffer.alloc(offset), Buffer.from(text, 'latin1'), Buffer.alloc(16)]);
+
+  it('reconoce un PDF, un mp3 con etiqueta, un WAV, un FLAC, un OGG y un M4A', () => {
+    expect(detectMaterial(pad('%PDF-1.7'))).toEqual(['pdf']);
+    expect(detectMaterial(pad('ID3\x04'))).toEqual(['mp3']);
+    expect(detectMaterial(Buffer.concat([Buffer.from('RIFF\0\0\0\0WAVE', 'latin1'), Buffer.alloc(8)]))).toEqual(['wav']);
+    expect(detectMaterial(pad('fLaC'))).toEqual(['flac']);
+    expect(detectMaterial(pad('OggS'))).toEqual(['ogg']);
+    expect(detectMaterial(Buffer.concat([Buffer.alloc(4), Buffer.from('ftypM4A ', 'latin1'), Buffer.alloc(8)]))).toEqual(['m4a']);
+  });
+
+  it('reconoce un mp3 sin etiqueta por su sincronía', () => {
+    expect(detectMaterial(Buffer.concat([Buffer.from([0xff, 0xfb, 0x90, 0x00]), Buffer.alloc(16)]))).toEqual(['mp3']);
+    expect(detectMaterial(Buffer.concat([Buffer.from([0xff, 0xf1, 0x50, 0x80]), Buffer.alloc(16)]))).toEqual(['aac']);
+  });
+
+  it('rechaza lo que no es PDF ni audio (un ejecutable, una imagen, texto) y archivos muy cortos', () => {
+    expect(detectMaterial(pad('MZ\x90\x00'))).toBeNull();
+    expect(detectMaterial(Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.alloc(16)]))).toBeNull();
+    expect(detectMaterial(Buffer.from('hola'))).toBeNull();
   });
 });

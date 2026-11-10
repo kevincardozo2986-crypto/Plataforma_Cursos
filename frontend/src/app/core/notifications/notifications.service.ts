@@ -8,6 +8,7 @@ export type NotificationType =
   | 'NEW_REPLY'
   | 'NEW_REVIEW'
   | 'GRADED_ASSIGNMENT'
+  | 'NEW_SUBMISSION'
   | 'GRADED_QUIZ'
   | 'INSTRUCTOR_ADDED'
   | 'CERTIFICATE_ISSUED';

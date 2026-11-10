@@ -8,7 +8,9 @@ export type UploadEvent =
   { type: 'progress'; percent: number } | { type: 'done'; url: string; name: string; size: number };
 
 /** `document`: documentos privados (PDF, Word, Excel…) para tareas y entregas. */
-const ENDPOINTS: Record<UploadKind | 'document', string> = {
+const ENDPOINTS: Record<UploadKind | 'document' | 'material', string> = {
+  /** PDF y audio de una lección (públicos, con nombre aleatorio). */
+  material: '/api/uploads/materials',
   image: '/api/uploads/images',
   video: '/api/uploads/videos',
   document: '/api/uploads/documents',
@@ -33,7 +35,7 @@ function readToken(): string | null {
  */
 @Injectable({ providedIn: 'root' })
 export class UploadsService {
-  upload(kind: UploadKind | 'document', file: File): Observable<UploadEvent> {
+  upload(kind: UploadKind | 'document' | 'material', file: File): Observable<UploadEvent> {
     return new Observable<UploadEvent>((subscriber) => {
       const xhr = new XMLHttpRequest();
       const form = new FormData();

@@ -103,14 +103,39 @@
                     </div>
                   </section>
                 } @else {
-                  <p class="status-line">
-                    <app-icon name="clock" [size]="15" />
-                    Entregaste el {{ sent.submittedAt | date: "d ('de' | t) MMMM, h:mm a" }}
-                    @if (sent.late) {
-                      <span class="late"> {{ '· fuera de plazo' | t }}</span>
+                  <section class="delivered" role="status" [attr.aria-label]="'Tu tarea fue entregada' | t">
+                    <h4>
+                      <app-icon name="check-circle" [size]="18" />
+                      {{ 'Tarea entregada' | t }}
+                      @if (sent.late) {
+                        <span class="late"> {{ '· fuera de plazo' | t }}</span>
+                      }
+                    </h4>
+                    <p>
+                      {{ 'Entregaste el' | t }} {{ sent.submittedAt | date: "d ('de' | t) MMMM, h:mm a" }}.
+                      {{ 'Está en revisión: tu docente ya recibió el aviso para calificarla.' | t }}
+                    </p>
+                    @if (sent.text) {
+                      <p class="sent-text">{{ sent.text }}</p>
                     }
-                    {{ '. Mientras no la califiquen, puedes cambiarla y volver a enviarla.' | t }}
-                  </p>
+                    @if (sent.files.length) {
+                      <ul class="files">
+                        @for (file of sent.files; track file.name) {
+                          <li>
+                            <button type="button" class="file" (click)="download(file)">
+                              <app-icon name="file" [size]="18" />
+                              <span>{{ file.originalName }}</span>
+                              <small>{{ size(file.size) }}</small>
+                              <app-icon name="download" [size]="16" />
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    }
+                    <small class="muted">
+                      {{ 'Mientras no la califiquen, puedes cambiarla y volver a enviarla.' | t }}
+                    </small>
+                  </section>
                 }
               }
 

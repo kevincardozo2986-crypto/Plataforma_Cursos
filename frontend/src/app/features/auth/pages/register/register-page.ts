@@ -1,3 +1,4 @@
+import { ToastService } from '../../../../core/feedback/toast.service';
 import { Component, inject, signal } from '@angular/core';
 
 import { Router, RouterLink } from '@angular/router';
@@ -23,6 +24,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 })
 export class RegisterPage {
   private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
   private readonly router = inject(Router);
 
@@ -47,6 +49,7 @@ export class RegisterPage {
       )
       .subscribe({
         next: () => {
+          this.toast.show('Cuenta creada correctamente. Ya puedes iniciar sesión.', 4000);
           this.router.navigate(['/login'], {
             queryParams: {
               registered: 'true',

@@ -11,7 +11,9 @@ import { FfmpegRunner } from './ffmpeg-runner.js';
 import { optimizeImage } from './image-optimizer.js';
 import {
   ALLOWED_EXTENSIONS,
+  detectMaterial,
   detectMedia,
+  MATERIAL_EXTENSIONS,
   type MediaKind,
   SIGNATURE_BYTES,
 } from './media-signature.js';
@@ -55,11 +57,18 @@ export const MAX_UPLOAD_BYTES: Record<MediaKind, number> = {
   video: 500 * MB,
 };
 
+/** Tamaño máximo de un PDF o audio de una lección. */
+export const MAX_MATERIAL_BYTES = 100 * MB;
+
 /** Tamaño máximo de un documento de una entrega. */
 export const MAX_DOCUMENT_BYTES = 20 * MB;
 
 export function acceptsExtension(kind: MediaKind, originalName: string): boolean {
   return ALLOWED_EXTENSIONS[kind].includes(extensionOf(originalName));
+}
+
+export function acceptsMaterial(originalName: string): boolean {
+  return MATERIAL_EXTENSIONS.includes(extensionOf(originalName));
 }
 
 export function acceptsDocument(originalName: string): boolean {
@@ -97,6 +106,36 @@ export class UploadsService {
     }
 
     return kind === 'image' ? this.finishImage(file) : this.finishVideo(file, extension);
+  }
+
+  /**
+   * PDF o audio para una lección: se comprueba por su contenido y se publica con nombre aleatorio
+   * (como las imágenes y los videos, se pide por su dirección). Si no es válido, se borra.
+   */
+  async finishMaterial(file: StoredFile | undefined): Promise<UploadResult> {
+    if (!file) {
+      throw new BadRequestException('Adjunta un archivo en el campo «file»');
+    }
+
+    const extension = extensionOf(file.originalname);
+    const detected = detectMaterial(await this.readHead(file.path, SIGNATURE_BYTES));
+
+    if (!detected || !detected.includes(extension)) {
+      await rm(file.path, { force: true });
+
+      throw new BadRequestException('El archivo no es un PDF o un audio válido (PDF, MP3, M4A, WAV, AAC, FLAC u OGG)');
+    }
+
+    await rename(file.path, join(uploadsDir(), file.filename));
+
+    return {
+      url: `/api/uploads/${file.filename}`,
+      name: file.originalname,
+      size: file.size,
+      originalSize: file.size,
+      status: 'ready',
+      optimized: false,
+    };
   }
 
   /** Ruta absoluta de un archivo subido, o null si el nombre es inválido o no existe. */

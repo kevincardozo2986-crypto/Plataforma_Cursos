@@ -5,6 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 
+import { ToastService } from '../../../../core/feedback/toast.service';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { moveItem } from '../../../../core/utils/reorder';
 import { Assignment, TeacherAssignmentsService } from '../../assignments/assignments.service';
@@ -39,6 +40,7 @@ import { TeacherModulesService } from '../modules.service';
 })
 export class ModuleCard {
   private readonly modulesApi = inject(TeacherModulesService);
+  private readonly toast = inject(ToastService);
   private readonly lessonsApi = inject(TeacherLessonsService);
   private readonly evaluationsApi = inject(TeacherEvaluationsService);
   private readonly assignmentsApi = inject(TeacherAssignmentsService);
@@ -180,13 +182,12 @@ export class ModuleCard {
       }),
       'No pudimos guardar el módulo.',
       () => this.editing.set(false),
+      'Módulo guardado correctamente',
     );
   }
 
   removeModule(): void {
-    this.run(this.modulesApi.remove(this.courseModule().id), 'No pudimos eliminar el módulo.', () =>
-      this.confirmDelete.set(false),
-    );
+    this.run(this.modulesApi.remove(this.courseModule().id), 'No pudimos eliminar el módulo.', () => this.confirmDelete.set(false), 'Módulo eliminado');
   }
 
   removeLesson(lesson: Lesson): void {
@@ -214,7 +215,12 @@ export class ModuleCard {
     return minutes ? `${minutes} min` : '';
   }
 
-  private run(request: Observable<unknown>, fallback: string, onSuccess?: () => void): void {
+  private run(
+    request: Observable<unknown>,
+    fallback: string,
+    onSuccess?: () => void,
+    saved?: string,
+  ): void {
     this.error.set('');
     this.busy.set(true);
 
@@ -222,6 +228,7 @@ export class ModuleCard {
       next: () => {
         this.busy.set(false);
         onSuccess?.();
+        if (saved) this.toast.show(saved);
         this.changed.emit();
       },
       error: (error: unknown) => {

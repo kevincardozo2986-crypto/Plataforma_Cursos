@@ -1,9 +1,18 @@
 import { TranslatePipe } from '../../../../core/i18n/translate.pipe';
 import { PublicUrlPipe } from '../../../../core/http/public-url.pipe';
 import { Component, inject, input, linkedSignal, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { apiErrorMessage } from '../../../../core/http/api-error';
+import { UploadsService } from '../../../../core/uploads/uploads.service';
+import {
+  RESOURCE_ACCEPT,
+  formatSize,
+  resourceFileKind,
+  resourceTypeOf,
+  validateResourceFile,
+} from '../../../../core/uploads/upload-rules';
 import { RESOURCE_LABELS, RESOURCE_TYPES, Resource, ResourceType } from '../resources.models';
 import { TeacherResourcesService } from '../resources.service';
 
@@ -16,6 +25,15 @@ import { TeacherResourcesService } from '../resources.service';
 })
 export class ResourcePanel {
   private readonly api = inject(TeacherResourcesService);
+  private readonly uploads = inject(UploadsService);
+  private upload?: Subscription;
+
+  readonly accept = RESOURCE_ACCEPT;
+  readonly uploading = signal(false);
+  readonly percent = signal(0);
+  readonly uploadError = signal('');
+  /** El archivo que se subió desde el computador (nombre y peso), o null si el recurso es un enlace. */
+  readonly uploaded = signal<{ name: string; size: string; processing: boolean } | null>(null);
 
   readonly lessonId = input.required<number>();
   readonly initial = input.required<Resource[]>();
@@ -40,7 +58,11 @@ export class ResourcePanel {
     type: new FormControl<ResourceType>('LINK', { nonNullable: true }),
     url: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/^https?:\/\/\S+$/i)],
+      validators: [
+        Validators.required,
+        // Un enlace http(s) o un archivo subido a la plataforma.
+        Validators.pattern(/^(https?:\/\/\S+|\/api\/uploads\/[a-f0-9]{32}\.[a-z0-9]+)$/i),
+      ],
     }),
   });
 
@@ -60,14 +82,76 @@ export class ResourcePanel {
       : 'El título debe tener entre 2 y 150 caracteres.';
   }
 
+  /** Sube un archivo del computador y deja su dirección en el formulario (con su tipo y, si falta, el título). */
+  onFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    input.value = '';
+
+    if (!file) return;
+
+    this.uploadError.set('');
+
+    const problem = validateResourceFile(file);
+
+    if (problem) {
+      this.uploadError.set(problem);
+      return;
+    }
+
+    const kind = resourceFileKind(file.name)!;
+
+    this.upload?.unsubscribe();
+    this.uploading.set(true);
+    this.percent.set(0);
+    this.upload = this.uploads.upload(kind, file).subscribe({
+      next: (event) => {
+        if (event.type === 'progress') {
+          this.percent.set(event.percent);
+          return;
+        }
+
+        const { title, type, url } = this.form.controls;
+
+        url.setValue(event.url);
+        url.markAsDirty();
+        type.setValue(resourceTypeOf(file.name, kind));
+
+        if (!title.value.trim()) {
+          title.setValue(file.name.replace(/\.[^.]+$/, '').slice(0, 150));
+        }
+
+        this.uploaded.set({ name: file.name, size: formatSize(file.size), processing: kind === 'video' });
+        this.uploading.set(false);
+      },
+      error: (error: unknown) => {
+        this.uploading.set(false);
+        this.uploadError.set(error instanceof Error ? error.message : 'No pudimos subir el archivo.');
+      },
+    });
+  }
+
+  /** Quita el archivo subido para escribir un enlace en su lugar. */
+  clearFile(): void {
+    this.uploaded.set(null);
+    this.form.controls.url.setValue('');
+  }
+
   startEdit(resource: Resource): void {
     this.error.set('');
     this.editingId.set(resource.id);
+    this.uploaded.set(null);
+    this.uploadError.set('');
     this.form.reset({ title: resource.title, type: resource.type, url: resource.url });
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
+    this.upload?.unsubscribe();
+    this.uploading.set(false);
+    this.uploaded.set(null);
+    this.uploadError.set('');
     this.form.reset({ title: '', type: 'LINK', url: '' });
   }
 

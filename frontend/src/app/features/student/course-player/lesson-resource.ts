@@ -2,7 +2,8 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { publicUrl } from '../../../core/http/public-url';
 import { PublicUrlPipe } from '../../../core/http/public-url.pipe';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 export interface LearningResource {
   id: number;
   title: string;
@@ -43,14 +44,22 @@ export function allowedMaterialUrl(value: string): boolean {
       @if (allowed()) {
         @switch (kind()) {
           @case ('pdf') {
-            <iframe
-              class="document"
-              [src]="frameUrl() | publicUrl"
-              [title]="resource().title"
-              sandbox="allow-same-origin"
-              referrerpolicy="no-referrer"
-            ></iframe>
-            <p>Si el documento no aparece, puedes abrirlo en otra pestaña.</p>
+            @if (pdfSrc(); as src) {
+              <iframe
+                class="document"
+                [src]="src"
+                [title]="resource().title"
+                referrerpolicy="no-referrer"
+              ></iframe>
+            } @else {
+              <p role="status">Cargando el documento…</p>
+            }
+            <p>
+              Si el documento no aparece,
+              <a [href]="resource().url | publicUrl" target="_blank" rel="noopener noreferrer"
+                >ábrelo en otra pestaña</a
+              >.
+            </p>
           }
           @case ('audio') {
             <div class="audio-cover">
@@ -222,7 +231,39 @@ export class LessonResource {
       this.resource();
       this.failed.set(false);
     });
+
+    // Un PDF subido a la plataforma se baja y se muestra como archivo local: así el visor de Chrome
+    // no se bloquea con los encabezados de seguridad del servidor ni con un iframe en «sandbox».
+    effect((onCleanup) => {
+      const { url } = this.resource();
+
+      this.localPdf.set(null);
+
+      if (this.kind() !== 'pdf' || !url.startsWith('/api/')) return;
+
+      let objectUrl: string | null = null;
+      const request = this.http
+        .get(publicUrl(url), { responseType: 'blob' })
+        .subscribe({
+          next: (blob) => {
+            objectUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+            this.localPdf.set(this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl));
+          },
+          error: () => this.failed.set(true),
+        });
+
+      onCleanup(() => {
+        request.unsubscribe();
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      });
+    });
   }
+  private readonly http = inject(HttpClient);
+  private readonly localPdf = signal<SafeResourceUrl | null>(null);
+  /** Lo que se muestra en el visor de PDF: el archivo local, o el enlace externo tal cual. */
+  readonly pdfSrc = computed(() =>
+    this.resource().url.startsWith('/api/') ? this.localPdf() : this.frameUrl(),
+  );
   readonly resource = input.required<LearningResource>();
   private readonly sanitizer = inject(DomSanitizer);
   readonly kind = computed(() => materialKind(this.resource()));

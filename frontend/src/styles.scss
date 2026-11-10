@@ -105,3 +105,9 @@ html:is(.a11y-dark, .a11y-contrast) .login-card .error-message {
   max-width: 100%;
   border: 0;
 }
+
+/* Los mensajes de éxito se muestran en el aviso emergente (app-toast), no en la página. */
+.panel-alert--ok,
+p.success[role='status'] {
+  display: none !important;
+}

@@ -46,6 +46,7 @@ function build() {
   };
   const access = {
     courseIdOfAssignment: vi.fn().mockResolvedValue(10),
+    getCourseOrThrow: vi.fn().mockResolvedValue({ id: 10, title: 'Curso', teacherId: 2, instructorIds: [3] }),
     courseIdOfModule: vi.fn().mockResolvedValue(10),
     assertCanView: vi.fn().mockResolvedValue({}),
     assertCanManage: vi.fn().mockResolvedValue({}),
@@ -89,6 +90,18 @@ describe('AssignmentsService', () => {
         assignmentId: 1, userId: 5, text: 'Mi respuesta', files: [], late: false,
       });
       expect(result).toMatchObject({ status: 'SUBMITTED', text: 'Mi respuesta', files: [] });
+    });
+
+    it('avisa al docente y a los co-docentes de la entrega, no al propio estudiante', async () => {
+      const { service, notifications } = build();
+
+      await service.submit(student, 1, { text: 'hola' }, NOW);
+
+      expect(notifications.notify).toHaveBeenCalledWith(
+        [2, 3],
+        expect.objectContaining({ type: 'NEW_SUBMISSION', courseId: 10 }),
+        5,
+      );
     });
 
     it('adjunta archivos con su nombre original y una URL de descarga', async () => {

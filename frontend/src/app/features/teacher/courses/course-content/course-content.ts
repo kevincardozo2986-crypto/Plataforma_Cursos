@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
+import { ToastService } from '../../../../core/feedback/toast.service';
 import { apiErrorMessage } from '../../../../core/http/api-error';
 import { moveItem } from '../../../../core/utils/reorder';
 import { hasVisibleContent } from '../../../../core/html/html-safe';
@@ -41,6 +42,7 @@ import { CourseWizardService } from '../course-wizard/course-wizard.service';
 export class CourseContent {
   private readonly coursesApi = inject(TeacherCoursesService);
   private readonly modulesApi = inject(TeacherModulesService);
+  private readonly toast = inject(ToastService);
 
   /** true cuando lo muestra el asistente: sin cabecera ni barra de estado propias. */
   readonly embedded = input(false);
@@ -148,6 +150,7 @@ export class CourseContent {
         next: () => {
           this.busy.set(false);
           this.adding.set(false);
+          this.toast.show('Módulo creado correctamente');
           this.load();
         },
         error: (error: unknown) => {

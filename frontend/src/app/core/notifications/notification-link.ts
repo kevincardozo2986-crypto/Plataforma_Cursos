@@ -20,6 +20,9 @@ export function notificationLink(
       case 'NEW_REPLY':
         // `refId` es la pregunta o el comentario (el hilo).
         return refId ? ['/teacher/discussions', String(refId)] : ['/teacher/discussions'];
+      case 'NEW_SUBMISSION':
+        // `refId` es la entrega: abre directo la pantalla para calificarla.
+        return refId ? ['/teacher/assignments', String(refId)] : ['/teacher/assignments'];
       case 'NEW_REVIEW':
         return ['/teacher/reviews'];
       case 'ANNOUNCEMENT':

@@ -25,6 +25,8 @@ import type { MediaKind } from './media-signature.js';
 import { ensurePrivateDir, ensureUploadDirs, newStoredName } from './upload-paths.js';
 import {
   acceptsDocument,
+  acceptsMaterial,
+  MAX_MATERIAL_BYTES,
   acceptsExtension,
   MAX_DOCUMENT_BYTES,
   MAX_UPLOAD_BYTES,
@@ -70,6 +72,30 @@ function uploadOptions(kind: MediaKind) {
     },
   };
 }
+
+/** PDF y audio de una lección: caen en la carpeta interna hasta que se comprueba su contenido. */
+const materialOptions = {
+  storage: diskStorage({
+    destination: (_req: unknown, _file: unknown, done: Callback<string>) => {
+      try {
+        done(null, ensureUploadDirs());
+      } catch (error) {
+        done(error as Error, '');
+      }
+    },
+    filename: (_req: unknown, file: { originalname: string }, done: Callback<string>) =>
+      done(null, newStoredName(file.originalname)),
+  }),
+  limits: { fileSize: MAX_MATERIAL_BYTES, files: 1 },
+  fileFilter: (_req: unknown, file: { originalname: string }, done: Callback<boolean>) => {
+    if (acceptsMaterial(file.originalname)) {
+      done(null, true);
+      return;
+    }
+
+    done(new BadRequestException('Formato no permitido: usa PDF, MP3, M4A, WAV, AAC, FLAC u OGG'), false);
+  },
+};
 
 /** Documentos de las entregas: caen directo en la carpeta privada, con nombre aleatorio. */
 const documentOptions = {
@@ -119,6 +145,15 @@ export class UploadsController {
     @UploadedFile() file?: StoredFile,
   ) {
     return this.uploads.finishDocument(file, user.id);
+  }
+
+  /** PDF o audio para el material de una lección (hasta 100 MB). Solo docentes y administradores. */
+  @Post('materials')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @UseInterceptors(FileInterceptor('file', materialOptions))
+  uploadMaterial(@UploadedFile() file?: StoredFile) {
+    return this.uploads.finishMaterial(file);
   }
 
   @Post('avatars')
