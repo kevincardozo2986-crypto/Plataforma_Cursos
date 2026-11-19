@@ -217,6 +217,11 @@ export class CoursePlayer {
    */
   readonly assessmentView = signal<Assessment | 'all' | null>(null);
   readonly assessments = computed(() => this.graduation()?.assessments ?? []);
+  /**
+   * Módulo cuyas lecciones acaba de terminar el estudiante: si tiene un cuestionario pendiente, se
+   * abre solo en cuanto llegan sus notas, para no tener que salir a buscarlo.
+   */
+  private pendingModuleQuiz: number | null = null;
   moduleAssessments(moduleId: number): Assessment[] {
     return this.assessments().filter((item) => item.moduleId === moduleId);
   }
@@ -226,9 +231,9 @@ export class CoursePlayer {
     this.focusToolOpen.set(false);
     this.activeResource.set(null);
     this.assessmentView.set(item);
-    this.element.nativeElement.querySelector('.lesson-stage')?.scrollIntoView({
+    this.element.nativeElement.querySelector<HTMLElement>('.lesson-stage')?.scrollIntoView?.({
       block: 'start',
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }
   /** Desde «Tu ruta»: abre la evaluación o la tarea que toca. */
@@ -236,6 +241,33 @@ export class CoursePlayer {
     const item = this.assessments().find((a) => a.type === target.type && a.id === target.id);
 
     this.openAssessment(item ?? 'all');
+  }
+  /** Tras completar una lección, si era la última del módulo, se deja listo su cuestionario. */
+  private queueModuleQuiz(lessonId: number, progress: LearningProgress): void {
+    const completed = new Set(progress.completedLessonIds ?? []);
+    const lesson = this.lessons().find((item) => item.id === lessonId);
+
+    if (!lesson) return;
+    const moduleLessons = this.lessons().filter((item) => item.moduleId === lesson.moduleId);
+
+    if (moduleLessons.length && moduleLessons.every((item) => completed.has(item.id))) {
+      this.pendingModuleQuiz = lesson.moduleId;
+    }
+  }
+  /**
+   * Abre el primer cuestionario del módulo que aún no está aprobado. Se espera a que lleguen las
+   * notas del curso (donde está la lista de evaluaciones) para conocer cuáles ya aprobó.
+   */
+  private openPendingModuleQuiz(): void {
+    const moduleId = this.pendingModuleQuiz;
+
+    if (moduleId === null) return;
+    this.pendingModuleQuiz = null;
+    const quiz = this.assessments().find(
+      (item) => item.moduleId === moduleId && item.type === 'evaluation' && !item.passed,
+    );
+
+    if (quiz) this.openAssessment(quiz);
   }
   /** Vuelve a pedir qué módulos están abiertos y qué falta en cada uno (sin mostrar «cargando»). */
   private refreshAvailability(): void {
@@ -378,6 +410,7 @@ export class CoursePlayer {
         this.progress.set(this.initialProgress());
         this.started.set(false);
         this.assessmentView.set(null);
+        this.pendingModuleQuiz = null;
         this.maximized.set(true);
         this.selectedId.set(null);
         this.lesson.set(null);
@@ -466,6 +499,7 @@ export class CoursePlayer {
     this.saveNote(false);
     this.lessonRequest?.unsubscribe();
     this.panelRequest?.unsubscribe();
+    this.pendingModuleQuiz = null;
     this.selectedId.set(id);
     this.lesson.set(null);
     this.activeResource.set(null);
@@ -503,10 +537,6 @@ export class CoursePlayer {
                   this.watchError.set(apiErrorMessage(e, 'No pudimos cargar tu avance del video.')),
               });
           }
-          if (!this.currentVideo())
-            this.activeResource.set(
-              lesson.resources?.find((resource) => materialKind(resource) !== 'link') ?? null,
-            );
         },
         error: (error) => this.error.set(apiErrorMessage(error, 'No pudimos abrir esta lección.')),
       });
@@ -577,6 +607,7 @@ export class CoursePlayer {
           this.refreshAvailability();
           this.watchPokCredential(state);
           if (!this.initializing()) this.applyRequestedTab();
+          this.openPendingModuleQuiz();
         },
         error: (e) =>
           this.graduationError.set(
@@ -666,7 +697,7 @@ export class CoursePlayer {
       });
   }
   openResource(resource: LearningResource): void {
-    this.activeResource.set(resource);
+    this.activeResource.update((current) => (current?.id === resource.id ? null : resource));
   }
   resourceLabel(resource: LearningResource): string {
     return {
@@ -702,6 +733,7 @@ export class CoursePlayer {
       .subscribe({
         next: (progress) => {
           this.progress.set(progress);
+          this.queueModuleQuiz(lesson.id, progress);
           this.initialize();
           this.refreshGraduation();
         },
@@ -729,9 +761,9 @@ export class CoursePlayer {
   }
   openTool(tab: Tab): void {
     this.selectTab(tab);
-    this.element.nativeElement.querySelector('#course-tools')?.scrollIntoView({
+    this.element.nativeElement.querySelector<HTMLElement>('#course-tools')?.scrollIntoView?.({
       block: 'start',
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }
   selectTab(tab: Tab): void {

@@ -974,17 +974,6 @@ textarea:focus-visible {
   }
 }
 
-.back-to-video {
-  display: block;
-  margin: 0;
-  padding: 14px 22px;
-  width: 100%;
-  text-align: left;
-  border: 0;
-  background: #eaf2ff;
-  color: #1265ed;
-  font-size: 0.75rem;
-}
 .resource-button {
   width: 100%;
   text-align: left;
@@ -1002,6 +991,12 @@ textarea:focus-visible {
 .resource-button > span:last-child {
   font-size: 0.65rem;
   color: #1265ed;
+}
+.resource-viewer {
+  margin: 10px 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .quick-tools {

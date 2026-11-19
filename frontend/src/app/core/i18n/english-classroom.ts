@@ -40,8 +40,8 @@ export const englishClassroom: Record<string, string> = {
   'El docente aún no ha agregado una descripción del curso.':
     'The teacher has not added a course description yet.',
   'Explora los materiales de la lección': 'Explore the lesson materials',
-  'Selecciona un recurso para verlo en el espacio principal sin salir del curso.':
-    'Select a resource to view it in the main area without leaving the course.',
+  'Selecciona un recurso para verlo aquí mismo, sin salir del curso.':
+    'Select a resource to view it right here without leaving the course.',
   'Ver material': 'View material',
   'Esta lección aún no tiene recursos adjuntos.': 'This lesson has no attached resources yet.',
   'Tus apuntes': 'Your notes',

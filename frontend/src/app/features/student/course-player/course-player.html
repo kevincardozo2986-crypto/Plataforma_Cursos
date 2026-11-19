@@ -196,14 +196,7 @@
             {{ lessons().length }}</span
           >
         </div>
-        @if (activeResource(); as material) {
-          <app-lesson-resource [resource]="material" />
-          @if (currentVideo()) {
-            <button class="back-to-video" (click)="activeResource.set(null)">
-              {{ '← Volver al video de la lección' | t }}
-            </button>
-          }
-        } @else if (currentVideo(); as video) {
+        @if (currentVideo(); as video) {
           <app-course-video
             [src]="video"
             [title]="current.title"
@@ -557,20 +550,28 @@
           @case ('resources') {
             <app-course-files [courseId]="+course().id" />
             <h3>{{ 'Explora los materiales de la lección' | t }}</h3>
-            <p class="empty-message">
-              {{ 'Selecciona un recurso para verlo en el espacio principal sin salir del curso.' | t }}
-            </p>
-            @for (resource of lesson()?.resources ?? []; track resource.id) {
-              <button
-                class="resource resource-button"
-                [class.resource-active]="activeResource()?.id === resource.id"
-                (click)="openResource(resource)"
-              >
-                <app-student-icon /><span
-                  >{{ resource.title }}<small>{{ resourceLabel(resource) }}</small></span
-                ><span>{{ 'Ver material' | t }} &#8593;</span>
-              </button>
-            } @empty {
+            @if (lesson()?.resources?.length) {
+              <p class="empty-message">
+                {{ 'Selecciona un recurso para verlo aquí mismo, sin salir del curso.' | t }}
+              </p>
+              @for (resource of lesson()?.resources ?? []; track resource.id) {
+                <button
+                  class="resource resource-button"
+                  [class.resource-active]="activeResource()?.id === resource.id"
+                  [attr.aria-expanded]="activeResource()?.id === resource.id"
+                  (click)="openResource(resource)"
+                >
+                  <app-student-icon /><span
+                    >{{ resource.title }}<small>{{ resourceLabel(resource) }}</small></span
+                  ><span>{{ 'Ver material' | t }} &#8593;</span>
+                </button>
+                @if (activeResource()?.id === resource.id) {
+                  <div class="resource-viewer">
+                    <app-lesson-resource [resource]="resource" />
+                  </div>
+                }
+              }
+            } @else {
               <p class="empty-message">{{ 'Esta lección aún no tiene recursos adjuntos.' | t }}</p>
             }
           }

@@ -236,6 +236,89 @@ describe('CoursePlayer', () => {
     expect(player.selectedId()).toBe(2);
     http.expectNone('/api/lessons/3');
   });
+  it('opens the pending module quiz after completing its last lesson', () => {
+    const assessments = [
+      {
+        id: 50,
+        moduleId: 10,
+        title: 'Cuestionario del módulo',
+        type: 'evaluation',
+        minimum: 60,
+        score: null,
+        passed: false,
+      },
+    ];
+    const completion = {
+      contentComplete: false,
+      gradesComplete: false,
+      eligible: false,
+      certificateEnabled: true,
+      average: null,
+      assessments,
+      certificate: null,
+    };
+    http.expectOne('/api/certificates/courses/7/completion').flush(completion);
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: false },
+      ],
+    });
+    loadLesson();
+    fixture.detectChanges();
+    player.complete();
+    http.expectOne('/api/lessons/2/complete').flush({
+      percent: 67,
+      completedLessons: 2,
+      totalLessons: 3,
+      completedLessonIds: [1, 2],
+    });
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: false },
+      ],
+    });
+    http.expectOne('/api/certificates/courses/7/completion').flush(completion);
+    http.expectOne('/api/courses/7/modules/availability').flush({
+      modules: [
+        { moduleId: 10, locked: false },
+        { moduleId: 20, locked: false },
+      ],
+    });
+    expect(player.assessmentView()).toEqual(assessments[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-quiz-taker')).toBeTruthy();
+    http
+      .expectOne('/api/evaluations/50')
+      .flush({ id: 50, title: 'Cuestionario del módulo', questions: [] });
+  });
+  it('keeps lesson resources in the materials section instead of the main stage', () => {
+    player.startCourse();
+    http.expectOne('/api/lessons/2').flush({
+      id: 2,
+      title: 'Componentes',
+      content: '<p>Contenido real</p>',
+      resources: [
+        { id: 9, title: 'Guía de estudio', url: 'https://example.com/guia.pdf', type: 'PDF' },
+      ],
+    });
+    fixture.detectChanges();
+    expect(player.activeResource()).toBeNull();
+    expect(fixture.nativeElement.querySelector('.lesson-stage app-lesson-resource')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Contenido real');
+    player.selectTab('resources');
+    fixture.detectChanges();
+    http.expectOne('/api/courses/7/files').flush([]);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.resource-button') as HTMLButtonElement;
+    expect(button.textContent).toContain('Guía de estudio');
+    button.click();
+    fixture.detectChanges();
+    expect(player.activeResource()?.id).toBe(9);
+    expect(fixture.nativeElement.querySelector('.tab-content app-lesson-resource')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.lesson-stage app-lesson-resource')).toBeNull();
+  });
   it('cancels a previous lesson request when selection changes', () => {
     player.startCourse();
     const old = http.expectOne('/api/lessons/2');
