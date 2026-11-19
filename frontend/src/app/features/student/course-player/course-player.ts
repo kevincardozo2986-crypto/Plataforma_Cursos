@@ -5,7 +5,6 @@ import { CourseVideo, VideoSample } from './course-video';
 import { CourseAssessments, Assessment } from './course-assessments';
 import { QuizTaker } from './quiz-taker';
 import { LessonResource, LearningResource, materialKind } from './lesson-resource';
-import { CourseRoadmap, RoadmapTarget, RoadmapRequirement } from './course-roadmap';
 import { CodePractice } from './code-practice';
 import { QuestionThread } from './question-thread';
 import { CourseFiles } from './course-files';
@@ -41,6 +40,13 @@ export interface LearningProgress {
   totalLessons: number;
   completedLessonIds?: number[];
   status?: string;
+}
+interface RoadmapRequirement {
+  type: 'lesson' | 'evaluation' | 'assignment';
+  id: number;
+  title: string;
+  done: boolean;
+  dueAt: string | null;
 }
 interface Availability {
   moduleId: number;
@@ -88,13 +94,7 @@ interface Graduation {
   } | null;
 }
 
-type Tab =
-  | 'practice'
-  | 'description'
-  | 'resources'
-  | 'notes'
-  | 'questions'
-  | 'announcements';
+type Tab = 'practice' | 'description' | 'resources' | 'notes' | 'questions' | 'announcements';
 
 /** Pestañas que puede pedir un aviso por la ruta (`?tab=`). */
 const REQUESTED_TABS: Record<string, Tab> = {
@@ -104,7 +104,6 @@ const REQUESTED_TABS: Record<string, Tab> = {
 @Component({
   selector: 'app-course-player',
   imports: [
-    CourseRoadmap,
     QuizTaker,
     TranslatePipe,
     PublicUrlPipe,
@@ -152,9 +151,7 @@ export class CoursePlayer {
     event.preventDefault();
     if (this.modulesOpen()) {
       this.modulesOpen.set(false);
-      this.element.nativeElement
-        .querySelector<HTMLButtonElement>('.focus-modules-button')
-        ?.focus();
+      this.element.nativeElement.querySelector<HTMLButtonElement>('.focus-modules-button')?.focus();
     } else if (this.focusToolOpen()) {
       this.closeFocusPanels();
     }
@@ -236,12 +233,6 @@ export class CoursePlayer {
       behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }
-  /** Desde «Tu ruta»: abre la evaluación o la tarea que toca. */
-  goAssessment(target: RoadmapTarget): void {
-    const item = this.assessments().find((a) => a.type === target.type && a.id === target.id);
-
-    this.openAssessment(item ?? 'all');
-  }
   /** Tras completar una lección, si era la última del módulo, se deja listo su cuestionario. */
   private queueModuleQuiz(lessonId: number, progress: LearningProgress): void {
     const completed = new Set(progress.completedLessonIds ?? []);
@@ -272,7 +263,9 @@ export class CoursePlayer {
   /** Vuelve a pedir qué módulos están abiertos y qué falta en cada uno (sin mostrar «cargando»). */
   private refreshAvailability(): void {
     this.http
-      .get<{ modules: Availability[] }>('/api/courses/' + this.course().id + '/modules/availability')
+      .get<{ modules: Availability[] }>(
+        '/api/courses/' + this.course().id + '/modules/availability',
+      )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ next: (data) => this.availability.set(data.modules), error: () => undefined });
   }
@@ -292,10 +285,7 @@ export class CoursePlayer {
   );
   /** Al terminar todas las lecciones el certificado aparece en el escenario, sin abrir el panel. */
   readonly showCertificateBanner = computed(
-    () =>
-      this.started() &&
-      this.progress().percent === 100 &&
-      this.progress().totalLessons > 0,
+    () => this.started() && this.progress().percent === 100 && this.progress().totalLessons > 0,
   );
   readonly progress = signal<LearningProgress>({
     percent: 0,
@@ -455,7 +445,8 @@ export class CoursePlayer {
   }
   /** ¿Ya cumplió todo lo que pide el módulo (lecciones, evaluaciones y tareas)? */
   moduleDone(moduleId: number): boolean {
-    const items = this.availability().find((module) => module.moduleId === moduleId)?.requirements ?? [];
+    const items =
+      this.availability().find((module) => module.moduleId === moduleId)?.requirements ?? [];
 
     return items.length > 0 && items.every((item) => item.done);
   }

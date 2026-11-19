@@ -2,20 +2,114 @@
 
 /* Certificado integrado al curso: una sección más del escenario (sin tarjeta propia),
    con los mismos colores y tipografía del aula. */
-.certificate-banner{display:flex;align-items:center;gap:14px;margin:0;padding:18px 22px;border-top:1px solid #ffffff2b;background:transparent;color:#eaf2fb}
-.certificate-banner__icon{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;color:#09b8c6}
-.certificate-banner__icon app-student-icon{width:26px;height:26px}
-.certificate-banner__body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
-.certificate-banner__body strong{font-size:1rem;font-weight:800;letter-spacing:-.02em;line-height:1.3}
-.certificate-banner__body span{font-size:.82rem;line-height:1.5;color:#aebfd8}
-.certificate-banner__action{display:flex;flex-shrink:0}
-.certificate-banner__cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 16px;border:0;border-radius:10px;background:#195be4;color:#fff;font-size:.8rem;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
-.certificate-banner__cta:hover{background:#0756cc}
-app-course-player a.certificate-banner__cta,app-course-player a.certificate-banner__cta:visited{color:#fff}
-.certificate-banner__cta:disabled{opacity:.65;cursor:default}
-.certificate-banner__cta app-student-icon{width:16px;height:16px}
-.certificate-banner__ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #ffffff59;border-radius:10px;background:transparent;color:#eaf2fb;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap}
-@media (max-width:700px){.certificate-banner{flex-wrap:wrap;padding:16px 18px}.certificate-banner__icon{width:34px;height:34px}.certificate-banner__action{flex-basis:100%}.certificate-banner__cta,.certificate-banner__ghost{width:100%}}
+.certificate-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 18px 22px;
+  border-top: 1px solid #ffffff2b;
+  background: transparent;
+  color: #eaf2fb;
+}
+.certificate-banner__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: #09b8c6;
+}
+.certificate-banner__icon app-student-icon {
+  width: 26px;
+  height: 26px;
+}
+.certificate-banner__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.certificate-banner__body strong {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.certificate-banner__body span {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #aebfd8;
+}
+.certificate-banner__action {
+  display: flex;
+  flex-shrink: 0;
+}
+.certificate-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #195be4;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.certificate-banner__cta:hover {
+  background: #0756cc;
+}
+app-course-player a.certificate-banner__cta,
+app-course-player a.certificate-banner__cta:visited {
+  color: #fff;
+}
+.certificate-banner__cta:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.certificate-banner__cta app-student-icon {
+  width: 16px;
+  height: 16px;
+}
+.certificate-banner__ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #ffffff59;
+  border-radius: 10px;
+  background: transparent;
+  color: #eaf2fb;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .certificate-banner {
+    flex-wrap: wrap;
+    padding: 16px 18px;
+  }
+  .certificate-banner__icon {
+    width: 34px;
+    height: 34px;
+  }
+  .certificate-banner__action {
+    flex-basis: 100%;
+  }
+  .certificate-banner__cta,
+  .certificate-banner__ghost {
+    width: 100%;
+  }
+}
 app-course-player {
   .classroom-actions {
     display: flex;
@@ -110,6 +204,22 @@ app-course-player {
     .focus-rail app-student-icon {
       width: 19px;
       height: 19px;
+    }
+    .focus-rail .rail-progress {
+      display: block;
+      width: 100%;
+      height: 3px;
+      margin-top: 1px;
+      overflow: hidden;
+      background: var(--p-border);
+      border-radius: 999px;
+    }
+    .focus-rail .rail-progress span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #09b8c6, #17a35a);
+      transition: width 0.35s ease;
     }
     .rail-divider {
       flex-shrink: 0;
@@ -433,8 +543,7 @@ html:has(app-course-player .classroom.is-maximized) app-site-header {
     height: 34px;
   }
 }
-html:has(app-course-player .classroom.is-maximized)
-  :is(app-site-footer, app-accessibility-menu) {
+html:has(app-course-player .classroom.is-maximized) :is(app-site-footer, app-accessibility-menu) {
   visibility: hidden !important;
   pointer-events: none !important;
 }
@@ -617,10 +726,4 @@ app-course-player .classroom.is-maximized .focus-rail {
   color: var(--p-ink);
   background: var(--p-surface);
   border-color: var(--p-border);
-}
-
-
-/* «Tu ruta» va dentro del escenario de la lección, nunca suelta en la cuadrícula del aula. */
-app-course-player .lesson-stage > app-course-roadmap .roadmap {
-  margin: 8px 8px 0;
 }

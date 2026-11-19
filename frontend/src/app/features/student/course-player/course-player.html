@@ -24,6 +24,9 @@
       [title]="'Módulos del curso' | t"
     >
       <app-student-icon name="book" /><span>{{ 'Módulos' | t }}</span>
+      <span class="rail-progress" aria-hidden="true"
+        ><span [style.width.%]="progress().percent"></span
+      ></span>
     </button>
     <span class="rail-divider" aria-hidden="true"></span>
     @for (item of tabs(); track item.id) {
@@ -66,32 +69,35 @@
       [attr.aria-label]="'Lección actual' | t"
       [attr.aria-busy]="loading() || initializing()"
     >
-      <app-course-roadmap
-        [modules]="course().modules ?? []"
-        [availability]="availability()"
-        (lesson)="select($event)"
-        (assessment)="goAssessment($event)"
-      />
       @if (assessmentView(); as view) {
         <div class="lesson-caption">
-          <span>{{ view === 'all' ? ('Evaluaciones y tareas' | t) : view.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }}</span>
+          <span>{{
+            view === 'all'
+              ? ('Evaluaciones y tareas' | t)
+              : view.type === 'evaluation'
+                ? ('Evaluación' | t)
+                : ('Tarea' | t)
+          }}</span>
           @if (view !== 'all') {
             <span>{{ 'Módulo' | t }} {{ moduleNumber(view.moduleId) }}</span>
           }
         </div>
-        <article class="lesson-reader assessment-stage" [attr.aria-label]="'Evaluaciones y tareas' | t">
+        <article
+          class="lesson-reader assessment-stage"
+          [attr.aria-label]="'Evaluaciones y tareas' | t"
+        >
           @if (view === 'all' || view.type !== 'evaluation') {
-          <nav class="assessment-crumbs" [attr.aria-label]="'Navegación de evaluaciones' | t">
-            <button type="button" class="assessment-back" (click)="closeAssessment()">
-              <span aria-hidden="true">&#8592;</span>
-              {{ started() ? ('Volver a la lección' | t) : ('Volver al inicio del curso' | t) }}
-            </button>
-            @if (view !== 'all' && assessments().length > 1) {
-              <button type="button" class="assessment-back" (click)="openAssessment('all')">
-                {{ 'Ver todas' | t }} ({{ assessments().length }})
+            <nav class="assessment-crumbs" [attr.aria-label]="'Navegación de evaluaciones' | t">
+              <button type="button" class="assessment-back" (click)="closeAssessment()">
+                <span aria-hidden="true">&#8592;</span>
+                {{ started() ? ('Volver a la lección' | t) : ('Volver al inicio del curso' | t) }}
               </button>
-            }
-          </nav>
+              @if (view !== 'all' && assessments().length > 1) {
+                <button type="button" class="assessment-back" (click)="openAssessment('all')">
+                  {{ 'Ver todas' | t }} ({{ assessments().length }})
+                </button>
+              }
+            </nav>
           }
           @if (view === 'all') {
             <app-course-assessments
@@ -128,16 +134,30 @@
             {{
               progress().percent
                 ? ('Continúa desde donde quedaste y avanza a tu propio ritmo.' | t)
-                : ('Estás a punto de comenzar un recorrido de lecciones, recursos y evaluaciones.' | t)
+                : ('Estás a punto de comenzar un recorrido de lecciones, recursos y evaluaciones.'
+                  | t)
             }}
           </p>
           <div class="welcome-progress" [attr.aria-label]="'Progreso del curso' | t">
-            <span><strong>{{ progress().percent }}%</strong> {{ 'completado' | t }}</span>
+            <span
+              ><strong>{{ progress().percent }}%</strong> {{ 'completado' | t }}</span
+            >
             <span>{{ progress().completedLessons }} / {{ progress().totalLessons }}</span>
           </div>
-          <button class="primary start-button" type="button" (click)="startCourse()" [disabled]="initializing()">
+          <button
+            class="primary start-button"
+            type="button"
+            (click)="startCourse()"
+            [disabled]="initializing()"
+          >
             <app-student-icon name="play" />
-            {{ initializing() ? ('Preparando...' | t) : (progress().percent ? ('Continuar curso' | t) : ('Empezar curso' | t)) }}
+            {{
+              initializing()
+                ? ('Preparando...' | t)
+                : progress().percent
+                  ? ('Continuar curso' | t)
+                  : ('Empezar curso' | t)
+            }}
           </button>
           @if (!initializing() && !lessons().length) {
             <small class="waiting-hint">{{ 'El docente aún no ha agregado lecciones.' | t }}</small>
@@ -157,11 +177,18 @@
                     >
                       <app-student-icon [name]="item.type === 'evaluation' ? 'award' : 'book'" />
                       <span class="welcome-assessment__text">
-                        <small>{{ item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }} · {{ 'Módulo' | t }} {{ moduleNumber(item.moduleId) }}</small>
+                        <small
+                          >{{ item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }} ·
+                          {{ 'Módulo' | t }} {{ moduleNumber(item.moduleId) }}</small
+                        >
                         <strong>{{ item.title }}</strong>
                       </span>
                       <span class="welcome-assessment__state">{{
-                        item.passed ? ('Aprobada ✓' | t) : item.score === null ? ('Pendiente' | t) : item.score + ' / 100'
+                        item.passed
+                          ? ('Aprobada' | t)
+                          : item.score === null
+                            ? ('Pendiente' | t)
+                            : item.score + ' / 100'
                       }}</span>
                     </button>
                   </li>
@@ -210,7 +237,7 @@
           >
             @if (completed().has(current.id)) {
               <!-- Ya la completó: el contador de esta visita empieza en 0 y confundía. -->
-              <span>{{ '✓ Lección completada' | t }}</span>
+              <span>{{ 'Lección completada' | t }}</span>
               <strong>{{ 'Puedes volver a verla cuando quieras' | t }}</strong>
             } @else {
               <span>{{
@@ -225,7 +252,10 @@
             <p class="stage-message" role="alert">{{ watchError() }}</p>
           }
           @if (hasLessonContent()) {
-            <article class="lesson-reader lesson-reader--below" [attr.aria-label]="'Contenido de la lección' | t">
+            <article
+              class="lesson-reader lesson-reader--below"
+              [attr.aria-label]="'Contenido de la lección' | t"
+            >
               <h2>{{ 'Contenido de la lección' | t }}</h2>
               <div class="lesson-reader__body" [innerHTML]="lessonDescription() | richHtml"></div>
             </article>
@@ -305,7 +335,9 @@
             } @else if (graduationError()) {
               <span role="alert">{{ graduationError() }}</span>
             } @else if (graduation(); as state) {
-              @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
+              @if (
+                state.eligible && state.certificateEnabled && state.certificateProvider === 'POK'
+              ) {
                 <span>{{ 'Tu credencial digital la emite POK.' | t }}</span>
               } @else if (state.eligible && state.certificateEnabled) {
                 <span>{{ 'Tu certificado está listo.' | t }}</span>
@@ -324,8 +356,14 @@
                 {{ 'Reintentar consulta' | t }}
               </button>
             } @else if (graduation(); as state) {
-              @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
-                @if (state.certificate?.pokUrl && (state.certificate.pokStatus === 'EMITTED' || state.certificate.pokStatus === 'ACCEPTED')) {
+              @if (
+                state.eligible && state.certificateEnabled && state.certificateProvider === 'POK'
+              ) {
+                @if (
+                  state.certificate?.pokUrl &&
+                  (state.certificate.pokStatus === 'EMITTED' ||
+                    state.certificate.pokStatus === 'ACCEPTED')
+                ) {
                   <a
                     class="certificate-banner__cta"
                     [href]="state.certificate.pokUrl | publicUrl"
@@ -366,7 +404,10 @@
                   (click)="openAssessment('all')"
                 >
                   {{ 'Ver' | t }} {{ pendingGrades() }}
-                  {{ (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t }} &#8594;
+                  {{
+                    (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t
+                  }}
+                  &#8594;
                 </button>
               }
             }
@@ -376,57 +417,57 @@
     </section>
 
     @if (started()) {
-    <nav
-      [attr.inert]="maximized() && (modulesOpen() || focusToolOpen()) ? '' : null"
-      class="lesson-navigation"
-      [attr.aria-label]="'Navegar entre lecciones' | t"
-    >
-      <button
-        class="previous"
-        [disabled]="
-          !previous() || lessonLocked(previous()!.id) || loading() || saving() || questionSaving()
-        "
-        (click)="select(previous()!.id)"
+      <nav
+        [attr.inert]="maximized() && (modulesOpen() || focusToolOpen()) ? '' : null"
+        class="lesson-navigation"
+        [attr.aria-label]="'Navegar entre lecciones' | t"
       >
-        <span class="navigation-arrow" aria-hidden="true">&#8592;</span
-        ><span
-          ><small>{{ 'Lección anterior' | t }}</small
-          ><strong>{{ previous()?.title || ('Inicio del curso' | t) }}</strong></span
+        <button
+          class="previous"
+          [disabled]="
+            !previous() || lessonLocked(previous()!.id) || loading() || saving() || questionSaving()
+          "
+          (click)="select(previous()!.id)"
         >
-      </button>
-      <button
-        class="next"
-        [disabled]="
-          !next() || lessonLocked(next()!.id) || loading() || saving() || questionSaving()
-        "
-        (click)="select(next()!.id)"
-      >
-        <span
-          ><small>{{ 'Siguiente lección' | t }}</small
-          ><strong>{{ next()?.title || ('Fin del contenido' | t) }}</strong></span
-        ><span class="navigation-arrow" aria-hidden="true">&#8594;</span>
-      </button>
-      <div class="completion-action">
-        @if (lesson()) {
-          <button
-            class="complete-button"
-            [class.completed]="completed().has(lesson()!.id)"
-            [disabled]="saving() || completed().has(lesson()!.id) || !canComplete()"
-            (click)="complete()"
+          <span class="navigation-arrow" aria-hidden="true">&#8592;</span
+          ><span
+            ><small>{{ 'Lección anterior' | t }}</small
+            ><strong>{{ previous()?.title || ('Inicio del curso' | t) }}</strong></span
           >
-            {{
-              saving()
-                ? ('Guardando...' | t)
-                : completed().has(lesson()!.id)
-                  ? ('✓ Completada' | t)
-                  : !canComplete()
-                    ? ('Completa el 90 % del video' | t)
-                    : ('Completar lección' | t)
-            }}
-          </button>
-        }
-      </div>
-    </nav>
+        </button>
+        <button
+          class="next"
+          [disabled]="
+            !next() || lessonLocked(next()!.id) || loading() || saving() || questionSaving()
+          "
+          (click)="select(next()!.id)"
+        >
+          <span
+            ><small>{{ 'Siguiente lección' | t }}</small
+            ><strong>{{ next()?.title || ('Fin del contenido' | t) }}</strong></span
+          ><span class="navigation-arrow" aria-hidden="true">&#8594;</span>
+        </button>
+        <div class="completion-action">
+          @if (lesson()) {
+            <button
+              class="complete-button"
+              [class.completed]="completed().has(lesson()!.id)"
+              [disabled]="saving() || completed().has(lesson()!.id) || !canComplete()"
+              (click)="complete()"
+            >
+              {{
+                saving()
+                  ? ('Guardando...' | t)
+                  : completed().has(lesson()!.id)
+                    ? ('Completada' | t)
+                    : !canComplete()
+                      ? ('Completa el 90 % del video' | t)
+                      : ('Completar lección' | t)
+              }}
+            </button>
+          }
+        </div>
+      </nav>
     }
     <header class="classroom-heading">
       <div class="heading-title">
@@ -615,7 +656,9 @@
                   minlength="5"
                   maxlength="150"
                   [placeholder]="'Título de tu pregunta' | t"
-                /><label class="sr-only" for="question-body">{{ 'Detalles de la pregunta' | t }}</label
+                /><label class="sr-only" for="question-body">{{
+                  'Detalles de la pregunta' | t
+                }}</label
                 ><textarea
                   id="question-body"
                   name="body"
@@ -634,7 +677,9 @@
                 </button>
               </form>
             } @else if (course()['qaEnabled'] === false) {
-              <p class="empty-message">{{ 'El docente desactivó las preguntas para este curso.' | t }}</p>
+              <p class="empty-message">
+                {{ 'El docente desactivó las preguntas para este curso.' | t }}
+              </p>
             }
             @if (questionNotice()) {
               <p class="success" role="status">{{ questionNotice() }}</p>
@@ -643,7 +688,7 @@
               <article class="post">
                 <small>{{ post.author?.firstName }} {{ post.author?.lastName }}</small>
                 @if (post.answered) {
-                  <span class="answered-badge">{{ '✓ Respondida por el docente' | t }}</span>
+                  <span class="answered-badge">{{ 'Respondida por el docente' | t }}</span>
                 }
                 <h4>{{ post.title }}</h4>
                 <p>{{ post.body }}</p>
@@ -690,6 +735,26 @@
         <h2 id="curriculum-title">{{ 'Tu ruta de aprendizaje' | t }}</h2>
         <span>{{ course().modules?.length ?? 0 }} {{ 'módulos' | t }}</span>
       </div>
+      <div class="curriculum-progress">
+        <div class="curriculum-progress__label">
+          <span>{{ 'Tu progreso' | t }}</span>
+          <strong>{{ progress().percent }}%</strong>
+        </div>
+        <div
+          class="curriculum-progress__track"
+          role="progressbar"
+          [attr.aria-valuenow]="progress().percent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="'Progreso del curso' | t"
+        >
+          <span [style.width.%]="progress().percent"></span>
+        </div>
+        <small
+          >{{ progress().completedLessons }} {{ 'de' | t }} {{ progress().totalLessons }}
+          {{ 'lecciones completadas' | t }}</small
+        >
+      </div>
       @for (module of course().modules ?? []; track module.id; let index = $index) {
         <details
           class="module"
@@ -698,13 +763,15 @@
           <summary (click)="openModule(module.id)">
             <span class="chevron" aria-hidden="true">&#8964;</span
             ><span>{{ 'Módulo' | t }} {{ index + 1 }}: {{ module.title }}</span
-            ><small class="module-state" [class.is-done]="moduleDone(module.id)">{{
-              locked(module.id) && !initializing()
-                ? ('🔒 Bloqueado' | t)
-                : moduleDone(module.id)
-                  ? ('✓ Completo' | t)
-                  : moduleCompleted(module.id) + '/' + module.lessons.length
-            }}</small>
+            ><small class="module-state" [class.is-done]="moduleDone(module.id)">
+              @if (locked(module.id) && !initializing()) {
+                <app-student-icon name="lock" /><span>{{ 'Bloqueado' | t }}</span>
+              } @else if (moduleDone(module.id)) {
+                <app-student-icon name="check" /><span>{{ 'Completo' | t }}</span>
+              } @else {
+                {{ moduleCompleted(module.id) }}/{{ module.lessons.length }}
+              }
+            </small>
           </summary>
           @if (module.description) {
             <div
@@ -729,9 +796,7 @@
               "
               (click)="select(item.id)"
             >
-              <span class="lesson-check" aria-hidden="true">{{
-                completed().has(item.id) ? '✓' : ''
-              }}</span
+              <span class="lesson-check" aria-hidden="true"></span
               ><span class="lesson-name"
                 >{{ lessonIndex + 1 }}. {{ item.title }}
                 @if (selectedId() === item.id) {
@@ -756,7 +821,7 @@
               [attr.title]="locked(module.id) ? lockReason(module.id) : item.title"
               (click)="openAssessment(item)"
             >
-              <span class="lesson-check" aria-hidden="true">{{ item.passed ? '✓' : '' }}</span
+              <span class="lesson-check" aria-hidden="true"></span
               ><span class="lesson-name"
                 ><small class="assessment-kind">{{
                   item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t)
@@ -769,7 +834,9 @@
           }
         </details>
       } @empty {
-        <p class="empty-message">{{ 'El temario aparecerá cuando el docente agregue contenido.' | t }}</p>
+        <p class="empty-message">
+          {{ 'El temario aparecerá cuando el docente agregue contenido.' | t }}
+        </p>
       }
     </section>
     <section class="progress-card">
@@ -792,7 +859,7 @@
         </div>
       </div>
       @if (progress().percent === 100 && progress().totalLessons) {
-        <p class="finished">{{ '✓ Completaste todas las lecciones.' | t }}</p>
+        <p class="finished">{{ 'Completaste todas las lecciones.' | t }}</p>
       }
     </section>
     <section class="graduation-card" aria-labelledby="graduation-title">
@@ -804,10 +871,12 @@
       @if (graduation(); as state) {
         <ul class="graduation-checklist">
           <li [class.met]="state.contentComplete">
-            {{ state.contentComplete ? '✓' : '○' }} {{ 'Lecciones completadas' | t }}
+            <app-student-icon [name]="state.contentComplete ? 'check' : 'circle'" />
+            <span>{{ 'Lecciones completadas' | t }}</span>
           </li>
           <li [class.met]="state.gradesComplete">
-            {{ state.gradesComplete ? '✓' : '○' }} {{ 'Evaluaciones y tareas aprobadas' | t }}
+            <app-student-icon [name]="state.gradesComplete ? 'check' : 'circle'" />
+            <span>{{ 'Evaluaciones y tareas aprobadas' | t }}</span>
           </li>
         </ul>
         @if (state.average !== null) {
@@ -818,7 +887,10 @@
         @if (pendingGrades()) {
           <button class="text-action" (click)="openAssessment('all')">
             {{ 'Ver' | t }} {{ pendingGrades() }}
-            {{ (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t }} &#8594;
+            {{
+              (pendingGrades() === 1 ? 'requisito pendiente' : 'requisitos pendientes') | t
+            }}
+            &#8594;
           </button>
         }
         @if (state.eligible && state.certificateEnabled && state.certificateProvider === 'POK') {
@@ -872,7 +944,10 @@
             </button>
             @if (pokWaiting()) {
               <p class="pok-wait" role="status">
-                {{ 'Estamos emitiendo tu credencial en POK. En unos segundos aparecerá aquí el botón para verla.' | t }}
+                {{
+                  'Estamos emitiendo tu credencial en POK. En unos segundos aparecerá aquí el botón para verla.'
+                    | t
+                }}
               </p>
             }
           }

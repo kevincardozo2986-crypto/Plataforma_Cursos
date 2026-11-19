@@ -72,7 +72,10 @@ const QUESTION_HINTS: Record<string, string> = {
           <span class="eyebrow">{{ 'Tu meta' | t }}</span>
           <h3>{{ 'Evaluaciones y tareas' | t }}</h3>
           <p>
-            {{ 'Aprueba cada evaluación y alcanza el mínimo de cada tarea para obtener tu certificado.' | t }}
+            {{
+              'Aprueba cada evaluación y alcanza el mínimo de cada tarea para obtener tu certificado.'
+                | t
+            }}
           </p>
         </div>
         <button type="button" class="ghost" (click)="changed.emit()" [disabled]="busy()">
@@ -84,7 +87,10 @@ const QUESTION_HINTS: Record<string, string> = {
           <div class="summary-bar" aria-hidden="true">
             <span [style.width.%]="passedPercent()"></span>
           </div>
-          <span><strong>{{ passedCount() }}</strong> {{ 'de' | t }} {{ items().length }} {{ 'aprobadas' | t }}</span>
+          <span
+            ><strong>{{ passedCount() }}</strong> {{ 'de' | t }} {{ items().length }}
+            {{ 'aprobadas' | t }}</span
+          >
         </div>
       }
       <ul class="cards">
@@ -101,7 +107,10 @@ const QUESTION_HINTS: Record<string, string> = {
                 <app-student-icon [name]="item.type === 'evaluation' ? 'award' : 'book'" />
               </span>
               <span class="card-text">
-                <small>{{ item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }} · {{ moduleTitle(item.moduleId) }}</small>
+                <small
+                  >{{ item.type === 'evaluation' ? ('Evaluación' | t) : ('Tarea' | t) }} ·
+                  {{ moduleTitle(item.moduleId) }}</small
+                >
                 <strong>{{ item.title }}</strong>
               </span>
               <span class="pill" [attr.data-tone]="tone(item)">{{ statusLabel(item) | t }}</span>
@@ -118,18 +127,30 @@ const QUESTION_HINTS: Record<string, string> = {
     }
 
     @if (busy() && !quiz() && !task()) {
-      <p class="loading" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'Cargando...' | t }}</p>
+      <p class="loading" role="status">
+        <span class="spinner" aria-hidden="true"></span>{{ 'Cargando...' | t }}
+      </p>
     }
 
     @if (result(); as done) {
-      <section class="result" [class.ok]="done.passed" [class.review]="done.status === 'PENDING_REVIEW'" role="status">
+      <section
+        class="result"
+        [class.ok]="done.passed"
+        [class.review]="done.status === 'PENDING_REVIEW'"
+        role="status"
+      >
         @if (done.status === 'PENDING_REVIEW') {
           <span class="result-icon" aria-hidden="true"><app-student-icon name="bell" /></span>
           <h3>{{ '¡Respuestas enviadas!' | t }}</h3>
-          <p>{{ 'Tu docente revisará las respuestas abiertas. Verás tu nota cuando las califique.' | t }}</p>
+          <p>
+            {{
+              'Tu docente revisará las respuestas abiertas. Verás tu nota cuando las califique.' | t
+            }}
+          </p>
         } @else {
           <div class="ring" [style.--value]="done.score" aria-hidden="true">
-            <strong>{{ done.score }}</strong><small>/ 100</small>
+            <strong>{{ done.score }}</strong
+            ><small>/ 100</small>
           </div>
           <h3>{{ done.passed ? ('¡Aprobaste!' | t) : ('Aún no alcanzas el mínimo' | t) }}</h3>
           <p>
@@ -143,7 +164,9 @@ const QUESTION_HINTS: Record<string, string> = {
         }
         <div class="result-actions">
           @if (!done.passed && done.status !== 'PENDING_REVIEW' && focus(); as item) {
-            <button type="button" class="primary" (click)="open(item)">{{ 'Intentar de nuevo' | t }}</button>
+            <button type="button" class="primary" (click)="open(item)">
+              {{ 'Intentar de nuevo' | t }}
+            </button>
           }
           <button type="button" class="ghost" (click)="close()">{{ 'Volver al curso' | t }}</button>
         </div>
@@ -159,7 +182,10 @@ const QUESTION_HINTS: Record<string, string> = {
             <p>{{ current.description }}</p>
           }
           <ul class="chips">
-            <li>{{ current.questions.length }} {{ current.questions.length === 1 ? ('pregunta' | t) : ('preguntas' | t) }}</li>
+            <li>
+              {{ current.questions.length }}
+              {{ current.questions.length === 1 ? ('pregunta' | t) : ('preguntas' | t) }}
+            </li>
             <li>{{ 'Mínimo' | t }} {{ focus()?.minimum ?? 60 }} %</li>
             @if (focus()?.score !== null && focus()?.score !== undefined) {
               <li>{{ 'Tu mejor nota' | t }}: {{ focus()?.score }} / 100</li>
@@ -183,7 +209,9 @@ const QUESTION_HINTS: Record<string, string> = {
                   </span>
                 </legend>
                 @if (question.type === 'ESSAY' || question.type === 'FILL_BLANK') {
-                  <label class="sr-only" [for]="'answer-' + question.id">{{ 'Tu respuesta' | t }}</label>
+                  <label class="sr-only" [for]="'answer-' + question.id">{{
+                    'Tu respuesta' | t
+                  }}</label>
                   <textarea
                     [id]="'answer-' + question.id"
                     [name]="'answer-' + question.id"
@@ -201,7 +229,14 @@ const QUESTION_HINTS: Record<string, string> = {
                           [type]="question.type === 'MULTIPLE' ? 'checkbox' : 'radio'"
                           [name]="'option-' + question.id"
                           [checked]="selected(question.id, option.id)"
-                          (change)="choose(question.id, option.id, question.type, $any($event.target).checked)"
+                          (change)="
+                            choose(
+                              question.id,
+                              option.id,
+                              question.type,
+                              $any($event.target).checked
+                            )
+                          "
                         />
                         @if (question.type !== 'TRUE_FALSE') {
                           <span class="letter" aria-hidden="true">{{ letters[o] }}</span>
@@ -226,7 +261,9 @@ const QUESTION_HINTS: Record<string, string> = {
             {{ 'respondidas' | t }}
           </span>
           <div>
-            <button type="button" class="ghost" [disabled]="busy()" (click)="close()">{{ 'Cancelar' | t }}</button>
+            <button type="button" class="ghost" [disabled]="busy()" (click)="close()">
+              {{ 'Cancelar' | t }}
+            </button>
             <button class="primary" type="submit" [disabled]="busy()">
               {{ busy() ? ('Enviando...' | t) : ('Enviar evaluación' | t) }}
             </button>
@@ -263,7 +300,9 @@ const QUESTION_HINTS: Record<string, string> = {
           rows="5"
           [disabled]="busy() || submission()?.status === 'GRADED'"
         ></textarea>
-        <label class="field-label" for="task-files">{{ 'Adjuntar documento (máximo 10 archivos)' | t }}</label>
+        <label class="field-label" for="task-files">{{
+          'Adjuntar documento (máximo 10 archivos)' | t
+        }}</label>
         <input
           id="task-files"
           type="file"
@@ -293,11 +332,15 @@ const QUESTION_HINTS: Record<string, string> = {
         <footer class="submit-bar">
           <span></span>
           <div>
-            <button type="button" class="ghost" [disabled]="busy()" (click)="close()">{{ 'Cerrar' | t }}</button>
+            <button type="button" class="ghost" [disabled]="busy()" (click)="close()">
+              {{ 'Cerrar' | t }}
+            </button>
             <button
               class="primary"
               type="submit"
-              [disabled]="busy() || submission()?.status === 'GRADED' || (!taskText.trim() && !files().length)"
+              [disabled]="
+                busy() || submission()?.status === 'GRADED' || (!taskText.trim() && !files().length)
+              "
             >
               {{ 'Enviar tarea' | t }}
             </button>
@@ -356,7 +399,10 @@ const QUESTION_HINTS: Record<string, string> = {
       border-radius: 12px;
       font-weight: 700;
       font-size: 0.85rem;
-      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+      transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        border-color 0.15s;
     }
     .primary {
       border: 0;
@@ -450,7 +496,10 @@ const QUESTION_HINTS: Record<string, string> = {
       color: inherit;
       text-align: left;
       background: var(--surface);
-      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      transition:
+        border-color 0.15s,
+        box-shadow 0.15s,
+        transform 0.15s;
     }
     .assessment:hover:not(:disabled) {
       border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
@@ -647,7 +696,9 @@ const QUESTION_HINTS: Record<string, string> = {
       border-radius: 12px;
       cursor: pointer;
       line-height: 1.4;
-      transition: border-color 0.15s, background 0.15s;
+      transition:
+        border-color 0.15s,
+        background 0.15s;
     }
     .option:hover {
       border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
@@ -784,7 +835,10 @@ const QUESTION_HINTS: Record<string, string> = {
       border-radius: 50%;
       background:
         radial-gradient(closest-side, var(--surface) 80%, transparent 81%),
-        conic-gradient(var(--tone) calc(var(--value) * 1%), color-mix(in srgb, var(--border) 70%, transparent) 0);
+        conic-gradient(
+          var(--tone) calc(var(--value) * 1%),
+          color-mix(in srgb, var(--border) 70%, transparent) 0
+        );
     }
     .result.ok .ring {
       --tone: var(--ok);
@@ -931,7 +985,7 @@ export class CourseAssessments {
     return item.score === null ? 'todo' : 'bad';
   }
   statusLabel(item: Assessment) {
-    if (item.passed) return 'Aprobada ✓';
+    if (item.passed) return 'Aprobada';
     return item.score === null ? 'Pendiente' : item.score + ' / 100';
   }
   isAnswered(question: Quiz['questions'][number]) {

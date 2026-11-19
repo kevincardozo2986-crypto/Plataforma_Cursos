@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { apiErrorMessage } from '../../../core/http/api-error';
+import { StudentIcon } from '../dashboard/student-icon';
 import { Assessment } from './course-assessments';
 
 interface Question {
@@ -65,7 +66,7 @@ const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
  */
 @Component({
   selector: 'app-quiz-taker',
-  imports: [TranslatePipe, FormsModule],
+  imports: [TranslatePipe, FormsModule, StudentIcon],
   templateUrl: './quiz-taker.html',
   styleUrl: './quiz-taker.scss',
 })
@@ -95,7 +96,10 @@ export class QuizTaker {
   readonly animate = signal(0);
   readonly ringReady = signal(false);
   /** Las respuestas con las que se envió, para mostrarlas en la revisión. */
-  readonly sent = signal<{ options: Record<number, number[]>; texts: Record<number, string> } | null>(null);
+  readonly sent = signal<{
+    options: Record<number, number[]>;
+    texts: Record<number, string>;
+  } | null>(null);
 
   readonly letters = LETTERS;
   readonly circle = 251.33;
@@ -247,7 +251,11 @@ export class QuizTaker {
     return questions
       .map((question, index) => ({
         index,
-        label: !this.isAnswered(question) ? 'sin responder' : this.isFlagged(question) ? 'marcada' : '',
+        label: !this.isAnswered(question)
+          ? 'sin responder'
+          : this.isFlagged(question)
+            ? 'marcada'
+            : '',
       }))
       .filter((entry) => entry.label);
   }
@@ -309,7 +317,9 @@ export class QuizTaker {
   dashOffset(): number {
     const score = this.result()?.score ?? 0;
 
-    return this.ringReady() ? this.circle * (1 - Math.min(100, Math.max(0, score)) / 100) : this.circle;
+    return this.ringReady()
+      ? this.circle * (1 - Math.min(100, Math.max(0, score)) / 100)
+      : this.circle;
   }
 
   /** Cuántas preguntas acertó (cuando el servidor da el detalle). */
@@ -346,7 +356,7 @@ export class QuizTaker {
   }
 
   keyOf(question: Question, index: number): string {
-    return question.type === 'TRUE_FALSE' ? (index === 0 ? '✓' : '✕') : (LETTERS[index] ?? '');
+    return question.type === 'TRUE_FALSE' ? (index === 0 ? 'V' : 'F') : (LETTERS[index] ?? '');
   }
 
   // ----------------------------------------------------------------- teclado
@@ -375,12 +385,17 @@ export class QuizTaker {
       option = LETTERS.indexOf(key);
     }
 
-    if (option < 0 && /^[1-9]$/.test(event.key) && !this.isOpen(question)) option = Number(event.key) - 1;
+    if (option < 0 && /^[1-9]$/.test(event.key) && !this.isOpen(question))
+      option = Number(event.key) - 1;
 
     if (option >= 0 && option < question.options.length) {
       const choice = question.options[option];
 
-      this.choose(question, choice.id, !(question.type === 'MULTIPLE' && this.selected(question, choice.id)));
+      this.choose(
+        question,
+        choice.id,
+        !(question.type === 'MULTIPLE' && this.selected(question, choice.id)),
+      );
       event.preventDefault();
       return;
     }
@@ -413,7 +428,11 @@ export class QuizTaker {
     try {
       localStorage.setItem(
         this.key(quiz.id),
-        JSON.stringify({ options: this.options(), texts: this.texts(), flags: [...this.flags()] } satisfies Saved),
+        JSON.stringify({
+          options: this.options(),
+          texts: this.texts(),
+          flags: [...this.flags()],
+        } satisfies Saved),
       );
     } catch {
       // Sin almacenamiento: las respuestas se conservan mientras la página siga abierta.

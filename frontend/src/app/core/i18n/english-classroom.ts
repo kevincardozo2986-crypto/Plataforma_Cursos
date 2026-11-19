@@ -13,7 +13,7 @@ export const englishClassroom: Record<string, string> = {
   'Empezar curso': 'Start course',
   'El docente aún no ha agregado lecciones.': 'The teacher has not added any lessons yet.',
   visto: 'watched',
-  '✓ Lección completada': '✓ Lesson completed',
+  'Lección completada': 'Lesson completed',
   'Puedes volver a verla cuando quieras': 'You can watch it again anytime',
   'Contenido de la lección': 'Lesson content',
   'El docente aún no ha agregado contenido a esta lección.':
@@ -30,6 +30,10 @@ export const englishClassroom: Record<string, string> = {
   'requisito pendiente': 'pending requirement',
   'requisitos pendientes': 'pending requirements',
   'Lecciones completadas': 'Lessons completed',
+  Bloqueado: 'Locked',
+  Completo: 'Complete',
+  'Borrador guardado': 'Draft saved',
+  descargado: 'downloaded',
   'Evaluaciones y tareas aprobadas': 'Assessments and assignments passed',
   'Generando tu certificado...': 'Generating your certificate...',
   'Estamos emitiendo tu credencial en POK. En unos segundos aparecerá aquí el botón para verla.':
@@ -58,7 +62,7 @@ export const englishClassroom: Record<string, string> = {
   'Enviar pregunta': 'Send question',
   'El docente desactivó las preguntas para este curso.':
     'The teacher turned off questions for this course.',
-  '✓ Respondida por el docente': '✓ Answered by the teacher',
+  'Respondida por el docente': 'Answered by the teacher',
   'Aún no hay preguntas en este curso.': 'There are no questions in this course yet.',
   'Anuncios del docente': 'Teacher announcements',
   'No hay anuncios por ahora.': 'No announcements for now.',
@@ -77,7 +81,7 @@ export const englishClassroom: Record<string, string> = {
   'Volver a la lección': 'Back to the lesson',
   'Volver al inicio del curso': 'Back to the course start',
   'Ver todas': 'View all',
-  'Aprobada ✓': 'Passed ✓',
+  Aprobada: 'Passed',
   'Tu meta': 'Your goal',
   'Aprueba cada evaluación y alcanza el mínimo de cada tarea para obtener tu certificado.':
     'Pass every assessment and reach the minimum on every assignment to get your certificate.',
@@ -129,5 +133,6 @@ export const englishClassroom: Record<string, string> = {
   Principal: 'Main',
   'Administrador principal del sistema': 'Main system administrator',
   'Administrador principal: no se puede modificar': 'Main administrator: cannot be changed',
-  'Solo el administrador principal puede gestionarlo': 'Only the main administrator can manage this account',
+  'Solo el administrador principal puede gestionarlo':
+    'Only the main administrator can manage this account',
 };

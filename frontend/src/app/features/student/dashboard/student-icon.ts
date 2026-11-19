@@ -27,6 +27,8 @@ export class StudentIcon {
     close: 'm6 6 12 12M18 6 6 18',
     play: 'm9 5 11 7-11 7V5Z',
     check: 'm5 12 4 4L19 6',
+    circle: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z',
+    lock: 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5V11Z',
     logout: 'M9 4H4v16h5m5-12 4 4-4 4m-6-4h14',
   };
 }
