@@ -8,6 +8,7 @@ import { publicUrl } from '../http/public-url';
  */
 
 export const IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-presentation allow-popups';
+const SAME_ORIGIN_PDF_SANDBOX = 'allow-scripts allow-presentation';
 
 const ALLOWED_TAGS = new Set([
   'p',
@@ -96,12 +97,22 @@ export function isSafeUrl(
   return !!scheme && protocols.includes(`${scheme[1].toLowerCase()}:`);
 }
 
-/** Direcciones de esta misma plataforma: un marco no puede cargarla dentro de sí misma. */
+/** Direcciones de esta misma plataforma: solo se permite incrustar PDFs del archivo institucional. */
 const OWN_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+
+function isSameOriginPdf(url: URL, ownHost: string): boolean {
+  return (
+    url.protocol === 'https:' &&
+    url.hostname.toLowerCase() === ownHost &&
+    url.pathname.startsWith('/app/archivo/') &&
+    /\.pdf$/i.test(url.pathname)
+  );
+}
 
 /**
  * ¿Se puede incrustar esta dirección? Cualquier sitio con https://, salvo esta misma plataforma
- * (con `allow-same-origin`, un marco suyo podría leer la sesión).
+ * (con `allow-same-origin`, un marco suyo podría leer la sesión). Se permite su archivo PDF con
+ * un sandbox que no concede el mismo origen.
  */
 export function isAllowedEmbedUrl(value: string): boolean {
   try {
@@ -111,10 +122,24 @@ export function isAllowedEmbedUrl(value: string): boolean {
 
     // Un nombre sin punto («hola») no es un sitio de internet.
     return (
-      url.protocol === 'https:' && host.includes('.') && !OWN_HOSTS.includes(host) && host !== own
+      url.protocol === 'https:' &&
+      host.includes('.') &&
+      !OWN_HOSTS.includes(host) &&
+      (host !== own || isSameOriginPdf(url, own))
     );
   } catch {
     return false;
+  }
+}
+
+function iframeSandbox(src: string): string {
+  try {
+    const url = new URL(src);
+    const own = typeof location !== 'undefined' ? location.hostname.toLowerCase() : '';
+
+    return own && isSameOriginPdf(url, own) ? SAME_ORIGIN_PDF_SANDBOX : IFRAME_SANDBOX;
+  } catch {
+    return IFRAME_SANDBOX;
   }
 }
 
@@ -168,7 +193,7 @@ function copyAttributes(source: Element, target: Element, tag: string): boolean 
       return false;
     }
 
-    target.setAttribute('sandbox', IFRAME_SANDBOX);
+    target.setAttribute('sandbox', iframeSandbox(target.getAttribute('src')!));
     target.setAttribute('loading', 'lazy');
     target.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
   }

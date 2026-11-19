@@ -123,6 +123,29 @@ describe('cleanHtml: editor enriquecido', () => {
     }
   });
 
+  it('permite solo PDFs del archivo propio con sandbox sin acceso al mismo origen', () => {
+    const before = process.env.APP_URL;
+    process.env.APP_URL = 'https://campusvirtual.santototunja.edu.co';
+
+    try {
+      const pdf = cleanHtml(
+        '<iframe src="https://campusvirtual.santototunja.edu.co/app/archivo/INFOGRAFIA-REINDUCCION-3.pdf" width="100%" height="700px"></iframe>',
+      );
+
+      expect(pdf).toContain('/app/archivo/INFOGRAFIA-REINDUCCION-3.pdf');
+      expect(pdf).toContain('sandbox="allow-scripts allow-presentation"');
+      expect(pdf).not.toContain('allow-same-origin');
+      expect(
+        cleanHtml(
+          '<iframe src="https://campusvirtual.santototunja.edu.co/app/archivo/pagina.html"></iframe>',
+        ),
+      ).toBe('');
+    } finally {
+      if (before === undefined) delete process.env.APP_URL;
+      else process.env.APP_URL = before;
+    }
+  });
+
   it('todo marco queda con sandbox y carga diferida, aunque pidan otra cosa', () => {
     const html = cleanHtml(
       '<iframe src="https://www.youtube.com/embed/x" sandbox="allow-top-navigation allow-forms" loading="eager"></iframe>',

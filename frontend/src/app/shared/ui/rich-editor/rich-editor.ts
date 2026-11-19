@@ -189,6 +189,7 @@ export class RichEditor implements ControlValueAccessor {
 
   private range: Range | null = null;
   private upload: Subscription | null = null;
+  private codeChanged = false;
   private onChange: (value: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
@@ -243,6 +244,7 @@ export class RichEditor implements ControlValueAccessor {
       const element = this.area()?.nativeElement;
 
       if (element) {
+        this.codeChanged = false;
         this.html.set(pretty(element.innerHTML));
       }
     } else {
@@ -257,7 +259,12 @@ export class RichEditor implements ControlValueAccessor {
       }
 
       this.html.set(after);
-      this.emit(after);
+
+      if (this.codeChanged) {
+        this.emit(after);
+      }
+
+      this.codeChanged = false;
     }
 
     this.mode.set(mode);
@@ -280,6 +287,7 @@ export class RichEditor implements ControlValueAccessor {
   onCode(event: Event): void {
     const value = (event.target as HTMLTextAreaElement).value;
 
+    this.codeChanged = true;
     this.html.set(value);
     this.emit(value);
   }

@@ -6,13 +6,15 @@ import sanitize from 'sanitize-html';
  * propias de la institución, aplicaciones… Lo que sí se impide:
  * - Direcciones que no sean `https://` absolutas (sin `javascript:`, `data:`, `http:`, relativas ni
  *   `//otro-sitio`): se elimina el marco entero.
- * - Marcos que apunten a esta misma plataforma (su dirección o `localhost`): con `allow-same-origin`
- *   podrían leer la sesión de quien los ve.
- * - Todo marco queda aislado con `sandbox` (ver IFRAME_SANDBOX): sin navegar la página, sin formularios.
+ * - Marcos que apunten a esta misma plataforma se bloquean, salvo PDFs de `/app/archivo/`, que
+ *   usan un sandbox sin `allow-same-origin`.
+ * - Los demás marcos usan `sandbox` (ver IFRAME_SANDBOX): sin navegar la página, sin formularios.
  */
 const OWN_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+const IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-presentation allow-popups';
+const SAME_ORIGIN_PDF_SANDBOX = 'allow-scripts allow-presentation';
 
-/** Direcciones de esta plataforma, para no permitir que un marco la cargue dentro de sí misma. */
+/** Direcciones propias, para no permitir que un marco cargue páginas de la plataforma. */
 function ownHostnames(): Set<string> {
   const hosts = new Set(OWN_HOSTS);
 
@@ -41,8 +43,24 @@ export function isOwnOrigin(src: string): boolean {
   }
 }
 
-/** Lo que se le impone a todo marco incrustado, diga lo que diga el HTML original. */
-const IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-presentation allow-popups';
+function isOwnPdf(src: string): boolean {
+  try {
+    const url = new URL(src);
+
+    return (
+      url.protocol === 'https:' &&
+      ownHostnames().has(url.hostname.toLowerCase()) &&
+      url.pathname.startsWith('/app/archivo/') &&
+      /\.pdf$/i.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function iframeSandbox(src: string): string {
+  return isOwnPdf(src) ? SAME_ORIGIN_PDF_SANDBOX : IFRAME_SANDBOX;
+}
 
 const OPTIONS: sanitize.IOptions = {
   allowedTags: [
@@ -89,7 +107,7 @@ const OPTIONS: sanitize.IOptions = {
       tagName,
       attribs: {
         ...attribs,
-        sandbox: IFRAME_SANDBOX,
+        sandbox: iframeSandbox(attribs.src ?? ''),
         loading: 'lazy',
         referrerpolicy: 'strict-origin-when-cross-origin',
       },
@@ -102,9 +120,10 @@ const OPTIONS: sanitize.IOptions = {
         : attribs,
     }),
   },
-  // Un iframe sin dirección válida, o que apunta a esta plataforma, se quita entero.
+  // Solo los PDFs del archivo institucional pueden apuntar a un host propio.
   exclusiveFilter: (frame) =>
-    frame.tag === 'iframe' && (!frame.attribs.src || isOwnOrigin(frame.attribs.src)),
+    frame.tag === 'iframe' &&
+    (!frame.attribs.src || (isOwnOrigin(frame.attribs.src) && !isOwnPdf(frame.attribs.src))),
   // <script> y <style> se eliminan con su contenido, no solo la etiqueta.
   disallowedTagsMode: 'discard',
   nonTextTags: ['script', 'style', 'textarea', 'option', 'noscript'],

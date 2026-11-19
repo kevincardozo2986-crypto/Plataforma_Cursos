@@ -131,6 +131,27 @@ describe('countIframes', () => {
 });
 
 describe('iframes de la propia institución', () => {
+  it('solo permite sus PDFs del archivo con sandbox sin acceso al mismo origen', () => {
+    vi.stubGlobal('location', { hostname: 'campusvirtual.santototunja.edu.co' });
+
+    try {
+      const pdf = sanitizeHtml(
+        '<iframe src="https://campusvirtual.santototunja.edu.co/app/archivo/INFOGRAFIA-REINDUCCION-3.pdf" width="100%" height="700px"></iframe>',
+      );
+
+      expect(pdf).toContain('/app/archivo/INFOGRAFIA-REINDUCCION-3.pdf');
+      expect(pdf).toContain('sandbox="allow-scripts allow-presentation"');
+      expect(pdf).not.toContain('allow-same-origin');
+      expect(
+        sanitizeHtml(
+          '<iframe src="https://campusvirtual.santototunja.edu.co/app/archivo/pagina.html"></iframe>',
+        ),
+      ).toBe('');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('el iframe de una sección del campus se conserva con su tamaño', () => {
     const html =
       '<iframe src="https://campusvirtual.santototunja.edu.co/Web_Secciones_Entrega/01_Hero_Induccion.html" width="100%" height="900" allowfullscreen></iframe>';
